@@ -5,6 +5,9 @@
  */
 @import 'tailwindcss';
 
+/* Scan the components of this package, wherever this file is imported from. */
+@source '../';
+
 @theme static {
   /* Drop Tailwind's default palette: only the semantic tokens below exist. */
   --color-*: initial;

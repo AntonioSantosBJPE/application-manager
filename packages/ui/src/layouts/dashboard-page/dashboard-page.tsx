@@ -3,7 +3,9 @@ import type { ComponentProps } from 'react';
 function Root({ className, ...props }: ComponentProps<'main'>) {
   return (
     <main
-      className={['min-h-screen bg-surface px-6 py-8 text-text', className].filter(Boolean).join(' ')}
+      className={['min-h-screen bg-surface px-6 py-8 text-text', className]
+        .filter(Boolean)
+        .join(' ')}
       {...props}
     />
   );

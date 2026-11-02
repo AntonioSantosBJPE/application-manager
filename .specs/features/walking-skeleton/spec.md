@@ -230,9 +230,9 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 | CI-02 | P2: Pipeline de CI definido (critério 2) | Tasks | Pending |
 | CI-03 | P2: Pipeline de CI definido (critério 3) | Tasks | Pending |
 | CI-04 | P2: Pipeline de CI definido (critério 4) | Tasks | Pending |
-| DS-01 | P2: Design system inicial no Storybook (critério 1) | Tasks | Pending |
-| DS-02 | P2: Design system inicial no Storybook (critério 2) | Tasks | Pending |
-| DS-03 | P2: Design system inicial no Storybook (critério 3) | Tasks | Pending |
+| DS-01 | P2: Design system inicial no Storybook (critério 1) | Execute | Implementing |
+| DS-02 | P2: Design system inicial no Storybook (critério 2) | Execute | Implementing |
+| DS-03 | P2: Design system inicial no Storybook (critério 3) | Execute | Implementing |
 | LOG-01 | P2: Logs estruturados com correlation ID (critério 1) | Tasks | Pending |
 | LOG-02 | P2: Logs estruturados com correlation ID (critério 2) | Tasks | Pending |
 | LOG-03 | P2: Logs estruturados com correlation ID (critério 3) | Tasks | Pending |

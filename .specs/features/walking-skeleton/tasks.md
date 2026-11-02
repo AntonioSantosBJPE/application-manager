@@ -286,10 +286,10 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] `pnpm storybook:build` gera `storybook-static` com as stories "Operacional" e "Indisponível"
-- [ ] Toolbar alterna claro/escuro (`withThemeByDataAttribute`); a story de tema escuro afirma o token escuro aplicado
-- [ ] `pnpm test` renderiza cada story em Chromium headless
-- [ ] Gate passa: `pnpm test && pnpm storybook:build`; 5 testes de story
+- [x] `pnpm storybook:build` gera `storybook-static` com as stories "Operacional" e "Indisponível"
+- [x] Toolbar alterna claro/escuro (`withThemeByDataAttribute`); a story de tema escuro afirma o token escuro aplicado
+- [x] `pnpm test` renderiza cada story em Chromium headless
+- [x] Gate passa: `pnpm test && pnpm storybook:build`; 5 testes de story
 
 **Tests**: unit
 **Gate**: quick
