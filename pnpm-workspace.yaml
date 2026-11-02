@@ -1,0 +1,26 @@
+packages:
+  - apps/*
+  - packages/*
+  - tooling/*
+  - tests/*
+
+# Shared versions; workspaces reference them as "catalog:".
+catalog:
+  # typescript-eslint 8 supports only TypeScript <6.1 (AD-002).
+  typescript: ~6.0.3
+  '@types/node': ^24.19.2
+  react: ^19.3.1
+  react-dom: ^19.3.1
+  zod: ^4.6.7
+  vitest: ^5.1.0
+
+# pnpm 11 runs dependency build scripts only when listed here (strictDepBuilds is on).
+allowBuilds:
+  lefthook: true
+  '@swc/core': true
+  esbuild: true
+
+injectWorkspacePackages: true
+
+minimumReleaseAgeExclude:
+  - dependency-cruiser@18.7.1

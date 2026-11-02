@@ -110,11 +110,11 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] `.nvmrc` com `24`; `engines.node` `^24`; `packageManager` `pnpm@11.x` com hash (corepack)
-- [ ] Scripts `lint`, `lint:boundaries`, `typecheck`, `test`, `test:integration`, `test:e2e`, `build`, `storybook:build` conforme o design
-- [ ] `pnpm-workspace.yaml` com `apps/*`, `packages/*`, `tooling/*`, `tests/*`, `catalog` (TypeScript `~6.0.3`, React 19, Zod 4, Vitest 5) e `allowBuilds`
-- [ ] `.gitignore` ganha `storybook-static/`, `playwright-report/`, `test-results/`
-- [ ] Gate passa: `pnpm install` e `pnpm build && pnpm typecheck` sem workspaces de código
+- [x] `.nvmrc` com `24`; `engines.node` `^24`; `packageManager` `pnpm@11.x` com hash (corepack)
+- [x] Scripts `lint`, `lint:boundaries`, `typecheck`, `test`, `test:integration`, `test:e2e`, `build`, `storybook:build` conforme o design
+- [x] `pnpm-workspace.yaml` com `apps/*`, `packages/*`, `tooling/*`, `tests/*`, `catalog` (TypeScript `~6.0.3`, React 19, Zod 4, Vitest 5) e `allowBuilds`
+- [x] `.gitignore` ganha `storybook-static/`, `playwright-report/`, `test-results/`
+- [x] Gate passa: `pnpm install` e `pnpm build && pnpm typecheck` sem workspaces de código
 
 **Tests**: none
 **Gate**: build
@@ -857,7 +857,7 @@ Proof: run e2e | ✓ outages › treats an api slower than 3 seconds as Indispon
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** none
+**Dispatched:** batch 1 (Fase 1, T1–T5, Opus 5.5) at 8758f9a
 **Walked:** none
 
 ---
