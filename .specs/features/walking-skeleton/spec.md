@@ -210,7 +210,7 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 | SKEL-11 | P1: Stack local completa (critério 11) | Execute | Implementing |
 | SKEL-12 | P1: Stack local completa (critério 12) | Tasks | Pending |
 | SKEL-13 | P1: Stack local completa (critério 13) | Tasks | Pending |
-| IMG-01 | P1: Imagens enxutas e seguras (critério 1) | Tasks | Pending |
+| IMG-01 | P1: Imagens enxutas e seguras (critério 1) | Execute | Implementing |
 | IMG-02 | P1: Imagens enxutas e seguras (critério 2) | Execute | Implementing |
 | IMG-03 | P1: Imagens enxutas e seguras (critério 3) | Execute | Implementing |
 | IMG-04 | P1: Imagens enxutas e seguras (critério 4) | Execute | Implementing |

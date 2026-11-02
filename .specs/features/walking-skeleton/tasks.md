@@ -553,9 +553,9 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] Imagem sem nenhum pacote `@nestjs`, processo como usuário não-root, nenhum `.env`
-- [ ] Os testes de IMG-03 e IMG-04 cobrem as duas imagens
-- [ ] Gate passa: `pnpm test && pnpm test:e2e`; 5 testes
+- [x] Imagem sem nenhum pacote `@nestjs`, processo como usuário não-root, nenhum `.env`
+- [x] Os testes de IMG-03 e IMG-04 cobrem as duas imagens
+- [x] Gate passa: `pnpm test && pnpm test:e2e`; 5 testes
 
 **Tests**: e2e
 **Gate**: e2e

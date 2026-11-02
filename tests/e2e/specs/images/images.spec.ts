@@ -2,7 +2,11 @@ import { expect, test } from '@playwright/test';
 import { buildImage, run, runOk, sh } from '../../support/docker.js';
 
 // IMG-01..04: each production image is inspected the way a registry consumer would see it.
-const images = [{ app: 'api', tag: 'am-e2e-api:images' }] as const;
+const images = [
+  { app: 'api', tag: 'am-e2e-api:images' },
+  { app: 'web', tag: 'am-e2e-web:images' },
+] as const;
+const [api, web] = images;
 
 test.beforeAll(() => {
   test.setTimeout(15 * 60_000);
@@ -17,10 +21,15 @@ function scopeDirectories(tag: string, scope: string): string[] {
 
 test.describe('images', () => {
   test('api image has no @tanstack package', () => {
-    const [{ tag }] = images;
     // Control: the scope the api does use is found by the same search, so an empty result is not a blind search.
-    expect(scopeDirectories(tag, '@nestjs').length).toBeGreaterThan(0);
-    expect(scopeDirectories(tag, '@tanstack')).toEqual([]);
+    expect(scopeDirectories(api.tag, '@nestjs').length).toBeGreaterThan(0);
+    expect(scopeDirectories(api.tag, '@tanstack')).toEqual([]);
+  });
+
+  test('web image has no @nestjs package', () => {
+    // Control: the scope the web does use is found by the same search.
+    expect(scopeDirectories(web.tag, '@tanstack').length).toBeGreaterThan(0);
+    expect(scopeDirectories(web.tag, '@nestjs')).toEqual([]);
   });
 
   test('web and api run as a non-root user', () => {
@@ -43,7 +52,7 @@ test.describe('images', () => {
 
   test('api image contains the main and migrate entrypoints and the migrations', () => {
     const result = run('docker', [
-      'run', '--rm', '--entrypoint', 'sh', 'am-e2e-api:images', '-c',
+      'run', '--rm', '--entrypoint', 'sh', api.tag, '-c',
       'test -f dist/main.js && test -f dist/migrate.js && test -f drizzle/0000_require_postgres_18.sql',
     ]);
     expect(result.status).toBe(0);
