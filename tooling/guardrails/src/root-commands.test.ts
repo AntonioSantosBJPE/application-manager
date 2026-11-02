@@ -3,7 +3,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } fro
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { repoRoot, run } from './repo.js';
+import { repoRoot, run, type RunResult } from './repo.js';
 
 // These tests run the real root commands (`pnpm lint`, `pnpm typecheck`, `pnpm test`) in a
 // temporary copy of the repository with a violation planted, so the working tree is never touched.
@@ -37,6 +37,25 @@ const TYPE_VIOLATION: Record<Workspace['ext'], string> = {
   ts: "export const planted: number = 'not a number';\n",
   js: "/** @type {number} */\nexport const planted = 'not a number';\n",
 };
+
+/** One import per dependency-cruiser rule (GUARD-06..08), planted together in a single `pnpm lint` run. */
+const boundaryViolations = {
+  'no-cross-app': {
+    file: 'apps/web/src/planted-cross-app.ts',
+    to: 'apps/api/src/infra/logging/request-id.ts',
+    content: "export { resolveRequestId } from '../../api/src/infra/logging/request-id';\n",
+  },
+  'no-feature-internals': {
+    file: 'apps/web/src/features/billing/components/invoice.ts',
+    to: 'apps/web/src/features/system-status/model/system-status.ts',
+    content: "export { toSystemStatus } from '../../system-status/model/system-status';\n",
+  },
+  'no-module-internals': {
+    file: 'apps/api/src/modules/billing/billing.service.ts',
+    to: 'apps/api/src/modules/health/database-probe.ts',
+    content: "export { DatabaseProbe } from '../health/database-probe.js';\n",
+  },
+} as const;
 
 function gitFiles(): string[] {
   const listing = spawnSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], {
@@ -81,6 +100,39 @@ describe('root commands', () => {
     }
   }
 
+  /** Plants several files (creating their folders), runs `fn`, and removes what it created. */
+  function plantedAll<T>(files: { file: string; content: string }[], fn: () => T): T {
+    const created: string[] = [];
+    for (const { file, content } of files) {
+      let first = dirname(join(copy, file));
+      while (!existsSync(dirname(first))) first = dirname(first);
+      if (!existsSync(first)) created.push(first);
+      mkdirSync(dirname(join(copy, file)), { recursive: true });
+      writeFileSync(join(copy, file), content);
+      created.push(join(copy, file));
+    }
+    try {
+      return fn();
+    } finally {
+      for (const path of created) rmSync(path, { recursive: true, force: true });
+    }
+  }
+
+  /** `pnpm lint` with every boundary violation planted, run once for the three boundary tests. */
+  let boundaryLint: RunResult | undefined;
+  function lintWithBoundaryViolations() {
+    boundaryLint ??= plantedAll(Object.values(boundaryViolations), () => pnpm('lint'));
+    return boundaryLint;
+  }
+
+  /** The err reporter line of dependency-cruiser: `<rule>: <file> → <import>`. */
+  function expectBoundaryViolation(rule: keyof typeof boundaryViolations) {
+    const { file, to } = boundaryViolations[rule];
+    const result = lintWithBoundaryViolations();
+    expect(result.status, result.output).not.toBe(0);
+    expect(result.output).toContain(`${rule}: ${file} → ${to}`);
+  }
+
   beforeAll(() => {
     copy = createCopy();
     env = { ...process.env };
@@ -114,6 +166,18 @@ describe('root commands', () => {
       expect(reported, `${name} does not name ${file}:\n${result.output}`).toBe(true);
       expect(result.output).toMatch(/no-debugger/);
     }
+  }, SLOW);
+
+  it('pnpm lint fails an app importing another app naming file and import', () => {
+    expectBoundaryViolation('no-cross-app');
+  }, SLOW);
+
+  it('pnpm lint fails a feature importing another feature internals naming file and import', () => {
+    expectBoundaryViolation('no-feature-internals');
+  }, SLOW);
+
+  it('pnpm lint fails a module importing another module internals naming file and import', () => {
+    expectBoundaryViolation('no-module-internals');
   }, SLOW);
 
   it('pnpm typecheck fails on a type error in any workspace', () => {

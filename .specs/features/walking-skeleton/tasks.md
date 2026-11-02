@@ -791,13 +791,13 @@ Proof: run api-integration | ✓ test database > runs postgresql 18 from testcon
 Proof: run e2e | ✓ compose › e2e runs against the compose project of this checkout
 
 **C23** - Arquivo em `apps/` importando de outra app faz o lint falhar nomeando arquivo e import (GUARD-06, AC 6)
-Proof: run guardrails | ✓ dependency boundaries > fails an app importing another app naming file and import
+Proof: run guardrails | ✓ root commands > pnpm lint fails an app importing another app naming file and import
 
 **C24** - Feature do `web` importando interno de outra feature faz o lint falhar nomeando arquivo e import (GUARD-07, AC 7)
-Proof: run guardrails | ✓ dependency boundaries > fails a feature importing another feature internals naming file and import
+Proof: run guardrails | ✓ root commands > pnpm lint fails a feature importing another feature internals naming file and import
 
 **C25** - Módulo da `api` importando interno de outro módulo faz o lint falhar nomeando arquivo e import (GUARD-08, AC 8)
-Proof: run guardrails | ✓ dependency boundaries > fails a module importing another module internals naming file and import
+Proof: run guardrails | ✓ root commands > pnpm lint fails a module importing another module internals naming file and import
 
 **C26** - Import de pacote `@radix-ui` fora de `packages/ui` faz o lint falhar nomeando o arquivo (GUARD-09, AC 9)
 Proof: run guardrails | ✓ design system lint > fails a radix import outside packages/ui naming the file
