@@ -1,4 +1,6 @@
 import base from '@am/config/eslint/base';
+import designSystem from '@am/config/eslint/design-system';
+import react from '@am/config/eslint/react';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 // Root flat config. ESLint finds it from every workspace, so `eslint .` in any
@@ -14,4 +16,6 @@ export default defineConfig(
     'tooling/guardrails/fixtures/',
   ]),
   base,
+  { files: ['apps/web/**', 'packages/ui/**'], extends: [react] },
+  designSystem,
 );

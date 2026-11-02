@@ -308,10 +308,10 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] Import de `@radix-ui/react-slot` em arquivo fora de `packages/ui` falha citando o arquivo; dentro de `packages/ui` passa
-- [ ] `bg-purple-500`, `hover:text-red-600/50` e `p-[13px]` falham em `apps/web` e em `packages/ui`, citando arquivo e classe; classes de token passam
-- [ ] O código real do repo passa no `pnpm lint`
-- [ ] Gate passa: `pnpm test && pnpm lint`; 6 testes
+- [x] Import de `@radix-ui/react-slot` em arquivo fora de `packages/ui` falha citando o arquivo; dentro de `packages/ui` passa
+- [x] `bg-purple-500`, `hover:text-red-600/50` e `p-[13px]` falham em `apps/web` e em `packages/ui`, citando arquivo e classe; classes de token passam
+- [x] O código real do repo passa no `pnpm lint`
+- [x] Gate passa: `pnpm test && pnpm lint`; 6 testes
 
 **Tests**: unit
 **Gate**: quick
