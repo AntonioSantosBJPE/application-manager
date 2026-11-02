@@ -133,10 +133,10 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] `tsconfig.base.json`, `tsconfig.react.json`, `tsconfig.node.json` exportados
-- [ ] `eslint/base.js` e `eslint/react.js` exportam arrays de flat config
-- [ ] Cada workspace terá `lint` (`eslint .`) e `typecheck` (`tsc --noEmit`) usando esses presets
-- [ ] Gate passa: `pnpm lint && pnpm typecheck`
+- [x] `tsconfig.base.json`, `tsconfig.react.json`, `tsconfig.node.json` exportados
+- [x] `eslint/base.js` e `eslint/react.js` exportam arrays de flat config
+- [x] Cada workspace terá `lint` (`eslint .`) e `typecheck` (`tsc --noEmit`) usando esses presets
+- [x] Gate passa: `pnpm lint && pnpm typecheck`
 
 **Tests**: none
 **Gate**: build

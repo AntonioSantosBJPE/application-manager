@@ -16,8 +16,12 @@
     "storybook:build": "turbo run storybook:build --filter @am/ui"
   },
   "devDependencies": {
+    "@am/config": "workspace:*",
     "dependency-cruiser": "^18.7.1",
-    "turbo": "^2.11.10"
+    "eslint": "^10.14.0",
+    "prettier": "^3.9.10",
+    "turbo": "^2.11.10",
+    "typescript": "catalog:"
   },
   "packageManager": "pnpm@11.28.9+sha512.35421cea2720eca3f5ad722b67e8ef18f4d3cd4745ed2fcfeb0dc288d4e9437fad3870d91ee6e83f268f0f6f7e0f62723317b19617bb45ee4333172ef51159f8"
 }
