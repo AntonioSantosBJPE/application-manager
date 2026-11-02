@@ -418,11 +418,11 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] Primeira execução aplica a migration e registra em `drizzle.__drizzle_migrations`
-- [ ] Segunda execução não aplica nada
-- [ ] Migration com SQL inválido rejeita e não deixa nada aplicado
-- [ ] Banco que sobe dentro da janela: sucesso; banco ausente: falha depois de 30 s (entre 30 e 35 s)
-- [ ] Gate passa: `pnpm test && pnpm test:integration`; 5 testes
+- [x] Primeira execução aplica a migration e registra em `drizzle.__drizzle_migrations`
+- [x] Segunda execução não aplica nada
+- [x] Migration com SQL inválido rejeita e não deixa nada aplicado
+- [x] Banco que sobe dentro da janela: sucesso; banco ausente: falha depois de 30 s (entre 30 e 35 s)
+- [x] Gate passa: `pnpm test && pnpm test:integration`; 5 testes
 
 **Tests**: integration
 **Gate**: full
