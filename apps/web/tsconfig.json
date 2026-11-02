@@ -1,0 +1,11 @@
+{
+  "extends": "@am/config/tsconfig.react.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node", "vite/client"],
+    // TanStack Start asks for verbatimModuleSyntax off: with it on, server-only imports can
+    // leak into the client bundle.
+    "verbatimModuleSyntax": false
+  },
+  "include": ["src", "*.ts"]
+}

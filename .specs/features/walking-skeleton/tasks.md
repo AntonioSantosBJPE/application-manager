@@ -443,10 +443,10 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] `loadServerEnv` sem `API_INTERNAL_URL` lança erro com o nome
-- [ ] Servidor de produção sem `API_INTERNAL_URL` sai com código ≠ 0 e imprime o nome
-- [ ] `pnpm build` gera `dist/client` e `dist/server`; o servidor srvx sobe com a variável presente
-- [ ] Gate passa: `pnpm test && pnpm build`; 3 testes
+- [x] `loadServerEnv` sem `API_INTERNAL_URL` lança erro com o nome
+- [x] Servidor de produção sem `API_INTERNAL_URL` sai com código ≠ 0 e imprime o nome
+- [x] `pnpm build` gera `dist/client` e `dist/server`; o servidor srvx sobe com a variável presente
+- [x] Gate passa: `pnpm test && pnpm build`; 3 testes
 
 **Tests**: unit
 **Gate**: quick
@@ -857,7 +857,7 @@ Proof: run e2e | ✓ outages › treats an api slower than 3 seconds as Indispon
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** batch 1 (Fase 1, T1–T5, Opus 5.5) at 8758f9a, returned; batch 2 (Fase 2, T6–T10, Sonnet 5.5) at d275ed8, returned; batch 3 (Fase 3, T11–T15, Opus 5.5) at 6478365
+**Dispatched:** batch 1 (Fase 1, T1–T5, Opus 5.5) at 8758f9a, returned; batch 2 (Fase 2, T6–T10, Sonnet 5.5) at d275ed8, returned; batch 3 (Fase 3, T11–T15, Opus 5.5) at 6478365, returned; batch 4 (Fase 4, T16–T19, Opus 5.5) at e715c62
 **Walked:** none
 
 ---
