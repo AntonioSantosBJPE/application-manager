@@ -1,0 +1,46 @@
+# Dependencies and build output
+node_modules/
+dist/
+build/
+.output/
+.vinxi/
+.nitro/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# Environment and secrets — only .env.example is committed
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+*.tfstate
+*.tfstate.*
+secrets/
+
+# Personal data — real resumes, exports and database dumps never go to the public repo
+*.dump
+*.sql.gz
+backups/
+private/
+exports/
+
+# Local Claude Code settings
+.claude/settings.local.json
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.log
+
+# Skill installer backups
+*.backup

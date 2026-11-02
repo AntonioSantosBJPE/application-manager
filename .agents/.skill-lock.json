@@ -1,0 +1,75 @@
+{
+  "version": 2,
+  "skills": {
+    "tlc-prd": {
+      "name": "tlc-prd",
+      "source": "local",
+      "contentHash": "ce417e8df0cff1870fbfdd157959e6efbdc6b1b547c57ac3850134e8f70bba80",
+      "installedAt": "2026-11-02T18:15:12.348Z",
+      "updatedAt": "2026-11-02T18:15:12.359Z",
+      "agents": [
+        "cursor",
+        "claude-code",
+        "windsurf"
+      ],
+      "method": "copy",
+      "global": false
+    },
+    "tlc-discover": {
+      "name": "tlc-discover",
+      "source": "local",
+      "contentHash": "518ab626fc8bac4ed1d0c5170b617d1adaec28a83634c1a462c7529d42170d3a",
+      "installedAt": "2026-11-02T18:15:51.254Z",
+      "updatedAt": "2026-11-02T18:15:51.260Z",
+      "agents": [
+        "cursor",
+        "claude-code",
+        "windsurf"
+      ],
+      "method": "copy",
+      "global": false
+    },
+    "nestjs-modular-monolith": {
+      "name": "nestjs-modular-monolith",
+      "source": "local",
+      "contentHash": "a4e6b084d0cb6ed7a06abc6786cea67292440c5b7e63ed33baed9ecb7525bbeb",
+      "installedAt": "2026-11-02T18:16:42.472Z",
+      "updatedAt": "2026-11-02T18:16:42.482Z",
+      "agents": [
+        "cursor",
+        "claude-code",
+        "windsurf"
+      ],
+      "method": "copy",
+      "global": false
+    },
+    "tlc-spec-driven": {
+      "name": "tlc-spec-driven",
+      "source": "local",
+      "contentHash": "eec8e8fe815116e4dedfe61ffaf7287abeb0fd23f344aa58c888c643686a2d40",
+      "installedAt": "2026-11-02T18:18:28.677Z",
+      "updatedAt": "2026-11-02T18:18:28.695Z",
+      "agents": [
+        "cursor",
+        "claude-code",
+        "windsurf"
+      ],
+      "method": "copy",
+      "global": false
+    },
+    "codenavi": {
+      "name": "codenavi",
+      "source": "local",
+      "contentHash": "23ac05b7f2d8df8311129d41432eba248bdcf14e9ace3f17c581976f7d888ada",
+      "installedAt": "2026-11-02T18:18:45.300Z",
+      "updatedAt": "2026-11-02T18:18:45.305Z",
+      "agents": [
+        "cursor",
+        "claude-code",
+        "windsurf"
+      ],
+      "method": "copy",
+      "global": false
+    }
+  }
+}
