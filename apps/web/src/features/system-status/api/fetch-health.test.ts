@@ -45,6 +45,26 @@ describe('system status from GET /health', () => {
     expect(elapsed).toBeLessThan(4_000);
   }, 10_000);
 
+  it('the 3 second limit: an API answering in 2.5 s is reachable, one answering in 3.1 s is not', async () => {
+    async function answeringAfter(ms: number) {
+      server.use(
+        http.get(`${apiUrl}/health`, async () => {
+          await delay(ms);
+          return HttpResponse.json({ status: 'ok', db: 'up' });
+        }),
+      );
+      return fetchHealth(apiUrl, 'req-1');
+    }
+
+    const inTime = await answeringAfter(2_500);
+    expect(inTime).toEqual({ kind: 'reachable', health: { status: 'ok', db: 'up' } });
+    expect(toSystemStatus(inTime)).toEqual({ api: 'operational', database: 'operational' });
+
+    const late = await answeringAfter(3_100);
+    expect(late).toEqual({ kind: 'unreachable' });
+    expect(toSystemStatus(late)).toEqual(bothUnavailable);
+  }, 10_000);
+
   it('a network error: both unavailable', async () => {
     const status = await statusWith(() => HttpResponse.error());
     expect(status).toEqual(bothUnavailable);

@@ -39,7 +39,7 @@ test.describe('outages', () => {
       const elapsedMs = Date.now() - startedAt;
       expect(page.status).toBe(200);
       expect(page.text).toMatch(/API Indisponível.*Banco de dados Indisponível/);
-      expect(elapsedMs, 'the page waited for the 3 s timeout').toBeGreaterThanOrEqual(2_500);
+      expect(elapsedMs, 'the page waited for the 3 s timeout').toBeGreaterThanOrEqual(2_950);
       expect(elapsedMs).toBeLessThan(5_000);
     } finally {
       composeOk(['unpause', 'api']);
