@@ -19,6 +19,10 @@ export default defineConfig({
         test: {
           name: 'integration',
           include: ['src/**/*.int.test.ts'],
+          // Starts PostgreSQL 18 with Testcontainers and provides its URL to the tests (GUARD-04).
+          globalSetup: ['./test/global-setup.ts'],
+          testTimeout: 60_000,
+          hookTimeout: 120_000,
         },
       },
     ],

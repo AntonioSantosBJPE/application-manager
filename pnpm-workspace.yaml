@@ -19,6 +19,10 @@ allowBuilds:
   lefthook: true
   '@swc/core': true
   esbuild: true
+  # Pulled in by testcontainers (ssh2 for SSH docker hosts, protobufjs); not needed here.
+  cpu-features: false
+  protobufjs: false
+  ssh2: false
 
 injectWorkspacePackages: true
 

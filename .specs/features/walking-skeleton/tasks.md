@@ -374,10 +374,10 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] `check()` devolve `up` com o banco no ar
-- [ ] Com o container pausado, `check()` devolve `down` em até 2,5 s; com o container parado, `down`
-- [ ] O banco de teste é PostgreSQL 18 iniciado pelo Testcontainers
-- [ ] Gate passa: `pnpm test && pnpm test:integration`; 4 testes
+- [x] `check()` devolve `up` com o banco no ar
+- [x] Com o container pausado, `check()` devolve `down` em até 2,5 s; com o container parado, `down`
+- [x] O banco de teste é PostgreSQL 18 iniciado pelo Testcontainers
+- [x] Gate passa: `pnpm test && pnpm test:integration`; 4 testes
 
 **Tests**: integration
 **Gate**: full

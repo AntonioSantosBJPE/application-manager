@@ -200,7 +200,7 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 | SKEL-01 | P1: Stack local completa (critério 1) | Tasks | Pending |
 | SKEL-02 | P1: Stack local completa (critério 2) | Tasks | Pending |
 | SKEL-03 | P1: Stack local completa (critério 3) | Tasks | Pending |
-| SKEL-04 | P1: Stack local completa (critério 4) | Tasks | Pending |
+| SKEL-04 | P1: Stack local completa (critério 4) | Execute | Implementing |
 | SKEL-05 | P1: Stack local completa (critério 5) | Tasks | Pending |
 | SKEL-06 | P1: Stack local completa (critério 6) | Tasks | Pending |
 | SKEL-07 | P1: Stack local completa (critério 7) | Tasks | Pending |
@@ -217,7 +217,7 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 | GUARD-01 | P1: Guard-rails de qualidade (critério 1) | Tasks | Pending |
 | GUARD-02 | P1: Guard-rails de qualidade (critério 2) | Tasks | Pending |
 | GUARD-03 | P1: Guard-rails de qualidade (critério 3) | Tasks | Pending |
-| GUARD-04 | P1: Guard-rails de qualidade (critério 4) | Tasks | Pending |
+| GUARD-04 | P1: Guard-rails de qualidade (critério 4) | Execute | Implementing |
 | GUARD-05 | P1: Guard-rails de qualidade (critério 5) | Tasks | Pending |
 | GUARD-06 | P1: Guard-rails de qualidade (critério 6) | Execute | Implementing |
 | GUARD-07 | P1: Guard-rails de qualidade (critério 7) | Execute | Implementing |
