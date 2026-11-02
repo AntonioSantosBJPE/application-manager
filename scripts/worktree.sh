@@ -84,7 +84,7 @@ cmd_new() {
   (cd "$path" && "$main_root/scripts/worktree.sh" init)
 
   echo
-  echo "next: open a Claude Code session in $path and run /tlc-spec-driven for '$feature'"
+  echo "next: open your coding agent in $path and run the tlc-spec-driven skill for '$feature'"
 }
 
 cmd_list() {

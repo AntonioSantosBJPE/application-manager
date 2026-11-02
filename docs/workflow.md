@@ -23,12 +23,13 @@ A `main` recebe código só por PR. Cada feature vive na sua branch do começo (
    ```
    Cria `../application-manager.worktrees/<feature>` na branch `feat/<feature>`, gera o `.env` com portas próprias e instala as dependências.
 
-2. **Abrir uma sessão do Claude Code no worktree.** No app desktop, uma nova sessão apontando para a pasta do worktree; no terminal:
+2. **Abrir o agente de código no worktree.** Qualquer agente que leia o [AGENTS.md](../AGENTS.md) serve (Claude Code, Codex, Cursor, Windsurf...): abra uma sessão ou janela apontando para a pasta do worktree. No terminal, por exemplo:
    ```bash
-   cd ../application-manager.worktrees/<feature> && claude
+   cd ../application-manager.worktrees/<feature>
    ```
+   e inicie o agente ali.
 
-3. **Especificar e executar** com `/tlc-spec-driven`: spec → aprovação → tasks → aprovação → execução com um commit por task → verificação. Tudo fica na branch da feature.
+3. **Especificar e executar** com a skill `tlc-spec-driven`: spec → aprovação → tasks → aprovação → execução com um commit por task → verificação. Tudo fica na branch da feature.
 
 4. **Publicar e abrir o PR**:
    ```bash
@@ -42,7 +43,7 @@ A `main` recebe código só por PR. Cada feature vive na sua branch do começo (
    ```
    Derruba os containers e volumes do worktree, remove a pasta e apaga a branch se já estiver mergeada.
 
-Worktree criado por outra ferramenta (por exemplo, uma sessão do app que já abre num worktree)? Rode `scripts/worktree.sh init` dentro dele para gerar `.env` e portas.
+Worktree criado por outra ferramenta (por exemplo, um agente que já abre a sessão num worktree próprio)? Rode `scripts/worktree.sh init` dentro dele para gerar `.env` e portas.
 
 ## Várias features ao mesmo tempo
 

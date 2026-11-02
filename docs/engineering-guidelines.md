@@ -177,5 +177,5 @@ O repositório será **público** (portfólio). Tudo o que entra em um commit de
 
 **Antes de publicar o repo**
 - Escolher a licença: MIT favorece o portfólio, mas permite que qualquer um use o código, inclusive comercialmente; sem licença, o código é visível mas todos os direitos ficam reservados. Decisão pendente na discovery.
-- Conferir a licença das skills em `.claude/skills` e `.agents/skills` antes de redistribuí-las.
+- Skills de terceiros só entram com licença que permita redistribuição; as da Tech Leads Club são CC-BY-4.0, com crédito no README.
 - Rodar `gitleaks` no histórico inteiro.

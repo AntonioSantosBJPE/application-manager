@@ -5,7 +5,7 @@ description: Creates, configures, lists or removes the git worktree of a feature
 
 # Feature Worktree
 
-The workflow lives in [docs/workflow.md](../../../docs/workflow.md); read it before acting. Everything goes through `scripts/worktree.sh` — never call `git worktree` directly, or the worktree misses its `.env` and port slot.
+The workflow lives in [docs/workflow.md](../../../docs/workflow.md); read it before acting. This skill is harness-neutral: it runs the same in any coding agent. Everything goes through `scripts/worktree.sh` — never call `git worktree` directly, or the worktree misses its `.env` and port slot.
 
 | User wants | Run (from the main checkout) |
 |---|---|
@@ -17,6 +17,6 @@ The workflow lives in [docs/workflow.md](../../../docs/workflow.md); read it bef
 Rules:
 - `<feature>` is kebab-case and matches `.specs/features/<feature>` when a spec exists.
 - Before `new`, check `list`: if an open feature touches the same files, say so and ask before creating a parallel one.
-- After `new`, the spec and implementation happen in a session opened in the worktree folder, not in this one. Tell the user the path and that `/tlc-spec-driven` runs there.
+- After `new`, the spec and implementation happen in an agent session opened in the worktree folder, not in this one. Tell the user the path and that the `tlc-spec-driven` skill runs there.
 - `remove` deletes the worktree's containers and volumes. Confirm with the user first when the branch is not merged.
 - Pushing the branch and opening the PR need the user's go-ahead.
