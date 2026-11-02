@@ -1,0 +1,12 @@
+# Override for the isolated "broken migration" project: the migrate service reads an invalid
+# migrations folder, and nothing is published on the host.
+services:
+  postgres:
+    ports: !reset []
+  migrate:
+    volumes:
+      - ./tests/e2e/fixtures/broken-migrations:/app/drizzle:ro
+  api:
+    ports: !reset []
+  web:
+    ports: !reset []

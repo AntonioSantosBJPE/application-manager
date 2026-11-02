@@ -598,9 +598,9 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] Migration inválida: `migrate` sai com ≠ 0 e o container da `api` nunca inicia
-- [ ] `api` sem `DATABASE_URL` e `web` sem `API_INTERNAL_URL` saem com ≠ 0 e os logs nomeiam a variável
-- [ ] Gate passa: `pnpm test && pnpm test:e2e`; 2 testes novos
+- [x] Migration inválida: `migrate` sai com ≠ 0 e o container da `api` nunca inicia
+- [x] `api` sem `DATABASE_URL` e `web` sem `API_INTERNAL_URL` saem com ≠ 0 e os logs nomeiam a variável
+- [x] Gate passa: `pnpm test && pnpm test:e2e`; 2 testes novos
 
 **Tests**: e2e
 **Gate**: e2e
