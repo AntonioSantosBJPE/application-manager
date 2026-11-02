@@ -509,9 +509,9 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] Renderiza "API" e "Banco de dados", cada um com "Operacional" ou "Indisponível", para as quatro combinações
-- [ ] A rota só carrega dados e compõe a feature
-- [ ] Gate passa: `pnpm test && pnpm lint`; 4 testes
+- [x] Renderiza "API" e "Banco de dados", cada um com "Operacional" ou "Indisponível", para as quatro combinações
+- [x] A rota só carrega dados e compõe a feature
+- [x] Gate passa: `pnpm test && pnpm lint`; 4 testes
 
 **Tests**: unit
 **Gate**: quick

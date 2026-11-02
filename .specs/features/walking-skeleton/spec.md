@@ -203,7 +203,7 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 | SKEL-04 | P1: Stack local completa (critério 4) | Execute | Implementing |
 | SKEL-05 | P1: Stack local completa (critério 5) | Execute | Implementing |
 | SKEL-06 | P1: Stack local completa (critério 6) | Execute | Implementing |
-| SKEL-07 | P1: Stack local completa (critério 7) | Tasks | Pending |
+| SKEL-07 | P1: Stack local completa (critério 7) | Execute | Implementing |
 | SKEL-08 | P1: Stack local completa (critério 8) | Execute | Implementing |
 | SKEL-09 | P1: Stack local completa (critério 9) | Execute | Implementing |
 | SKEL-10 | P1: Stack local completa (critério 10) | Execute | Implementing |
