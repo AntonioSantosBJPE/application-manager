@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 // The compose project, the ports and the credentials come from the .env of this checkout (SKEL-13).
 try {
@@ -26,5 +26,6 @@ export default defineConfig({
     { name: 'setup', testMatch: 'setup/**/*.setup.ts', dependencies: ['images'], teardown: 'teardown' },
     { name: 'teardown', testMatch: 'setup/**/*.teardown.ts' },
     { name: 'stack', testMatch: 'stack/**/*.spec.ts', dependencies: ['setup'] },
+    { name: 'browser', testMatch: 'browser/**/*.spec.ts', dependencies: ['stack'], use: { ...devices['Desktop Chrome'] } },
   ],
 });

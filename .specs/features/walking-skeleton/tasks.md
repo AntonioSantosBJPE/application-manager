@@ -619,11 +619,11 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] HTML inicial (sem JavaScript) contém "API" e "Banco de dados" com "Operacional"
-- [ ] `colorScheme: 'dark'` aplica os tokens escuros; `light`, os claros (cor computada comparada ao token)
-- [ ] Nenhuma violação do axe
-- [ ] O mesmo `requestId` aparece nos logs do `web` e da `api` para uma visita
-- [ ] Gate passa: `pnpm test && pnpm test:e2e`; 4 testes novos
+- [x] HTML inicial (sem JavaScript) contém "API" e "Banco de dados" com "Operacional"
+- [x] `colorScheme: 'dark'` aplica os tokens escuros; `light`, os claros (cor computada comparada ao token)
+- [x] Nenhuma violação do axe
+- [x] O mesmo `requestId` aparece nos logs do `web` e da `api` para uma visita
+- [x] Gate passa: `pnpm test && pnpm test:e2e`; 4 testes novos
 
 **Tests**: e2e
 **Gate**: e2e

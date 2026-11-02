@@ -1,6 +1,7 @@
 {
   "extends": "@am/config/tsconfig.node.json",
   "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
     "noEmit": true
   },
   "include": ["specs", "support", "playwright.config.ts"]
