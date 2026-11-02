@@ -266,8 +266,8 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] As três partes renderizam com landmarks (`main`, `header`) e só classes de token
-- [ ] Gate passa: `pnpm test`; 2 testes
+- [x] As três partes renderizam com landmarks (`main`, `header`) e só classes de token
+- [x] Gate passa: `pnpm test`; 2 testes
 
 **Tests**: unit
 **Gate**: quick
