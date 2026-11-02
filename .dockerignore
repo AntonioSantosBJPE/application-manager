@@ -1,0 +1,21 @@
+# Build context for the app images (IMG-04): no environment files, no host installs, no build output.
+.git
+.env
+.env.*
+!.env.example
+node_modules
+**/node_modules
+dist
+**/dist
+.turbo
+**/.turbo
+coverage
+**/coverage
+storybook-static
+**/storybook-static
+playwright-report
+test-results
+tests/e2e
+.claude
+.agents
+*.log

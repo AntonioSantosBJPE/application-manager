@@ -1,0 +1,19 @@
+{
+  "name": "@am/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@am/config": "workspace:*",
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "catalog:",
+    "eslint": "^10.14.0",
+    "typescript": "catalog:"
+  }
+}

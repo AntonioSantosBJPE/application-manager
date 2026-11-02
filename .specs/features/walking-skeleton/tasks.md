@@ -532,9 +532,9 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] Imagem sem nenhum pacote `@tanstack`, processo como usuário não-root, nenhum `.env`
-- [ ] `node dist/main.js` e `node dist/migrate.js` existem na imagem
-- [ ] Gate passa: `pnpm test && pnpm test:e2e`; 3 testes
+- [x] Imagem sem nenhum pacote `@tanstack`, processo como usuário não-root, nenhum `.env`
+- [x] `node dist/main.js` e `node dist/migrate.js` existem na imagem
+- [x] Gate passa: `pnpm test && pnpm test:e2e`; 3 testes
 
 **Tests**: e2e
 **Gate**: e2e
@@ -857,7 +857,7 @@ Proof: run e2e | ✓ outages › treats an api slower than 3 seconds as Indispon
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** batch 1 (Fase 1, T1–T5, Opus 5.5) at 8758f9a, returned; batch 2 (Fase 2, T6–T10, Sonnet 5.5) at d275ed8, returned; batch 3 (Fase 3, T11–T15, Opus 5.5) at 6478365, returned; batch 4 (Fase 4, T16–T19, Opus 5.5) at e715c62
+**Dispatched:** batch 1 (Fase 1, T1–T5, Opus 5.5) at 8758f9a, returned; batch 2 (Fase 2, T6–T10, Sonnet 5.5) at d275ed8, returned; batch 3 (Fase 3, T11–T15, Opus 5.5) at 6478365, returned; batch 4 (Fase 4, T16–T19, Opus 5.5) at e715c62, returned; batch 5 (Fase 5, T20–T25, Sonnet 5.5) at 92d2d50
 **Walked:** none
 
 ---
