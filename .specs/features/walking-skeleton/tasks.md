@@ -857,8 +857,8 @@ Proof: run e2e | ✓ outages › treats an api slower than 3 seconds as Indispon
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** batch 1 (Fase 1, T1–T5, Opus 5.5) at 8758f9a, returned; batch 2 (Fase 2, T6–T10, Sonnet 5.5) at d275ed8, returned; batch 3 (Fase 3, T11–T15, Opus 5.5) at 6478365, returned; batch 4 (Fase 4, T16–T19, Opus 5.5) at e715c62, returned; batch 5 (Fase 5, T20–T25, Sonnet 5.5) at 92d2d50, returned; batch 6 (Fase 6, T26–T28, Sonnet 5.5) at ac9cdd0
-**Walked:** none
+**Dispatched:** batch 1 (Fase 1, T1–T5, Opus 5.5) at 8758f9a, returned; batch 2 (Fase 2, T6–T10, Sonnet 5.5) at d275ed8, returned; batch 3 (Fase 3, T11–T15, Opus 5.5) at 6478365, returned; batch 4 (Fase 4, T16–T19, Opus 5.5) at e715c62, returned; batch 5 (Fase 5, T20–T25, Sonnet 5.5) at 92d2d50, returned; batch 6 (Fase 6, T26–T28, Sonnet 5.5) at ac9cdd0, returned; Verifier (Opus 5.5) at 6a04465 + proofs commit
+**Walked:** P1 Stack local completa: `docker compose up -d --build --wait` no slot 1 (`.env` com WEB_PORT 3010), aberto `http://localhost:3010` no navegador: "Status do sistema" com "API: Operacional" e "Banco de dados: Operacional" (tema escuro do sistema). `docker compose stop postgres` e recarregar: "API: Operacional", "Banco de dados: Indisponível", página 200. Visita com `x-request-id: walk-<ts>`: o mesmo id aparece na linha JSON do `web` (`requestId`) e na da `api`. Stack derrubada com `down -v`. Demais Independent Tests (imagens, lint, segredos, CI, Storybook) cobertos pelos proofs C9-C36 em `proofs.md`.
 
 ---
 
