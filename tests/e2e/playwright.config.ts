@@ -27,5 +27,7 @@ export default defineConfig({
     { name: 'teardown', testMatch: 'setup/**/*.teardown.ts' },
     { name: 'stack', testMatch: 'stack/**/*.spec.ts', dependencies: ['setup'] },
     { name: 'browser', testMatch: 'browser/**/*.spec.ts', dependencies: ['stack'], use: { ...devices['Desktop Chrome'] } },
+    // Last: these specs stop, pause and restart services.
+    { name: 'disruption', testMatch: 'disruption/**/*.spec.ts', dependencies: ['browser'] },
   ],
 });

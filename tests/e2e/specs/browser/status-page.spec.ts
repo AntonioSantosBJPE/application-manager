@@ -2,15 +2,8 @@ import { randomUUID } from 'node:crypto';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { composeOk } from '../../support/compose.js';
+import { visibleText } from '../../support/html.js';
 import { readTokens, type Scheme } from '../../support/tokens.js';
-
-/** Plain text of an HTML document: tags dropped, whitespace collapsed. */
-function visibleText(html: string): string {
-  return html
-    .replace(/<(script|style)[\s\S]*?<\/\1>/g, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ');
-}
 
 /** Computed form of a CSS color, so a declared token value compares with what the browser resolved. */
 function resolveColor(page: Page, value: string): Promise<string> {

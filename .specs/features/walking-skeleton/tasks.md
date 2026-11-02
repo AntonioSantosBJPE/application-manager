@@ -642,10 +642,10 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] API parada: página 200 com "API: Indisponível" e "Banco de dados: Indisponível"
-- [ ] API pausada: página 200 com os dois indisponíveis, respondendo em menos de 5 s
-- [ ] Banco parado: "API: Operacional" e "Banco de dados: Indisponível"
-- [ ] Gate passa: `pnpm test && pnpm test:e2e`; 3 testes novos
+- [x] API parada: página 200 com "API: Indisponível" e "Banco de dados: Indisponível"
+- [x] API pausada: página 200 com os dois indisponíveis, respondendo em menos de 5 s
+- [x] Banco parado: "API: Operacional" e "Banco de dados: Indisponível"
+- [x] Gate passa: `pnpm test && pnpm test:e2e`; 3 testes novos
 
 **Tests**: e2e
 **Gate**: e2e
