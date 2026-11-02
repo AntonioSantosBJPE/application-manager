@@ -1,6 +1,8 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'eslint/config';
 import betterTailwind from 'eslint-plugin-better-tailwindcss';
+import { getDefaultSelectors } from 'eslint-plugin-better-tailwindcss/defaults';
+import { MatcherType, SelectorKind } from 'eslint-plugin-better-tailwindcss/types';
 
 const uiDir = fileURLToPath(new URL('../../ui/', import.meta.url));
 const tokensCss = `${uiDir}src/styles/tokens.css`;
@@ -36,7 +38,17 @@ const palette = [
 
 // Group 1 is the whole class (variants and opacity included) so the message can repeat it.
 const rawColor = `^((?:.*:)?[a-z-]+-(?:(?:${palette})-[0-9]{2,3}|black|white)(?:/[0-9.]+)?)$`;
-const arbitraryValue = '^(.*\\[[^\\]]*\\].*)$';
+// Square brackets (`p-[13px]`) and the Tailwind 4 parentheses shorthand (`p-(--foo)`, `bg-(color:--x)`).
+const arbitraryValue = '^(.*(?:\\[[^\\]]*\\]|-\\([^)]*\\)).*)$';
+
+// Besides the default places (className, cn(), cva()...), every string assigned to a variable is
+// checked, since a variable can end up in a className. Only the restrictions use this: an ordinary
+// string (a URL, a message) would be an unknown class, but it is not a raw color or an arbitrary value.
+// A string holding square brackets (a regex source, say) is reported too; it belongs outside UI code.
+const everyVariableString = [
+  ...getDefaultSelectors(),
+  { kind: SelectorKind.Variable, name: '^.*$', match: [{ type: MatcherType.String }] },
+];
 
 /**
  * Design system rules (GUARD-09, GUARD-10): UI comes only through packages/ui and only
@@ -77,6 +89,7 @@ export default defineConfig(
       'better-tailwindcss/no-restricted-classes': [
         'error',
         {
+          selectors: everyVariableString,
           restrict: [
             {
               pattern: rawColor,

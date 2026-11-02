@@ -16,6 +16,9 @@ async function lint(filePath: string, code: string) {
 }
 
 const classes = (names: string) => `export const View = () => <div className="${names}" />;\n`;
+/** The classes in a string held by a variable, later passed to className. */
+const classesInVariable = (names: string) =>
+  `const look = '${names}';\nexport const View = () => <div className={look} />;\n`;
 const importing = (source: string) =>
   `import { Slot } from '${source}';\nexport const View = Slot;\n`;
 
@@ -49,10 +52,14 @@ describe('design system lint', () => {
   });
 
   it('fails raw colors and arbitrary values naming file and class', async () => {
-    const offending = ['bg-purple-500', 'hover:text-red-600/50', 'p-[13px]'];
+    // Brackets and the Tailwind 4 parentheses shorthand are both arbitrary values.
+    const offending = ['bg-purple-500', 'hover:text-red-600/50', 'p-[13px]', 'p-(--foo)', 'md:bg-(--color-x)'];
 
-    for (const filePath of [appFile, uiFile]) {
-      const { messages, report } = await lint(filePath, classes(offending.join(' ')));
+    for (const [filePath, source] of [appFile, uiFile].flatMap((file) => [
+      [file, classes(offending.join(' '))],
+      [file, classesInVariable(offending.join(' '))],
+    ] as const)) {
+      const { messages, report } = await lint(filePath, source);
       const restricted = messages.filter(
         (m) => m.ruleId === 'better-tailwindcss/no-restricted-classes',
       );
@@ -81,9 +88,16 @@ describe('design system lint', () => {
       'flex border border-border bg-surface px-2 text-text hover:text-text-muted md:grid';
 
     for (const filePath of [appFile, uiFile]) {
-      const { messages } = await lint(filePath, classes(tokens));
+      for (const source of [
+        classes(tokens),
+        classesInVariable(tokens),
+        // A string that is not a class list, held by a variable, is not a class violation.
+        "export const apiUrl = 'http://api.test/health?x=(y)';\n",
+      ]) {
+        const { messages } = await lint(filePath, source);
 
-      expect(messages).toEqual([]);
+        expect(messages).toEqual([]);
+      }
     }
   });
 });
