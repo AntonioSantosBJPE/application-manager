@@ -214,9 +214,9 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 | IMG-02 | P1: Imagens enxutas e seguras (critério 2) | Execute | Implementing |
 | IMG-03 | P1: Imagens enxutas e seguras (critério 3) | Execute | Implementing |
 | IMG-04 | P1: Imagens enxutas e seguras (critério 4) | Execute | Implementing |
-| GUARD-01 | P1: Guard-rails de qualidade (critério 1) | Tasks | Pending |
-| GUARD-02 | P1: Guard-rails de qualidade (critério 2) | Tasks | Pending |
-| GUARD-03 | P1: Guard-rails de qualidade (critério 3) | Tasks | Pending |
+| GUARD-01 | P1: Guard-rails de qualidade (critério 1) | Execute | Implementing |
+| GUARD-02 | P1: Guard-rails de qualidade (critério 2) | Execute | Implementing |
+| GUARD-03 | P1: Guard-rails de qualidade (critério 3) | Execute | Implementing |
 | GUARD-04 | P1: Guard-rails de qualidade (critério 4) | Execute | Implementing |
 | GUARD-05 | P1: Guard-rails de qualidade (critério 5) | Execute | Implementing |
 | GUARD-06 | P1: Guard-rails de qualidade (critério 6) | Execute | Implementing |

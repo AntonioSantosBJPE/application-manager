@@ -689,11 +689,11 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] `pnpm lint` sai com ≠ 0 e cita o arquivo com erro de ESLint plantado em cada workspace
-- [ ] `pnpm typecheck` sai com ≠ 0 com erro de tipo plantado em cada workspace
-- [ ] `pnpm test` roda o Vitest de todos os workspaces (lista do `turbo run test --dry=json`)
-- [ ] `pnpm test` sai com ≠ 0 com uma story que lança erro em `packages/ui`
-- [ ] Gate passa: `pnpm test`; 4 testes
+- [x] `pnpm lint` sai com ≠ 0 e cita o arquivo com erro de ESLint plantado em cada workspace
+- [x] `pnpm typecheck` sai com ≠ 0 com erro de tipo plantado em cada workspace
+- [x] `pnpm test` roda o Vitest de todos os workspaces (lista do `turbo run test --dry=json`)
+- [x] `pnpm test` sai com ≠ 0 com uma story que lança erro em `packages/ui`
+- [x] Gate passa: `pnpm test`; 4 testes
 
 **Tests**: unit
 **Gate**: quick
