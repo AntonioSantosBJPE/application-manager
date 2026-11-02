@@ -178,10 +178,10 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] Cada regra falha numa fixture com a violação e a mensagem cita arquivo e import
-- [ ] Import pelo `index.ts` de outra feature/módulo passa; import interno da própria feature/módulo passa
-- [ ] Fixtures fora do alcance do `pnpm lint` real
-- [ ] Gate passa: `pnpm test && pnpm lint`; 6 testes
+- [x] Cada regra falha numa fixture com a violação e a mensagem cita arquivo e import
+- [x] Import pelo `index.ts` de outra feature/módulo passa; import interno da própria feature/módulo passa
+- [x] Fixtures fora do alcance do `pnpm lint` real
+- [x] Gate passa: `pnpm test && pnpm lint`; 6 testes
 
 **Tests**: unit
 **Gate**: quick
