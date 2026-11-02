@@ -37,6 +37,7 @@ describe('DatabaseProbe', () => {
       const { result, elapsedMs } = await timed(() => probe.check());
 
       expect(result).toBe('down');
+      expect(elapsedMs).toBeGreaterThanOrEqual(1950);
       expect(elapsedMs).toBeLessThanOrEqual(2500);
 
       await docker.unpause();
