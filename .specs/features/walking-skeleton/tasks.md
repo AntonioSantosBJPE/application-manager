@@ -332,9 +332,9 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] `loadEnv` sem `DATABASE_URL` lança erro com o nome da variável; com tudo presente devolve os valores e os padrões (`PORT` 3333, `LOG_LEVEL` info)
-- [ ] `node dist/main.js` sem `DATABASE_URL` sai com código ≠ 0 e imprime o nome
-- [ ] Gate passa: `pnpm test && pnpm build`; 4 testes
+- [x] `loadEnv` sem `DATABASE_URL` lança erro com o nome da variável; com tudo presente devolve os valores e os padrões (`PORT` 3333, `LOG_LEVEL` info)
+- [x] `node dist/main.js` sem `DATABASE_URL` sai com código ≠ 0 e imprime o nome
+- [x] Gate passa: `pnpm test && pnpm build`; 4 testes
 
 **Tests**: unit
 **Gate**: quick
@@ -857,7 +857,7 @@ Proof: run e2e | ✓ outages › treats an api slower than 3 seconds as Indispon
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** batch 1 (Fase 1, T1–T5, Opus 5.5) at 8758f9a, returned; batch 2 (Fase 2, T6–T10, Sonnet 5.5) at d275ed8
+**Dispatched:** batch 1 (Fase 1, T1–T5, Opus 5.5) at 8758f9a, returned; batch 2 (Fase 2, T6–T10, Sonnet 5.5) at d275ed8, returned; batch 3 (Fase 3, T11–T15, Opus 5.5) at 6478365
 **Walked:** none
 
 ---
