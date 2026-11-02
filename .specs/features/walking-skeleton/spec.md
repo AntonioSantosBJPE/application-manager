@@ -197,8 +197,8 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| SKEL-01 | P1: Stack local completa (critério 1) | Tasks | Pending |
-| SKEL-02 | P1: Stack local completa (critério 2) | Tasks | Pending |
+| SKEL-01 | P1: Stack local completa (critério 1) | Execute | Implementing |
+| SKEL-02 | P1: Stack local completa (critério 2) | Execute | Implementing |
 | SKEL-03 | P1: Stack local completa (critério 3) | Execute | Implementing |
 | SKEL-04 | P1: Stack local completa (critério 4) | Execute | Implementing |
 | SKEL-05 | P1: Stack local completa (critério 5) | Execute | Implementing |
@@ -208,8 +208,8 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 | SKEL-09 | P1: Stack local completa (critério 9) | Execute | Implementing |
 | SKEL-10 | P1: Stack local completa (critério 10) | Execute | Implementing |
 | SKEL-11 | P1: Stack local completa (critério 11) | Execute | Implementing |
-| SKEL-12 | P1: Stack local completa (critério 12) | Tasks | Pending |
-| SKEL-13 | P1: Stack local completa (critério 13) | Tasks | Pending |
+| SKEL-12 | P1: Stack local completa (critério 12) | Execute | Implementing |
+| SKEL-13 | P1: Stack local completa (critério 13) | Execute | Implementing |
 | IMG-01 | P1: Imagens enxutas e seguras (critério 1) | Execute | Implementing |
 | IMG-02 | P1: Imagens enxutas e seguras (critério 2) | Execute | Implementing |
 | IMG-03 | P1: Imagens enxutas e seguras (critério 3) | Execute | Implementing |
@@ -218,7 +218,7 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 | GUARD-02 | P1: Guard-rails de qualidade (critério 2) | Tasks | Pending |
 | GUARD-03 | P1: Guard-rails de qualidade (critério 3) | Tasks | Pending |
 | GUARD-04 | P1: Guard-rails de qualidade (critério 4) | Execute | Implementing |
-| GUARD-05 | P1: Guard-rails de qualidade (critério 5) | Tasks | Pending |
+| GUARD-05 | P1: Guard-rails de qualidade (critério 5) | Execute | Implementing |
 | GUARD-06 | P1: Guard-rails de qualidade (critério 6) | Execute | Implementing |
 | GUARD-07 | P1: Guard-rails de qualidade (critério 7) | Execute | Implementing |
 | GUARD-08 | P1: Guard-rails de qualidade (critério 8) | Execute | Implementing |

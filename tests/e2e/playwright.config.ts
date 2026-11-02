@@ -18,8 +18,13 @@ export default defineConfig({
   fullyParallel: false,
   timeout: 120_000,
   use: { baseURL: `http://localhost:${webPort}` },
+  // One chain, in order: the images are inspected, the stack starts, then the stack, browser and
+  // disruption specs run against it (disruption last: it stops services), then the stack is removed.
   projects: [
-    // Inspects the production images; builds them itself, so it needs no running stack.
-    { name: 'images', testDir: './specs/images' },
+    // Builds the production images itself, so it needs no running stack.
+    { name: 'images', testMatch: 'images/**/*.spec.ts' },
+    { name: 'setup', testMatch: 'setup/**/*.setup.ts', dependencies: ['images'], teardown: 'teardown' },
+    { name: 'teardown', testMatch: 'setup/**/*.teardown.ts' },
+    { name: 'stack', testMatch: 'stack/**/*.spec.ts', dependencies: ['setup'] },
   ],
 });

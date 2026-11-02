@@ -574,12 +574,12 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] `docker compose up` sobe os quatro serviços e a página responde 200 em até 120 s
-- [ ] Postgres 18; `migrate` termina com 0 antes de a `api` iniciar; segunda subida não reaplica
-- [ ] Portas publicadas vêm de `WEB_PORT`, `API_PORT`, `POSTGRES_PORT`; postgres só em `127.0.0.1`; Playwright usa `WEB_PORT`
-- [ ] `.env.example` lista toda variável lida por web, api e migrate, só com placeholders
-- [ ] `scripts/worktree.sh init` continua funcionando a partir do `.env.example`
-- [ ] Gate passa: `pnpm test && pnpm test:e2e`; 8 testes novos
+- [x] `docker compose up` sobe os quatro serviços e a página responde 200 em até 120 s
+- [x] Postgres 18; `migrate` termina com 0 antes de a `api` iniciar; segunda subida não reaplica
+- [x] Portas publicadas vêm de `WEB_PORT`, `API_PORT`, `POSTGRES_PORT`; postgres só em `127.0.0.1`; Playwright usa `WEB_PORT`
+- [x] `.env.example` lista toda variável lida por web, api e migrate, só com placeholders
+- [x] `scripts/worktree.sh init` continua funcionando a partir do `.env.example`
+- [x] Gate passa: `pnpm test && pnpm test:e2e`; 8 testes novos
 
 **Tests**: e2e
 **Gate**: e2e
