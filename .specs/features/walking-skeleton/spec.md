@@ -226,10 +226,10 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 | GUARD-10 | P1: Guard-rails de qualidade (critério 10) | Execute | Implementing |
 | SEC-01 | P1: Segredos barrados (critério 1) | Execute | Implementing |
 | SEC-02 | P1: Segredos barrados (critério 2) | Execute | Implementing |
-| CI-01 | P2: Pipeline de CI definido (critério 1) | Tasks | Pending |
-| CI-02 | P2: Pipeline de CI definido (critério 2) | Tasks | Pending |
-| CI-03 | P2: Pipeline de CI definido (critério 3) | Tasks | Pending |
-| CI-04 | P2: Pipeline de CI definido (critério 4) | Tasks | Pending |
+| CI-01 | P2: Pipeline de CI definido (critério 1) | Execute | Implementing |
+| CI-02 | P2: Pipeline de CI definido (critério 2) | Execute | Implementing |
+| CI-03 | P2: Pipeline de CI definido (critério 3) | Execute | Implementing |
+| CI-04 | P2: Pipeline de CI definido (critério 4) | Execute | Implementing |
 | DS-01 | P2: Design system inicial no Storybook (critério 1) | Execute | Implementing |
 | DS-02 | P2: Design system inicial no Storybook (critério 2) | Execute | Implementing |
 | DS-03 | P2: Design system inicial no Storybook (critério 3) | Execute | Implementing |

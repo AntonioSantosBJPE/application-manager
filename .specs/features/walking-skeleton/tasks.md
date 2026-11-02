@@ -666,11 +666,11 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] Eventos `pull_request` e `push` na `main`; nenhum `pull_request_target`
-- [ ] Lint, typecheck, unit, integração, E2E, gitleaks no histórico inteiro e build das duas imagens presentes
-- [ ] Todo `uses:` de terceiro com SHA de 40 caracteres
-- [ ] `actionlint` (imagem fixada) sem erros
-- [ ] Gate passa: `pnpm test`; 4 testes
+- [x] Eventos `pull_request` e `push` na `main`; nenhum `pull_request_target`
+- [x] Lint, typecheck, unit, integração, E2E, gitleaks no histórico inteiro e build das duas imagens presentes
+- [x] Todo `uses:` de terceiro com SHA de 40 caracteres
+- [x] `actionlint` (imagem fixada) sem erros
+- [x] Gate passa: `pnpm test`; 4 testes
 
 **Tests**: unit
 **Gate**: quick
@@ -857,7 +857,7 @@ Proof: run e2e | ✓ outages › treats an api slower than 3 seconds as Indispon
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** batch 1 (Fase 1, T1–T5, Opus 5.5) at 8758f9a, returned; batch 2 (Fase 2, T6–T10, Sonnet 5.5) at d275ed8, returned; batch 3 (Fase 3, T11–T15, Opus 5.5) at 6478365, returned; batch 4 (Fase 4, T16–T19, Opus 5.5) at e715c62, returned; batch 5 (Fase 5, T20–T25, Sonnet 5.5) at 92d2d50
+**Dispatched:** batch 1 (Fase 1, T1–T5, Opus 5.5) at 8758f9a, returned; batch 2 (Fase 2, T6–T10, Sonnet 5.5) at d275ed8, returned; batch 3 (Fase 3, T11–T15, Opus 5.5) at 6478365, returned; batch 4 (Fase 4, T16–T19, Opus 5.5) at e715c62, returned; batch 5 (Fase 5, T20–T25, Sonnet 5.5) at 92d2d50, returned; batch 6 (Fase 6, T26–T28, Sonnet 5.5) at ac9cdd0
 **Walked:** none
 
 ---
