@@ -224,8 +224,8 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 | GUARD-08 | P1: Guard-rails de qualidade (critério 8) | Tasks | Pending |
 | GUARD-09 | P1: Guard-rails de qualidade (critério 9) | Tasks | Pending |
 | GUARD-10 | P1: Guard-rails de qualidade (critério 10) | Tasks | Pending |
-| SEC-01 | P1: Segredos barrados (critério 1) | Tasks | Pending |
-| SEC-02 | P1: Segredos barrados (critério 2) | Tasks | Pending |
+| SEC-01 | P1: Segredos barrados (critério 1) | Execute | Implementing |
+| SEC-02 | P1: Segredos barrados (critério 2) | Execute | Implementing |
 | CI-01 | P2: Pipeline de CI definido (critério 1) | Tasks | Pending |
 | CI-02 | P2: Pipeline de CI definido (critério 2) | Tasks | Pending |
 | CI-03 | P2: Pipeline de CI definido (critério 3) | Tasks | Pending |

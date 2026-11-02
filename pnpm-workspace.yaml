@@ -12,7 +12,7 @@ catalog:
   react: ^19.3.1
   react-dom: ^19.3.1
   zod: ^4.6.7
-  vitest: ^5.1.0
+  vitest: ^5.0.5
 
 # pnpm 11 runs dependency build scripts only when listed here (strictDepBuilds is on).
 allowBuilds:

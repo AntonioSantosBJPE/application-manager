@@ -1,0 +1,5 @@
+# Git hooks, installed by the `lefthook` package postinstall on `pnpm install` (SEC-02).
+pre-commit:
+  commands:
+    gitleaks:
+      run: bash scripts/gitleaks-staged.sh

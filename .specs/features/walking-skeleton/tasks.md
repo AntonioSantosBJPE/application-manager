@@ -155,11 +155,11 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] Commit com chave fictícia no formato AWS em stage é bloqueado e a saída cita o arquivo
-- [ ] Commit sem segredo passa
-- [ ] Após `pnpm install`, `git rev-parse --git-path hooks/pre-commit` existe e chama o lefthook (também num worktree)
-- [ ] Comportamento do `postinstall` do lefthook com `CI` definido confirmado e registrado no design
-- [ ] Gate passa: `pnpm test`; 3 testes
+- [x] Commit com chave fictícia no formato AWS em stage é bloqueado e a saída cita o arquivo
+- [x] Commit sem segredo passa
+- [x] Após `pnpm install`, `git rev-parse --git-path hooks/pre-commit` existe e chama o lefthook (também num worktree)
+- [x] Comportamento do `postinstall` do lefthook com `CI` definido confirmado e registrado no design
+- [x] Gate passa: `pnpm test`; 3 testes
 
 **Tests**: unit
 **Gate**: quick
