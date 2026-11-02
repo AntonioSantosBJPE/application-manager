@@ -1,0 +1,44 @@
+/*
+ * Provisional design tokens (DS-02, SKEL-07). The values are placeholders until the
+ * dedicated design step; the names are the contract. Light is the default, dark follows
+ * prefers-color-scheme, and [data-theme] forces either one (Storybook toggles it).
+ */
+@import 'tailwindcss';
+
+@theme static {
+  /* Drop Tailwind's default palette: only the semantic tokens below exist. */
+  --color-*: initial;
+
+  --color-surface: oklch(0.99 0.003 260);
+  --color-surface-raised: oklch(0.96 0.005 260);
+  --color-text: oklch(0.24 0.02 260);
+  --color-text-muted: oklch(0.46 0.02 260);
+  --color-border: oklch(0.88 0.01 260);
+  --color-status-operational: oklch(0.45 0.12 150);
+  --color-status-unavailable: oklch(0.5 0.17 27);
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-surface: oklch(0.18 0.01 260);
+    --color-surface-raised: oklch(0.22 0.012 260);
+    --color-text: oklch(0.96 0.005 260);
+    --color-text-muted: oklch(0.72 0.015 260);
+    --color-border: oklch(0.32 0.015 260);
+    --color-status-operational: oklch(0.78 0.14 150);
+    --color-status-unavailable: oklch(0.75 0.14 27);
+  }
+}
+
+:root[data-theme='dark'] {
+  --color-surface: oklch(0.18 0.01 260);
+  --color-surface-raised: oklch(0.22 0.012 260);
+  --color-text: oklch(0.96 0.005 260);
+  --color-text-muted: oklch(0.72 0.015 260);
+  --color-border: oklch(0.32 0.015 260);
+  --color-status-operational: oklch(0.78 0.14 150);
+  --color-status-unavailable: oklch(0.75 0.14 27);
+}

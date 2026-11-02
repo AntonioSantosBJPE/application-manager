@@ -223,9 +223,9 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] Workspace `@am/ui` criado com `lint`, `typecheck`, `test`
-- [ ] Tokens de superfície, texto, borda e dois status definidos nos dois temas
-- [ ] Gate passa: `pnpm build && pnpm lint`
+- [x] Workspace `@am/ui` criado com `lint`, `typecheck`, `test`
+- [x] Tokens de superfície, texto, borda e dois status definidos nos dois temas
+- [x] Gate passa: `pnpm build && pnpm lint`
 
 **Tests**: none
 **Gate**: build
@@ -857,7 +857,7 @@ Proof: run e2e | ✓ outages › treats an api slower than 3 seconds as Indispon
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** batch 1 (Fase 1, T1–T5, Opus 5.5) at 8758f9a
+**Dispatched:** batch 1 (Fase 1, T1–T5, Opus 5.5) at 8758f9a, returned; batch 2 (Fase 2, T6–T10, Sonnet 5.5) at d275ed8
 **Walked:** none
 
 ---
