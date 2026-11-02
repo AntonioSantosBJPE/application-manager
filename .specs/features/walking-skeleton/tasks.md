@@ -244,10 +244,10 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] Renderiza o texto recebido com as classes de token de cada intent
-- [ ] `asChild` repassa as classes ao filho
-- [ ] Exportado no `index.ts` do pacote
-- [ ] Gate passa: `pnpm test`; 3 testes
+- [x] Renderiza o texto recebido com as classes de token de cada intent
+- [x] `asChild` repassa as classes ao filho
+- [x] Exportado no `index.ts` do pacote
+- [x] Gate passa: `pnpm test`; 3 testes
 
 **Tests**: unit
 **Gate**: quick
