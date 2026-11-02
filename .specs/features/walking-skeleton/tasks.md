@@ -487,10 +487,10 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] O id registrado no log do web é o mesmo enviado em `x-request-id`
-- [ ] Um `x-request-id` recebido na requisição de entrada é reaproveitado
-- [ ] Falha da API resulta em status indisponível, não em exceção
-- [ ] Gate passa: `pnpm test`; 3 testes
+- [x] O id registrado no log do web é o mesmo enviado em `x-request-id`
+- [x] Um `x-request-id` recebido na requisição de entrada é reaproveitado
+- [x] Falha da API resulta em status indisponível, não em exceção
+- [x] Gate passa: `pnpm test`; 3 testes
 
 **Tests**: unit
 **Gate**: quick
