@@ -200,9 +200,9 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] Aceita `{"status":"ok","db":"up"}` e `{"status":"degraded","db":"down"}`
-- [ ] Rejeita combinações cruzadas, campos ausentes e valores fora do enum
-- [ ] Gate passa: `pnpm test`; 5 testes
+- [x] Aceita `{"status":"ok","db":"up"}` e `{"status":"degraded","db":"down"}`
+- [x] Rejeita combinações cruzadas, campos ausentes e valores fora do enum
+- [x] Gate passa: `pnpm test`; 5 testes
 
 **Tests**: unit
 **Gate**: quick

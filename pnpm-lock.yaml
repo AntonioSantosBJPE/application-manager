@@ -16,6 +16,9 @@ catalogs:
     vitest:
       specifier: ^5.0.5
       version: 5.0.5
+    zod:
+      specifier: ^4.6.7
+      version: 4.6.7
 
 importers:
 
@@ -70,6 +73,28 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
+
+  packages/contracts:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@am/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
+      eslint:
+        specifier: ^10.14.0
+        version: 10.14.0(supports-color@7.2.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 5.0.5(@types/node@24.19.2)(vite@8.3.5(@types/node@24.19.2))
 
   tooling/guardrails:
     devDependencies:
