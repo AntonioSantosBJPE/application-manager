@@ -233,9 +233,9 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 | DS-01 | P2: Design system inicial no Storybook (critério 1) | Execute | Implementing |
 | DS-02 | P2: Design system inicial no Storybook (critério 2) | Execute | Implementing |
 | DS-03 | P2: Design system inicial no Storybook (critério 3) | Execute | Implementing |
-| LOG-01 | P2: Logs estruturados com correlation ID (critério 1) | Tasks | Pending |
-| LOG-02 | P2: Logs estruturados com correlation ID (critério 2) | Tasks | Pending |
-| LOG-03 | P2: Logs estruturados com correlation ID (critério 3) | Tasks | Pending |
+| LOG-01 | P2: Logs estruturados com correlation ID (critério 1) | Execute | Implementing |
+| LOG-02 | P2: Logs estruturados com correlation ID (critério 2) | Execute | Implementing |
+| LOG-03 | P2: Logs estruturados com correlation ID (critério 3) | Execute | Implementing |
 | LOG-04 | P2: Logs estruturados com correlation ID (critério 4) | Tasks | Pending |
 | EDGE-01 | Edge Cases (retry do `migrate`) | Tasks | Pending |
 | EDGE-02 | Edge Cases (timeout do SSR) | Tasks | Pending |

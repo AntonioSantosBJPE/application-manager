@@ -353,9 +353,9 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] Toda linha registrada numa requisição é um JSON com `level`, `time`, `msg`, `requestId`
-- [ ] `x-request-id` válido é reutilizado e devolvido; ausente ou malformado gera UUID devolvido no header
-- [ ] Gate passa: `pnpm test`; 4 testes
+- [x] Toda linha registrada numa requisição é um JSON com `level`, `time`, `msg`, `requestId`
+- [x] `x-request-id` válido é reutilizado e devolvido; ausente ou malformado gera UUID devolvido no header
+- [x] Gate passa: `pnpm test`; 4 testes
 
 **Tests**: unit
 **Gate**: quick
