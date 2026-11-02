@@ -72,20 +72,25 @@ test.describe('status page', () => {
   });
 
   test('web and api log the same requestId for one visit', async ({ request }) => {
+    const logTimeout = { timeout: 20_000 };
+    const webLines = () => jsonLogs('web').filter((line) => line.msg === 'health check requested');
+    const apiIds = () => new Set(jsonLogs('api').map((line) => line.requestId));
+
     // LOG-04 and LOG-02: the id sent by the client is the id the web logs and the id the api logs.
     const sent = `e2e-${randomUUID()}`;
     expect((await request.get('/', { headers: { 'x-request-id': sent } })).status()).toBe(200);
-    await expect
-      .poll(() => jsonLogs('web').filter((line) => line.requestId === sent && line.msg === 'health check requested').length)
-      .toBe(1);
-    await expect.poll(() => jsonLogs('api').filter((line) => line.requestId === sent).length).toBeGreaterThan(0);
+    await expect.poll(() => webLines().filter((line) => line.requestId === sent).length, logTimeout).toBe(1);
+    await expect.poll(() => apiIds().has(sent), logTimeout).toBe(true);
+    const sentTime = String(webLines().find((line) => line.requestId === sent)?.time);
 
-    // Without a header the web generates an id; the api must then log that same generated id.
-    const before = jsonLogs('web').filter((line) => line.msg === 'health check requested').length;
+    // Without a header the web generates an id. The container healthcheck visits the page too, so
+    // the visit cannot be singled out: every id the web logs from here on must also be in the api logs.
     expect((await request.get('/')).status()).toBe(200);
-    await expect.poll(() => jsonLogs('web').filter((line) => line.msg === 'health check requested').length).toBe(before + 1);
-    const generated = jsonLogs('web').filter((line) => line.msg === 'health check requested').at(-1)?.requestId;
-    expect(typeof generated).toBe('string');
-    await expect.poll(() => jsonLogs('api').filter((line) => line.requestId === generated).length).toBeGreaterThan(0);
+    const generatedSince = () => webLines().filter((line) => String(line.time) > sentTime && line.requestId !== sent);
+    await expect.poll(() => generatedSince().length, logTimeout).toBeGreaterThan(0);
+    expect(generatedSince().every((line) => /^[0-9a-f-]{36}$/.test(String(line.requestId)))).toBe(true);
+    await expect
+      .poll(() => generatedSince().map((line) => line.requestId).filter((id) => !apiIds().has(id)), logTimeout)
+      .toEqual([]);
   });
 });
