@@ -465,10 +465,10 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] MSW: 200 ok → API e banco operacionais; 503 → API operacional, banco indisponível
-- [ ] Resposta depois de 3 s, erro de rede, status fora de 200/503 e corpo inválido → os dois indisponíveis
-- [ ] O header `x-request-id` é enviado
-- [ ] Gate passa: `pnpm test`; 7 testes
+- [x] MSW: 200 ok → API e banco operacionais; 503 → API operacional, banco indisponível
+- [x] Resposta depois de 3 s, erro de rede, status fora de 200/503 e corpo inválido → os dois indisponíveis
+- [x] O header `x-request-id` é enviado
+- [x] Gate passa: `pnpm test`; 7 testes
 
 **Tests**: unit
 **Gate**: quick

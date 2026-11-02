@@ -201,8 +201,8 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 | SKEL-02 | P1: Stack local completa (critério 2) | Tasks | Pending |
 | SKEL-03 | P1: Stack local completa (critério 3) | Execute | Implementing |
 | SKEL-04 | P1: Stack local completa (critério 4) | Execute | Implementing |
-| SKEL-05 | P1: Stack local completa (critério 5) | Tasks | Pending |
-| SKEL-06 | P1: Stack local completa (critério 6) | Tasks | Pending |
+| SKEL-05 | P1: Stack local completa (critério 5) | Execute | Implementing |
+| SKEL-06 | P1: Stack local completa (critério 6) | Execute | Implementing |
 | SKEL-07 | P1: Stack local completa (critério 7) | Tasks | Pending |
 | SKEL-08 | P1: Stack local completa (critério 8) | Execute | Implementing |
 | SKEL-09 | P1: Stack local completa (critério 9) | Execute | Implementing |
@@ -238,7 +238,7 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 | LOG-03 | P2: Logs estruturados com correlation ID (critério 3) | Execute | Implementing |
 | LOG-04 | P2: Logs estruturados com correlation ID (critério 4) | Tasks | Pending |
 | EDGE-01 | Edge Cases (retry do `migrate`) | Execute | Implementing |
-| EDGE-02 | Edge Cases (timeout do SSR) | Tasks | Pending |
+| EDGE-02 | Edge Cases (timeout do SSR) | Execute | Implementing |
 
 **Coverage:** 42 total, 0 mapped to tasks, 42 unmapped ⚠️ (tasks ainda não escritas)
 
