@@ -21,4 +21,6 @@ Leia antes de qualquer trabalho:
 
 `tlc-discover` (`.design/`) → `tlc-prd` (`.prd/`) → `tlc-spec-driven` por feature (`.specs/`). Backend com `nestjs-modular-monolith`.
 
+Cada feature pode rodar no próprio worktree (`feat/<feature>`, portas próprias) via `scripts/worktree.sh` ou a skill `feature-worktree` — ver [docs/workflow.md](docs/workflow.md). A `main` recebe código só por PR.
+
 Conversa com o usuário em português (pt-BR); identificadores de código em inglês.

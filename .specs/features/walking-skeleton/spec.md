@@ -41,7 +41,7 @@ Não existe código. Toda feature do design ([.design/application-manager.md](..
 | ORM e migrations | Drizzle + drizzle-kit, migrations aplicadas por um serviço de execução única antes da API | Preferência das diretrizes; separar a migration da API deixa a ordem explícita | y |
 | Ferramenta de lint | ESLint (flat config) + Prettier; dependency-cruiser para fronteiras entre apps, módulos e features | O ESLint tem as regras de Tailwind e de imports necessárias; o dependency-cruiser expressa fronteiras de pasta | y |
 | Git hooks | lefthook | Rápido, sem dependência de Node no hook, configuração em um arquivo | y |
-| Portas locais | web 3000, API 3333, Postgres 5432 publicado só em `127.0.0.1` | Evita expor o banco na rede local | y |
+| Portas locais | web 3000, API 3333, Postgres 5432 publicado só em `127.0.0.1`; configuráveis por variável para worktrees ([docs/workflow.md](../../../docs/workflow.md)) | Evita expor o banco na rede local; permite stacks paralelas | y |
 | Chamada SSR → API | O servidor do Start chama a API pela rede interna do compose (`API_INTERNAL_URL`) | O navegador não precisa alcançar a API para a página de status | y |
 | Timeout da checagem de banco | 2 segundos | Health check precisa responder rápido mesmo com o banco travado | y |
 | Componente do design system | `StatusBadge` em `packages/ui`, usado pela página de status | Um componente real, usado de verdade, em vez de um exemplo solto | y |
@@ -73,6 +73,7 @@ Não existe código. Toda feature do design ([.design/application-manager.md](..
 10. WHEN `docker compose up` é executado de novo sem migrations novas THEN o serviço `migrate` SHALL terminar com código 0 sem reaplicar nenhuma migration.
 11. IF uma variável de ambiente obrigatória está ausente THEN o `web` ou a `api` SHALL encerrar na inicialização com código diferente de 0 e uma mensagem que nomeia a variável.
 12. The repository SHALL contain a `.env.example` listing every environment variable read by `web`, `api` and `migrate`, with placeholder values only.
+13. The compose stack SHALL publish the `web`, `api` and `postgres` ports from `WEB_PORT`, `API_PORT` and `POSTGRES_PORT` (defaults 3000, 3333 and 5432), and the Playwright tests SHALL target `WEB_PORT`, so two worktrees with different values run at the same time.
 
 **Independent Test**: Num clone limpo, `cp .env.example .env && docker compose up`; abrir `http://localhost:3000` e ver as duas linhas "Operacional"; parar o `postgres` e ver "Banco de dados: Indisponível".
 
@@ -208,6 +209,7 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 | SKEL-10 | P1: Stack local completa (critério 10) | Tasks | Pending |
 | SKEL-11 | P1: Stack local completa (critério 11) | Tasks | Pending |
 | SKEL-12 | P1: Stack local completa (critério 12) | Tasks | Pending |
+| SKEL-13 | P1: Stack local completa (critério 13) | Tasks | Pending |
 | IMG-01 | P1: Imagens enxutas e seguras (critério 1) | Tasks | Pending |
 | IMG-02 | P1: Imagens enxutas e seguras (critério 2) | Tasks | Pending |
 | IMG-03 | P1: Imagens enxutas e seguras (critério 3) | Tasks | Pending |
@@ -238,7 +240,7 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 | EDGE-01 | Edge Cases (retry do `migrate`) | Tasks | Pending |
 | EDGE-02 | Edge Cases (timeout do SSR) | Tasks | Pending |
 
-**Coverage:** 41 total, 0 mapped to tasks, 41 unmapped ⚠️ (tasks ainda não escritas)
+**Coverage:** 42 total, 0 mapped to tasks, 42 unmapped ⚠️ (tasks ainda não escritas)
 
 ---
 
