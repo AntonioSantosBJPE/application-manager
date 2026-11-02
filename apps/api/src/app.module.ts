@@ -3,6 +3,7 @@ import type { DestinationStream } from 'pino';
 import type { ApiEnv } from './config/env.js';
 import { DatabaseModule } from './infra/database/database.module.js';
 import { createLoggingModule } from './infra/logging/logging.module.js';
+import { HealthModule } from './modules/health/index.js';
 
 export interface AppModuleOptions {
   /** Overrides the log destination (stdout); used by tests to read the JSON lines. */
@@ -17,6 +18,7 @@ export class AppModule {
       imports: [
         createLoggingModule({ level: env.logLevel, destination: options.logDestination }),
         DatabaseModule.forRoot(env.databaseUrl),
+        HealthModule,
       ],
     };
   }

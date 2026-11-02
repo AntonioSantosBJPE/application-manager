@@ -12,6 +12,7 @@
     "test:integration": "vitest run --project integration"
   },
   "dependencies": {
+    "@am/contracts": "workspace:*",
     "@nestjs/common": "^12.3.2",
     "@nestjs/core": "^12.3.2",
     "@nestjs/platform-express": "^12.3.2",

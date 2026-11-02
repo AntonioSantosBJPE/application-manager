@@ -396,10 +396,10 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] Banco no ar: `200` com corpo exatamente `{"status":"ok","db":"up"}`
-- [ ] Banco pausado: `503` com corpo exatamente `{"status":"degraded","db":"down"}` em até 2,5 s
-- [ ] Os dois corpos passam no `healthResponseSchema`
-- [ ] Gate passa: `pnpm test && pnpm test:integration`; 3 testes
+- [x] Banco no ar: `200` com corpo exatamente `{"status":"ok","db":"up"}`
+- [x] Banco pausado: `503` com corpo exatamente `{"status":"degraded","db":"down"}` em até 2,5 s
+- [x] Os dois corpos passam no `healthResponseSchema`
+- [x] Gate passa: `pnpm test && pnpm test:integration`; 3 testes
 
 **Tests**: integration
 **Gate**: full
