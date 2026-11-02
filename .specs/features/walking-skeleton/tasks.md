@@ -712,8 +712,8 @@ T26 → T27 → T28
 
 **Done when**:
 
-- [ ] Passos do README reproduzidos num clone limpo
-- [ ] Gate passa: `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
+- [x] Passos do README reproduzidos num clone limpo
+- [x] Gate passa: `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
 
 **Tests**: none
 **Gate**: build

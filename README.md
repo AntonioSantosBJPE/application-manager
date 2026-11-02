@@ -2,7 +2,7 @@
 
 Gerencie candidaturas, adapte o currículo para cada vaga e gere um PDF pronto para filtros ATS, tudo a partir de um currículo mestre único.
 
-> **Status: em construção.** O design das fases 0 a 2 está confirmado e a primeira feature (walking skeleton) está especificada. Ainda não há código executável.
+> **Status: em construção.** O design das fases 0 a 2 está confirmado. O walking skeleton (fase 0) já sobe a stack local com uma página de status; candidaturas e currículo vêm nas fases seguintes.
 
 ## Por que existe
 
@@ -80,30 +80,59 @@ roadmap → discovery → spec → tarefas → execução + verificação → PR
 ```
 .design/              design confirmado (decisões, fatias, schema, contratos)
 .specs/               specs, tarefas e provas de cada feature
+.github/workflows/    CI (lint, testes, E2E, segredos, imagens)
 docs/                 brief, diretrizes de engenharia, princípios de design, roadmap, workflow
-scripts/              utilitários do repositório (worktrees)
+scripts/              utilitários do repositório (worktrees, scan de segredos)
 .agents/skills/       skills usadas no fluxo (espelhadas em .claude/skills/)
-apps/web/             TanStack Start               (a partir do walking skeleton)
-apps/api/             NestJS                       (a partir do walking skeleton)
-packages/contracts/   schemas e tipos da API       (a partir do walking skeleton)
-packages/ui/          design system + Storybook    (a partir do walking skeleton)
+apps/web/             TanStack Start (BFF + página de status)
+apps/api/             NestJS (health, migrations, logs estruturados)
+packages/contracts/   schemas e tipos da API
+packages/ui/          design system + Storybook
+packages/config/      ESLint, TypeScript e Prettier compartilhados
+tooling/guardrails/   testes das regras do repositório (segredos, fronteiras, CI, comandos)
+tests/e2e/            Playwright contra a stack do compose
 ```
 
 ## Rodando localmente
 
-Disponível a partir da conclusão do [walking skeleton](.specs/features/walking-skeleton/spec.md). Pré-requisitos:
+Pré-requisitos:
 
-- Node.js 24 LTS e pnpm 11 (via corepack)
+- Node.js 24 (a versão está em `.nvmrc`; com nvm, `nvm use`)
+- pnpm 11 via corepack: `corepack enable` (a versão exata vem do `packageManager` do `package.json`)
 - Docker com Docker Compose
 - Bash (no Windows, Git Bash ou WSL) para os scripts
 - Python 3.8+ para os scripts das skills de especificação
 
-O fluxo previsto:
+Instalar e subir a stack (web, api, migrations e PostgreSQL 18):
 
 ```bash
-cp .env.example .env
-docker compose up
+corepack enable
+pnpm install          # também instala o git hook que barra segredos
+cp .env.example .env  # só placeholders; ajuste portas ou senha se precisar
+docker compose up --build
 ```
+
+A página de status abre em `http://localhost:${WEB_PORT:-3000}` (3000 se você não mudou o `.env`) e mostra o estado do web, da api e do banco. A api responde em `http://localhost:${API_PORT:-3333}/health`.
+
+### Comandos
+
+Todos rodam na raiz e cobrem todos os workspaces:
+
+| Comando | O que faz |
+|---|---|
+| `pnpm build` | Compila `contracts`, `api` e `web` |
+| `pnpm lint` | ESLint em cada workspace e fronteiras entre módulos (dependency-cruiser) |
+| `pnpm typecheck` | `tsc --noEmit` em cada workspace |
+| `pnpm test` | Vitest de cada workspace, incluindo as stories do `packages/ui` em Chromium headless |
+| `pnpm test:integration` | Testes da api contra PostgreSQL 18 iniciado pelo Testcontainers (precisa de Docker) |
+| `pnpm test:e2e` | Constrói as imagens, sobe a stack do compose e roda o Playwright contra ela |
+| `pnpm storybook:build` | Gera o Storybook estático do `packages/ui` |
+
+Na primeira vez, o Playwright precisa do Chromium: `pnpm --filter @am/ui exec playwright install chromium`.
+
+### Várias features em paralelo
+
+Cada feature pode rodar no próprio worktree, com branch, `.env` e portas próprias (slot 1: web 3010, api 3343, postgres 5442; slot 2: 3020, 3353, 5452; e assim por diante), sem conflito com a stack principal. Veja [docs/workflow.md](docs/workflow.md) e `scripts/worktree.sh`.
 
 ## Documentação
 
