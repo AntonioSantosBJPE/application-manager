@@ -827,6 +827,7 @@ Proof: run guardrails | ✓ ci workflow > never uses pull_request_target
 Proof: `pnpm storybook:build && node -e "const i=require('./packages/ui/storybook-static/index.json');const n=Object.values(i.entries).filter(e=>e.title.endsWith('StatusBadge')).map(e=>e.name);process.exit(['Operacional','Indisponível'].every(x=>n.includes(x))?0:1)"`
 
 **C35** - As stories do `StatusBadge` alternam entre tema claro e escuro (DS-02, AC 2)
+Proof: run ui | ✓ StatusBadge > Tema claro
 Proof: run ui | ✓ StatusBadge > Tema escuro
 
 **C36** - `pnpm test` renderiza cada story do `packages/ui` e falha se alguma lançar erro (DS-03, AC 3)
