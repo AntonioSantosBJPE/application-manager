@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+# Tests and image builds are off for now: everything runs locally until the first VPS deploy
+# flow exists. They are gated on the repository variable CI_FULL; to turn them back on, set
+# CI_FULL=true (Settings > Secrets and variables > Actions > Variables) or drop the gated `if:` lines.
+
 # Read-only token for every job; no job asks for more.
 permissions:
   contents: read
@@ -15,7 +19,7 @@ concurrency:
 
 jobs:
   quality:
-    name: Lint, typecheck and unit tests
+    name: Lint and typecheck
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -31,13 +35,16 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # The storybook project of @am/ui renders every story in headless Chromium.
       - name: Install Chromium for Storybook tests
+        if: ${{ vars.CI_FULL == 'true' }} # off until the VPS flow; see header
         run: pnpm --filter @am/ui exec playwright install --with-deps chromium
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm test
+      - if: ${{ vars.CI_FULL == 'true' }} # off until the VPS flow; see header
+        run: pnpm test
 
   integration:
     name: Integration tests
+    if: ${{ vars.CI_FULL == 'true' }} # off until the VPS flow; see header
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -56,6 +63,7 @@ jobs:
 
   e2e:
     name: End-to-end tests
+    if: ${{ vars.CI_FULL == 'true' }} # off until the VPS flow; see header
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -103,6 +111,7 @@ jobs:
 
   images:
     name: Build images
+    if: ${{ vars.CI_FULL == 'true' }} # off until the VPS flow; see header
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

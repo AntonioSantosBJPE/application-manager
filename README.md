@@ -80,7 +80,7 @@ roadmap → discovery → spec → tarefas → execução + verificação → PR
 ```
 .design/              design confirmado (decisões, fatias, schema, contratos)
 .specs/               specs, tarefas e provas de cada feature
-.github/workflows/    CI (lint, testes, E2E, segredos, imagens)
+.github/workflows/    CI (lint, tipos, segredos; testes e imagens desligados até o fluxo da VPS)
 docs/                 brief, diretrizes de engenharia, princípios de design, roadmap, workflow
 scripts/              utilitários do repositório (scan de segredos)
 .agents/skills/       skills usadas no fluxo (espelhadas em .claude/skills/)
