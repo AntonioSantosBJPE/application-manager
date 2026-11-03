@@ -197,48 +197,48 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| SKEL-01 | P1: Stack local completa (critério 1) | Tasks | Pending |
-| SKEL-02 | P1: Stack local completa (critério 2) | Tasks | Pending |
-| SKEL-03 | P1: Stack local completa (critério 3) | Tasks | Pending |
-| SKEL-04 | P1: Stack local completa (critério 4) | Tasks | Pending |
-| SKEL-05 | P1: Stack local completa (critério 5) | Tasks | Pending |
-| SKEL-06 | P1: Stack local completa (critério 6) | Tasks | Pending |
-| SKEL-07 | P1: Stack local completa (critério 7) | Tasks | Pending |
-| SKEL-08 | P1: Stack local completa (critério 8) | Tasks | Pending |
-| SKEL-09 | P1: Stack local completa (critério 9) | Tasks | Pending |
-| SKEL-10 | P1: Stack local completa (critério 10) | Tasks | Pending |
-| SKEL-11 | P1: Stack local completa (critério 11) | Tasks | Pending |
-| SKEL-12 | P1: Stack local completa (critério 12) | Tasks | Pending |
-| SKEL-13 | P1: Stack local completa (critério 13) | Tasks | Pending |
-| IMG-01 | P1: Imagens enxutas e seguras (critério 1) | Tasks | Pending |
-| IMG-02 | P1: Imagens enxutas e seguras (critério 2) | Tasks | Pending |
-| IMG-03 | P1: Imagens enxutas e seguras (critério 3) | Tasks | Pending |
-| IMG-04 | P1: Imagens enxutas e seguras (critério 4) | Tasks | Pending |
-| GUARD-01 | P1: Guard-rails de qualidade (critério 1) | Tasks | Pending |
-| GUARD-02 | P1: Guard-rails de qualidade (critério 2) | Tasks | Pending |
-| GUARD-03 | P1: Guard-rails de qualidade (critério 3) | Tasks | Pending |
-| GUARD-04 | P1: Guard-rails de qualidade (critério 4) | Tasks | Pending |
-| GUARD-05 | P1: Guard-rails de qualidade (critério 5) | Tasks | Pending |
-| GUARD-06 | P1: Guard-rails de qualidade (critério 6) | Tasks | Pending |
-| GUARD-07 | P1: Guard-rails de qualidade (critério 7) | Tasks | Pending |
-| GUARD-08 | P1: Guard-rails de qualidade (critério 8) | Tasks | Pending |
-| GUARD-09 | P1: Guard-rails de qualidade (critério 9) | Tasks | Pending |
-| GUARD-10 | P1: Guard-rails de qualidade (critério 10) | Tasks | Pending |
-| SEC-01 | P1: Segredos barrados (critério 1) | Tasks | Pending |
-| SEC-02 | P1: Segredos barrados (critério 2) | Tasks | Pending |
-| CI-01 | P2: Pipeline de CI definido (critério 1) | Tasks | Pending |
-| CI-02 | P2: Pipeline de CI definido (critério 2) | Tasks | Pending |
-| CI-03 | P2: Pipeline de CI definido (critério 3) | Tasks | Pending |
-| CI-04 | P2: Pipeline de CI definido (critério 4) | Tasks | Pending |
-| DS-01 | P2: Design system inicial no Storybook (critério 1) | Tasks | Pending |
-| DS-02 | P2: Design system inicial no Storybook (critério 2) | Tasks | Pending |
-| DS-03 | P2: Design system inicial no Storybook (critério 3) | Tasks | Pending |
-| LOG-01 | P2: Logs estruturados com correlation ID (critério 1) | Tasks | Pending |
-| LOG-02 | P2: Logs estruturados com correlation ID (critério 2) | Tasks | Pending |
-| LOG-03 | P2: Logs estruturados com correlation ID (critério 3) | Tasks | Pending |
-| LOG-04 | P2: Logs estruturados com correlation ID (critério 4) | Tasks | Pending |
-| EDGE-01 | Edge Cases (retry do `migrate`) | Tasks | Pending |
-| EDGE-02 | Edge Cases (timeout do SSR) | Tasks | Pending |
+| SKEL-01 | P1: Stack local completa (critério 1) | Execute | Verified |
+| SKEL-02 | P1: Stack local completa (critério 2) | Execute | Verified |
+| SKEL-03 | P1: Stack local completa (critério 3) | Execute | Verified |
+| SKEL-04 | P1: Stack local completa (critério 4) | Execute | Verified |
+| SKEL-05 | P1: Stack local completa (critério 5) | Execute | Verified |
+| SKEL-06 | P1: Stack local completa (critério 6) | Execute | Verified |
+| SKEL-07 | P1: Stack local completa (critério 7) | Execute | Verified |
+| SKEL-08 | P1: Stack local completa (critério 8) | Execute | Verified |
+| SKEL-09 | P1: Stack local completa (critério 9) | Execute | Verified |
+| SKEL-10 | P1: Stack local completa (critério 10) | Execute | Verified |
+| SKEL-11 | P1: Stack local completa (critério 11) | Execute | Verified |
+| SKEL-12 | P1: Stack local completa (critério 12) | Execute | Verified |
+| SKEL-13 | P1: Stack local completa (critério 13) | Execute | Verified |
+| IMG-01 | P1: Imagens enxutas e seguras (critério 1) | Execute | Verified |
+| IMG-02 | P1: Imagens enxutas e seguras (critério 2) | Execute | Verified |
+| IMG-03 | P1: Imagens enxutas e seguras (critério 3) | Execute | Verified |
+| IMG-04 | P1: Imagens enxutas e seguras (critério 4) | Execute | Verified |
+| GUARD-01 | P1: Guard-rails de qualidade (critério 1) | Execute | Verified |
+| GUARD-02 | P1: Guard-rails de qualidade (critério 2) | Execute | Verified |
+| GUARD-03 | P1: Guard-rails de qualidade (critério 3) | Execute | Verified |
+| GUARD-04 | P1: Guard-rails de qualidade (critério 4) | Execute | Verified |
+| GUARD-05 | P1: Guard-rails de qualidade (critério 5) | Execute | Verified |
+| GUARD-06 | P1: Guard-rails de qualidade (critério 6) | Execute | Verified |
+| GUARD-07 | P1: Guard-rails de qualidade (critério 7) | Execute | Verified |
+| GUARD-08 | P1: Guard-rails de qualidade (critério 8) | Execute | Verified |
+| GUARD-09 | P1: Guard-rails de qualidade (critério 9) | Execute | Verified |
+| GUARD-10 | P1: Guard-rails de qualidade (critério 10) | Execute | Verified |
+| SEC-01 | P1: Segredos barrados (critério 1) | Execute | Verified |
+| SEC-02 | P1: Segredos barrados (critério 2) | Execute | Verified |
+| CI-01 | P2: Pipeline de CI definido (critério 1) | Execute | Verified |
+| CI-02 | P2: Pipeline de CI definido (critério 2) | Execute | Verified |
+| CI-03 | P2: Pipeline de CI definido (critério 3) | Execute | Verified |
+| CI-04 | P2: Pipeline de CI definido (critério 4) | Execute | Verified |
+| DS-01 | P2: Design system inicial no Storybook (critério 1) | Execute | Verified |
+| DS-02 | P2: Design system inicial no Storybook (critério 2) | Execute | Verified |
+| DS-03 | P2: Design system inicial no Storybook (critério 3) | Execute | Verified |
+| LOG-01 | P2: Logs estruturados com correlation ID (critério 1) | Execute | Verified |
+| LOG-02 | P2: Logs estruturados com correlation ID (critério 2) | Execute | Verified |
+| LOG-03 | P2: Logs estruturados com correlation ID (critério 3) | Execute | Verified |
+| LOG-04 | P2: Logs estruturados com correlation ID (critério 4) | Execute | Verified |
+| EDGE-01 | Edge Cases (retry do `migrate`) | Execute | Verified |
+| EDGE-02 | Edge Cases (timeout do SSR) | Execute | Verified |
 
 **Coverage:** 42 total, 0 mapped to tasks, 42 unmapped ⚠️ (tasks ainda não escritas)
 

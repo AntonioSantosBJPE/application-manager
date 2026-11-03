@@ -1,0 +1,154 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 9,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "weak_test::start a time budget clock at the command the criterion names including any build it implies",
+      "text": "Start a time-budget clock at the command the criterion names, including any build it implies",
+      "signal": "weak_test",
+      "scope": "e2e",
+      "status": "candidate",
+      "features": [
+        "walking-skeleton"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C1 (e2e)"
+      ],
+      "created": "2026-11-03T11:30:14Z",
+      "last_seen": "2026-11-03T11:30:14Z"
+    },
+    {
+      "id": "L-002",
+      "key": "weak_test::prove a timeout from both sides a response just under the limit succeeds and the failure arrives at the limit not merely before a loose ceiling",
+      "text": "Prove a timeout from both sides: a response just under the limit succeeds and the failure arrives at the limit, not merely before a loose ceiling",
+      "signal": "weak_test",
+      "scope": "timeouts",
+      "status": "candidate",
+      "features": [
+        "walking-skeleton"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C4 (timeouts)",
+        "C42 (timeouts)"
+      ],
+      "created": "2026-11-03T11:30:14Z",
+      "last_seen": "2026-11-03T11:30:15Z"
+    },
+    {
+      "id": "L-003",
+      "key": "weak_test::prove a guard rail through the root command that runs it not only through the tool s api",
+      "text": "Prove a guard-rail through the root command that runs it, not only through the tool's API",
+      "signal": "weak_test",
+      "scope": "guardrails",
+      "status": "candidate",
+      "features": [
+        "walking-skeleton"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C23 (guardrails)"
+      ],
+      "created": "2026-11-03T11:30:15Z",
+      "last_seen": "2026-11-03T11:30:15Z"
+    },
+    {
+      "id": "L-004",
+      "key": "ac_gap::lint rules on class names must cover every syntax of the framework version in use and strings held in variables",
+      "text": "Lint rules on class names must cover every syntax of the framework version in use and strings held in variables",
+      "signal": "ac_gap",
+      "scope": "lint",
+      "status": "candidate",
+      "features": [
+        "walking-skeleton"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "GUARD-10 (lint)"
+      ],
+      "created": "2026-11-03T11:30:15Z",
+      "last_seen": "2026-11-03T11:30:15Z"
+    },
+    {
+      "id": "L-005",
+      "key": "ac_gap::register request id logging before body parsing so rejected requests still echo and log the id",
+      "text": "Register request-id logging before body parsing so rejected requests still echo and log the id",
+      "signal": "ac_gap",
+      "scope": "api-logging",
+      "status": "candidate",
+      "features": [
+        "walking-skeleton"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "LOG-02 (api-logging)"
+      ],
+      "created": "2026-11-03T11:30:15Z",
+      "last_seen": "2026-11-03T11:30:15Z"
+    },
+    {
+      "id": "L-006",
+      "key": "ac_gap::install git hooks from a root prepare script so ci environment variables cannot skip them",
+      "text": "Install git hooks from a root prepare script so CI environment variables cannot skip them",
+      "signal": "ac_gap",
+      "scope": "git-hooks",
+      "status": "candidate",
+      "features": [
+        "walking-skeleton"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "SEC-02 (git-hooks)"
+      ],
+      "created": "2026-11-03T11:30:15Z",
+      "last_seen": "2026-11-03T11:30:15Z"
+    },
+    {
+      "id": "L-007",
+      "key": "weak_test::derive the list of required environment variables from every process env read not from one schema",
+      "text": "Derive the list of required environment variables from every process.env read, not from one schema",
+      "signal": "weak_test",
+      "scope": "env",
+      "status": "candidate",
+      "features": [
+        "walking-skeleton"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C12 (env)"
+      ],
+      "created": "2026-11-03T11:30:15Z",
+      "last_seen": "2026-11-03T11:30:15Z"
+    },
+    {
+      "id": "L-008",
+      "key": "weak_test::a toggle criterion needs an assertion on each state it toggles between",
+      "text": "A toggle criterion needs an assertion on each state it toggles between",
+      "signal": "weak_test",
+      "scope": "ui",
+      "status": "candidate",
+      "features": [
+        "walking-skeleton"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C35 (ui)"
+      ],
+      "created": "2026-11-03T11:30:15Z",
+      "last_seen": "2026-11-03T11:30:15Z"
+    }
+  ]
+}

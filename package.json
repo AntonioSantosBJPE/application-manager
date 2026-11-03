@@ -1,0 +1,29 @@
+{
+  "name": "application-manager",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^24"
+  },
+  "scripts": {
+    "prepare": "if git rev-parse --git-dir > /dev/null 2>&1; then lefthook install; fi",
+    "build": "turbo run build",
+    "lint": "turbo run lint && pnpm lint:boundaries",
+    "lint:boundaries": "depcruise . --config .dependency-cruiser.cjs --output-type err",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:integration": "turbo run test:integration",
+    "test:e2e": "pnpm --filter @am/e2e e2e",
+    "storybook:build": "turbo run storybook:build --filter @am/ui"
+  },
+  "devDependencies": {
+    "@am/config": "workspace:*",
+    "dependency-cruiser": "^18.7.1",
+    "eslint": "^10.14.0",
+    "lefthook": "^2.2.2",
+    "prettier": "^3.9.10",
+    "turbo": "^2.11.10",
+    "typescript": "catalog:"
+  },
+  "packageManager": "pnpm@11.28.9+sha512.35421cea2720eca3f5ad722b67e8ef18f4d3cd4745ed2fcfeb0dc288d4e9437fad3870d91ee6e83f268f0f6f7e0f62723317b19617bb45ee4333172ef51159f8"
+}

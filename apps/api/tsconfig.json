@@ -1,0 +1,9 @@
+{
+  "extends": "@am/config/tsconfig.node.json",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "noEmit": true
+  },
+  "include": ["src", "test", "vitest.config.ts", "drizzle.config.ts"]
+}

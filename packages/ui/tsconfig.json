@@ -1,0 +1,7 @@
+{
+  "extends": "@am/config/tsconfig.react.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src", ".storybook", "*.ts"]
+}

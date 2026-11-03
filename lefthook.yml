@@ -1,0 +1,5 @@
+# Git hooks, installed on `pnpm install` by the root `prepare` script, CI set or not (SEC-02).
+pre-commit:
+  commands:
+    gitleaks:
+      run: bash scripts/gitleaks-staged.sh
