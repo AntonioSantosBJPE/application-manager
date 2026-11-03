@@ -28,7 +28,7 @@ Leia antes de qualquer trabalho:
 
 `tlc-discover` (`.design/`) → `tlc-prd` (`.prd/`) → `tlc-spec-driven` por feature (`.specs/`). Backend com `nestjs-modular-monolith`; manutenção com `codenavi`.
 
-Cada feature é uma branch `feat/<feature>` criada a partir da `main` no checkout principal; spec, design, tasks e código vivem nela até o PR — ver [docs/workflow.md](docs/workflow.md).
+Spec, design e tasks de uma feature são escritos na `main`, sem commitar. Quando as tasks são aprovadas, cria-se a branch `feat/<feature>` a partir da `main` no checkout principal; o plano é o primeiro commit dela e o código vem depois, até o PR — ver [docs/workflow.md](docs/workflow.md).
 
 ## Skills
 
