@@ -1,6 +1,6 @@
 # The local stack: postgres, a one-shot migrate, the api and the web, built from the production images.
 # Variables come from the environment or from .env (see .env.example); each service gets its own list explicitly.
-# Ports are published from WEB_PORT, API_PORT and POSTGRES_PORT so several worktrees can run side by side.
+# Ports are published from WEB_PORT, API_PORT and POSTGRES_PORT so they can be changed when the defaults are taken.
 
 x-api-image: &api-image
   build:
