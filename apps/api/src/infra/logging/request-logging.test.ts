@@ -1,9 +1,8 @@
 import { Writable } from 'node:stream';
 import { Controller, Get, Logger, Module, type INestApplication } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import { Logger as PinoNestLogger } from 'nestjs-pino';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { AppModule } from '../../app.module.js';
+import { createApp } from '../../create-app.js';
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const levels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
@@ -46,8 +45,7 @@ describe('request logging', () => {
     })
     class TestModule {}
 
-    app = await NestFactory.create(TestModule, { bufferLogs: true });
-    app.useLogger(app.get(PinoNestLogger));
+    app = await createApp(TestModule);
     await app.listen(0, '127.0.0.1');
     baseUrl = await app.getUrl();
   });
@@ -91,6 +89,21 @@ describe('request logging', () => {
       expect(lines).toHaveLength(2);
       expect(lines.every((l) => l.requestId === sent)).toBe(true);
     }
+
+    // Also when the body parser rejects the request before any route runs.
+    capture.lines = [];
+    const sent = 'bad-body.req_7';
+    const rejected = await fetch(`${baseUrl}/health`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-request-id': sent },
+      body: '{bad',
+    });
+    expect(rejected.status).toBe(400);
+    expect(rejected.headers.get('x-request-id')).toBe(sent);
+    await expect.poll(() => capture.lines.some((l) => l.includes('request'))).toBe(true);
+    const lines = capture.lines.map((l) => JSON.parse(l) as Record<string, unknown>);
+    expect(lines.length).toBeGreaterThan(0);
+    expect(lines.every((l) => l.requestId === sent)).toBe(true);
   });
 
   it('generates an id and returns it when the header is absent', async () => {

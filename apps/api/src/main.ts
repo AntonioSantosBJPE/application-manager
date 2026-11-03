@@ -1,8 +1,7 @@
 import 'reflect-metadata';
-import { NestFactory } from '@nestjs/core';
-import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module.js';
 import { loadEnv, type ApiEnv } from './config/env.js';
+import { createApp } from './create-app.js';
 
 let env: ApiEnv;
 try {
@@ -12,6 +11,5 @@ try {
   process.exit(1);
 }
 
-const app = await NestFactory.create(AppModule.forRoot(env), { bufferLogs: true });
-app.useLogger(app.get(Logger));
+const app = await createApp(AppModule.forRoot(env));
 await app.listen(env.port);
