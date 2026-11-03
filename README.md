@@ -69,7 +69,7 @@ O repositório foi preparado para desenvolvimento com agentes de IA, com proteç
 - **Spec antes de código:** cada feature passa por discovery, especificação com critérios em notação EARS, plano de tarefas e execução com um commit por tarefa. Cada critério de aceite é ligado ao teste que o prova, e um verificador independente revisa o resultado.
 - **Guard-rails no CI:** fronteiras entre módulos e features, proibição de estilos fora do design system, detecção de segredos no pre-commit e no CI, testes de unidade, integração e E2E.
 - **Independente de ferramenta:** as instruções para agentes ficam em [AGENTS.md](AGENTS.md) e as skills em `.agents/skills/`, legíveis por Claude Code, Codex, Cursor e outros.
-- **Uma branch por feature:** cada feature nasce da `main` numa branch `feat/<feature>` com spec, plano e código, e chega à `main` por PR com o CI verde ([docs/workflow.md](docs/workflow.md)).
+- **Uma branch por feature:** spec e tasks são escritas na `main` sem commitar; ao aprovar as tasks nasce a branch `feat/<feature>`, que leva plano e código, e chega à `main` por PR com o CI verde ([docs/workflow.md](docs/workflow.md)).
 
 ```
 roadmap → discovery → spec → tarefas → execução + verificação → PR → main
