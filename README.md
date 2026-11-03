@@ -69,7 +69,7 @@ O repositório foi preparado para desenvolvimento com agentes de IA, com proteç
 - **Spec antes de código:** cada feature passa por discovery, especificação com critérios em notação EARS, plano de tarefas e execução com um commit por tarefa. Cada critério de aceite é ligado ao teste que o prova, e um verificador independente revisa o resultado.
 - **Guard-rails no CI:** fronteiras entre módulos e features, proibição de estilos fora do design system, detecção de segredos no pre-commit e no CI, testes de unidade, integração e E2E.
 - **Independente de ferramenta:** as instruções para agentes ficam em [AGENTS.md](AGENTS.md) e as skills em `.agents/skills/`, legíveis por Claude Code, Codex, Cursor e outros.
-- **Uma feature por worktree:** cada feature roda isolada, com branch, `.env` e portas próprias, e várias podem andar em paralelo ([docs/workflow.md](docs/workflow.md)).
+- **Uma branch por feature:** cada feature nasce da `main` numa branch `feat/<feature>` com spec, plano e código, e chega à `main` por PR com o CI verde ([docs/workflow.md](docs/workflow.md)).
 
 ```
 roadmap → discovery → spec → tarefas → execução + verificação → PR → main
@@ -82,7 +82,7 @@ roadmap → discovery → spec → tarefas → execução + verificação → PR
 .specs/               specs, tarefas e provas de cada feature
 .github/workflows/    CI (lint, testes, E2E, segredos, imagens)
 docs/                 brief, diretrizes de engenharia, princípios de design, roadmap, workflow
-scripts/              utilitários do repositório (worktrees, scan de segredos)
+scripts/              utilitários do repositório (scan de segredos)
 .agents/skills/       skills usadas no fluxo (espelhadas em .claude/skills/)
 apps/web/             TanStack Start (BFF + página de status)
 apps/api/             NestJS (health, migrations, logs estruturados)
@@ -129,10 +129,6 @@ Todos rodam na raiz e cobrem todos os workspaces:
 | `pnpm storybook:build` | Gera o Storybook estático do `packages/ui` |
 
 Na primeira vez, o Playwright precisa do Chromium: `pnpm --filter @am/ui exec playwright install chromium`.
-
-### Várias features em paralelo
-
-Cada feature pode rodar no próprio worktree, com branch, `.env` e portas próprias (slot 1: web 3010, api 3343, postgres 5442; slot 2: 3020, 3353, 5452; e assim por diante), sem conflito com a stack principal. Veja [docs/workflow.md](docs/workflow.md) e `scripts/worktree.sh`.
 
 ## Documentação
 

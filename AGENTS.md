@@ -28,7 +28,7 @@ Leia antes de qualquer trabalho:
 
 `tlc-discover` (`.design/`) → `tlc-prd` (`.prd/`) → `tlc-spec-driven` por feature (`.specs/`). Backend com `nestjs-modular-monolith`; manutenção com `codenavi`.
 
-Cada feature pode rodar no próprio worktree (branch `feat/<feature>`, `.env` e portas próprias) via `scripts/worktree.sh` — ver [docs/workflow.md](docs/workflow.md).
+Cada feature é uma branch `feat/<feature>` criada a partir da `main` no checkout principal; spec, design, tasks e código vivem nela até o PR — ver [docs/workflow.md](docs/workflow.md).
 
 ## Skills
 
@@ -41,7 +41,6 @@ As skills ficam em `.agents/skills/` (formato aberto, lido por vários agentes) 
 | `tlc-spec-driven` | especificar, planejar, implementar e verificar uma feature |
 | `nestjs-modular-monolith` | desenhar módulos do backend |
 | `codenavi` | investigar e corrigir código existente |
-| `feature-worktree` | criar, listar ou remover o worktree de uma feature |
 
 Os scripts das skills são Python 3 (só biblioteca padrão) e rodam a partir da raiz do projeto.
 
