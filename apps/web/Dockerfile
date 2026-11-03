@@ -17,7 +17,7 @@ COPY . .
 RUN turbo prune @am/web --docker
 
 FROM base AS build
-# CI=true makes the lefthook postinstall skip installing git hooks (there is no .git here).
+# There is no .git here: the root `prepare` installs no git hooks, and CI=true makes the lefthook postinstall skip too.
 ENV CI=true
 COPY --from=prune /repo/out/json/ ./
 COPY --from=prune /repo/out/pnpm-lock.yaml ./

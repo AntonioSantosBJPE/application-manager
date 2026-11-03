@@ -85,40 +85,63 @@ describe('pre-commit secrets', () => {
     expect(git(dir, ['log', '--format=%s', '-1']).output.trim()).toBe('add notes');
   });
 
-  it('hooks are installed by pnpm install', () => {
-    // A fresh clone with the root manifest's lefthook, the workspace build policy and the
-    // hook config, checked out as a git worktree (where .git is a file, not a directory).
-    const main = tempDir();
+  /** A project with the root manifest's lefthook and `prepare` script, the workspace build policy and the hook config. */
+  function projectWithHooksConfig(dir: string): void {
     const rootManifest = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8'));
     writeFileSync(
-      join(main, 'package.json'),
+      join(dir, 'package.json'),
       JSON.stringify({
         name: 'hooks-install-check',
         private: true,
         packageManager: rootManifest.packageManager,
+        scripts: { prepare: rootManifest.scripts.prepare },
         devDependencies: { lefthook: rootManifest.devDependencies.lefthook },
       }),
     );
-    copyFromRepo(main, 'pnpm-workspace.yaml');
-    copyFromRepo(main, 'lefthook.yml');
-    copyFromRepo(main, 'scripts/gitleaks-staged.sh');
-    expect(git(main, ['init', '-q']).status).toBe(0);
-    expect(git(main, ['add', '.']).status).toBe(0);
-    expect(git(main, ['commit', '-q', '-m', 'init']).status).toBe(0);
-    const worktree = join(tempDir(), 'feature');
-    expect(git(main, ['worktree', 'add', '-q', '-b', 'feat/x', worktree]).status).toBe(0);
+    copyFromRepo(dir, 'pnpm-workspace.yaml');
+    copyFromRepo(dir, 'lefthook.yml');
+    copyFromRepo(dir, 'scripts/gitleaks-staged.sh');
+  }
 
-    const hookPath = resolve(worktree, git(worktree, ['rev-parse', '--git-path', 'hooks/pre-commit']).output.trim());
-    expect(existsSync(hookPath)).toBe(false);
-
-    // A developer machine: CI and LEFTHOOK unset (the lefthook postinstall skips when CI is set).
-    const install = run('pnpm', ['install', '--prefer-offline'], {
-      cwd: worktree,
-      env: cleanEnv({ CI: undefined, LEFTHOOK: undefined, COREPACK_ENABLE_DOWNLOAD_PROMPT: '0' }),
+  function pnpmInstall(cwd: string, ci: string | undefined) {
+    return run('pnpm', ['install', '--prefer-offline'], {
+      cwd,
+      env: cleanEnv({ CI: ci, LEFTHOOK: undefined, COREPACK_ENABLE_DOWNLOAD_PROMPT: '0' }),
     });
-    expect(install.status, install.output).toBe(0);
+  }
 
-    expect(existsSync(hookPath)).toBe(true);
-    expect(readFileSync(hookPath, 'utf8')).toContain('call_lefthook run "pre-commit"');
+  it('hooks are installed by pnpm install', () => {
+    // A developer machine (CI unset) and an environment with CI set: both get the hook.
+    for (const ci of [undefined, '1']) {
+      // A fresh clone checked out as a git worktree (where .git is a file, not a directory).
+      const main = tempDir();
+      projectWithHooksConfig(main);
+      expect(git(main, ['init', '-q']).status).toBe(0);
+      expect(git(main, ['add', '.']).status).toBe(0);
+      expect(git(main, ['commit', '-q', '-m', 'init']).status).toBe(0);
+      const worktree = join(tempDir(), 'feature');
+      expect(git(main, ['worktree', 'add', '-q', '-b', 'feat/x', worktree]).status).toBe(0);
+
+      const hookPath = resolve(worktree, git(worktree, ['rev-parse', '--git-path', 'hooks/pre-commit']).output.trim());
+      expect(existsSync(hookPath)).toBe(false);
+
+      const install = pnpmInstall(worktree, ci);
+      expect(install.status, `CI=${ci}: ${install.output}`).toBe(0);
+
+      expect(existsSync(hookPath), `CI=${ci}`).toBe(true);
+      expect(readFileSync(hookPath, 'utf8')).toContain('call_lefthook run "pre-commit"');
+    }
+  });
+
+  it('pnpm install outside a git repository installs no hooks and succeeds', () => {
+    // As in the build stage of the Docker images, where there is no .git.
+    const dir = tempDir();
+    projectWithHooksConfig(dir);
+    expect(git(dir, ['rev-parse', '--git-dir']).status).not.toBe(0);
+
+    const install = pnpmInstall(dir, '1');
+
+    expect(install.status, install.output).toBe(0);
+    expect(existsSync(join(dir, '.git'))).toBe(false);
   });
 });
