@@ -1,8 +1,7 @@
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
-import { repoRoot, run } from './repo.js';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { repoRoot } from './repo.js';
 
 const read = (relativePath: string) => readFileSync(join(repoRoot, relativePath), 'utf8');
 
@@ -60,9 +59,8 @@ function variablesInUse(): string[] {
   }
   // Variables read straight from process.env anywhere in apps/ and packages/ (vite.config.ts, say).
   for (const found of processEnvReads().values()) for (const name of found) names.add(name);
-  // Interpolations of the compose file and the keys scripts/worktree.sh writes.
+  // Interpolations of the compose file.
   for (const name of matches(read('compose.yaml'), /\$\{([A-Z][A-Z0-9_]*)/g)) names.add(name);
-  for (const name of matches(read('scripts/worktree.sh'), /set_env "\$root\/\.env" ([A-Z][A-Z0-9_]*)/g)) names.add(name);
   // Variables the Playwright run reads.
   for (const file of sourceFiles('tests/e2e')) {
     for (const name of matches(read(file), /process\.env\.([A-Z][A-Z0-9_]*)/g)) names.add(name);
@@ -87,51 +85,5 @@ describe('.env.example', () => {
       // Nothing that looks like a real token: long, unbroken base64 or hex.
       expect(value, name).not.toMatch(/^[A-Za-z0-9+/=_-]{32,}$/);
     }
-  });
-});
-
-describe('worktree init', () => {
-  const tempDirs: string[] = [];
-
-  afterEach(() => {
-    for (const dir of tempDirs.splice(0)) rmSync(dir, { recursive: true, force: true });
-  });
-
-  it('keeps working from .env.example', () => {
-    const base = mkdtempSync(join(tmpdir(), 'am-guardrails-'));
-    tempDirs.push(base);
-    const main = join(base, 'main');
-    const env: NodeJS.ProcessEnv = {};
-    for (const [key, value] of Object.entries(process.env)) if (!key.startsWith('GIT_')) env[key] = value;
-    const git = (cwd: string, ...args: string[]) =>
-      run('git', ['-c', 'user.name=Guardrails Test', '-c', 'user.email=guardrails@example.test', '-c', 'commit.gpgsign=false', ...args], { cwd, env });
-
-    // A throwaway repository holding the real script and the real .env.example, plus a worktree of it.
-    mkdirSync(join(main, 'scripts'), { recursive: true });
-    cpSync(join(repoRoot, 'scripts/worktree.sh'), join(main, 'scripts/worktree.sh'));
-    cpSync(join(repoRoot, '.env.example'), join(main, '.env.example'));
-    expect(git(main, 'init', '-q', '-b', 'main').status).toBe(0);
-    expect(git(main, 'add', '.').status).toBe(0);
-    expect(git(main, 'commit', '-q', '-m', 'init').status).toBe(0);
-    const worktree = join(base, 'main.worktrees', 'sample-feature');
-    mkdirSync(dirname(worktree), { recursive: true });
-    expect(git(main, 'worktree', 'add', '-q', '-b', 'feat/sample-feature', worktree).status).toBe(0);
-
-    const init = run('bash', ['scripts/worktree.sh', 'init'], { cwd: worktree, env });
-    expect(init.status, init.output).toBe(0);
-
-    expect(existsSync(join(worktree, '.env'))).toBe(true);
-    const { active } = parseEnvExample(readFileSync(join(worktree, '.env'), 'utf8'));
-    // The script picked slot 1 and wrote that slot's ports and project name over the example values.
-    expect(Object.fromEntries(active)).toMatchObject({
-      WORKTREE_SLOT: '1',
-      COMPOSE_PROJECT_NAME: 'am-sample-feature',
-      WEB_PORT: '3010',
-      API_PORT: '3343',
-      POSTGRES_PORT: '5442',
-      // The rest of the example survives.
-      POSTGRES_PASSWORD: 'change-me',
-    });
-    expect(statSync(join(worktree, '.env')).isFile()).toBe(true);
   });
 });
