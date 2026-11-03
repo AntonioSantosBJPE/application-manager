@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: `.specs/features/walking-skeleton/design.md`
-**Status**: Approved
+**Status**: Done
 **Approved**: 2026-11-02 - user: "Aprovo as tasks"
 **Build**: `pnpm build; pnpm typecheck; pnpm lint`
 **Run guardrails**: `pnpm --filter @am/guardrails exec vitest run --reporter=verbose`

@@ -197,48 +197,48 @@ Implicit-requirement sweep: validação de entrada coberta por SKEL-11 (variáve
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| SKEL-01 | P1: Stack local completa (critério 1) | Execute | Implementing |
-| SKEL-02 | P1: Stack local completa (critério 2) | Execute | Implementing |
-| SKEL-03 | P1: Stack local completa (critério 3) | Execute | Implementing |
-| SKEL-04 | P1: Stack local completa (critério 4) | Execute | Implementing |
-| SKEL-05 | P1: Stack local completa (critério 5) | Execute | Implementing |
-| SKEL-06 | P1: Stack local completa (critério 6) | Execute | Implementing |
-| SKEL-07 | P1: Stack local completa (critério 7) | Execute | Implementing |
-| SKEL-08 | P1: Stack local completa (critério 8) | Execute | Implementing |
-| SKEL-09 | P1: Stack local completa (critério 9) | Execute | Implementing |
-| SKEL-10 | P1: Stack local completa (critério 10) | Execute | Implementing |
-| SKEL-11 | P1: Stack local completa (critério 11) | Execute | Implementing |
-| SKEL-12 | P1: Stack local completa (critério 12) | Execute | Implementing |
-| SKEL-13 | P1: Stack local completa (critério 13) | Execute | Implementing |
-| IMG-01 | P1: Imagens enxutas e seguras (critério 1) | Execute | Implementing |
-| IMG-02 | P1: Imagens enxutas e seguras (critério 2) | Execute | Implementing |
-| IMG-03 | P1: Imagens enxutas e seguras (critério 3) | Execute | Implementing |
-| IMG-04 | P1: Imagens enxutas e seguras (critério 4) | Execute | Implementing |
-| GUARD-01 | P1: Guard-rails de qualidade (critério 1) | Execute | Implementing |
-| GUARD-02 | P1: Guard-rails de qualidade (critério 2) | Execute | Implementing |
-| GUARD-03 | P1: Guard-rails de qualidade (critério 3) | Execute | Implementing |
-| GUARD-04 | P1: Guard-rails de qualidade (critério 4) | Execute | Implementing |
-| GUARD-05 | P1: Guard-rails de qualidade (critério 5) | Execute | Implementing |
-| GUARD-06 | P1: Guard-rails de qualidade (critério 6) | Execute | Implementing |
-| GUARD-07 | P1: Guard-rails de qualidade (critério 7) | Execute | Implementing |
-| GUARD-08 | P1: Guard-rails de qualidade (critério 8) | Execute | Implementing |
-| GUARD-09 | P1: Guard-rails de qualidade (critério 9) | Execute | Implementing |
-| GUARD-10 | P1: Guard-rails de qualidade (critério 10) | Execute | Implementing |
-| SEC-01 | P1: Segredos barrados (critério 1) | Execute | Implementing |
-| SEC-02 | P1: Segredos barrados (critério 2) | Execute | Implementing |
-| CI-01 | P2: Pipeline de CI definido (critério 1) | Execute | Implementing |
-| CI-02 | P2: Pipeline de CI definido (critério 2) | Execute | Implementing |
-| CI-03 | P2: Pipeline de CI definido (critério 3) | Execute | Implementing |
-| CI-04 | P2: Pipeline de CI definido (critério 4) | Execute | Implementing |
-| DS-01 | P2: Design system inicial no Storybook (critério 1) | Execute | Implementing |
-| DS-02 | P2: Design system inicial no Storybook (critério 2) | Execute | Implementing |
-| DS-03 | P2: Design system inicial no Storybook (critério 3) | Execute | Implementing |
-| LOG-01 | P2: Logs estruturados com correlation ID (critério 1) | Execute | Implementing |
-| LOG-02 | P2: Logs estruturados com correlation ID (critério 2) | Execute | Implementing |
-| LOG-03 | P2: Logs estruturados com correlation ID (critério 3) | Execute | Implementing |
-| LOG-04 | P2: Logs estruturados com correlation ID (critério 4) | Execute | Implementing |
-| EDGE-01 | Edge Cases (retry do `migrate`) | Execute | Implementing |
-| EDGE-02 | Edge Cases (timeout do SSR) | Execute | Implementing |
+| SKEL-01 | P1: Stack local completa (critério 1) | Execute | Verified |
+| SKEL-02 | P1: Stack local completa (critério 2) | Execute | Verified |
+| SKEL-03 | P1: Stack local completa (critério 3) | Execute | Verified |
+| SKEL-04 | P1: Stack local completa (critério 4) | Execute | Verified |
+| SKEL-05 | P1: Stack local completa (critério 5) | Execute | Verified |
+| SKEL-06 | P1: Stack local completa (critério 6) | Execute | Verified |
+| SKEL-07 | P1: Stack local completa (critério 7) | Execute | Verified |
+| SKEL-08 | P1: Stack local completa (critério 8) | Execute | Verified |
+| SKEL-09 | P1: Stack local completa (critério 9) | Execute | Verified |
+| SKEL-10 | P1: Stack local completa (critério 10) | Execute | Verified |
+| SKEL-11 | P1: Stack local completa (critério 11) | Execute | Verified |
+| SKEL-12 | P1: Stack local completa (critério 12) | Execute | Verified |
+| SKEL-13 | P1: Stack local completa (critério 13) | Execute | Verified |
+| IMG-01 | P1: Imagens enxutas e seguras (critério 1) | Execute | Verified |
+| IMG-02 | P1: Imagens enxutas e seguras (critério 2) | Execute | Verified |
+| IMG-03 | P1: Imagens enxutas e seguras (critério 3) | Execute | Verified |
+| IMG-04 | P1: Imagens enxutas e seguras (critério 4) | Execute | Verified |
+| GUARD-01 | P1: Guard-rails de qualidade (critério 1) | Execute | Verified |
+| GUARD-02 | P1: Guard-rails de qualidade (critério 2) | Execute | Verified |
+| GUARD-03 | P1: Guard-rails de qualidade (critério 3) | Execute | Verified |
+| GUARD-04 | P1: Guard-rails de qualidade (critério 4) | Execute | Verified |
+| GUARD-05 | P1: Guard-rails de qualidade (critério 5) | Execute | Verified |
+| GUARD-06 | P1: Guard-rails de qualidade (critério 6) | Execute | Verified |
+| GUARD-07 | P1: Guard-rails de qualidade (critério 7) | Execute | Verified |
+| GUARD-08 | P1: Guard-rails de qualidade (critério 8) | Execute | Verified |
+| GUARD-09 | P1: Guard-rails de qualidade (critério 9) | Execute | Verified |
+| GUARD-10 | P1: Guard-rails de qualidade (critério 10) | Execute | Verified |
+| SEC-01 | P1: Segredos barrados (critério 1) | Execute | Verified |
+| SEC-02 | P1: Segredos barrados (critério 2) | Execute | Verified |
+| CI-01 | P2: Pipeline de CI definido (critério 1) | Execute | Verified |
+| CI-02 | P2: Pipeline de CI definido (critério 2) | Execute | Verified |
+| CI-03 | P2: Pipeline de CI definido (critério 3) | Execute | Verified |
+| CI-04 | P2: Pipeline de CI definido (critério 4) | Execute | Verified |
+| DS-01 | P2: Design system inicial no Storybook (critério 1) | Execute | Verified |
+| DS-02 | P2: Design system inicial no Storybook (critério 2) | Execute | Verified |
+| DS-03 | P2: Design system inicial no Storybook (critério 3) | Execute | Verified |
+| LOG-01 | P2: Logs estruturados com correlation ID (critério 1) | Execute | Verified |
+| LOG-02 | P2: Logs estruturados com correlation ID (critério 2) | Execute | Verified |
+| LOG-03 | P2: Logs estruturados com correlation ID (critério 3) | Execute | Verified |
+| LOG-04 | P2: Logs estruturados com correlation ID (critério 4) | Execute | Verified |
+| EDGE-01 | Edge Cases (retry do `migrate`) | Execute | Verified |
+| EDGE-02 | Edge Cases (timeout do SSR) | Execute | Verified |
 
 **Coverage:** 42 total, 0 mapped to tasks, 42 unmapped ⚠️ (tasks ainda não escritas)
 
