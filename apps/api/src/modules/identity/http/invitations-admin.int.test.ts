@@ -5,6 +5,7 @@ import { argon2idPasswordHasher } from '../application/password-hasher.js';
 import { hashToken } from '../domain/tokens.js';
 import { createMigratedDatabase, dropDatabase, query } from '../../../../test/database.js';
 import { startApi } from '../../../../test/api.js';
+import { testClock, type TestClock } from '../../../../test/clock.js';
 
 const password = 'correct-horse-battery';
 const webPublicUrl = 'https://app.example.com';
@@ -55,9 +56,12 @@ function revoke(baseUrl: string, id: string, token?: string): Promise<Response> 
   });
 }
 
-async function withApi(run: (api: Api, database: Database) => Promise<void>) {
+async function withApi(
+  run: (api: Api, database: Database) => Promise<void>,
+  options: { clock?: TestClock } = {},
+) {
   const database = await createMigratedDatabase(inject('databaseUrl'), 'invite_admin');
-  const api = await startApi(database.url, { webPublicUrl });
+  const api = await startApi(database.url, { webPublicUrl, ...options });
   try {
     await run(api, database);
   } finally {
@@ -263,6 +267,47 @@ describe('DELETE /invitations/:id', () => {
       const pendingId = await invitationIdOf(database.url, 'pendente.del@example.com');
       expect((await revoke(api.baseUrl, pendingId, adminToken)).status).toBe(204);
     });
+  });
+
+  it('answers 404 for an expired invitation, which is not pending any more', async () => {
+    // A clock the test moves: the invitation expires without waiting seven days (ADM-01, ADM-03).
+    const clock = testClock('2026-11-03T12:00:00.000Z');
+    await withApi(
+      async (api, database) => {
+        const adminToken = await withAdmin(api, database);
+        const created = await invite(api.baseUrl, 'expirado.del@example.com', adminToken);
+        const id = await invitationIdOf(database.url, 'expirado.del@example.com');
+        const token = created.inviteUrl.split('/').at(-1)!;
+
+        // While it is pending, the invitation is in the list (control).
+        const before = invitationsPageSchema.parse(await (await listPage(api.baseUrl, adminToken)).json());
+        expect(before.totalPending).toBe(1);
+
+        // One second past its expiry it is not pending: the list drops it and the DELETE finds nothing.
+        clock.set(new Date(new Date(created.expiresAt).getTime() + 1_000));
+
+        const page = invitationsPageSchema.parse(await (await listPage(api.baseUrl, adminToken)).json());
+        expect(page).toEqual({ items: [], nextCursor: null, totalPending: 0 });
+
+        const response = await revoke(api.baseUrl, id, adminToken);
+        expect(response.status).toBe(404);
+        expect(response.headers.get('content-type')).toBe('application/problem+json; charset=utf-8');
+        // The `404` is the one an unknown id gets, so the expired row is indistinguishable from a missing one.
+        const unknown = await revoke(api.baseUrl, '0199f0f4-0000-7000-8000-000000000000', adminToken);
+        expect(await response.text()).toBe(await unknown.text());
+
+        // And the expired row was not touched: a `404` never writes (ADM-03).
+        const [row] = await query<{ revoked_at: Date | null }>(
+          database.url,
+          'select revoked_at from identity.invitations where id = $1',
+          [id],
+        );
+        expect(row!.revoked_at).toBeNull();
+        // The link answers `410`, the way an unusable invitation always does (INV-06).
+        expect((await fetch(`${api.baseUrl}/invitations/${token}`)).status).toBe(410);
+      },
+      { clock },
+    );
   });
 });
 

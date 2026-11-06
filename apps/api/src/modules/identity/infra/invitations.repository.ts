@@ -51,12 +51,23 @@ export class InvitationsRepository {
     return row!;
   }
 
-  /** A pending invitation by its id, or nothing when it does not exist or is no longer pending (ADM-03). */
+  /**
+   * Revokes a pending invitation by its id, or reports that there is none. A pending invitation is
+   * unaccepted, unrevoked and unexpired: an expired one is not pending, so it is not found here,
+   * exactly like an unknown one (ADM-01, ADM-03).
+   */
   async revokeById(id: string, revokedAt: Date, executor: DatabaseExecutor = this.db): Promise<boolean> {
     const revoked = await executor
       .update(invitations)
       .set({ revokedAt })
-      .where(and(eq(invitations.id, id), isNull(invitations.acceptedAt), isNull(invitations.revokedAt)))
+      .where(
+        and(
+          eq(invitations.id, id),
+          isNull(invitations.acceptedAt),
+          isNull(invitations.revokedAt),
+          gt(invitations.expiresAt, revokedAt),
+        ),
+      )
       .returning({ id: invitations.id });
     return revoked.length > 0;
   }
