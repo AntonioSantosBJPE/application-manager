@@ -34,7 +34,7 @@ function jsonLogs(service: string): Record<string, unknown>[] {
 test.describe('status page', () => {
   test('server html shows API and Banco de dados with their state', async ({ request }) => {
     // SKEL-05: plain GET, no JavaScript executed, so this is the HTML the server rendered.
-    const response = await request.get('/');
+    const response = await request.get('/status');
     expect(response.status()).toBe(200);
     const text = visibleText(await response.text());
     expect(text).toContain('API Operacional');
@@ -47,7 +47,7 @@ test.describe('status page', () => {
     expect(tokens.dark.surface).not.toBe(tokens.light.surface);
     for (const scheme of ['dark', 'light'] as const satisfies Scheme[]) {
       await page.emulateMedia({ colorScheme: scheme });
-      await page.goto('/');
+      await page.goto('/status');
       const main = page.getByRole('main');
       await expect(main).toBeVisible();
       const [background, color, badge] = await Promise.all([
@@ -64,7 +64,7 @@ test.describe('status page', () => {
   test('has no accessibility violations in light and dark', async ({ page }) => {
     for (const scheme of ['light', 'dark'] as const) {
       await page.emulateMedia({ colorScheme: scheme });
-      await page.goto('/');
+      await page.goto('/status');
       await expect(page.getByRole('main')).toBeVisible();
       const results = await new AxeBuilder({ page }).analyze();
       expect(results.violations.map((violation) => `${scheme}: ${violation.id} ${violation.help}`)).toEqual([]);
@@ -78,14 +78,14 @@ test.describe('status page', () => {
 
     // LOG-04 and LOG-02: the id sent by the client is the id the web logs and the id the api logs.
     const sent = `e2e-${randomUUID()}`;
-    expect((await request.get('/', { headers: { 'x-request-id': sent } })).status()).toBe(200);
+    expect((await request.get('/status', { headers: { 'x-request-id': sent } })).status()).toBe(200);
     await expect.poll(() => webLines().filter((line) => line.requestId === sent).length, logTimeout).toBe(1);
     await expect.poll(() => apiIds().has(sent), logTimeout).toBe(true);
     const sentTime = String(webLines().find((line) => line.requestId === sent)?.time);
 
     // Without a header the web generates an id. The container healthcheck visits the page too, so
     // the visit cannot be singled out: every id the web logs from here on must also be in the api logs.
-    expect((await request.get('/')).status()).toBe(200);
+    expect((await request.get('/status')).status()).toBe(200);
     const generatedSince = () => webLines().filter((line) => String(line.time) > sentTime && line.requestId !== sent);
     await expect.poll(() => generatedSince().length, logTimeout).toBeGreaterThan(0);
     expect(generatedSince().every((line) => /^[0-9a-f-]{36}$/.test(String(line.requestId)))).toBe(true);

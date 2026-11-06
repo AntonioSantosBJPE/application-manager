@@ -72,7 +72,7 @@ test.describe('compose', () => {
     expect(web.Config.Labels['com.docker.compose.project.working_dir']).toBe(repoRoot);
 
     const requestId = `e2e-project-${Date.now()}`;
-    const response = await request.get('/', { headers: { 'x-request-id': requestId } });
+    const response = await request.get('/status', { headers: { 'x-request-id': requestId } });
     expect(response.status()).toBe(200);
     expect(composeOk(['logs', 'web']), 'the visit reached this project\'s web container').toContain(requestId);
   });

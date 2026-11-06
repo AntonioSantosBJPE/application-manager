@@ -3,7 +3,7 @@ import { composeOk, waitHealthy } from '../../support/compose.js';
 import { visibleText } from '../../support/html.js';
 
 async function statusPage(request: APIRequestContext): Promise<{ status: number; text: string }> {
-  const response = await request.get('/');
+  const response = await request.get('/status');
   return { status: response.status(), text: visibleText(await response.text()) };
 }
 

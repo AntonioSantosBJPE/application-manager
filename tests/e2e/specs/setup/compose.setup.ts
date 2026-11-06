@@ -22,7 +22,7 @@ test.describe('compose', () => {
     const startedAt = Date.now();
     composeOk(['up', '--detach', '--build', '--wait']);
     await expect
-      .poll(async () => (await request.get('/')).status(), { timeout: startupBudgetMs - (Date.now() - startedAt) })
+      .poll(async () => (await request.get('/status')).status(), { timeout: startupBudgetMs - (Date.now() - startedAt) })
       .toBe(200);
     const elapsedMs = Date.now() - startedAt;
     console.log(`compose up --build: page answered 200 after ${(elapsedMs / 1000).toFixed(1)} s`);

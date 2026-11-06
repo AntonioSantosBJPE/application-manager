@@ -710,8 +710,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] O diff dos E2E só muda URLs
-- [ ] Gate check passes: `pnpm test && pnpm test:e2e`
+- [x] O diff dos E2E só muda URLs
+- [x] Gate check passes: `pnpm test && pnpm test:e2e`
 
 **Tests**: e2e
 **Gate**: full
