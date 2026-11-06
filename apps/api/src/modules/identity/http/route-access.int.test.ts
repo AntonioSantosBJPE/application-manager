@@ -136,17 +136,33 @@ describe('route access', () => {
     try {
       const routes = registeredRoutes(app);
 
-      // The CLI owns account administration; the HTTP surface never offers it (CLI-07).
-      const forbidden = routes.filter(
-        (route) =>
-          /admin/i.test(route.route) &&
-          /^POST /.test(route.route) &&
-          /(users?|accounts?|passwords?)/i.test(route.route),
-      );
-      expect(forbidden).toEqual([]);
-      expect(routes.map((route) => route.route).sort()).toEqual(
-        expect.arrayContaining(['GET /health']),
-      );
+      // The CLI owns account administration (CLI-07), so the whole writing surface of the API is
+      // this list. It is an allowlist, not a pattern: a route that writes has to be added here on
+      // purpose, and anything else fails below, named.
+      const writingRoutes = [
+        'DELETE /invitations/:id',
+        'POST /auth/admin/login',
+        'POST /auth/login',
+        'POST /auth/logout',
+        'POST /invitations',
+        'POST /invitations/:token/accept',
+      ];
+      const registeredWriting = routes
+        .map((route) => route.route)
+        .filter((route) => !route.startsWith('GET '))
+        .sort();
+
+      // Named one by one first, so a new route reads as itself in the failure instead of as a list diff.
+      const outsideAllowlist = registeredWriting.filter((registered) => !writingRoutes.includes(registered));
+      if (outsideAllowlist.length > 0) {
+        throw new Error(
+          `${outsideAllowlist.join(', ')} write to the API outside the allowlist; account administration belongs to the CLI (CLI-07)`,
+        );
+      }
+      expect(registeredWriting).toEqual(writingRoutes);
+
+      // Control: the read surface exists, so the assertion above is not passing over an empty list.
+      expect(routes.map((route) => route.route)).toEqual(expect.arrayContaining(['GET /health', 'GET /auth/me']));
     } finally {
       await app.close();
     }
