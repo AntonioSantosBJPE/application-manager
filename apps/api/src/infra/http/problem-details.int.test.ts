@@ -4,9 +4,14 @@ import { describe, expect, inject, it } from 'vitest';
 import { acceptInvitationRequestSchema } from '@am/contracts';
 import { AppModule } from '../../app.module.js';
 import { createApp } from '../../create-app.js';
+import { Public } from '../../modules/identity/index.js';
 import { zodBody } from './zod-body.pipe.js';
 
-/** Fixtures: the routes this file needs, each one failing in a way Identity has to answer for. */
+/**
+ * Fixtures: the routes this file needs, each one failing in a way Identity has to answer for. They
+ * are public because the filter is what this file proves; the access rule is proven elsewhere.
+ */
+@Public()
 @Controller('probe')
 class ProbeController {
   @Post('validated')

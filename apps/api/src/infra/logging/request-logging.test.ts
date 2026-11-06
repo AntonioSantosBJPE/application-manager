@@ -3,6 +3,7 @@ import { Controller, Get, Header, Logger, Module, type INestApplication } from '
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { AppModule } from '../../app.module.js';
 import { createApp } from '../../create-app.js';
+import { Public } from '../../modules/identity/index.js';
 import { withoutInvitationToken } from './logging.module.js';
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -17,7 +18,11 @@ class LogCapture extends Writable {
   }
 }
 
-/** A route that logs through Nest's Logger, as application code inside a request does. */
+/**
+ * A route that logs through Nest's Logger, as application code inside a request does. It is public
+ * because what this file proves is the log line, not the access rule (AUTH-19).
+ */
+@Public()
 @Controller('log-probe')
 class LogProbeController {
   private readonly logger = new Logger(LogProbeController.name);
@@ -37,6 +42,7 @@ class LogProbeController {
 }
 
 /** The public invitation route, so the token in its path is logged by a real request (INV-05). */
+@Public()
 @Controller('invitations')
 class InvitationProbeController {
   @Get(':token')

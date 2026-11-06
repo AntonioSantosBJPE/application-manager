@@ -325,9 +325,9 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Controllers de fixture provam `401`, `403`, rota pública, renovação e flags do cookie
-- [ ] `/health` segue público sem mudar seus testes
-- [ ] Gate check passes: `pnpm test && pnpm test:integration`
+- [x] Controllers de fixture provam `401`, `403`, rota pública, renovação e flags do cookie
+- [x] `/health` segue público sem mudar seus testes
+- [x] Gate check passes: `pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
