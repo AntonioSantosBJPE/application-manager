@@ -4,7 +4,6 @@ import { normalizeEmail } from '../domain/credentials.js';
 import { UsersRepository } from '../infra/users.repository.js';
 import { PASSWORD_HASHER, type PasswordHasher } from './password-hasher.js';
 import { SessionService } from './session.service.js';
-
 /** Why an account command refused to write anything: a different account already holds the email, or none does. */
 export type AccountAdminRefusal = 'email-taken' | 'unknown-email';
 
@@ -49,9 +48,13 @@ export class AccountAdminService {
     if (user === undefined) return { ok: false, reason: 'unknown-email' };
 
     const passwordHash = await this.hasher.hash(input.password);
-    await this.users.updatePasswordHash(user.id, passwordHash);
-    // Every session of the account ends: a reset is how a lost password is recovered from a stolen browser.
-    await this.sessions.revokeAllOfUser(user.id);
+    // One transaction: a hash written without the revocation would leave whoever holds the old
+    // password logged in, and a revocation without the new hash would lock the account out (CLI-03).
+    await this.users.transaction(async (tx) => {
+      await this.users.updatePasswordHash(user.id, passwordHash, tx);
+      // Every session of the account ends: a reset is how a lost password is recovered from a stolen browser.
+      await this.sessions.revokeAllOfUser(user.id, tx);
+    });
     return { ok: true, user: { id: user.id, email: user.email, role: user.role } };
   }
 }

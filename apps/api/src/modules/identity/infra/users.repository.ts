@@ -65,7 +65,12 @@ export class UsersRepository {
   }
 
   /** Replaces the stored hash, keeping the role: a reset never changes who somebody is (CLI-03). */
-  async updatePasswordHash(id: string, passwordHash: string): Promise<void> {
-    await this.db.update(users).set({ passwordHash }).where(eq(users.id, id));
+  async updatePasswordHash(id: string, passwordHash: string, executor: DatabaseExecutor = this.db): Promise<void> {
+    await executor.update(users).set({ passwordHash }).where(eq(users.id, id));
+  }
+
+  /** A transaction handle, so the new hash and the revocation of every session are one step (CLI-03). */
+  transaction<T>(run: (tx: DatabaseExecutor) => Promise<T>): Promise<T> {
+    return this.db.transaction(run);
   }
 }

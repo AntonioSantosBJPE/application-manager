@@ -15,12 +15,25 @@ const newPassword = 'novo-cavalo-bateria';
 type Database = Awaited<ReturnType<typeof createMigratedDatabase>>;
 
 /** The service wired the way Nest wires it: real repositories, the real hasher, a clock under control. */
-async function serviceFor(database: Database) {
+async function serviceFor(database: Database, sessionsRepository?: SessionsRepository) {
   const pool = createPool(database.url);
   const db: NodePgDatabase = drizzle(pool);
   const users = new UsersRepository(db);
-  const sessions = new SessionService(new SessionsRepository(db), testClock('2026-11-03T12:00:00.000Z'));
+  const sessions = new SessionService(
+    sessionsRepository ?? new SessionsRepository(db),
+    testClock('2026-11-03T12:00:00.000Z'),
+  );
   return { service: new AccountAdminService(users, sessions, argon2idPasswordHasher), close: () => pool.end() };
+}
+
+/** A repository whose revocation always fails, to prove the update and the revocation are one step. */
+async function failingRevocation(databaseUrl: string): Promise<{ repository: SessionsRepository; close: () => Promise<void> }> {
+  const pool = createPool(databaseUrl);
+  const repository = new SessionsRepository(drizzle(pool));
+  repository.revokeAllOfUser = async () => {
+    throw new Error('revocation failed on purpose');
+  };
+  return { repository, close: () => pool.end() };
 }
 
 async function usersOf(databaseUrl: string) {
@@ -135,6 +148,48 @@ describe('account administration', () => {
       } finally {
         await close();
       }
+    });
+  });
+
+  it('resetPassword keeps the old hash when the revocation fails, in one transaction', async () => {
+    await withDatabase(async (database) => {
+      const [created] = await query<{ id: string }>(
+        database.url,
+        "insert into identity.users (email, name, password_hash, role) values ($1, $2, $3, 'member') returning id",
+        ['member.atomic@example.com', 'Member Atomic', await argon2idPasswordHasher.hash(password)],
+      );
+      await query(
+        database.url,
+        "insert into identity.sessions (user_id, token_hash, expires_at) values ($1, $2, now() + interval '30 days')",
+        [created!.id, 'hash-atomic'],
+      );
+      const [before] = await usersOf(database.url);
+
+      // The revocation is the second half of the reset; a failure there must undo the new hash too,
+      // or the account would answer the old password while the operator believes it changed (CLI-03).
+      const failing = await failingRevocation(database.url);
+      const { service, close } = await serviceFor(database, failing.repository);
+      try {
+        await expect(service.resetPassword({ email: 'member.atomic@example.com', password: newPassword })).rejects.toThrow(
+          'revocation failed on purpose',
+        );
+      } finally {
+        await close();
+        await failing.close();
+      }
+
+      const [after] = await usersOf(database.url);
+      // The stored hash is still the old one, so the reset left the account exactly as it was.
+      expect(after!.password_hash).toBe(before!.password_hash);
+      await expect(argon2idPasswordHasher.verify(after!.password_hash, password)).resolves.toBe(true);
+      await expect(argon2idPasswordHasher.verify(after!.password_hash, newPassword)).resolves.toBe(false);
+      // And the session that was not revoked is still active, so nothing half-happened.
+      const [session] = await query<{ revoked_at: Date | null }>(
+        database.url,
+        'select revoked_at from identity.sessions where user_id = $1',
+        [created!.id],
+      );
+      expect(session!.revoked_at).toBeNull();
     });
   });
 
