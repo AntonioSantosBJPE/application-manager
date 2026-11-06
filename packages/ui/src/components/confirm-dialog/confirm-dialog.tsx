@@ -9,7 +9,8 @@ export type ConfirmDialogProps = {
   /** Text below the title, naming what will be affected. */
   description: ReactNode;
   confirmLabel: string;
-  cancelLabel?: string;
+  /** The caller owns every word on screen; the component knows no product copy. */
+  cancelLabel: string;
   /** Runs only on confirm; dismissing with Esc or cancel never calls it. */
   onConfirm: () => void;
 };
@@ -23,7 +24,7 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
-  cancelLabel = 'Cancelar',
+  cancelLabel,
   onConfirm,
 }: ConfirmDialogProps) {
   return (

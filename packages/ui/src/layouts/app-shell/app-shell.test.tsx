@@ -7,7 +7,7 @@ import { AppShell } from './app-shell';
 function renderShell(onNavigate = vi.fn()) {
   return render(
     <AppShell.Root>
-      <AppShell.Sidebar>
+      <AppShell.Sidebar aria-label="Navegação principal">
         <AppShell.NavItem href="/" current onClick={(event) => event.preventDefault()}>
           Início
         </AppShell.NavItem>
@@ -59,11 +59,25 @@ describe('AppShell', () => {
     expect(onNavigate).toHaveBeenCalledTimes(1);
   });
 
+  it('takes the navigation label from the caller, with no copy of its own', () => {
+    render(
+      <AppShell.Root>
+        <AppShell.Sidebar aria-label="Áreas do produto">
+          <AppShell.NavItem href="/">Início</AppShell.NavItem>
+        </AppShell.Sidebar>
+        <AppShell.Main>Conteúdo</AppShell.Main>
+      </AppShell.Root>,
+    );
+
+    expect(screen.getByRole('navigation', { name: 'Áreas do produto' })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Navegação principal' })).toBeNull();
+  });
+
   it('renders the child element instead of a link when asChild is set', () => {
     const onClick = vi.fn();
     const { container } = render(
       <AppShell.Root>
-        <AppShell.Sidebar>
+        <AppShell.Sidebar aria-label="Navegação principal">
           <AppShell.NavItem asChild current onClick={(event) => {
             event.preventDefault();
             onClick();
@@ -96,7 +110,7 @@ describe('AppShell', () => {
   it('keeps exactly one main landmark when the content is a list archetype', () => {
     render(
       <AppShell.Root>
-        <AppShell.Sidebar>
+        <AppShell.Sidebar aria-label="Navegação principal">
           <AppShell.NavItem href="/admin/invitations">Convites</AppShell.NavItem>
         </AppShell.Sidebar>
         <AppShell.Main asChild>
@@ -123,7 +137,7 @@ describe('AppShell', () => {
   it('keeps exactly one main landmark when the content is a dashboard archetype', () => {
     render(
       <AppShell.Root>
-        <AppShell.Sidebar>
+        <AppShell.Sidebar aria-label="Navegação principal">
           <AppShell.NavItem href="/admin">Administração</AppShell.NavItem>
         </AppShell.Sidebar>
         <AppShell.Main asChild>

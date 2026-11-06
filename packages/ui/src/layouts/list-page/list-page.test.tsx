@@ -9,7 +9,7 @@ function renderPage(onFilter = vi.fn()) {
         <h1>Convites pendentes</h1>
         <button type="button">Convidar</button>
       </ListPage.Header>
-      <ListPage.Filters>
+      <ListPage.Filters aria-label="Filtrar convites">
         <label htmlFor="pending-filter">E-mail</label>
         <input id="pending-filter" onChange={(event) => onFilter(event.target.value)} />
       </ListPage.Filters>
@@ -35,11 +35,11 @@ describe('ListPage', () => {
     expect(main).toContainElement(screen.getByText('bruno@example.com'));
   });
 
-  it('names the filter region and keeps the controls reachable by keyboard', () => {
+  it('names the filter region with the caller label and keeps the controls reachable by keyboard', () => {
     const onFilter = vi.fn();
     renderPage(onFilter);
 
-    const filters = screen.getByRole('search', { name: 'Filtros' });
+    const filters = screen.getByRole('search', { name: 'Filtrar convites' });
     const input = within(filters).getByLabelText('E-mail');
     fireEvent.change(input, { target: { value: 'ana' } });
 
@@ -47,14 +47,15 @@ describe('ListPage', () => {
     expect(onFilter).toHaveBeenCalledWith('ana');
   });
 
-  it('accepts a caller label for the filter region', () => {
+  it('carries no label of its own, so the caller supplies the only one', () => {
     render(
       <ListPage.Root>
-        <ListPage.Filters aria-label="Filtrar convites" />
+        <ListPage.Filters aria-label="Filtrar por e-mail" />
       </ListPage.Root>,
     );
 
-    expect(screen.getByRole('search', { name: 'Filtrar convites' })).toBeInTheDocument();
+    expect(screen.getByRole('search', { name: 'Filtrar por e-mail' })).toBeInTheDocument();
+    expect(screen.queryByRole('search', { name: 'Filtros' })).toBeNull();
   });
 
   it('marks the archetype so the screens can be told apart', () => {

@@ -26,6 +26,7 @@ const meta = {
     title: 'Revogar convite',
     description: 'ana@example.com não poderá mais usar este link.',
     confirmLabel: 'Revogar convite',
+    cancelLabel: 'Cancelar',
     onConfirm: fn(),
   },
 } satisfies Meta<typeof ConfirmDialog>;

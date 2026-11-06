@@ -16,14 +16,18 @@ function Root({ className, ...props }: ComponentProps<'div'>) {
   );
 }
 
+export type AppShellSidebarProps = ComponentProps<'nav'> & {
+  /** The caller names the navigation; the design system ships no product copy of its own. */
+  'aria-label': string;
+};
+
 /**
  * Navigation column. The same classes keep it above the content on a narrow screen and
  * beside it from `md` up, so one markup serves both widths.
  */
-function Sidebar({ className, ...props }: ComponentProps<'nav'>) {
+function Sidebar({ className, ...props }: AppShellSidebarProps) {
   return (
     <nav
-      aria-label={props['aria-label'] ?? 'Navegação principal'}
       className={join(
         'flex flex-row items-center gap-1 border-b border-border px-4 py-2 md:w-56 md:flex-col md:items-stretch md:border-b-0 md:border-r md:px-2 md:py-4',
         className,

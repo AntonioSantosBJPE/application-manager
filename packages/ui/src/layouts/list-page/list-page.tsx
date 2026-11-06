@@ -26,12 +26,17 @@ function Header({ className, ...props }: ComponentProps<'header'>) {
   );
 }
 
+export type ListPageFiltersProps = ComponentProps<'section'> & {
+  /** The caller names the region; the design system ships no product copy of its own. */
+  'aria-label': string;
+};
+
 /** The filter row; a `search` landmark, so keyboard users can jump straight to it. */
-function Filters({ className, ...props }: ComponentProps<'section'>) {
+function Filters({ 'aria-label': ariaLabel, className, ...props }: ListPageFiltersProps) {
   return (
     <section
       role="search"
-      aria-label={props['aria-label'] ?? 'Filtros'}
+      aria-label={ariaLabel}
       className={join('flex flex-wrap items-center gap-2', className)}
       {...props}
     />

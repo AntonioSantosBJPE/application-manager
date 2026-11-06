@@ -31,7 +31,7 @@ function InvitationsList({ empty = false }: { empty?: boolean }) {
         <h1 className="text-lg font-medium">Convites pendentes</h1>
         <Button>Convidar</Button>
       </ListPage.Header>
-      <ListPage.Filters>
+      <ListPage.Filters aria-label="Filtrar convites">
         <label className="text-xs text-text-muted" htmlFor="list-filter">
           E-mail
         </label>

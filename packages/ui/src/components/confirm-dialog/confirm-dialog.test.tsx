@@ -10,6 +10,7 @@ function renderDialog(onConfirm = vi.fn()) {
       title="Revogar convite"
       description="ana@example.com não poderá mais usar este link."
       confirmLabel="Revogar convite"
+      cancelLabel="Cancelar"
       onConfirm={onConfirm}
     />,
   );

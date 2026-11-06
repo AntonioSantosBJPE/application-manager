@@ -11,7 +11,7 @@ const meta = {
   parameters: { layout: 'fullscreen' },
   render: (args) => (
     <AppShell.Root {...args}>
-      <AppShell.Sidebar>
+      <AppShell.Sidebar aria-label="Navegação principal">
         <AppShell.NavItem href="/" current onClick={(event) => event.preventDefault()}>
           Início
         </AppShell.NavItem>
@@ -114,7 +114,7 @@ function resolvedColor(color: string): string {
 function ShellWithList() {
   return (
     <AppShell.Root>
-      <AppShell.Sidebar>
+      <AppShell.Sidebar aria-label="Navegação principal">
         <AppShell.NavItem href="/" onClick={(event) => event.preventDefault()}>
           Início
         </AppShell.NavItem>
@@ -127,7 +127,7 @@ function ShellWithList() {
           <ListPage.Header>
             <h1 className="text-lg font-medium">Convites pendentes</h1>
           </ListPage.Header>
-          <ListPage.Filters>
+          <ListPage.Filters aria-label="Filtrar convites">
             <label className="text-xs text-text-muted" htmlFor="shell-list-filter">
               E-mail
             </label>
@@ -150,7 +150,7 @@ function ShellWithList() {
 function ShellWithDashboard() {
   return (
     <AppShell.Root>
-      <AppShell.Sidebar>
+      <AppShell.Sidebar aria-label="Navegação principal">
         <AppShell.NavItem href="/" onClick={(event) => event.preventDefault()}>
           Início
         </AppShell.NavItem>
