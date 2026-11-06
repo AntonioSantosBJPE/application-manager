@@ -25,9 +25,19 @@ interface CliAnswer {
 /** The compiled entrypoint, built once so the test runs the file the image ships. */
 function buildEntrypoint(): Promise<void> {
   return new Promise((resolve, reject) => {
-    const child = spawn('pnpm', ['build'], { cwd: apiRoot, stdio: 'ignore' });
-    child.on('error', reject);
-    child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`build exited with ${code}`))));
+    const child = spawn('pnpm', ['build'], { cwd: apiRoot });
+    let output = '';
+    // A build that fails must say why: swallowing its streams turns a compile error into a bare exit code.
+    child.stdout.on('data', (chunk) => {
+      output += String(chunk);
+    });
+    child.stderr.on('data', (chunk) => {
+      output += String(chunk);
+    });
+    child.on('error', (error) => reject(new Error(`build could not start: ${error.message}`)));
+    child.on('exit', (code) =>
+      code === 0 ? resolve() : reject(new Error(`build exited with ${code}\n${output}`)),
+    );
   });
 }
 
