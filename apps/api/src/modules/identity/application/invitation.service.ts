@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { CreateInvitationResponse, InvitationDetails } from '@am/contracts';
+import type { CreateInvitationResponse, InvitationDetails, InvitationsPage } from '@am/contracts';
 import { CLOCK, type Clock } from '../../../infra/clock/clock.js';
 import type { ApiEnv } from '../../../config/env.js';
 import { generateToken, hashToken } from '../domain/tokens.js';
@@ -13,6 +13,12 @@ export const INVITATION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 
 /** Settings the identity services read from the environment; injected so a test can replace the public URL. */
 export const IDENTITY_ENV = Symbol('IDENTITY_ENV');
+
+/** How many pending invitations one page shows; the list offers "Carregar mais" beyond it (ADM-01, ADM-13). */
+export const INVITATIONS_PAGE_SIZE = 20;
+
+/** A UUID as the contract writes it; an id that is not one cannot name a row, so it is simply not found. */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Where the invite page lives on the web app; the link is built from `WEB_PUBLIC_URL` (INV-01). */
 const INVITE_PATH = '/invite';
@@ -66,6 +72,30 @@ export class InvitationService {
     const pending = await this.invitations.findPendingByTokenHash(hashToken(token), this.clock.now());
     if (pending === undefined) return undefined;
     return { email: pending.email, expiresAt: pending.expiresAt.toISOString() };
+  }
+
+  /**
+   * The page of pending invitations the admin sees, and how many there are in total (ADM-01). The
+   * answer never carries a token or its hash: the link exists only where it was shown once (ADM-05).
+   */
+  async listPending(input: { cursor?: string; limit: number }): Promise<InvitationsPage> {
+    const now = this.clock.now();
+    const [{ items, nextCursor }, totalPending] = await Promise.all([
+      this.invitations.listPending({ now, cursor: input.cursor, limit: input.limit }),
+      this.invitations.countPending(now),
+    ]);
+    return {
+      items: items.map((item) => ({ id: item.id, email: item.email, expiresAt: item.expiresAt.toISOString() })),
+      nextCursor,
+      totalPending,
+    };
+  }
+
+  /** Revokes a pending invitation; `false` when it does not exist or is no longer pending (ADM-02, ADM-03). */
+  async revoke(id: string): Promise<boolean> {
+    // An id that is not a UUID names no row, so it is not found rather than a database error (ADM-03).
+    if (!UUID.test(id)) return false;
+    return this.invitations.revokeById(id, this.clock.now());
   }
 
   /**

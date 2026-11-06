@@ -462,8 +462,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Expirados, aceitos e revogados ficam fora da lista e do total
-- [ ] Gate check passes: `pnpm test && pnpm test:integration`
+- [x] Expirados, aceitos e revogados ficam fora da lista e do total
+- [x] Gate check passes: `pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, gt, isNull } from 'drizzle-orm';
+import { and, count, desc, eq, gt, isNull, lt } from 'drizzle-orm';
 import { DATABASE, type Database } from '../../../infra/database/database.module.js';
 import type { DatabaseExecutor } from './sessions.repository.js';
 import { invitations } from './schema.js';
@@ -49,6 +49,50 @@ export class InvitationsRepository {
       .values(values)
       .returning({ id: invitations.id, email: invitations.email, expiresAt: invitations.expiresAt });
     return row!;
+  }
+
+  /** A pending invitation by its id, or nothing when it does not exist or is no longer pending (ADM-03). */
+  async revokeById(id: string, revokedAt: Date, executor: DatabaseExecutor = this.db): Promise<boolean> {
+    const revoked = await executor
+      .update(invitations)
+      .set({ revokedAt })
+      .where(and(eq(invitations.id, id), isNull(invitations.acceptedAt), isNull(invitations.revokedAt)))
+      .returning({ id: invitations.id });
+    return revoked.length > 0;
+  }
+
+  /**
+   * The pending, unexpired invitations, newest first (ADM-01). The cursor is the id of the last row
+   * of the previous page: keys are UUID v7, so they order the same way the creation time does.
+   */
+  async listPending(input: { now: Date; cursor?: string; limit: number }, executor: DatabaseExecutor = this.db): Promise<{
+    items: PendingInvitation[];
+    nextCursor: string | null;
+  }> {
+    const pending = and(
+      isNull(invitations.acceptedAt),
+      isNull(invitations.revokedAt),
+      gt(invitations.expiresAt, input.now),
+      input.cursor === undefined ? undefined : lt(invitations.id, input.cursor),
+    );
+    // One extra row tells whether another page exists without counting anything.
+    const rows = await executor
+      .select({ id: invitations.id, email: invitations.email, expiresAt: invitations.expiresAt })
+      .from(invitations)
+      .where(pending)
+      .orderBy(desc(invitations.id))
+      .limit(input.limit + 1);
+    const items = rows.slice(0, input.limit);
+    return { items, nextCursor: rows.length > input.limit ? items.at(-1)!.id : null };
+  }
+
+  /** How many invitations are pending and unexpired; expired and spent ones are not pending (ADM-01). */
+  async countPending(now: Date, executor: DatabaseExecutor = this.db): Promise<number> {
+    const [row] = await executor
+      .select({ total: count() })
+      .from(invitations)
+      .where(and(isNull(invitations.acceptedAt), isNull(invitations.revokedAt), gt(invitations.expiresAt, now)));
+    return Number(row?.total ?? 0);
   }
 
   /** A transaction handle, so a write and its revocation are one step. */

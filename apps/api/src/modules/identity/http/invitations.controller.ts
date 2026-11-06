@@ -1,15 +1,29 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Param, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Inject,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
 import type {
   AcceptInvitationRequest,
   CreateInvitationRequest,
   CreateInvitationResponse,
   InvitationDetails,
+  InvitationsPage,
 } from '@am/contracts';
 import { acceptInvitationRequestSchema, createInvitationRequestSchema } from '@am/contracts';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
-import { InvitationNotUsableError, InvitationService } from '../application/invitation.service.js';
+import { InvitationNotUsableError, InvitationService, INVITATIONS_PAGE_SIZE } from '../application/invitation.service.js';
 import { CurrentUser, Public, Roles, type AuthenticatedUser } from './access.decorators.js';
 import {
   SESSION_COOKIE_OPTIONS,
@@ -19,8 +33,9 @@ import {
 } from './session-cookie.js';
 
 /**
- * The invitation endpoints. Creation belongs to the admin (INV-02); opening and accepting a link are
- * public, because the person accepting has no session yet (INV-05, INV-07).
+ * The invitation endpoints. Creation, the list and the revocation belong to the admin (INV-02,
+ * ADM-04); opening and accepting a link are public, because the person accepting has no session yet
+ * (INV-05, INV-07).
  */
 @Controller('invitations')
 export class InvitationsController {
@@ -50,6 +65,21 @@ export class InvitationsController {
     const details = await this.invitations.inspect(token);
     if (details === undefined) throw notUsable();
     return details;
+  }
+
+  /** The pending invitations the admin sees, newest first, with the total (ADM-01). */
+  @Roles('admin')
+  @Get()
+  async list(@Query('cursor') cursor?: string): Promise<InvitationsPage> {
+    return this.invitations.listPending({ cursor, limit: INVITATIONS_PAGE_SIZE });
+  }
+  /** Revokes a pending invitation; an unknown or already spent one is a `404` (ADM-02, ADM-03). */
+  @Roles('admin')
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async revoke(@Param('id') id: string): Promise<void> {
+    const revoked = await this.invitations.revoke(id);
+    if (!revoked) throw new ProblemDetailsException(problemFor(404, 'Invitation not found'));
   }
 
   /**
