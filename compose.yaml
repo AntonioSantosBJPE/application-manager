@@ -71,6 +71,8 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       PORT: "3000"
       WEB_PUBLIC_URL: ${WEB_PUBLIC_URL:?set WEB_PUBLIC_URL}
+      # Header the proxy in front of the web fills with the browser address; empty means no proxy.
+      CLIENT_IP_HEADER: ${CLIENT_IP_HEADER:-}
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:

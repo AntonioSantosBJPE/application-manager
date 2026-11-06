@@ -691,8 +691,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Função pura testada por caminho; `WEB_PUBLIC_URL` ausente recusa iniciar
-- [ ] Gate check passes: `pnpm test`
+- [x] Função pura testada por caminho; `WEB_PUBLIC_URL` ausente recusa iniciar
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
