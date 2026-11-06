@@ -183,7 +183,8 @@ describe('session guard', () => {
       const renewed = await fetch(`${api.baseUrl}/probe/closed`, { headers: cookieHeader(soon.token) });
       expect(renewed.status).toBe(200);
       const cookie = renewed.headers.get('set-cookie');
-      expect(cookie).toContain(`am_session=${soon.token}`);
+      expect(cookie).toMatch(new RegExp(`^am_session=${soon.token};`));
+      expect(cookie).not.toContain('Secure');
       expect(cookie).toContain('Max-Age=2592000');
 
       const [row] = await sessionRow(databaseUrl, soon.token);
@@ -275,7 +276,7 @@ describe('session cookie', () => {
       const soon = await api.sessions.create(userId);
       await setExpiry(databaseUrl, hashOf(soon.token), new Date(api.clock.now().getTime() + 86_400_000));
 
-      // The browser sends the name the environment uses, so the fixture reads both.
+      // The browser sends the name the environment uses.
       const response = await fetch(`${api.baseUrl}/probe/closed`, {
         headers: { cookie: `__Host-am_session=${soon.token}` },
       });
@@ -284,6 +285,13 @@ describe('session cookie', () => {
       expect(response.status).toBe(200);
       expect(cookie).toMatch(/^__Host-am_session=/);
       expect(cookie).toContain('Secure');
+      expect(cookie).toContain('HttpOnly');
+      expect(cookie).toContain('Path=/');
+      expect(cookie).not.toContain('Domain');
+
+      // Under `__Host-` a plain `am_session` planted by another host is not a session.
+      const planted = await fetch(`${api.baseUrl}/probe/closed`, { headers: { cookie: `am_session=${soon.token}` } });
+      expect(planted.status).toBe(401);
     } finally {
       await api.close();
     }

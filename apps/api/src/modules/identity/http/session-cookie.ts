@@ -20,12 +20,15 @@ export function sessionCookieName(options: SessionCookieOptions): string {
   return options.secure ? '__Host-am_session' : 'am_session';
 }
 
-/** The opaque session token of the request, or undefined when the browser sent none. */
-export function readSessionToken(request: IncomingMessage): string | undefined {
+/**
+ * The opaque session token of the request, or undefined when the browser sent none. Only the cookie
+ * name of the running mode is read, so a plain `am_session` planted by a sibling host never counts under `__Host-`.
+ */
+export function readSessionToken(request: IncomingMessage, options: SessionCookieOptions): string | undefined {
   const header = request.headers.cookie;
   if (header === undefined) return undefined;
   const cookies = parseCookie(header);
-  const token = cookies['__Host-am_session'] ?? cookies.am_session;
+  const token = cookies[sessionCookieName(options)];
   return token === undefined || token === '' ? undefined : token;
 }
 

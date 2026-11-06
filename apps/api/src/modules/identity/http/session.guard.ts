@@ -37,7 +37,7 @@ export class SessionGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest<IncomingMessage & AuthenticatedRequest>();
     const response = context.switchToHttp().getResponse<ServerResponse>();
-    const token = readSessionToken(request);
+    const token = readSessionToken(request, this.cookie);
     // A missing, expired, revoked or unknown session all answer the same 401 (AUTH-10).
     const session = token === undefined ? undefined : await this.sessions.resolve(token);
     if (session === undefined) throw new UnauthorizedException();

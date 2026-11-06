@@ -108,6 +108,14 @@ describe('session service', () => {
     expect(row!.expiresAt.toISOString()).toBe(expiresAt.toISOString());
   });
 
+  it('does not resolve a session at the exact instant it expires', async () => {
+    const { token, expiresAt } = await service.create(userId);
+
+    clock.set(expiresAt);
+
+    await expect(service.resolve(token)).resolves.toBeUndefined();
+  });
+
   it('does not resolve a revoked session', async () => {
     const { token } = await service.create(userId);
 

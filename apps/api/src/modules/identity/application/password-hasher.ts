@@ -36,9 +36,14 @@ function derive(password: string, salt: Buffer, settings: { memory: number; pass
   });
 }
 
+/** PHC writes base64 without the trailing padding; `Buffer.from` reads both forms. */
+function unpadded(bytes: Buffer): string {
+  return bytes.toString('base64').replace(/[=]+$/, '');
+}
+
 function toPhc(salt: Buffer, tag: Buffer, settings: { memory: number; passes: number; parallelism: number }): PhcHash {
   const params = `m=${settings.memory},t=${settings.passes},p=${settings.parallelism}`;
-  return `$${algorithm}$v=19$${params}$${salt.toString('base64')}$${tag.toString('base64')}`;
+  return `$${algorithm}$v=19$${params}$${unpadded(salt)}$${unpadded(tag)}`;
 }
 
 interface ParsedPhc {

@@ -7,7 +7,7 @@ describe('password hasher', () => {
   it('stores argon2id phc with m=19456 t=2 p=1', async () => {
     const phc = await argon2idPasswordHasher.hash(password);
 
-    expect(phc).toMatch(/^\$argon2id\$v=19\$m=19456,t=2,p=1\$[A-Za-z0-9+/=]+\$[A-Za-z0-9+/=]+$/);
+    expect(phc).toMatch(/^\$argon2id\$v=19\$m=19456,t=2,p=1\$[A-Za-z0-9+/]+\$[A-Za-z0-9+/]+$/);
     // A 16 byte salt and a 32 byte tag, in base64 without padding lost.
     const [, , , , salt, tag] = phc.split('$');
     expect(Buffer.from(salt!, 'base64')).toHaveLength(16);
