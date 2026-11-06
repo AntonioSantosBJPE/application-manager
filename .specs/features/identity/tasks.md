@@ -1198,7 +1198,7 @@ Proof: run ui | ✓ stories coverage > every component and archetype has a story
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** Phase 1 (T1-T6) worker returned; Sonnet review approved, fixes committed; returned at f9dc603
+**Dispatched:** Phase 2 (T7-T13) worker, started from HEAD b77fc2a
 **Walked:** none
 
 ---
