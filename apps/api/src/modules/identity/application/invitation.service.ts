@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { CreateInvitationResponse, InvitationDetails, InvitationsPage } from '@am/contracts';
 import { CLOCK, type Clock } from '../../../infra/clock/clock.js';
 import type { ApiEnv } from '../../../config/env.js';
+import { isUuid } from '../domain/ids.js';
 import { generateToken, hashToken } from '../domain/tokens.js';
 import { isPendingEmailConflict, InvitationsRepository } from '../infra/invitations.repository.js';
 import { UsersRepository } from '../infra/users.repository.js';
@@ -17,8 +18,6 @@ export const IDENTITY_ENV = Symbol('IDENTITY_ENV');
 /** How many pending invitations one page shows; the list offers "Carregar mais" beyond it (ADM-01, ADM-13). */
 export const INVITATIONS_PAGE_SIZE = 20;
 
-/** A UUID as the contract writes it; an id that is not one cannot name a row, so it is simply not found. */
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Where the invite page lives on the web app; the link is built from `WEB_PUBLIC_URL` (INV-01). */
 const INVITE_PATH = '/invite';
@@ -94,7 +93,7 @@ export class InvitationService {
   /** Revokes a pending invitation; `false` when it does not exist or is no longer pending (ADM-02, ADM-03). */
   async revoke(id: string): Promise<boolean> {
     // An id that is not a UUID names no row, so it is not found rather than a database error (ADM-03).
-    if (!UUID.test(id)) return false;
+    if (!isUuid(id)) return false;
     return this.invitations.revokeById(id, this.clock.now());
   }
 

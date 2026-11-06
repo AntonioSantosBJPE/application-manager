@@ -24,12 +24,15 @@ export function promptHidden(question: string): Promise<string> {
 
     output.write(question);
     rl.question('', (answer) => {
+      // Resolve before closing: `close` also resolves (with nothing), and the first call wins.
+      resolve(answer);
       rl.close();
       if (original !== undefined) muted._writeToOutput = original;
       // The line the terminal would have echoed is replaced by a newline, so the next output starts clean.
       if (terminal) output.write('\n');
-      resolve(answer);
     });
+    // Standard input closed with no answer: an empty answer, which the password rule refuses.
+    rl.on('close', () => resolve(''));
     rl.on('error', reject);
   });
 }

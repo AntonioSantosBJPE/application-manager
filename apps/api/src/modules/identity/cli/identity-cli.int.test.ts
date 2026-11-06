@@ -287,6 +287,16 @@ describe('identity cli', () => {
     });
   });
 
+  it('refuses with a usage error instead of hanging when the prompt finds standard input closed', async () => {
+    await withDatabase(async (database) => {
+      const answer = await cli(database, ['create-admin', '--email', 'closed-stdin@example.com', '--name', 'Closed']);
+
+      expect(answer.code).toBe(2);
+      expect(answer.stderr).toContain('password must have between 12 and 128 characters');
+      expect(await usersOf(database.url)).toEqual([]);
+    });
+  });
+
   it('reads the password from stdin and rejects it as an argument', async () => {
     await withDatabase(async (database) => {
       // A password in argv is readable by `ps` and lands in shell history, so the CLI refuses it (CLI-06).
