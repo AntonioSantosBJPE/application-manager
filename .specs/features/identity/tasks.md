@@ -672,8 +672,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Mais de um `Set-Cookie` repassado; timeout e rede fora viram `503`; `X-Forwarded-For` do cliente ignorado
-- [ ] Gate check passes: `pnpm test`
+- [x] Mais de um `Set-Cookie` repassado; timeout e rede fora viram `503`; `X-Forwarded-For` do cliente ignorado
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
