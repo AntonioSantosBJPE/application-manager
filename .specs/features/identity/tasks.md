@@ -653,8 +653,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Landmark `nav` e `asChild` testados; story nos dois temas
-- [ ] Gate check passes: `pnpm test`
+- [x] Landmark `nav` e `asChild` testados; story nos dois temas
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick

@@ -8,6 +8,7 @@ export {
 } from './components/copy-field';
 export { Field, type FieldRootProps } from './components/field';
 export { StatusBadge, type StatusBadgeProps } from './components/status-badge';
+export { AppShell } from './layouts/app-shell';
 export { AuthPage } from './layouts/auth-page';
 export { DashboardPage } from './layouts/dashboard-page';
 export { ListPage } from './layouts/list-page';
