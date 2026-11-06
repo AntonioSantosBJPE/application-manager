@@ -423,8 +423,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] `invited_by` vem da sessão, mesmo com `invitedBy` no corpo
-- [ ] Gate check passes: `pnpm test && pnpm test:integration`
+- [x] `invited_by` vem da sessão, mesmo com `invitedBy` no corpo
+- [x] Gate check passes: `pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
