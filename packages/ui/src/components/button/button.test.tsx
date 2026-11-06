@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import type { FormEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { Button } from './button';
 
@@ -48,6 +49,48 @@ describe('Button', () => {
 
     expect(button).toBeDisabled();
     expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it('does not submit a form by default, so a copy action inside one stays inert', () => {
+    const onSubmit = vi.fn((event: FormEvent<HTMLFormElement>) => event.preventDefault());
+    render(
+      <form onSubmit={onSubmit}>
+        <Button>Copiar</Button>
+      </form>,
+    );
+
+    const button = screen.getByRole('button', { name: 'Copiar' });
+    expect(button).toHaveAttribute('type', 'button');
+
+    fireEvent.click(button);
+
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('submits the form when the caller asks for type submit', () => {
+    const onSubmit = vi.fn((event: FormEvent<HTMLFormElement>) => event.preventDefault());
+    render(
+      <form onSubmit={onSubmit}>
+        <Button type="submit">Entrar</Button>
+      </form>,
+    );
+
+    const button = screen.getByRole('button', { name: 'Entrar' });
+    expect(button).toHaveAttribute('type', 'submit');
+
+    fireEvent.click(button);
+
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not add a type to the child element when asChild is set', () => {
+    render(
+      <Button asChild intent="secondary">
+        <a href="/status">Status</a>
+      </Button>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Status' })).not.toHaveAttribute('type');
   });
 
   it('renders the child element with the button classes when asChild is set', () => {

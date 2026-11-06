@@ -34,5 +34,12 @@ export type ButtonProps = ComponentProps<'button'> &
 /** Action control: the intent names the meaning, never the color. */
 export function Button({ intent, size, asChild = false, className, ...props }: ButtonProps) {
   const Component = asChild ? Slot : 'button';
-  return <Component className={buttonVariants({ intent, size, className })} {...props} />;
+  return (
+    <Component
+      // Without it a browser defaults to `submit`, and any button inside a form would submit it.
+      type={asChild ? undefined : 'button'}
+      className={buttonVariants({ intent, size, className })}
+      {...props}
+    />
+  );
 }
