@@ -520,8 +520,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Story nos dois temas; o teste falha com componente sem story
-- [ ] Gate check passes: `pnpm test`
+- [x] Story nos dois temas; o teste falha com componente sem story
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
