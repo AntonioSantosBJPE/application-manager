@@ -128,7 +128,7 @@ describe('identity responses', () => {
     expect(invalid(createInvitationResponseSchema, { ...created, expiresAt: '2026-11-13' })).toBe(false);
   });
 
-  it('accepts pending invitation details and rejects a body with the token', () => {
+  it('accepts pending invitation details and strips an unknown token field', () => {
     const details = { email: 'novo@example.com', expiresAt: '2026-11-13T12:00:00.000Z' };
 
     expect(invitationDetailsSchema.parse(details)).toEqual(details);

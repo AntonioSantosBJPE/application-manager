@@ -6,15 +6,23 @@ const webPublicUrl = 'http://localhost:3000';
 
 describe('loadEnv', () => {
   it('throws naming DATABASE_URL when it is missing or empty', () => {
-    for (const source of [{ WEB_PUBLIC_URL: webPublicUrl }, { WEB_PUBLIC_URL: webPublicUrl, DATABASE_URL: '' }]) {
+    for (const source of [
+      { WEB_PUBLIC_URL: webPublicUrl },
+      { WEB_PUBLIC_URL: webPublicUrl, DATABASE_URL: '' },
+    ]) {
       expect(() => loadEnv(source)).toThrow(MissingEnvError);
       expect(() => loadEnv(source)).toThrow('Missing required environment variable: DATABASE_URL');
     }
   });
 
   it('throws naming WEB_PUBLIC_URL when it is missing', () => {
-    for (const source of [{ DATABASE_URL: databaseUrl }, { DATABASE_URL: databaseUrl, WEB_PUBLIC_URL: '' }]) {
-      expect(() => loadEnv(source)).toThrow('Missing required environment variable: WEB_PUBLIC_URL');
+    for (const source of [
+      { DATABASE_URL: databaseUrl },
+      { DATABASE_URL: databaseUrl, WEB_PUBLIC_URL: '' },
+    ]) {
+      expect(() => loadEnv(source)).toThrow(
+        'Missing required environment variable: WEB_PUBLIC_URL',
+      );
     }
   });
 
@@ -50,21 +58,39 @@ describe('loadEnv', () => {
     });
   });
 
+  it('keeps the cookie Secure for any value other than the exact string false', () => {
+    for (const value of ['0', 'no', 'off', '', 'FALSE', 'true']) {
+      expect(
+        loadEnv({
+          DATABASE_URL: databaseUrl,
+          WEB_PUBLIC_URL: webPublicUrl,
+          SESSION_COOKIE_SECURE: value,
+        }).sessionCookieSecure,
+      ).toBe(true);
+    }
+  });
+
   it('drops the trailing slash of WEB_PUBLIC_URL so the invite url is not doubled', () => {
-    expect(loadEnv({ DATABASE_URL: databaseUrl, WEB_PUBLIC_URL: 'https://app.example.com/' }).webPublicUrl).toBe(
-      'https://app.example.com',
-    );
+    expect(
+      loadEnv({ DATABASE_URL: databaseUrl, WEB_PUBLIC_URL: 'https://app.example.com/' })
+        .webPublicUrl,
+    ).toBe('https://app.example.com');
   });
 });
 
 describe('loadDatabaseEnv', () => {
   it('reads only DATABASE_URL, so migrate and the CLI start without WEB_PUBLIC_URL', () => {
-    expect(loadDatabaseEnv({ DATABASE_URL: databaseUrl })).toEqual({ databaseUrl, logLevel: 'info' });
+    expect(loadDatabaseEnv({ DATABASE_URL: databaseUrl })).toEqual({
+      databaseUrl,
+      logLevel: 'info',
+    });
   });
 
   it('throws naming DATABASE_URL when it is missing or empty', () => {
     for (const source of [{}, { DATABASE_URL: '' }]) {
-      expect(() => loadDatabaseEnv(source)).toThrow('Missing required environment variable: DATABASE_URL');
+      expect(() => loadDatabaseEnv(source)).toThrow(
+        'Missing required environment variable: DATABASE_URL',
+      );
     }
   });
 });

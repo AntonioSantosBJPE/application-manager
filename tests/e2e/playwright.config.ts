@@ -5,7 +5,7 @@ import { defineConfig, devices } from '@playwright/test';
 try {
   process.loadEnvFile(resolve(import.meta.dirname, '../../.env'));
 } catch {
-  // No .env: the compose defaults apply.
+  // No .env: the compose file requires its variables, so copy .env.example first.
 }
 
 const webPort = process.env.WEB_PORT ?? '3000';

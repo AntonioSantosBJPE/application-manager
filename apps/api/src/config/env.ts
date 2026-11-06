@@ -16,16 +16,15 @@ const envSchema = z
     /** Base of the `inviteUrl` the API returns (INV-01): the public address of the web app. */
     WEB_PUBLIC_URL: z.url(),
     /** `false` only in local development, where the cookie cannot carry `Secure` (AUTH-08). */
-    SESSION_COOKIE_SECURE: z
-      .stringbool()
-      .default(true),
+    SESSION_COOKIE_SECURE: z.string().optional(),
     PORT: z.coerce.number().int().positive().default(3333),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   })
   .transform((env) => ({
     databaseUrl: env.DATABASE_URL,
     webPublicUrl: env.WEB_PUBLIC_URL.replace(/\/+$/, ''),
-    sessionCookieSecure: env.SESSION_COOKIE_SECURE,
+    // Only the exact string `false` drops `Secure`; any other value keeps it (AUTH-08).
+    sessionCookieSecure: env.SESSION_COOKIE_SECURE !== 'false',
     port: env.PORT,
     logLevel: env.LOG_LEVEL,
   }));
@@ -54,7 +53,9 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
 }
 
 /** Reads and validates the variables of `migrate` and the CLI: the database, and nothing else. */
-export function loadDatabaseEnv(source: Record<string, string | undefined> = process.env): DatabaseEnv {
+export function loadDatabaseEnv(
+  source: Record<string, string | undefined> = process.env,
+): DatabaseEnv {
   if (!source.DATABASE_URL) throw new MissingEnvError('DATABASE_URL');
   return databaseEnvSchema.parse(source);
 }
