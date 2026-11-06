@@ -33,4 +33,21 @@ export class UsersRepository {
       .limit(1);
     return row;
   }
+
+  /**
+   * A member account for an accepted invitation, or nothing when the email is already taken. The
+   * unique index decides, so a user created between the invitation and its acceptance is never
+   * overwritten (EDGE-05).
+   */
+  async insertMember(
+    values: { email: string; name: string; passwordHash: string },
+    executor: DatabaseExecutor = this.db,
+  ): Promise<{ id: string } | undefined> {
+    const [row] = await executor
+      .insert(users)
+      .values({ ...values, role: 'member' })
+      .onConflictDoNothing({ target: users.email })
+      .returning({ id: users.id });
+    return row;
+  }
 }

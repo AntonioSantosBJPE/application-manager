@@ -442,9 +442,9 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Os quatro estados inválidos respondem `410` nos dois endpoints
-- [ ] Dois aceites simultâneos criam um único usuário
-- [ ] Gate check passes: `pnpm test && pnpm test:integration`
+- [x] Os quatro estados inválidos respondem `410` nos dois endpoints
+- [x] Dois aceites simultâneos criam um único usuário
+- [x] Gate check passes: `pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

@@ -1,10 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { CreateInvitationResponse } from '@am/contracts';
+import type { CreateInvitationResponse, InvitationDetails } from '@am/contracts';
 import { CLOCK, type Clock } from '../../../infra/clock/clock.js';
 import type { ApiEnv } from '../../../config/env.js';
 import { generateToken, hashToken } from '../domain/tokens.js';
 import { isPendingEmailConflict, InvitationsRepository } from '../infra/invitations.repository.js';
 import { UsersRepository } from '../infra/users.repository.js';
+import { PASSWORD_HASHER, type PasswordHasher } from './password-hasher.js';
+import { SessionService, type CreatedSession } from './session.service.js';
 
 /** An invitation lives 7 days (INV-01). */
 export const INVITATION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
@@ -19,14 +21,31 @@ const INVITE_PATH = '/invite';
 export type CreateInvitationResult = CreateInvitationResponse;
 
 /**
- * Creating an invitation (INV-01..INV-04). The token exists only in the answer: the database keeps
- * its SHA-256, which is why the link is shown once and a lost one is replaced, never reissued.
+ * The invitation cannot be used: unknown, expired, already accepted or revoked. One error for the
+ * four, because the answer and the screen are the same and the token has enough entropy to make
+ * enumeration pointless (INV-06).
+ */
+export class InvitationNotUsableError extends Error {
+  constructor() {
+    super('Invitation is not usable');
+    this.name = 'InvitationNotUsableError';
+  }
+}
+
+export type AcceptInvitationResult = CreatedSession;
+
+/**
+ * Creating, reading and accepting invitations (INV-01..INV-10). The token exists only in the answer
+ * of the creation: the database keeps its SHA-256, which is why the link is shown once and a lost one
+ * is replaced, never reissued.
  */
 @Injectable()
 export class InvitationService {
   constructor(
     private readonly invitations: InvitationsRepository,
     private readonly users: UsersRepository,
+    private readonly sessions: SessionService,
+    @Inject(PASSWORD_HASHER) private readonly hasher: PasswordHasher,
     @Inject(CLOCK) private readonly clock: Clock,
     @Inject(IDENTITY_ENV) private readonly env: Pick<ApiEnv, 'webPublicUrl'>,
   ) {}
@@ -40,6 +59,48 @@ export class InvitationService {
       inviteUrl: `${this.env.webPublicUrl}${INVITE_PATH}/${created.token}`,
       expiresAt: created.expiresAt.toISOString(),
     };
+  }
+
+  /** What the invite page shows while the link is still good, or nothing when it is not (INV-05, INV-06). */
+  async inspect(token: string): Promise<InvitationDetails | undefined> {
+    const pending = await this.invitations.findPendingByTokenHash(hashToken(token), this.clock.now());
+    if (pending === undefined) return undefined;
+    return { email: pending.email, expiresAt: pending.expiresAt.toISOString() };
+  }
+
+  /**
+   * Turns a pending invitation into a member account and a session, in one transaction (INV-07).
+   *
+   * The password hash is computed before the transaction opens: Argon2 is slow and holding a
+   * transaction for it would serialize every acceptance behind one. Inside, the invitation is marked
+   * accepted with a conditional `UPDATE` whose row lock serializes two simultaneous accepts, so the
+   * second finds nothing and gets `410` (INV-09). The user is then inserted; if the email turned into
+   * an account while the invitation was pending, the insert changes no row, the transaction rolls
+   * back and the answer is the same `410` (EDGE-05).
+   *
+   * A session that accompanied the browser is revoked before the new one starts: a browser keeps one
+   * session cookie (INV-10).
+   */
+  async accept(input: {
+    token: string;
+    name: string;
+    password: string;
+    currentSessionToken?: string;
+  }): Promise<AcceptInvitationResult> {
+    const passwordHash = await this.hasher.hash(input.password);
+    const tokenHash = hashToken(input.token);
+    const now = this.clock.now();
+
+    return this.invitations.transaction(async (tx) => {
+      const email = await this.invitations.accept(tokenHash, now, tx);
+      if (email === undefined) throw new InvitationNotUsableError();
+
+      const user = await this.users.insertMember({ email, name: input.name, passwordHash }, tx);
+      if (user === undefined) throw new InvitationNotUsableError();
+
+      if (input.currentSessionToken !== undefined) await this.sessions.revoke(input.currentSessionToken, tx);
+      return this.sessions.create(user.id, tx);
+    });
   }
 
   /**

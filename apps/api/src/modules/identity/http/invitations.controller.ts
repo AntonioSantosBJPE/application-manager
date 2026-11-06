@@ -1,18 +1,33 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import type { CreateInvitationRequest, CreateInvitationResponse } from '@am/contracts';
-import { createInvitationRequestSchema } from '@am/contracts';
+import { Body, Controller, Get, HttpCode, HttpStatus, Inject, Param, Post, Req, Res } from '@nestjs/common';
+import type {
+  AcceptInvitationRequest,
+  CreateInvitationRequest,
+  CreateInvitationResponse,
+  InvitationDetails,
+} from '@am/contracts';
+import { acceptInvitationRequestSchema, createInvitationRequestSchema } from '@am/contracts';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
-import { InvitationService } from '../application/invitation.service.js';
-import { CurrentUser, Roles, type AuthenticatedUser } from './access.decorators.js';
+import { InvitationNotUsableError, InvitationService } from '../application/invitation.service.js';
+import { CurrentUser, Public, Roles, type AuthenticatedUser } from './access.decorators.js';
+import {
+  SESSION_COOKIE_OPTIONS,
+  readSessionToken,
+  setSessionCookie,
+  type SessionCookieOptions,
+} from './session-cookie.js';
 
 /**
- * Invitations are the admin's tool: a member receives `403` from the guard and never reaches the
- * handler (INV-02). The invitation is always the session's admin, whatever the body says (AUTH-16).
+ * The invitation endpoints. Creation belongs to the admin (INV-02); opening and accepting a link are
+ * public, because the person accepting has no session yet (INV-05, INV-07).
  */
 @Controller('invitations')
 export class InvitationsController {
-  constructor(private readonly invitations: InvitationService) {}
+  constructor(
+    private readonly invitations: InvitationService,
+    @Inject(SESSION_COOKIE_OPTIONS) private readonly cookie: SessionCookieOptions,
+  ) {}
 
   @Roles('admin')
   @Post()
@@ -27,4 +42,49 @@ export class InvitationsController {
     if (created === undefined) throw new ProblemDetailsException(problemFor(409, 'Email already registered'));
     return created;
   }
+
+  /** What the invite page shows while the link is good; an unusable token answers `410` (INV-05, INV-06). */
+  @Public()
+  @Get(':token')
+  async inspect(@Param('token') token: string): Promise<InvitationDetails> {
+    const details = await this.invitations.inspect(token);
+    if (details === undefined) throw notUsable();
+    return details;
+  }
+
+  /**
+   * Creates the member account from the invitation and starts its session (INV-07). A session that
+   * already accompanied the browser is revoked inside the same transaction (INV-10).
+   *
+   * The body is validated by the pipe before anything is written, so a name or password outside the
+   * rule answers `400` and leaves the invitation pending (INV-08).
+   */
+  @Public()
+  @Post(':token/accept')
+  @HttpCode(HttpStatus.CREATED)
+  async accept(
+    @Param('token') token: string,
+    @Body(zodBody(acceptInvitationRequestSchema)) body: AcceptInvitationRequest,
+    @Req() request: IncomingMessage,
+    @Res({ passthrough: true }) response: ServerResponse,
+  ): Promise<void> {
+    let session;
+    try {
+      session = await this.invitations.accept({
+        token,
+        name: body.name,
+        password: body.password,
+        currentSessionToken: readSessionToken(request, this.cookie),
+      });
+    } catch (error) {
+      if (error instanceof InvitationNotUsableError) throw notUsable();
+      throw error;
+    }
+    setSessionCookie(response, session.token, this.cookie);
+  }
+}
+
+/** One answer for an unknown, expired, accepted or revoked token: the screen is the same (INV-06). */
+function notUsable(): ProblemDetailsException {
+  return new ProblemDetailsException(problemFor(410, 'Invitation is not usable'));
 }
