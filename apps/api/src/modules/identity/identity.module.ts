@@ -6,6 +6,7 @@ import { PASSWORD_HASHER, argon2idPasswordHasher, type PasswordHasher } from './
 import { SessionService } from './application/session.service.js';
 import { AuthController } from './http/auth.controller.js';
 import { SessionGuard, SESSION_COOKIE_OPTIONS } from './http/session.guard.js';
+import { LoginAttemptsRepository } from './infra/login-attempts.repository.js';
 import { SessionsRepository } from './infra/sessions.repository.js';
 import { UsersRepository } from './infra/users.repository.js';
 
@@ -33,6 +34,7 @@ export class IdentityModule {
         { provide: PASSWORD_HASHER, useValue: options.passwordHasher ?? argon2idPasswordHasher },
         SessionsRepository,
         UsersRepository,
+        LoginAttemptsRepository,
         SessionService,
         LoginService,
         { provide: APP_GUARD, useClass: SessionGuard },

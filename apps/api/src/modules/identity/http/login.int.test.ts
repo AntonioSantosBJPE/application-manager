@@ -229,18 +229,28 @@ describe('login failures', () => {
     }
   });
 
-  it('a password above 128 characters gets the same 401 and runs no argon2', async () => {
+  it('a password above 128 characters gets the same 401 counts a failure and runs no argon2', async () => {
     const hasher = countingHasher();
     const api = await startApi(database.url, { passwordHasher: hasher });
+    const ip = '198.51.100.30';
     try {
-      const response = await login(api.baseUrl, { email: member.email, password: 'a'.repeat(129) });
+      await query(database.url, 'delete from identity.login_attempts');
+      const response = await login(api.baseUrl, { email: member.email, password: 'a'.repeat(129) }, '/auth/login', {
+        'x-am-client-ip': ip,
+      });
 
       expect(response.status).toBe(401);
       // Not one hash was computed: the length rule is decided before the expensive work (EDGE-03).
       expect(hasher.calls).toEqual([]);
+      // It still counts as a failure, so an oversized password is no cheaper a guess than a wrong one.
+      expect(
+        await query<{ email: string }>(database.url, 'select email from identity.login_attempts where ip = $1', [ip]),
+      ).toEqual([{ email: member.email }]);
 
       hasher.calls.length = 0;
-      const wrong = await login(api.baseUrl, { email: member.email, password: 'wrong-but-long-enough' });
+      const wrong = await login(api.baseUrl, { email: member.email, password: 'wrong-but-long-enough' }, '/auth/login', {
+        'x-am-client-ip': ip,
+      });
       // The same answer a wrong password gets, so the length rule leaks nothing about the account.
       expect(await response.text()).toBe(await wrong.text());
       // Control: a wrong password inside the window does reach the hasher, so the check above is not vacuous.

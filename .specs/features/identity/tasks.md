@@ -384,9 +384,9 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Rajada simultânea de 20 tentativas leva só 5 ao Argon2
-- [ ] Login certo durante o bloqueio responde `429`; a janela libera com o relógio avançado
-- [ ] Gate check passes: `pnpm test && pnpm test:integration`
+- [x] Rajada simultânea de 20 tentativas leva só 5 ao Argon2
+- [x] Login certo durante o bloqueio responde `429`; a janela libera com o relógio avançado
+- [x] Gate check passes: `pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

@@ -2,8 +2,9 @@ import { Body, Controller, HttpCode, HttpStatus, Inject, Post, Req, Res, Unautho
 import type { LoginRequest, Role } from '@am/contracts';
 import { loginRequestSchema } from '@am/contracts';
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
-import { LoginService } from '../application/login.service.js';
+import { LoginService, type LoginResult } from '../application/login.service.js';
 import { Public } from './access.decorators.js';
 import { clientIpOf } from './client-ip.js';
 import { SESSION_COOKIE_OPTIONS, setSessionCookie, type SessionCookieOptions } from './session-cookie.js';
@@ -49,14 +50,20 @@ export class AuthController {
     request: IncomingMessage,
     response: ServerResponse,
   ): Promise<void> {
-    const session = await this.login.login({
+    const result: LoginResult = await this.login.login({
       email: body.email,
       password: body.password,
       ip: clientIpOf(request),
       entrance,
     });
+    if (result.kind === 'blocked') {
+      // The wait comes from the oldest counted failure; the body says nothing about the account (LOCK-03, LOCK-04).
+      throw new ProblemDetailsException(problemFor(429, 'Too many login attempts'), {
+        'retry-after': String(result.retryAfterSeconds),
+      });
+    }
     // Wrong password, unknown email and the other entrance all land here, with no session made (AUTH-03).
-    if (session === undefined) throw new UnauthorizedException();
-    setSessionCookie(response, session.token, this.cookie);
+    if (result.kind === 'refused') throw new UnauthorizedException();
+    setSessionCookie(response, result.session.token, this.cookie);
   }
 }
