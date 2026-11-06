@@ -268,8 +268,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] PHC traz `m=19456,t=2,p=1`; senha certa e errada verificadas; salt difere a cada hash
-- [ ] Gate check passes: `pnpm test`
+- [x] PHC traz `m=19456,t=2,p=1`; senha certa e errada verificadas; salt difere a cada hash
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
