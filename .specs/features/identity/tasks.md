@@ -230,8 +230,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Maiúsculas e espaços normalizados; limites de 12 e 128 testados
-- [ ] Gate check passes: `pnpm test`
+- [x] Maiúsculas e espaços normalizados; limites de 12 e 128 testados
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
