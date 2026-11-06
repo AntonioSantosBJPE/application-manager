@@ -191,9 +191,9 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Rota inexistente, corpo inválido e erro inesperado respondem Problem Details
-- [ ] Testes de `/health` e de request id continuam passando sem alteração
-- [ ] Gate check passes: `pnpm test && pnpm test:integration`
+- [x] Rota inexistente, corpo inválido e erro inesperado respondem Problem Details
+- [x] Testes de `/health` e de request id continuam passando sem alteração
+- [x] Gate check passes: `pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

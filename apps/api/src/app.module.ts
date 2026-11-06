@@ -6,11 +6,13 @@ import {
   type MiddlewareConsumer,
   type NestModule,
 } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
 import { json, urlencoded } from 'express';
 import type { DestinationStream } from 'pino';
 import type { ApiEnv } from './config/env.js';
 import { CLOCK, systemClock, type Clock } from './infra/clock/clock.js';
 import { DatabaseModule } from './infra/database/database.module.js';
+import { ProblemDetailsFilter } from './infra/http/problem-details.filter.js';
 import { createLoggingModule } from './infra/logging/logging.module.js';
 import { HealthModule } from './modules/health/index.js';
 
@@ -56,6 +58,8 @@ export class AppModule implements NestModule {
         DatabaseModule.forRoot(env.databaseUrl),
         HealthModule,
       ],
+      // Every error leaves as application/problem+json (AUTH-17), including a missing route.
+      providers: [{ provide: APP_FILTER, useClass: ProblemDetailsFilter }],
     };
   }
 }
