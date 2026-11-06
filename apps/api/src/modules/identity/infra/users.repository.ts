@@ -50,4 +50,22 @@ export class UsersRepository {
       .returning({ id: users.id });
     return row;
   }
+
+  /**
+   * An admin account, or nothing when the email already belongs to somebody. The CLI is the only
+   * caller: no route creates an admin (CLI-01, CLI-02, CLI-07).
+   */
+  async insertAdmin(values: { email: string; name: string; passwordHash: string }): Promise<{ id: string } | undefined> {
+    const [row] = await this.db
+      .insert(users)
+      .values({ ...values, role: 'admin' })
+      .onConflictDoNothing({ target: users.email })
+      .returning({ id: users.id });
+    return row;
+  }
+
+  /** Replaces the stored hash, keeping the role: a reset never changes who somebody is (CLI-03). */
+  async updatePasswordHash(id: string, passwordHash: string): Promise<void> {
+    await this.db.update(users).set({ passwordHash }).where(eq(users.id, id));
+  }
 }

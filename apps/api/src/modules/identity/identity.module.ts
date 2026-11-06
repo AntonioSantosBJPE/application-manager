@@ -2,6 +2,7 @@ import { Module, type DynamicModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import type { ApiEnv } from '../../config/env.js';
 import { LoginService } from './application/login.service.js';
+import { AccountAdminService } from './application/account-admin.service.js';
 import { InvitationService, IDENTITY_ENV } from './application/invitation.service.js';
 import { PASSWORD_HASHER, argon2idPasswordHasher, type PasswordHasher } from './application/password-hasher.js';
 import { SessionService } from './application/session.service.js';
@@ -43,6 +44,7 @@ export class IdentityModule {
         SessionService,
         LoginService,
         InvitationService,
+        AccountAdminService,
         { provide: APP_GUARD, useClass: SessionGuard },
       ],
       exports: [SessionService],

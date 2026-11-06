@@ -481,8 +481,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Cada caminho de sucesso e recusa é conferido nas tabelas
-- [ ] Gate check passes: `pnpm test && pnpm test:integration`
+- [x] Cada caminho de sucesso e recusa é conferido nas tabelas
+- [x] Gate check passes: `pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
