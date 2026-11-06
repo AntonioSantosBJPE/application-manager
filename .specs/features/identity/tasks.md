@@ -577,8 +577,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Foco, Esc e confirmação testados; story nos dois temas
-- [ ] Gate check passes: `pnpm test`
+- [x] Foco, Esc e confirmação testados; story nos dois temas
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
