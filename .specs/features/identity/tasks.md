@@ -729,9 +729,9 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] `//evil`, `/\evil`, URL absoluta e caminho sem `/` usam o destino padrão
-- [ ] Minutos do `429` arredondados para cima
-- [ ] Gate check passes: `pnpm test`
+- [x] `//evil`, `/\evil`, URL absoluta e caminho sem `/` usam o destino padrão
+- [x] Minutos do `429` arredondados para cima
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
