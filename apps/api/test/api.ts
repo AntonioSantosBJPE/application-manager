@@ -1,10 +1,12 @@
 import { Writable } from 'node:stream';
+import type { ApiEnv } from '../src/config/env.js';
 import { AppModule } from '../src/app.module.js';
 import { createApp } from '../src/create-app.js';
-import type { ApiEnv } from '../src/config/env.js';
+import type { Clock } from '../src/infra/clock/clock.js';
 
 /** Starts the real AppModule on a random port against `databaseUrl`; logs are discarded. */
-export async function startApi(databaseUrl: string, overrides: Partial<ApiEnv> = {}) {
+export async function startApi(databaseUrl: string, options: { clock?: Clock } & Partial<ApiEnv> = {}) {
+  const { clock, ...overrides } = options;
   const discard = new Writable({ write: (_chunk, _encoding, done) => done() });
   const env: ApiEnv = {
     databaseUrl,
@@ -15,7 +17,7 @@ export async function startApi(databaseUrl: string, overrides: Partial<ApiEnv> =
     logLevel: 'info',
     ...overrides,
   };
-  const app = await createApp(AppModule.forRoot(env, { logDestination: discard }));
+  const app = await createApp(AppModule.forRoot(env, { logDestination: discard, clock }));
   await app.listen(0, '127.0.0.1');
   return { baseUrl: await app.getUrl(), close: () => app.close() };
 }

@@ -172,8 +172,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Relógio de teste avança sem espera real e é injetado no `AppModule`
-- [ ] Gate check passes: `pnpm test`
+- [x] Relógio de teste avança sem espera real e é injetado no `AppModule`
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
