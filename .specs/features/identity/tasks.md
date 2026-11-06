@@ -596,8 +596,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Os estados normal, copiado e falha testados; story nos dois temas
-- [ ] Gate check passes: `pnpm test`
+- [x] Os estados normal, copiado e falha testados; story nos dois temas
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
