@@ -306,8 +306,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Expirada, revogada e desconhecida não resolvem; renovação só abaixo de 29 dias
-- [ ] Gate check passes: `pnpm test && pnpm test:integration`
+- [x] Expirada, revogada e desconhecida não resolvem; renovação só abaixo de 29 dias
+- [x] Gate check passes: `pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
