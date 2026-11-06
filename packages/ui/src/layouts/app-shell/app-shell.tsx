@@ -58,13 +58,31 @@ function NavItem({ asChild = false, current = false, className, ...props }: NavI
   );
 }
 
+export type AppShellMainProps = ComponentProps<'main'> & {
+  /**
+   * Render the child element as the content area. A page archetype is already a `main`, so the
+   * shell must not wrap it in a second one: the archetype stays the single main landmark.
+   */
+  asChild?: boolean;
+};
+
 /** The content area, filling the rest of the frame. */
-function Main({ className, ...props }: ComponentProps<'main'>) {
-  return <main className={join('flex min-w-0 flex-1 flex-col gap-4 px-6 py-8', className)} {...props} />;
+function Main({ asChild = false, className, ...props }: AppShellMainProps) {
+  const Component = asChild ? Slot : 'main';
+  return (
+    <Component
+      className={join('flex min-w-0 flex-1 flex-col gap-4 px-6 py-8', className)}
+      {...props}
+    />
+  );
 }
 
 /**
  * Application shell (UI-21, UI-22): a navigation landmark and the main landmark. On a narrow
  * screen the columns stack, navigation first; from `md` up they sit side by side.
+ *
+ * The document keeps exactly one `main` landmark: either `Main` renders it, or, when the content
+ * is a page archetype, `Main asChild` hands the shell classes to the archetype and the archetype
+ * stays the only one.
  */
 export const AppShell = { Root, Sidebar, NavItem, Main };

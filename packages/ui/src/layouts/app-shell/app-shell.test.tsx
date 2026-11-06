@@ -1,5 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { DashboardPage } from '../dashboard-page';
+import { ListPage } from '../list-page';
 import { AppShell } from './app-shell';
 
 function renderShell(onNavigate = vi.fn()) {
@@ -89,5 +91,57 @@ describe('AppShell', () => {
       'data-archetype',
       'shell',
     );
+  });
+
+  it('keeps exactly one main landmark when the content is a list archetype', () => {
+    render(
+      <AppShell.Root>
+        <AppShell.Sidebar>
+          <AppShell.NavItem href="/admin/invitations">Convites</AppShell.NavItem>
+        </AppShell.Sidebar>
+        <AppShell.Main asChild>
+          <ListPage.Root>
+            <ListPage.Header>
+              <h1>Convites pendentes</h1>
+            </ListPage.Header>
+            <ListPage.Content>
+              <p>ana@example.com</p>
+            </ListPage.Content>
+          </ListPage.Root>
+        </AppShell.Main>
+      </AppShell.Root>,
+    );
+
+    const mains = screen.getAllByRole('main');
+    expect(mains).toHaveLength(1);
+    expect(mains[0]).toHaveAttribute('data-archetype', 'list');
+    expect(mains[0]).toContainElement(screen.getByRole('heading', { name: 'Convites pendentes' }));
+    // The shell classes reach the archetype, so the content area still fills the frame.
+    expect(mains[0]).toHaveClass('flex-1');
+  });
+
+  it('keeps exactly one main landmark when the content is a dashboard archetype', () => {
+    render(
+      <AppShell.Root>
+        <AppShell.Sidebar>
+          <AppShell.NavItem href="/admin">Administração</AppShell.NavItem>
+        </AppShell.Sidebar>
+        <AppShell.Main asChild>
+          <DashboardPage.Root>
+            <DashboardPage.Header>
+              <h1>Status</h1>
+            </DashboardPage.Header>
+            <DashboardPage.Grid>
+              <p>Widget A</p>
+            </DashboardPage.Grid>
+          </DashboardPage.Root>
+        </AppShell.Main>
+      </AppShell.Root>,
+    );
+
+    const mains = screen.getAllByRole('main');
+    expect(mains).toHaveLength(1);
+    expect(mains[0]).toHaveAttribute('data-archetype', 'dashboard');
+    expect(mains[0]).toContainElement(screen.getByText('Widget A'));
   });
 });

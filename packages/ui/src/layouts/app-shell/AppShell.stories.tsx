@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { page } from '@vitest/browser/context';
 import { expect, userEvent } from 'storybook/test';
+import { DashboardPage } from '../dashboard-page';
+import { ListPage } from '../list-page';
 import { AppShell } from './app-shell';
 
 const meta = {
@@ -104,3 +106,129 @@ function resolvedColor(color: string): string {
   probe.remove();
   return resolved;
 }
+
+/**
+ * `AppShell.Main asChild` hands the content area to the archetype, so the page keeps exactly one
+ * `main` landmark: the archetype's. This is how a real screen composes the shell with a page.
+ */
+function ShellWithList() {
+  return (
+    <AppShell.Root>
+      <AppShell.Sidebar>
+        <AppShell.NavItem href="/" onClick={(event) => event.preventDefault()}>
+          Início
+        </AppShell.NavItem>
+        <AppShell.NavItem href="/admin/invitations" current onClick={(event) => event.preventDefault()}>
+          Convites
+        </AppShell.NavItem>
+      </AppShell.Sidebar>
+      <AppShell.Main asChild>
+        <ListPage.Root>
+          <ListPage.Header>
+            <h1 className="text-lg font-medium">Convites pendentes</h1>
+          </ListPage.Header>
+          <ListPage.Filters>
+            <label className="text-xs text-text-muted" htmlFor="shell-list-filter">
+              E-mail
+            </label>
+            <input
+              id="shell-list-filter"
+              className="h-8 rounded-sm border border-border bg-surface px-2 text-xs text-text"
+            />
+          </ListPage.Filters>
+          <ListPage.Content>
+            <p className="border-b border-border py-2 text-xs">ana@example.com</p>
+            <p className="border-b border-border py-2 text-xs">bruno@example.com</p>
+          </ListPage.Content>
+        </ListPage.Root>
+      </AppShell.Main>
+    </AppShell.Root>
+  );
+}
+
+/** The same handoff with the insight archetype. */
+function ShellWithDashboard() {
+  return (
+    <AppShell.Root>
+      <AppShell.Sidebar>
+        <AppShell.NavItem href="/" onClick={(event) => event.preventDefault()}>
+          Início
+        </AppShell.NavItem>
+        <AppShell.NavItem href="/admin" current onClick={(event) => event.preventDefault()}>
+          Administração
+        </AppShell.NavItem>
+      </AppShell.Sidebar>
+      <AppShell.Main asChild>
+        <DashboardPage.Root>
+          <DashboardPage.Header>
+            <h1 className="text-lg font-medium">Status do sistema</h1>
+          </DashboardPage.Header>
+          <DashboardPage.Grid>
+            <div className="rounded-md border border-border bg-surface-raised p-4 text-xs">
+              API operacional
+            </div>
+            <div className="rounded-md border border-border bg-surface-raised p-4 text-xs">
+              Banco de dados operacional
+            </div>
+          </DashboardPage.Grid>
+        </DashboardPage.Root>
+      </AppShell.Main>
+    </AppShell.Root>
+  );
+}
+
+/** Asserts the archetype is the only `main`, so the shell added no second landmark. */
+async function expectSingleMain(
+  canvas: Parameters<NonNullable<Story['play']>>[0]['canvas'],
+  archetype: string,
+): Promise<void> {
+  const mains = canvas.getAllByRole('main');
+  await expect(mains).toHaveLength(1);
+  await expect(mains[0]).toHaveAttribute('data-archetype', archetype);
+}
+
+/** The shell around a list page in the light theme: one main landmark, the archetype's. */
+export const ComListaTemaClaro: Story = {
+  name: 'Com ListPage, tema claro',
+  render: () => <ShellWithList />,
+  globals: { theme: 'light' },
+  play: async ({ canvas }) => {
+    await expect(document.documentElement).toHaveAttribute('data-theme', 'light');
+    await expectSingleMain(canvas, 'list');
+  },
+};
+
+/** The shell around a list page in the dark theme. */
+export const ComListaTemaEscuro: Story = {
+  name: 'Com ListPage, tema escuro',
+  render: () => <ShellWithList />,
+  globals: { theme: 'dark' },
+  play: async ({ canvas }) => {
+    await expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
+    await expectSingleMain(canvas, 'list');
+  },
+};
+
+/** The shell around a dashboard in the light theme: one main landmark, the archetype's. */
+export const ComDashboardTemaClaro: Story = {
+  name: 'Com DashboardPage, tema claro',
+  render: () => <ShellWithDashboard />,
+  globals: { theme: 'light' },
+  play: async ({ canvas }) => {
+    await expect(document.documentElement).toHaveAttribute('data-theme', 'light');
+    await expectSingleMain(canvas, 'dashboard');
+  },
+};
+
+/** The shell around a dashboard in the dark theme. */
+export const ComDashboardTemaEscuro: Story = {
+  name: 'Com DashboardPage, tema escuro',
+  render: () => <ShellWithDashboard />,
+  globals: { theme: 'dark' },
+  play: async ({ canvas }) => {
+    await expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
+    await expectSingleMain(canvas, 'dashboard');
+  },
+};
+
+/** A CSS color as the browser resolves it, to compare with a computed style. */
