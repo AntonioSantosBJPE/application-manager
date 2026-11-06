@@ -43,6 +43,22 @@ describe('csrf rules', () => {
     expect(await allowed({ 'sec-fetch-site': 'cross-site' })).toBe(false);
   });
 
+  it('judges the origin matcher on its own, with no Sec-Fetch-Site to decide first', async () => {
+    // A browser that sends Origin alone is the case the matcher exists for: nothing else says same-origin.
+    expect(await allowed({ origin: 'https://evil.test' })).toBe(false);
+    expect(await allowed({ origin: 'http://app.example.test' })).toBe(false);
+    expect(await allowed({ origin: 'https://app.example.test.evil.test' })).toBe(false);
+  });
+
+  it('judges a Referer of another origin when the request has no Origin', async () => {
+    expect(await allowed({ referer: 'https://evil.test/admin/invitations' })).toBe(false);
+    expect(await allowed({ referer: 'http://app.example.test/admin' })).toBe(false);
+  });
+
+  it('allows the right origin when it arrives alone', async () => {
+    expect(await allowed({ origin: publicUrl })).toBe(true);
+  });
+
   it('refuses a request without origin headers, so a call that never came from a page is not trusted', async () => {
     expect(await allowed({})).toBe(false);
   });
