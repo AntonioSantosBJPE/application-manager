@@ -249,8 +249,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Token decodifica para 32 bytes; hash confere com um vetor conhecido
-- [ ] Gate check passes: `pnpm test`
+- [x] Token decodifica para 32 bytes; hash confere com um vetor conhecido
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
