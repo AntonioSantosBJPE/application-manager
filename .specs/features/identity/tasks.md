@@ -404,8 +404,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] O cookie antigo recebe `401` depois do logout; logout sem sessão responde `204`
-- [ ] Gate check passes: `pnpm test && pnpm test:integration`
+- [x] O cookie antigo recebe `401` depois do logout; logout sem sessão responde `204`
+- [x] Gate check passes: `pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
