@@ -132,9 +132,9 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Migration aplicada num Postgres real cria o schema, com `uuidv7()` nas chaves
-- [ ] Nenhuma foreign key sai do schema `identity`
-- [ ] Gate check passes: `pnpm test && pnpm test:integration`
+- [x] Migration aplicada num Postgres real cria o schema, com `uuidv7()` nas chaves
+- [x] Nenhuma foreign key sai do schema `identity`
+- [x] Gate check passes: `pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
