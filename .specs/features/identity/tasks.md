@@ -949,7 +949,7 @@ Proof: run api-integration | ✓ login failures > runs the password verifier onc
 Proof: run api-unit | ✓ password hasher > stores argon2id phc with m=19456 t=2 p=1
 
 **C13** - Tokens têm 32 bytes aleatórios e o banco guarda só o SHA-256 (AUTH-06, AC 6)
-Proof: run api-integration | ✓ tokens at rest > stores only the sha-256 of 32-byte session and invitation tokens
+Proof: run api-integration | ✓ session service > stores only the sha-256 of 32-byte session and invitation tokens
 
 **C14** - O cookie traz `HttpOnly`, `SameSite=Lax`, `Path=/`, `Max-Age=2592000` e nenhum `Domain` (AUTH-07, AC 7)
 Proof: run api-integration | ✓ session cookie > carries HttpOnly SameSite=Lax Path=/ Max-Age=2592000 and no Domain
@@ -1198,7 +1198,7 @@ Proof: run ui | ✓ stories coverage > every component and archetype has a story
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** Phase 2 (T7-T13) worker, started from HEAD b77fc2a
+**Dispatched:** Phase 2 (T7-T13) worker, started from HEAD b77fc2a — returned at 1a65a71 with T7-T13 committed
 **Walked:** none
 
 ---
