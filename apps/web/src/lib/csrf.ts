@@ -1,5 +1,14 @@
 import { createCsrfMiddleware, type CsrfMiddlewareOptions } from '@tanstack/react-start';
 
+/** The origin of the public url, with any trailing `/` or path removed, or undefined when it is not a url. */
+function originOf(webPublicUrl: string): string | undefined {
+  try {
+    return new URL(webPublicUrl).origin;
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * The rules the CSRF middleware applies. Only server function calls are judged, because a page
  * navigation carries `Sec-Fetch-Site: none` and is not a cross-site write. The allowed origin is
@@ -8,12 +17,13 @@ import { createCsrfMiddleware, type CsrfMiddlewareOptions } from '@tanstack/reac
  * any handler runs, so the api is never called for it (UI-19).
  *
  * The url comes from a getter because `src/start.ts` is bundled for the browser too: the environment is
- * only readable on the server, and the matcher only runs there.
+ * only readable on the server, and the matcher only runs there. `Origin` carries no path, so the url is
+ * reduced to its origin before comparing: `https://app.test/` and `https://app.test/base` are the same.
  */
 export function csrfOptionsFor(webPublicUrl: () => string): CsrfMiddlewareOptions {
   return {
     filter: (ctx) => ctx.handlerType === 'serverFn',
-    origin: (value: string) => value === webPublicUrl(),
+    origin: (value: string) => value === originOf(webPublicUrl()),
   };
 }
 

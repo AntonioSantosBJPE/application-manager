@@ -65,4 +65,29 @@ describe('csrf rules', () => {
     current = 'https://second.example.test';
     expect(await judge(call)).toBe(true);
   });
+
+  it('compares the origin of the public url, so a trailing slash or a path does not refuse the browser', async () => {
+    // `Origin` never carries a path; the variable may, because it is also the base of the invite link.
+    for (const configured of [`${publicUrl}/`, `${publicUrl}/admin`, `${publicUrl}/admin/invitations`]) {
+      const judge = (headers: Record<string, string>) =>
+        isCsrfRequestAllowed(
+          csrfOptionsFor(() => configured) as Parameters<typeof isCsrfRequestAllowed>[0],
+          contextFor(headers),
+        );
+
+      expect(await judge({ origin: publicUrl }), configured).toBe(true);
+      expect(await judge({ referer: `${publicUrl}/admin` }), configured).toBe(true);
+    }
+  });
+
+  it('refuses the same host on another scheme or port, even with a path in the public url', async () => {
+    const judge = (headers: Record<string, string>) =>
+      isCsrfRequestAllowed(
+        csrfOptionsFor(() => `${publicUrl}/admin`) as Parameters<typeof isCsrfRequestAllowed>[0],
+        contextFor(headers),
+      );
+
+    expect(await judge({ origin: 'http://app.example.test' })).toBe(false);
+    expect(await judge({ origin: 'https://app.example.test:444' })).toBe(false);
+  });
 });
