@@ -1,15 +1,42 @@
 import { randomBytes } from 'node:crypto';
-import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest';
-import { argon2idPasswordHasher, type PasswordHasher } from '../application/password-hasher.js';
+import type { Argon2Algorithm, Argon2Parameters } from 'node:crypto';
+import { afterAll, beforeAll, describe, expect, inject, it, vi } from 'vitest';
+import { argon2idPasswordHasher } from '../application/password-hasher.js';
 import { hashToken } from '../domain/tokens.js';
 import { createMigratedDatabase, dropDatabase, query, type TestDatabase } from '../../../../test/database.js';
 import { startApi } from '../../../../test/api.js';
+
+/**
+ * Every Argon2 derivation the API asks `node:crypto` for, recorded before the real one runs. The
+ * module stays real: the test proves the work a login costs, not that a wrapper was called (AUTH-04).
+ */
+const derivations = vi.hoisted(() => ({
+  algorithms: [] as Argon2Algorithm[],
+  parameters: [] as Argon2Parameters[],
+}));
+
+vi.mock('node:crypto', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:crypto')>();
+  return {
+    ...actual,
+    argon2: (
+      algorithm: Argon2Algorithm,
+      parameters: Argon2Parameters,
+      callback: (error: Error | null, derived: Buffer) => void,
+    ) => {
+      derivations.algorithms.push(algorithm);
+      derivations.parameters.push(parameters);
+      return actual.argon2(algorithm, parameters, callback);
+    },
+  };
+});
 
 const password = 'correct-horse-battery';
 
 interface UserFixture {
   id: string;
   email: string;
+  salt: string;
 }
 
 /** A user written with the real hasher: the login meets a hash produced the way production does. */
@@ -20,25 +47,34 @@ async function createUser(databaseUrl: string, email: string, role: 'admin' | 'm
     'insert into identity.users (email, name, password_hash, role) values ($1, $2, $3, $4) returning id, email',
     [email, role === 'admin' ? 'Admin' : 'Ana', passwordHash, role],
   );
-  return row!;
+  // The salt of the stored hash, in the unpadded form the PHC writes, so a test can tell against
+  // which hash a derivation ran (AUTH-04).
+  return { ...row!, salt: passwordHash.split('$')[4]! };
 }
 
-/** Records every call it receives and delegates to the real hasher: the work a login asked for. */
-function countingHasher(): PasswordHasher & { calls: string[] } {
-  const calls: string[] = [];
-  return {
-    calls,
-    hash: (raw) => argon2idPasswordHasher.hash(raw),
-    verify: (phc, raw) => {
-      calls.push('verify');
-      return argon2idPasswordHasher.verify(phc, raw);
-    },
-    verifyDummy: (raw) => {
-      calls.push('verifyDummy');
-      return argon2idPasswordHasher.verifyDummy(raw);
-    },
-  };
+/** Ignores the derivations made by the fixtures, so an assertion counts only the login's own work. */
+function forgetDerivations(): void {
+  derivations.algorithms.length = 0;
+  derivations.parameters.length = 0;
 }
+
+/** The salt the derivation used, as bytes; the declared type also allows a string or an ArrayBuffer. */
+function saltOf(parameters: Argon2Parameters): Buffer {
+  return Buffer.from(parameters.nonce as Uint8Array);
+}
+
+/** The cost of every derivation recorded, in the shape the spec states it (AUTH-05). */
+function recordedCosts() {
+  return derivations.parameters.map((parameters) => ({
+    memory: parameters.memory,
+    passes: parameters.passes,
+    parallelism: parameters.parallelism,
+    // PHC writes base64 without padding, so the salt is compared the way the hash carries it.
+    nonce: saltOf(parameters).toString('base64').replace(/[=]+$/, ''),
+  }));
+}
+
+const productionCost = { memory: 19456, passes: 2, parallelism: 1 };
 
 function login(baseUrl: string, body: unknown, path = '/auth/login', headers: Record<string, string> = {}) {
   return fetch(`${baseUrl}${path}`, {
@@ -165,15 +201,15 @@ describe('POST /auth/admin/login', () => {
   });
 });
 
+/**
+ * Every test builds its own accounts and comes from its own address, so no test inherits a failure
+ * counter from another: a shared pair could reach the five-failure limit and turn a `401` into a `429`.
+ */
 describe('login failures', () => {
   let database: TestDatabase;
-  let member: UserFixture;
-  let admin: UserFixture;
 
   beforeAll(async () => {
     database = await createMigratedDatabase(inject('databaseUrl'), 'login_failures');
-    member = await createUser(database.url, 'member-fail@example.com', 'member');
-    admin = await createUser(database.url, 'admin-fail@example.com', 'admin');
   }, 60_000);
 
   afterAll(async () => {
@@ -181,28 +217,33 @@ describe('login failures', () => {
   });
 
   it('answer an identical 401 for wrong password unknown email and wrong entrance', async () => {
-    const hasher = countingHasher();
-    const api = await startApi(database.url, { passwordHasher: hasher });
+    const member = await createUser(database.url, 'member-fail@example.com', 'member');
+    const admin = await createUser(database.url, 'admin-fail@example.com', 'admin');
+    const api = await startApi(database.url);
+    const ip = '198.51.100.10';
     try {
       const attempts = [
         { name: 'wrong password', path: '/auth/login', body: { email: member.email, password: 'wrong-but-long-enough' } },
         { name: 'unknown email', path: '/auth/login', body: { email: 'nobody@example.com', password } },
         // Valid credentials of the other role on this entrance: refused, and it says nothing about the role.
-        { name: 'wrong entrance', path: '/auth/login', body: { email: admin.email, password } },
+        { name: 'admin at the member login', path: '/auth/login', body: { email: admin.email, password } },
+        { name: 'member at the admin login', path: '/auth/admin/login', body: { email: member.email, password } },
       ];
       const answers = [];
-      for (const attempt of attempts) answers.push({ attempt, response: await login(api.baseUrl, attempt.body, attempt.path) });
+      for (const attempt of attempts) {
+        answers.push({ attempt, response: await login(api.baseUrl, attempt.body, attempt.path, { 'x-am-client-ip': ip }) });
+      }
 
       for (const { attempt, response } of answers) {
         expect({ name: attempt.name, status: response.status }).toEqual({ name: attempt.name, status: 401 });
         expect(response.headers.get('content-type')).toBe('application/problem+json; charset=utf-8');
       }
-      const bodies = await Promise.all(answers.map(async (answer) => answer.response.text()));
-      // Byte for byte: the three refusals cannot be told apart.
+      const bodies = await Promise.all(answers.map(async (answer) => await answer.response.text()));
+      // Byte for byte: the four refusals cannot be told apart.
       expect(new Set(bodies).size).toBe(1);
       expect(JSON.parse(bodies[0]!)).toEqual({ type: 'about:blank', title: 'Unauthorized', status: 401 });
 
-      // Nothing was issued: no session belongs to either account.
+      // Nothing was issued: no session belongs to either account, and no cookie came back.
       expect(await sessionsOf(database.url, member.id)).toEqual([]);
       expect(await sessionsOf(database.url, admin.id)).toEqual([]);
       expect(answers[0]!.response.headers.get('set-cookie')).toBeNull();
@@ -212,49 +253,57 @@ describe('login failures', () => {
   });
 
   it('runs the password verifier once for a known and an unknown email', async () => {
-    const hasher = countingHasher();
-    const api = await startApi(database.url, { passwordHasher: hasher });
+    const member = await createUser(database.url, 'member-hash@example.com', 'member');
+    const api = await startApi(database.url);
+    const ip = '198.51.100.20';
     try {
-      expect((await login(api.baseUrl, { email: member.email, password: 'wrong-but-long-enough' })).status).toBe(401);
-      // A known email costs one verification against its own hash.
-      expect(hasher.calls).toEqual(['verify']);
+      forgetDerivations();
+      expect(
+        (await login(api.baseUrl, { email: member.email, password: 'wrong-but-long-enough' }, '/auth/login', { 'x-am-client-ip': ip })).status,
+      ).toBe(401);
 
-      hasher.calls.length = 0;
-      expect((await login(api.baseUrl, { email: 'nobody@example.com', password })).status).toBe(401);
+      // A known email costs exactly one real Argon2id derivation, against the salt of its own hash.
+      expect(derivations.algorithms).toEqual(['argon2id']);
+      expect(recordedCosts()).toEqual([{ ...productionCost, nonce: member.salt }]);
 
-      // The unknown email costs exactly one verification too, against the dummy hash, and never a real one.
-      expect(hasher.calls).toEqual(['verifyDummy']);
+      forgetDerivations();
+      expect((await login(api.baseUrl, { email: 'nobody@example.com', password }, '/auth/login', { 'x-am-client-ip': ip })).status).toBe(401);
+
+      // The unknown email costs the very same work: one derivation, the same parameters, but against
+      // the dummy hash, so nobody's stored password is checked (AUTH-04).
+      expect(derivations.algorithms).toEqual(['argon2id']);
+      expect(recordedCosts()).toEqual([{ ...productionCost, nonce: expect.any(String) }]);
+      expect(recordedCosts()[0]!.nonce).not.toBe(member.salt);
     } finally {
       await api.close();
     }
   });
 
   it('a password above 128 characters gets the same 401 counts a failure and runs no argon2', async () => {
-    const hasher = countingHasher();
-    const api = await startApi(database.url, { passwordHasher: hasher });
+    const member = await createUser(database.url, 'member-long@example.com', 'member');
+    const api = await startApi(database.url);
     const ip = '198.51.100.30';
     try {
-      await query(database.url, 'delete from identity.login_attempts');
+      forgetDerivations();
       const response = await login(api.baseUrl, { email: member.email, password: 'a'.repeat(129) }, '/auth/login', {
         'x-am-client-ip': ip,
       });
 
       expect(response.status).toBe(401);
-      // Not one hash was computed: the length rule is decided before the expensive work (EDGE-03).
-      expect(hasher.calls).toEqual([]);
+      // Not one derivation ran: the length rule is decided before the expensive work (EDGE-03).
+      expect(derivations.parameters).toEqual([]);
       // It still counts as a failure, so an oversized password is no cheaper a guess than a wrong one.
       expect(
         await query<{ email: string }>(database.url, 'select email from identity.login_attempts where ip = $1', [ip]),
       ).toEqual([{ email: member.email }]);
 
-      hasher.calls.length = 0;
       const wrong = await login(api.baseUrl, { email: member.email, password: 'wrong-but-long-enough' }, '/auth/login', {
         'x-am-client-ip': ip,
       });
       // The same answer a wrong password gets, so the length rule leaks nothing about the account.
       expect(await response.text()).toBe(await wrong.text());
-      // Control: a wrong password inside the window does reach the hasher, so the check above is not vacuous.
-      expect(hasher.calls).toEqual(['verify']);
+      // Control: a wrong password inside the window does reach the derivation, so the check above is not vacuous.
+      expect(derivations.parameters).toHaveLength(1);
     } finally {
       await api.close();
     }
