@@ -1,9 +1,18 @@
 import { Module, type DynamicModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import type { ApiEnv } from '../../config/env.js';
+import { LoginService } from './application/login.service.js';
+import { PASSWORD_HASHER, argon2idPasswordHasher, type PasswordHasher } from './application/password-hasher.js';
 import { SessionService } from './application/session.service.js';
+import { AuthController } from './http/auth.controller.js';
 import { SessionGuard, SESSION_COOKIE_OPTIONS } from './http/session.guard.js';
 import { SessionsRepository } from './infra/sessions.repository.js';
+import { UsersRepository } from './infra/users.repository.js';
+
+export interface IdentityModuleOptions {
+  /** Replaces the Argon2id hasher; a test wraps the real one to count the work an attempt asked for. */
+  passwordHasher?: PasswordHasher;
+}
 
 /**
  * Identity owns the accounts, the sessions and the access rule of the whole API. The guard is
@@ -12,13 +21,20 @@ import { SessionsRepository } from './infra/sessions.repository.js';
  */
 @Module({})
 export class IdentityModule {
-  static forRoot(env: Pick<ApiEnv, 'sessionCookieSecure'>): DynamicModule {
+  static forRoot(
+    env: Pick<ApiEnv, 'sessionCookieSecure'>,
+    options: IdentityModuleOptions = {},
+  ): DynamicModule {
     return {
       module: IdentityModule,
+      controllers: [AuthController],
       providers: [
         { provide: SESSION_COOKIE_OPTIONS, useValue: { secure: env.sessionCookieSecure } },
+        { provide: PASSWORD_HASHER, useValue: options.passwordHasher ?? argon2idPasswordHasher },
         SessionsRepository,
+        UsersRepository,
         SessionService,
+        LoginService,
         { provide: APP_GUARD, useClass: SessionGuard },
       ],
       exports: [SessionService],

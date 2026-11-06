@@ -15,13 +15,15 @@ import { DatabaseModule } from './infra/database/database.module.js';
 import { ProblemDetailsFilter } from './infra/http/problem-details.filter.js';
 import { createLoggingModule } from './infra/logging/logging.module.js';
 import { HealthModule } from './modules/health/index.js';
-import { IdentityModule } from './modules/identity/index.js';
+import { IdentityModule, type PasswordHasher } from './modules/identity/index.js';
 
 export interface AppModuleOptions {
   /** Overrides the log destination (stdout); used by tests to read the JSON lines. */
   logDestination?: DestinationStream;
   /** Overrides the wall clock; a test moves time instead of waiting for an expiry (AUTH-11, LOCK-07). */
   clock?: Clock;
+  /** Wraps the password hasher; a test counts the work a login asked for (AUTH-04). */
+  passwordHasher?: PasswordHasher;
 }
 
 @Global()
@@ -57,7 +59,7 @@ export class AppModule implements NestModule {
         ClockModule.forRoot(options.clock ?? systemClock),
         createLoggingModule({ level: env.logLevel, destination: options.logDestination }),
         DatabaseModule.forRoot(env.databaseUrl),
-        IdentityModule.forRoot(env),
+        IdentityModule.forRoot(env, { passwordHasher: options.passwordHasher }),
         HealthModule,
       ],
       // Every error leaves as application/problem+json (AUTH-17), including a missing route.

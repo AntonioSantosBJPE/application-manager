@@ -22,6 +22,9 @@ export interface PasswordHasher {
   verifyDummy(password: string): Promise<boolean>;
 }
 
+/** DI token of the hasher, so a test can wrap the real one and count the work a login asked for (AUTH-04). */
+export const PASSWORD_HASHER = Symbol('PASSWORD_HASHER');
+
 function derive(password: string, salt: Buffer, settings: { memory: number; passes: number; parallelism: number; tagLength: number }): Promise<Buffer> {
   const parameters: Argon2Parameters = {
     message: Buffer.from(password),

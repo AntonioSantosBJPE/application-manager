@@ -365,8 +365,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Os três casos de `401` têm corpo idêntico byte a byte
-- [ ] Gate check passes: `pnpm test && pnpm test:integration`
+- [x] Os três casos de `401` têm corpo idêntico byte a byte
+- [x] Gate check passes: `pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
