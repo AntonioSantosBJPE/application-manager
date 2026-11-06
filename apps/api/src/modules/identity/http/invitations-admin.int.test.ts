@@ -148,6 +148,42 @@ describe('GET /invitations', () => {
     });
   });
 
+  it('answers 400 for a cursor that is not one uuid', async () => {
+    await withApi(async (api, database) => {
+      const adminToken = await withAdmin(api, database);
+      await invite(api.baseUrl, 'cursor.list@example.com', adminToken);
+
+      // A cursor that is not a UUID names no row. Postgres would refuse it as a type error, so the
+      // API has to answer `400` before the query instead of leaking a `500` (EDGE-02).
+      const answers = [
+        { name: 'not a uuid', query: '?cursor=abc' },
+        { name: 'repeated', query: '?cursor=0199f0f4-0000-7000-8000-000000000000&cursor=0199f0f4-0000-7000-8000-000000000001' },
+      ];
+      for (const attempt of answers) {
+        const response = await fetch(`${api.baseUrl}/invitations${attempt.query}`, {
+          headers: { cookie: `am_session=${adminToken}` },
+        });
+        const body = JSON.parse(await response.text());
+
+        expect({ name: attempt.name, status: response.status }).toEqual({ name: attempt.name, status: 400 });
+        expect(response.headers.get('content-type')).toBe('application/problem+json; charset=utf-8');
+        // The bad value is not echoed back, and the field that failed is named (EDGE-02).
+        expect(body).toEqual({
+          type: 'about:blank',
+          title: 'Bad Request',
+          status: 400,
+          detail: 'Invalid cursor',
+          errors: [{ path: 'cursor', code: 'invalid_uuid' }],
+        });
+      }
+
+      // Control: a well-formed uuid is a cursor the list accepts, even when it names no row.
+      const empty = await listPage(api.baseUrl, adminToken, '0199f0f4-0000-7000-8000-000000000000');
+      expect(empty.status).toBe(200);
+      expect(invitationsPageSchema.parse(await empty.json()).items).toEqual([]);
+    });
+  });
+
   it('never returns a token or its hash', async () => {
     await withApi(async (api, database) => {
       const adminToken = await withAdmin(api, database);

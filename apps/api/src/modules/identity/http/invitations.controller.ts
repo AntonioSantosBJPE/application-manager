@@ -24,6 +24,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
 import { InvitationNotUsableError, InvitationService, INVITATIONS_PAGE_SIZE } from '../application/invitation.service.js';
+import { isUuid } from '../domain/ids.js';
 import { CurrentUser, Public, Roles, type AuthenticatedUser } from './access.decorators.js';
 import {
   SESSION_COOKIE_OPTIONS,
@@ -70,7 +71,12 @@ export class InvitationsController {
   /** The pending invitations the admin sees, newest first, with the total (ADM-01). */
   @Roles('admin')
   @Get()
-  async list(@Query('cursor') cursor?: string): Promise<InvitationsPage> {
+  async list(@Query('cursor') cursor?: string | string[]): Promise<InvitationsPage> {
+    // The cursor is the id of a row: anything that is not one UUID cannot name it, and reaching
+    // Postgres with it would answer a `500` for a request the client got wrong (EDGE-02).
+    if (cursor !== undefined && (typeof cursor !== 'string' || !isUuid(cursor))) {
+      throw new ProblemDetailsException(problemFor(400, 'Invalid cursor', [{ path: 'cursor', code: 'invalid_uuid' }]));
+    }
     return this.invitations.listPending({ cursor, limit: INVITATIONS_PAGE_SIZE });
   }
   /** Revokes a pending invitation; an unknown or already spent one is a `404` (ADM-02, ADM-03). */
