@@ -287,8 +287,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Fronteiras 4/5 e 49/50 testadas; `Retry-After` vem da falha contada mais antiga
-- [ ] Gate check passes: `pnpm test`
+- [x] Fronteiras 4/5 e 49/50 testadas; `Retry-After` vem da falha contada mais antiga
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
