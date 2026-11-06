@@ -21,7 +21,7 @@ try {
 const pool = createPool(databaseUrl);
 const io: CliIo = {
   db: drizzle(pool),
-  // A prompt reads the terminal even when standard input is a pipe carrying no password (CLI-06).
+  // Raw standard input, which carries the password only with `--password-stdin` (CLI-06).
   stdin,
   stdout,
   stderr: process.stderr,

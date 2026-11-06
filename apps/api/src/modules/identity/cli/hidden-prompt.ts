@@ -1,9 +1,10 @@
 import { createInterface } from 'node:readline';
 
 /**
- * Asks for a password without echoing it: what is typed never reaches the terminal, the shell
- * history or a log line (CLI-06). The answer comes from the terminal even when standard input is a
- * pipe, which is what `--password-stdin` is for.
+ * Asks for a password without echoing it: what is typed never reaches a log line, and on a terminal
+ * it is also kept off the screen (CLI-06). The answer is read from `process.stdin`, like any other
+ * prompt: with standard input at end-of-file there is nothing to read, which is what
+ * `--password-stdin` exists for.
  */
 export function promptHidden(question: string): Promise<string> {
   return new Promise((resolve, reject) => {
