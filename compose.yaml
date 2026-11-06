@@ -47,6 +47,8 @@ services:
       DATABASE_URL: *database-url
       LOG_LEVEL: ${LOG_LEVEL:-info}
       PORT: "3333"
+      WEB_PUBLIC_URL: ${WEB_PUBLIC_URL:?set WEB_PUBLIC_URL}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
     ports:
       - "${API_PORT:-3333}:3333"
     depends_on:
@@ -68,6 +70,7 @@ services:
       API_INTERNAL_URL: http://api:3333
       LOG_LEVEL: ${LOG_LEVEL:-info}
       PORT: "3000"
+      WEB_PUBLIC_URL: ${WEB_PUBLIC_URL:?set WEB_PUBLIC_URL}
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:

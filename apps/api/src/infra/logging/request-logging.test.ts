@@ -37,7 +37,13 @@ describe('request logging', () => {
     @Module({
       imports: [
         AppModule.forRoot(
-          { databaseUrl: 'postgres://unused:unused@localhost:1/unused', port: 0, logLevel: 'info' },
+          {
+            databaseUrl: 'postgres://unused:unused@localhost:1/unused',
+            webPublicUrl: 'http://localhost:3000',
+            sessionCookieSecure: false,
+            port: 0,
+            logLevel: 'info',
+          },
           { logDestination: capture },
         ),
       ],

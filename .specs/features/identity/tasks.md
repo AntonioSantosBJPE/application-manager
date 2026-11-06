@@ -152,9 +152,9 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] API sem `WEB_PUBLIC_URL` recusa iniciar, e o erro nomeia a variável
-- [ ] `migrate` funciona só com `DATABASE_URL`
-- [ ] Gate check passes: `pnpm test`
+- [x] API sem `WEB_PUBLIC_URL` recusa iniciar, e o erro nomeia a variável
+- [x] `migrate` funciona só com `DATABASE_URL`
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
