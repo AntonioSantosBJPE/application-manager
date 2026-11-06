@@ -211,8 +211,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] As linhas JSON não contêm cookie, `set-cookie` nem token da URL
-- [ ] Gate check passes: `pnpm test`
+- [x] As linhas JSON não contêm cookie, `set-cookie` nem token da URL
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
