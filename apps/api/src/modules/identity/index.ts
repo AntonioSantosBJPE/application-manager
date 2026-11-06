@@ -18,3 +18,5 @@ export {
   type PasswordHasher,
   type PhcHash,
 } from './application/password-hasher.js';
+export { runIdentityCli, EXIT_OK, EXIT_REFUSED, EXIT_USAGE, type CliIo } from './cli/run-identity-cli.js';
+export { promptHidden } from './cli/hidden-prompt.js';

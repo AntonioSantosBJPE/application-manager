@@ -500,9 +500,9 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] O entrypoint compilado roda contra Postgres real, com os códigos de saída da spec
-- [ ] Nenhuma rota registrada cria admin nem troca senha
-- [ ] Gate check passes: `pnpm test && pnpm test:integration`
+- [x] O entrypoint compilado roda contra Postgres real, com os códigos de saída da spec
+- [x] Nenhuma rota registrada cria admin nem troca senha
+- [x] Gate check passes: `pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
