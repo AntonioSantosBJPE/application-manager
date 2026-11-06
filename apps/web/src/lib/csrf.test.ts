@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { csrfOptionsFor } from './csrf';
 
 const publicUrl = 'https://app.example.test';
-const options = csrfOptionsFor(publicUrl);
+const options = csrfOptionsFor(() => publicUrl);
 
 type ValidationContext = Parameters<typeof isCsrfRequestAllowed>[1];
 
@@ -52,5 +52,17 @@ describe('csrf rules', () => {
 
     expect(await filter(contextFor({ 'sec-fetch-site': 'none' }, 'router'))).toBe(false);
     expect(await filter(contextFor({ 'sec-fetch-site': 'cross-site' }, 'serverFn'))).toBe(true);
+  });
+
+  it('reads the public url when the request arrives, not when the middleware is built', async () => {
+    let current = 'https://first.example.test';
+    const late = csrfOptionsFor(() => current);
+    const call = { origin: 'https://second.example.test' };
+    const judge = (headers: Record<string, string>) =>
+      isCsrfRequestAllowed(late as Parameters<typeof isCsrfRequestAllowed>[0], contextFor(headers));
+
+    expect(await judge(call)).toBe(false);
+    current = 'https://second.example.test';
+    expect(await judge(call)).toBe(true);
   });
 });

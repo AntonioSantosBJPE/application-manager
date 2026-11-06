@@ -6,15 +6,18 @@ import { createCsrfMiddleware, type CsrfMiddlewareOptions } from '@tanstack/reac
  * `WEB_PUBLIC_URL` rather than the request's own origin, because the request reaches the web through
  * the proxy while the browser's origin is the public one. A POST from another origin is refused before
  * any handler runs, so the api is never called for it (UI-19).
+ *
+ * The url comes from a getter because `src/start.ts` is bundled for the browser too: the environment is
+ * only readable on the server, and the matcher only runs there.
  */
-export function csrfOptionsFor(webPublicUrl: string): CsrfMiddlewareOptions {
+export function csrfOptionsFor(webPublicUrl: () => string): CsrfMiddlewareOptions {
   return {
     filter: (ctx) => ctx.handlerType === 'serverFn',
-    origin: (value: string) => value === webPublicUrl,
+    origin: (value: string) => value === webPublicUrl(),
   };
 }
 
 /** The middleware built from those rules; the return type is the one `createCsrfMiddleware` declares. */
-export function csrfMiddlewareFor(webPublicUrl: string): ReturnType<typeof createCsrfMiddleware> {
+export function csrfMiddlewareFor(webPublicUrl: () => string): ReturnType<typeof createCsrfMiddleware> {
   return createCsrfMiddleware(csrfOptionsFor(webPublicUrl));
 }
