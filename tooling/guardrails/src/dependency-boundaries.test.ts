@@ -84,8 +84,23 @@ describe('dependency boundaries', () => {
     expect(violations).toEqual([]);
   });
 
-  it('allows imports inside the same feature and the same module', async () => {
-    const { edges, violations } = await checkBoundaries('own-internals');
+  it('blocks importing identity internals from another module', async () => {
+    const { violations, report } = await checkBoundaries('identity-internals');
+
+    // The guard and the session cookie are reachable only through identity's index.ts (EDGE-08, AUTH-19).
+    expect(violations).toEqual([
+      {
+        rule: 'no-module-internals',
+        from: 'apps/api/src/modules/reports/reports.service.ts',
+        to: 'apps/api/src/modules/identity/http/session.guard.ts',
+      },
+    ]);
+    expect(report).toContain(
+      'no-module-internals: apps/api/src/modules/reports/reports.service.ts → apps/api/src/modules/identity/http/session.guard.ts',
+    );
+  });
+
+  it('allows imports inside the same feature and the same module', async () => {    const { edges, violations } = await checkBoundaries('own-internals');
 
     expect(edges).toEqual(
       expect.arrayContaining([

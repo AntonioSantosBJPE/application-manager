@@ -345,9 +345,9 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Fixture sem declaração faz o teste falhar nomeando a rota e as declarações aceitas
-- [ ] Import do interior de `identity` é barrado no guardrail
-- [ ] Gate check passes: `pnpm test && pnpm test:integration`
+- [x] Fixture sem declaração faz o teste falhar nomeando a rota e as declarações aceitas
+- [x] Import do interior de `identity` é barrado no guardrail
+- [x] Gate check passes: `pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
