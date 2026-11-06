@@ -15,9 +15,15 @@ import {
   meResponseSchema,
 } from '@am/contracts';
 import { createServerFn } from '@tanstack/react-start';
-import { getRequestHeader, getRequestIP } from '@tanstack/react-start/server';
+import { appendResponseHeader, getRequestHeader, getRequestIP } from '@tanstack/react-start/server';
 import type { z } from 'zod';
-import { apiContextOf, callApi, type ApiRequestContext, type ApiResult } from '../../../lib/call-api';
+import {
+  apiContextOf,
+  callApi,
+  type ApiRequestContext,
+  type ApiResult,
+  type CallApiOptions,
+} from '../../../lib/call-api';
 import { loadServerEnv } from '../../../lib/env';
 
 /** The failed half of every answer; the shape `problemMessage` reads (UI-03, UI-04, UI-05). */
@@ -135,35 +141,50 @@ export function contextOfCurrentRequest(): ApiRequestContext {
   );
 }
 
+/**
+ * The one link between the api answer and the browser response: every `Set-Cookie` the api sends
+ * becomes a header of the server function answer, one header per cookie, so login, the invitation
+ * accept, logout and the renewal riding on `/auth/me` all reach the browser (AUTH-07, AUTH-11, UI-13).
+ */
+export function responseOptionsOfCurrentRequest(): CallApiOptions {
+  return { appendSetCookie: (value) => appendResponseHeader('set-cookie', value) };
+}
+
 // One server function per endpoint (AD-007): the browser can only reach what has a function here, and
 // each one forwards method, path and body, with no rule of its own. The pure functions above carry the
 // answers and are what the tests drive; these only bind them to the request being served.
 
 export const getSession = createServerFn({ method: 'GET' }).handler((): Promise<SessionState> =>
-  loadSession(contextOfCurrentRequest()),
+  loadSession(contextOfCurrentRequest(), responseOptionsOfCurrentRequest()),
 );
 
 export const memberLogin = createServerFn({ method: 'POST' })
   .validator((input: LoginRequest) => input)
-  .handler(({ data }): Promise<Outcome<undefined>> => loginMember(data, contextOfCurrentRequest()));
+  .handler(({ data }): Promise<Outcome<undefined>> =>
+    loginMember(data, contextOfCurrentRequest(), responseOptionsOfCurrentRequest()),
+  );
 
 export const adminLogin = createServerFn({ method: 'POST' })
   .validator((input: LoginRequest) => input)
-  .handler(({ data }): Promise<Outcome<undefined>> => loginAdmin(data, contextOfCurrentRequest()));
+  .handler(({ data }): Promise<Outcome<undefined>> =>
+    loginAdmin(data, contextOfCurrentRequest(), responseOptionsOfCurrentRequest()),
+  );
 
 export const endSession = createServerFn({ method: 'POST' }).handler((): Promise<Outcome<undefined>> =>
-  logout(contextOfCurrentRequest()),
+  logout(contextOfCurrentRequest(), responseOptionsOfCurrentRequest()),
 );
 
 export const invite = createServerFn({ method: 'POST' })
   .validator((input: CreateInvitationRequest) => input)
   .handler(async ({ data }): Promise<Outcome<CreateInvitationResponse>> =>
-    createInvitation(data, contextOfCurrentRequest()),
+    createInvitation(data, contextOfCurrentRequest(), responseOptionsOfCurrentRequest()),
   );
 
 export const openInvitation = createServerFn({ method: 'GET' })
   .validator((token: string) => token)
-  .handler(({ data }): Promise<Outcome<InvitationDetails>> => loadInvitation(data, contextOfCurrentRequest()));
+  .handler(({ data }): Promise<Outcome<InvitationDetails>> =>
+    loadInvitation(data, contextOfCurrentRequest(), responseOptionsOfCurrentRequest()),
+  );
 
 export const joinWithInvitation = createServerFn({ method: 'POST' })
   .validator((input: { token: string; name: string; password: string }) => input)
@@ -172,14 +193,19 @@ export const joinWithInvitation = createServerFn({ method: 'POST' })
       { name: data.name, password: data.password },
       data.token,
       contextOfCurrentRequest(),
+      responseOptionsOfCurrentRequest(),
     ),
   );
 
 export const pendingInvitations = createServerFn({ method: 'GET' })
   .validator((cursor: string | undefined) => cursor)
-  .handler(({ data }): Promise<Outcome<InvitationsPage>> => loadInvitations(data, contextOfCurrentRequest()));
+  .handler(({ data }): Promise<Outcome<InvitationsPage>> =>
+    loadInvitations(data, contextOfCurrentRequest(), responseOptionsOfCurrentRequest()),
+  );
 
 export const revoke = createServerFn({ method: 'POST' })
   .validator((id: string) => id)
-  .handler(({ data }): Promise<Outcome<undefined>> => revokeInvitation(data, contextOfCurrentRequest()));
+  .handler(({ data }): Promise<Outcome<undefined>> =>
+    revokeInvitation(data, contextOfCurrentRequest(), responseOptionsOfCurrentRequest()),
+  );
 
