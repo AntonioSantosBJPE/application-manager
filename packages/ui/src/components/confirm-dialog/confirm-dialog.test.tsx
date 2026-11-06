@@ -1,9 +1,11 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { Button } from '../button';
 import { ConfirmDialog } from './confirm-dialog';
 
 function renderDialog(onConfirm = vi.fn()) {
+  const user = userEvent.setup();
   render(
     <ConfirmDialog
       trigger={<Button intent="secondary">Revogar</Button>}
@@ -14,53 +16,73 @@ function renderDialog(onConfirm = vi.fn()) {
       onConfirm={onConfirm}
     />,
   );
-  return { onConfirm };
+  return { onConfirm, user, trigger: screen.getByRole('button', { name: 'Revogar' }) };
 }
 
 describe('ConfirmDialog', () => {
-  it('asks for confirmation with the email before revoking', () => {
-    renderDialog();
+  it('asks for confirmation with the email before revoking', async () => {
+    const { user, trigger } = renderDialog();
 
     expect(screen.queryByRole('alertdialog')).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Revogar' }));
+    await user.click(trigger);
 
     const dialog = screen.getByRole('alertdialog', { name: 'Revogar convite' });
     expect(dialog).toHaveTextContent('ana@example.com não poderá mais usar este link.');
   });
 
-  it('moves the focus into the dialog and confirms with the action', () => {
-    const { onConfirm } = renderDialog();
+  it('moves the focus to cancel when it opens, the alert dialog default', async () => {
+    const { user, trigger } = renderDialog();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Revogar' }));
-    expect(screen.getByRole('alertdialog')).toContainElement(
-      document.activeElement as HTMLElement,
-    );
+    await user.click(trigger);
+
+    const dialog = screen.getByRole('alertdialog');
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toHaveFocus();
+  });
+
+  it('confirms with the action and returns the focus to the trigger', async () => {
+    const { onConfirm, user, trigger } = renderDialog();
+
+    await user.click(trigger);
     expect(onConfirm).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Revogar convite' }));
+    await user.click(screen.getByRole('button', { name: 'Revogar convite' }));
 
     expect(onConfirm).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(trigger).toHaveFocus();
   });
 
-  it('closes on Esc without confirming', () => {
-    const { onConfirm } = renderDialog();
+  it('closes on Esc without confirming and returns the focus to the trigger', async () => {
+    const { onConfirm, user, trigger } = renderDialog();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Revogar' }));
-    fireEvent.keyDown(screen.getByRole('alertdialog'), { key: 'Escape' });
+    await user.click(trigger);
+    await user.keyboard('{Escape}');
 
     expect(onConfirm).not.toHaveBeenCalled();
     expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(trigger).toHaveFocus();
   });
 
-  it('closes on cancel without confirming', () => {
-    const { onConfirm } = renderDialog();
+  it('closes on cancel without confirming and returns the focus to the trigger', async () => {
+    const { onConfirm, user, trigger } = renderDialog();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Revogar' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    await user.click(trigger);
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
 
     expect(onConfirm).not.toHaveBeenCalled();
     expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(trigger).toHaveFocus();
+  });
+
+  it('keeps the focus inside the dialog while it is open', async () => {
+    const { user, trigger } = renderDialog();
+
+    await user.click(trigger);
+    await user.tab();
+
+    const dialog = screen.getByRole('alertdialog');
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
   });
 });
