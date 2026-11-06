@@ -29,6 +29,13 @@ describe('DashboardPage', () => {
     expect(main).toContainElement(screen.getByText('Widget B'));
   });
 
+  it('marks the archetype so the screens can be told apart', () => {
+    const { container } = renderPage();
+
+    expect(screen.getByRole('main')).toHaveAttribute('data-archetype', 'dashboard');
+    expect(container.querySelectorAll('[data-archetype]')).toHaveLength(1);
+  });
+
   it('uses only token classes, with no raw palette color or arbitrary value', () => {
     const { container } = renderPage();
 
