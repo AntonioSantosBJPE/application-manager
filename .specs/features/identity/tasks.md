@@ -749,8 +749,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Cada função pura repassa método, caminho e corpo certos, testada com MSW
-- [ ] Gate check passes: `pnpm test`
+- [x] Cada função pura repassa método, caminho e corpo certos, testada com MSW
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick

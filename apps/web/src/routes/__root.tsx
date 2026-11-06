@@ -1,8 +1,9 @@
-import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router';
+import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router';
+import type { QueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import tokensCss from '@am/ui/styles/tokens.css?url';
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
