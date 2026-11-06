@@ -1197,8 +1197,8 @@ Proof: run ui | ✓ stories coverage > every component and archetype has a story
 
 The feature's live state, written as it happens - a compaction gives no warning.
 
-**Settled mid-build:** none
-**Dispatched:** Phase 5 (T30-T34) worker, started after the phase 4 review fixes
+**Settled mid-build:** user paused execution after Phase 5; resume at Phase 6 (T35) only on their command. E2E T41 must assert: Set-Cookie am_session reaches the browser on UI login, and the AUTH-11 renewal cookie reaches the SSR HTML response of a protected page.
+**Dispatched:** none (Phases 1-5 done and reviewed; paused by the user before Phase 6)
 **Walked:** none
 
 ---
