@@ -113,8 +113,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Limites de senha e nome rejeitados nas duas pontas do intervalo
-- [ ] Gate check passes: `pnpm test`
+- [x] Limites de senha e nome rejeitados nas duas pontas do intervalo
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
@@ -1198,7 +1198,7 @@ Proof: run ui | ✓ stories coverage > every component and archetype has a story
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** none
+**Dispatched:** Phase 1 (T1-T6) worker, started from HEAD 6b23e7c
 **Walked:** none
 
 ---
