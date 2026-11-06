@@ -218,6 +218,65 @@ describe('identity cli', () => {
     });
   });
 
+  it('refuses an invalid email, a blank or oversized name and an unknown flag without writing', async () => {
+    await withDatabase(async (database) => {
+      // The contract the API uses is the one the operator is held to, so a typed address is checked
+      // before anything is written and never becomes an account (CLI-01, EDGE-01).
+      const badEmail = await cli(
+        database,
+        ['create-admin', '--email', 'nao-e-um-email', '--name', 'Alguém', '--password-stdin'],
+        `${password}\n`,
+      );
+      const blankName = await cli(
+        database,
+        ['create-admin', '--email', 'nome.vazio@example.com', '--name', '   ', '--password-stdin'],
+        `${password}\n`,
+      );
+      const longName = await cli(
+        database,
+        ['create-admin', '--email', 'nome.longo@example.com', '--name', 'a'.repeat(121), '--password-stdin'],
+        `${password}\n`,
+      );
+      // A misspelled flag is a usage error, not a value the command silently ignores.
+      const unknownFlag = await cli(
+        database,
+        ['create-admin', '--email', 'flag@example.com', '--name', 'Flag', '--role', 'admin', '--password-stdin'],
+        `${password}\n`,
+      );
+
+      expect([badEmail.code, blankName.code, longName.code, unknownFlag.code]).toEqual([2, 2, 2, 2]);
+      expect(unknownFlag.stderr).toContain('unknown flag: --role');
+      expect(await usersOf(database.url)).toEqual([]);
+
+      // Control: the same command with a valid email and a name of exactly 120 characters goes through.
+      const accepted = await cli(
+        database,
+        ['create-admin', '--email', '  Valido@Example.COM ', '--name', `  ${'a'.repeat(120)}  `, '--password-stdin'],
+        `${password}\n`,
+      );
+      expect(accepted.code).toBe(0);
+      const [user] = await usersOf(database.url);
+      expect(user!.email).toBe('valido@example.com');
+      // The name is stored trimmed, the way the contract shapes it.
+      expect(user!.name).toBe('a'.repeat(120));
+    });
+  });
+
+  it('keeps a name with an equals sign whole and trims it', async () => {
+    await withDatabase(async (database) => {
+      // Only the first `=` separates the flag from its value, so `A=B` is the name and not `A`.
+      const answer = await cli(
+        database,
+        ['create-admin', '--email=nome.igual@example.com', '--name=A=B', '--password-stdin'],
+        `${password}\n`,
+      );
+
+      expect({ code: answer.code, stderr: answer.stderr }).toEqual({ code: 0, stderr: '' });
+      const [user] = await usersOf(database.url);
+      expect(user!.name).toBe('A=B');
+    });
+  });
+
   it('reads the password from stdin and rejects it as an argument', async () => {
     await withDatabase(async (database) => {
       // A password in argv is readable by `ps` and lands in shell history, so the CLI refuses it (CLI-06).

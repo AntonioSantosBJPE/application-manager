@@ -1,5 +1,6 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Readable, Writable } from 'node:stream';
+import { NAME_MAX_LENGTH, NAME_MIN_LENGTH, emailSchema, nameSchema } from '@am/contracts';
 import { AccountAdminService } from '../application/account-admin.service.js';
 import { argon2idPasswordHasher } from '../application/password-hasher.js';
 import { SessionService } from '../application/session.service.js';
@@ -43,6 +44,9 @@ interface ParsedArguments {
   passwordFromStdin: boolean;
 }
 
+/** The flags the two commands understand. Anything else is refused, so a typo never becomes a silent default. */
+const knownFlags = new Set(['--email', '--name']);
+
 /** `undefined` with a message when the arguments are not a command: unknown flags, missing values. */
 function parse(argv: string[]): { ok: true; value: ParsedArguments } | { ok: false; error: string } {
   const [command, ...rest] = argv;
@@ -58,27 +62,43 @@ function parse(argv: string[]): { ok: true; value: ParsedArguments } | { ok: fal
       passwordFromStdin = true;
       continue;
     }
-    if (flag === '--password' || flag.startsWith('--password=')) {
+    if (!flag.startsWith('--')) return { ok: false, error: `unexpected argument: ${flag}` };
+
+    // Only the first `=` separates the name from the value, so `--name=A=B` keeps `A=B` whole.
+    const separator = flag.indexOf('=');
+    const name = separator === -1 ? flag : flag.slice(0, separator);
+    const inlineValue = separator === -1 ? undefined : flag.slice(separator + 1);
+    if (name === '--password') {
       // A password in argv is visible to `ps` and shell history, so the CLI never accepts one (CLI-06).
       return { ok: false, error: 'refusing a password on the command line: use --password-stdin or the prompt' };
     }
-    if (!flag.startsWith('--')) return { ok: false, error: `unexpected argument: ${flag}` };
-    const [name, inlineValue] = flag.split('=');
+    if (!knownFlags.has(name)) return { ok: false, error: `unknown flag: ${name}` };
     const value = inlineValue ?? rest[++index];
     if (value === undefined) return { ok: false, error: `missing value for ${name}` };
-    flags.set(name!, value);
+    flags.set(name, value);
   }
 
-  const email = flags.get('--email');
-  if (email === undefined || email.trim() === '') return { ok: false, error: 'missing --email' };
+  const rawEmail = flags.get('--email');
+  if (rawEmail === undefined || rawEmail.trim() === '') return { ok: false, error: 'missing --email' };
+  // The same contract the API uses, so an address typed for an operator is held to one rule (EDGE-01).
+  const parsedEmail = emailSchema.safeParse(rawEmail);
+  if (!parsedEmail.success) return { ok: false, error: `invalid --email: ${rawEmail}` };
+
   if (command === 'reset-password' && flags.has('--name')) {
     return { ok: false, error: 'reset-password does not take --name; it keeps the account as it is' };
   }
-  const name = flags.get('--name');
-  if (command === 'create-admin' && (name === undefined || name.trim() === '')) {
-    return { ok: false, error: 'missing --name' };
+  const rawName = flags.get('--name');
+  if (command === 'create-admin' && rawName === undefined) return { ok: false, error: 'missing --name' };
+  let name: string | undefined;
+  if (rawName !== undefined) {
+    // The contract trims and bounds the name, so a blank or oversized one is refused before the write.
+    const parsedName = nameSchema.safeParse(rawName);
+    if (!parsedName.success) {
+      return { ok: false, error: `invalid --name: it must have between ${NAME_MIN_LENGTH} and ${NAME_MAX_LENGTH} characters` };
+    }
+    name = parsedName.data;
   }
-  return { ok: true, value: { command: { kind: command }, email, name, passwordFromStdin } };
+  return { ok: true, value: { command: { kind: command }, email: parsedEmail.data, name, passwordFromStdin } };
 }
 
 /** Everything standard input carries, read once: the caller sends the password and end-of-file. */
