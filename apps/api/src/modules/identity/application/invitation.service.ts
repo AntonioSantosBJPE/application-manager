@@ -101,12 +101,13 @@ export class InvitationService {
   /**
    * Turns a pending invitation into a member account and a session, in one transaction (INV-07).
    *
-   * The password hash is computed before the transaction opens: Argon2 is slow and holding a
-   * transaction for it would serialize every acceptance behind one. Inside, the invitation is marked
-   * accepted with a conditional `UPDATE` whose row lock serializes two simultaneous accepts, so the
-   * second finds nothing and gets `410` (INV-09). The user is then inserted; if the email turned into
-   * an account while the invitation was pending, the insert changes no row, the transaction rolls
-   * back and the answer is the same `410` (EDGE-05).
+   * The invitation is read first, so an unknown, spent or expired token answers `410` without any
+   * password work. The hash is then computed before the transaction opens: Argon2 is slow and
+   * holding a transaction for it would serialize every acceptance behind one. Inside, the invitation
+   * is marked accepted with a conditional `UPDATE` whose row lock serializes two simultaneous
+   * accepts, so the second finds nothing and gets `410` (INV-09). The user is then inserted; if the
+   * email turned into an account while the invitation was pending, the insert changes no row, the
+   * transaction rolls back and the answer is the same `410` (EDGE-05).
    *
    * A session that accompanied the browser is revoked before the new one starts: a browser keeps one
    * session cookie (INV-10).
@@ -117,11 +118,18 @@ export class InvitationService {
     password: string;
     currentSessionToken?: string;
   }): Promise<AcceptInvitationResult> {
-    const passwordHash = await this.hasher.hash(input.password);
     const tokenHash = hashToken(input.token);
     const now = this.clock.now();
+    // The invitation is checked before the password work: a token that names nothing costs one
+    // indexed read and a `410`, not an Argon2 derivation an unauthenticated caller could trigger.
+    if ((await this.invitations.findPendingByTokenHash(tokenHash, now)) === undefined) {
+      throw new InvitationNotUsableError();
+    }
+    const passwordHash = await this.hasher.hash(input.password);
 
     return this.invitations.transaction(async (tx) => {
+      // The conditional update is still the final proof: the invitation can be spent between the
+      // read above and this point, and then nothing is written (INV-09, EDGE-05).
       const email = await this.invitations.accept(tokenHash, now, tx);
       if (email === undefined) throw new InvitationNotUsableError();
 

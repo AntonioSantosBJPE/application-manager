@@ -12,6 +12,29 @@ const webPublicUrl = 'https://app.example.com';
 
 type Api = Awaited<ReturnType<typeof startApi>>;
 
+/**
+ * Delegates to the real hasher and records what it was asked for. Accepting an invitation costs a
+ * derivation only when there is an invitation to accept (INV-06).
+ */
+function countingHasher() {
+  const calls: string[] = [];
+  return {
+    calls,
+    hash: (raw: string) => {
+      calls.push('hash');
+      return argon2idPasswordHasher.hash(raw);
+    },
+    verify: (phc: string, raw: string) => {
+      calls.push('verify');
+      return argon2idPasswordHasher.verify(phc, raw);
+    },
+    verifyDummy: (raw: string) => {
+      calls.push('verifyDummy');
+      return argon2idPasswordHasher.verifyDummy(raw);
+    },
+  };
+}
+
 async function createUser(databaseUrl: string, email: string, role: 'admin' | 'member'): Promise<string> {
   const [row] = await query<{ id: string }>(
     databaseUrl,
@@ -72,9 +95,12 @@ async function membersOf(databaseUrl: string, email: string) {
   );
 }
 
-async function withApi(run: (api: Api, database: Awaited<ReturnType<typeof createMigratedDatabase>>) => Promise<void>) {
+async function withApi(
+  run: (api: Api, database: Awaited<ReturnType<typeof createMigratedDatabase>>) => Promise<void>,
+  options: { passwordHasher?: ReturnType<typeof countingHasher> } = {},
+) {
   const database = await createMigratedDatabase(inject('databaseUrl'), 'invite_accept');
-  const api = await startApi(database.url, { webPublicUrl });
+  const api = await startApi(database.url, { webPublicUrl, ...options });
   try {
     await run(api, database);
   } finally {
@@ -151,6 +177,28 @@ describe('invalid invitations', () => {
       expect(await membersOf(database.url, 'expirado.accept@example.com')).toEqual([]);
       expect(await membersOf(database.url, 'revogado.accept@example.com')).toEqual([]);
     });
+  });
+
+  it('reads the invitation before hashing the password, so an unknown token costs no derivation', async () => {
+    const hasher = countingHasher();
+    await withApi(async (api, database) => {
+      // An unauthenticated caller could otherwise buy one Argon2 derivation per request by sending
+      // any token: the invitation is what the answer depends on, so it is read first (INV-06).
+      const response = await accept(api.baseUrl, 'never-issued-token', { name: 'Ana', password: newPassword });
+
+      expect(response.status).toBe(410);
+      expect(hasher.calls).toEqual([]);
+      expect(await query(database.url, 'select id from identity.users')).toEqual([]);
+
+      // Control: the same request with a real invitation does derive, so the empty list above is the
+      // early answer and not a hasher that never gets called.
+      const adminToken = await withAdmin(api, database);
+      const created = await invite(api.baseUrl, 'deriva.accept@example.com', adminToken);
+      // The admin sign-in checked its own password; only the acceptance is under observation here.
+      hasher.calls.length = 0;
+      expect((await accept(api.baseUrl, created.token, { name: 'Ana', password: newPassword })).status).toBe(201);
+      expect(hasher.calls).toEqual(['hash']);
+    }, { passwordHasher: hasher });
   });
 });
 
