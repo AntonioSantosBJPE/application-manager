@@ -280,7 +280,26 @@ describe('POST /invitations/:token/accept', () => {
       const statuses = answers.map((answer) => answer.status).sort();
       expect(statuses).toEqual([201, 410]);
       // Exactly one account, with the name of the accept that won (INV-09).
-      expect(await membersOf(database.url, 'corrida.accept@example.com')).toHaveLength(1);
+      const members = await membersOf(database.url, 'corrida.accept@example.com');
+      expect(members).toHaveLength(1);
+
+      // The winner is the one that answered 201, and the stored name is its own: the loser wrote nothing.
+      const winner = answers.findIndex((answer) => answer.status === 201);
+      const winnerName = winner === 0 ? 'Ana Primeira' : 'Ana Segunda';
+      expect(members[0]!.name).toBe(winnerName);
+
+      // Exactly one session for the account, and it is the one the winning answer handed over.
+      const sessions = await query<{ token_hash: string }>(
+        database.url,
+        'select token_hash from identity.sessions where user_id = $1',
+        [members[0]!.id],
+      );
+      expect(sessions).toHaveLength(1);
+      const winningToken = /^am_session=([^;]+)/.exec(answers[winner]!.headers.get('set-cookie') ?? '')![1]!;
+      expect(sessions[0]!.token_hash).toBe(hashToken(winningToken));
+      // The loser handed over no cookie at all.
+      expect(answers[1 - winner]!.headers.get('set-cookie')).toBeNull();
+
       expect((await invitationRow(database.url, created.token)).accepted_at).not.toBeNull();
     });
   });
