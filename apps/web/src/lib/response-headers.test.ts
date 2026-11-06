@@ -29,6 +29,13 @@ describe('responseHeadersFor', () => {
 
   it('does not extend the invite rule to a path that merely starts with the word', () => {
     expect(responseHeadersFor('/invitation')).not.toHaveProperty('referrer-policy');
+    // `/invited` and `/invite-x` are other pages, so the rule must match the segment, not a prefix string.
+    expect(responseHeadersFor('/invited')).toEqual({ 'cache-control': 'no-store' });
+    expect(responseHeadersFor('/invite-x')).toEqual({ 'cache-control': 'no-store' });
+  });
+
+  it('marks every other page no-store, including a path that starts with the status word', () => {
+    expect(responseHeadersFor('/administrator')).toEqual({ 'cache-control': 'no-store' });
   });
 });
 
