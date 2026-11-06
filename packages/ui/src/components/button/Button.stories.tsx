@@ -20,6 +20,11 @@ function resolvedColor(color: string): string {
   return resolved;
 }
 
+/** Waits for a running color transition to finish, so the assertion reads the settled value. */
+async function settle(element: Element): Promise<void> {
+  await Promise.all(element.getAnimations().map((animation) => animation.finished.catch(() => {})));
+}
+
 export const Primario: Story = {
   name: 'Primário',
   args: { intent: 'primary', children: 'Entrar' },
@@ -49,6 +54,7 @@ export const TemaClaro: Story = {
     const button = canvas.getByRole('button', { name: 'Entrar' });
 
     await expect(document.documentElement).toHaveAttribute('data-theme', 'light');
+    await settle(button);
     // The light value of --color-accent in tokens.css.
     await expect(getComputedStyle(button).backgroundColor).toBe(resolvedColor('oklch(0.52 0.17 265)'));
     // The light value of --color-on-accent in tokens.css.
@@ -65,6 +71,7 @@ export const TemaEscuro: Story = {
     const button = canvas.getByRole('button', { name: 'Entrar' });
 
     await expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
+    await settle(button);
     // The dark value of --color-accent in tokens.css.
     await expect(getComputedStyle(button).backgroundColor).toBe(resolvedColor('oklch(0.72 0.15 265)'));
     // The dark value of --color-on-accent in tokens.css.
