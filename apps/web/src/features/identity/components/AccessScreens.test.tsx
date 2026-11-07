@@ -49,4 +49,17 @@ describe('UnavailableScreen', () => {
 
     expect(onRetry).toHaveBeenCalledTimes(1);
   });
+
+  it('reloads the route when no retry is given', () => {
+    const reload = vi.fn();
+    const original = window.location;
+    Object.defineProperty(window, 'location', { configurable: true, value: { ...original, reload } });
+    try {
+      render(<UnavailableScreen />);
+      fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+      expect(reload).toHaveBeenCalledTimes(1);
+    } finally {
+      Object.defineProperty(window, 'location', { configurable: true, value: original });
+    }
+  });
 });

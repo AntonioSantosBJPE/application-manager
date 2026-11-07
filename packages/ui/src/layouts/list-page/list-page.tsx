@@ -50,7 +50,7 @@ function Content({ className, ...props }: ComponentProps<'div'>) {
 
 /**
  * One row of the collection (a `li`, inside a `ul` the caller owns). The row wraps: on a narrow screen the
- * text takes the whole line and the action drops below it, so no column is squeezed (UI-26).
+ * text takes the whole line and the action drops below it, so no column is squeezed (UI-28).
  */
 function Row({ className, ...props }: ComponentProps<'li'>) {
   return (

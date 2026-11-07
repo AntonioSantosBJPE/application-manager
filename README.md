@@ -80,7 +80,7 @@ roadmap → discovery → spec → tarefas → execução + verificação → PR
 ```
 .design/              design confirmado (decisões, fatias, schema, contratos)
 .specs/               specs, tarefas e provas de cada feature
-.github/workflows/    CI (lint, tipos, segredos; testes e imagens desligados até o fluxo da VPS)
+.github/workflows/    CI (lint, tipos, testes unitários e de integração, segredos; E2E e imagens desligados até o fluxo da VPS)
 docs/                 brief, diretrizes de engenharia, princípios de design, roadmap, workflow
 scripts/              utilitários do repositório (scan de segredos)
 .agents/skills/       skills usadas no fluxo (espelhadas em .claude/skills/)
@@ -139,7 +139,8 @@ Na primeira vez, o Playwright precisa do Chromium: `pnpm --filter @am/ui exec pl
 | [docs/engineering-guidelines.md](docs/engineering-guidelines.md) | Arquitetura, testes, portabilidade, infra, observabilidade e segurança |
 | [docs/design/principles.md](docs/design/principles.md) | Direção visual, arquétipos de página e proibições de UI |
 | [docs/roadmap.md](docs/roadmap.md) | Agora, próximo, depois e ideias, com o que antecipa cada item |
-| [docs/workflow.md](docs/workflow.md) | Como uma feature vai do roadmap à `main` |
+| [docs/workflow.md](docs/workflow.md) | Como uma feature vai do roadmap à `main`, e o orçamento de tempo dos gates |
+| [docs/guia-teste-manual.md](docs/guia-teste-manual.md) | Roteiro para testar manualmente o estado atual |
 | [.design/application-manager.md](.design/application-manager.md) | Design confirmado das fases 0 a 2 |
 
 ## Créditos

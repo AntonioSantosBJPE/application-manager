@@ -1232,6 +1232,7 @@ Proof: run web | ✓ InvitationsPanel > moves the focus to the next row after re
 
 **C107** - A tela de serviço indisponível oferece "Tentar novamente", que roda a nova tentativa (UI-27, AC 27)
 Proof: run web | ✓ UnavailableScreen > offers Tentar novamente, which runs the retry
+Proof: run web | ✓ UnavailableScreen > reloads the route when no retry is given
 
 **C108** - A tela de acesso negado oferece "Sair" quando há sessão, e entrega a saída ao terminar a sessão (UI-27, AC 27)
 Proof: run web | ✓ NoAccessScreen > offers Sair when there is a session, and hands over once it ends

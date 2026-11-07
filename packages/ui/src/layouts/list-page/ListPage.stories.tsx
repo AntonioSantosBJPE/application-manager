@@ -112,7 +112,7 @@ export const TemaEscuro: Story = {
 const longEmail = `${'a'.repeat(60)}@${'d'.repeat(55)}.example.com`;
 
 /**
- * A row at 375 px (UI-26): the text takes the whole line instead of a squeezed column, the action stays
+ * A row at 375 px (UI-28): the text takes the whole line instead of a squeezed column, the action stays
  * inside the viewport and the page has no horizontal scroll.
  */
 export const LinhaEstreita: Story = {
