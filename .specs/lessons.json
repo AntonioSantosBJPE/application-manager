@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 9,
+  "next_id": 14,
   "lessons": [
     {
       "id": "L-001",
@@ -149,6 +149,96 @@
       ],
       "created": "2026-11-03T11:30:15Z",
       "last_seen": "2026-11-03T11:30:15Z"
+    },
+    {
+      "id": "L-009",
+      "key": "weak_test::prove each half of a two part rule with a test that fails when that half alone is mutated",
+      "text": "Prove each half of a two-part rule with a test that fails when that half alone is mutated",
+      "signal": "weak_test",
+      "scope": "api",
+      "status": "candidate",
+      "features": [
+        "identity"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 1 (LOCK-06) (api)"
+      ],
+      "created": "2026-11-07T18:08:07Z",
+      "last_seen": "2026-11-07T18:08:07Z"
+    },
+    {
+      "id": "L-010",
+      "key": "weak_test::test a platform dependent i o path against the real implementation not only an injected fake",
+      "text": "Test a platform-dependent I/O path against the real implementation, not only an injected fake",
+      "signal": "weak_test",
+      "scope": "cli",
+      "status": "candidate",
+      "features": [
+        "identity"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 6 (CLI-06) (cli)"
+      ],
+      "created": "2026-11-07T18:08:07Z",
+      "last_seen": "2026-11-07T18:08:07Z"
+    },
+    {
+      "id": "L-011",
+      "key": "weak_test::run accessibility scans on every state of a screen including alerts dialogs and error screens not only the resting one",
+      "text": "Run accessibility scans on every state of a screen, including alerts, dialogs and error screens, not only the resting one",
+      "signal": "weak_test",
+      "scope": "web",
+      "status": "candidate",
+      "features": [
+        "identity"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 8 (UI-22) (web)"
+      ],
+      "created": "2026-11-07T18:08:07Z",
+      "last_seen": "2026-11-07T18:08:07Z"
+    },
+    {
+      "id": "L-012",
+      "key": "weak_test::give every submit control a test that holds the pending state and blocks a double submit",
+      "text": "Give every submit control a test that holds the pending state and blocks a double submit",
+      "signal": "weak_test",
+      "scope": "web",
+      "status": "candidate",
+      "features": [
+        "identity"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 11 (UI-23) (web)"
+      ],
+      "created": "2026-11-07T18:08:07Z",
+      "last_seen": "2026-11-07T18:08:07Z"
+    },
+    {
+      "id": "L-013",
+      "key": "gate_fail::keep per commit gates under a minute and move whole repo meta tests into their own job since a test that reruns the repo saturates the machine and times out the rest",
+      "text": "Keep per-commit gates under a minute and move whole-repo meta-tests into their own job, since a test that reruns the repo saturates the machine and times out the rest",
+      "signal": "gate_fail",
+      "scope": "repo",
+      "status": "candidate",
+      "features": [
+        "identity"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "proofs.md C68 and root-commands timeouts (repo)"
+      ],
+      "created": "2026-11-07T18:08:07Z",
+      "last_seen": "2026-11-07T18:08:07Z"
     }
   ]
 }

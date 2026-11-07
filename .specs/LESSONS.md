@@ -62,6 +62,36 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: C35 (ui)
 - last seen: 2026-11-03T11:30:15Z
 
+### L-009 - Prove each half of a two-part rule with a test that fails when that half alone is mutated
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `api` · harmful: 0
+- features: identity
+- evidence: verification.md finding 1 (LOCK-06) (api)
+- last seen: 2026-11-07T18:08:07Z
+
+### L-010 - Test a platform-dependent I/O path against the real implementation, not only an injected fake
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `cli` · harmful: 0
+- features: identity
+- evidence: verification.md finding 6 (CLI-06) (cli)
+- last seen: 2026-11-07T18:08:07Z
+
+### L-011 - Run accessibility scans on every state of a screen, including alerts, dialogs and error screens, not only the resting one
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `web` · harmful: 0
+- features: identity
+- evidence: verification.md finding 8 (UI-22) (web)
+- last seen: 2026-11-07T18:08:07Z
+
+### L-012 - Give every submit control a test that holds the pending state and blocks a double submit
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `web` · harmful: 0
+- features: identity
+- evidence: verification.md finding 11 (UI-23) (web)
+- last seen: 2026-11-07T18:08:07Z
+
+### L-013 - Keep per-commit gates under a minute and move whole-repo meta-tests into their own job, since a test that reruns the repo saturates the machine and times out the rest
+- signal: `gate_fail` · recurrence: 1 feature(s) · scope: `repo` · harmful: 0
+- features: identity
+- evidence: proofs.md C68 and root-commands timeouts (repo)
+- last seen: 2026-11-07T18:08:07Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
