@@ -1,4 +1,14 @@
-export { adminLogin, endSession, loadSession, getSession, memberLogin, type SessionState } from './api/server-functions';
+export {
+  adminLogin,
+  endSession,
+  getSession,
+  joinWithInvitation,
+  loadSession,
+  memberLogin,
+  openInvitation,
+  type SessionState,
+} from './api/server-functions';
+export { AcceptInvitationForm, type AcceptInvitationFormProps } from './components/AcceptInvitationForm';
 export { NoAccessScreen, UnavailableScreen } from './components/AccessScreens';
 export { LoginForm, type LoginFormProps } from './components/LoginForm';
 export { SessionMenu, type SessionMenuProps } from './components/SessionMenu';

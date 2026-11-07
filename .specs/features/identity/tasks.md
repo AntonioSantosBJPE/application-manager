@@ -806,8 +806,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Pendente, `410` ao abrir e `410` ao enviar testados; regra de 12 caracteres visível
-- [ ] Gate check passes: `pnpm test`
+- [x] Pendente, `410` ao abrir e `410` ao enviar testados; regra de 12 caracteres visível
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick

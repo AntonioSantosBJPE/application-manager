@@ -8,7 +8,9 @@ import {
   adminLogin,
   endSession,
   getSession,
+  joinWithInvitation,
   memberLogin,
+  openInvitation,
   type SessionState,
 } from './features/identity';
 import { routeTree } from './routeTree.gen';
@@ -21,6 +23,8 @@ vi.mock('./features/identity/api/server-functions', async (importOriginal) => ({
   endSession: vi.fn(),
   memberLogin: vi.fn(),
   adminLogin: vi.fn(),
+  openInvitation: vi.fn(),
+  joinWithInvitation: vi.fn(),
 }));
 
 const member: MeResponse = {
@@ -246,5 +250,45 @@ describe('login doors', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
 
     await waitFor(() => expect(here(router)).toBe('/admin'));
+  });
+});
+
+describe('invitation screen', () => {
+  const details = { email: 'novo@example.test', expiresAt: '2026-11-13T12:00:00.000Z' };
+
+  it('opens the home signed in after Criar conta', async () => {
+    sessionIs(anonymous);
+    vi.mocked(openInvitation).mockResolvedValue({ ok: true, data: details });
+    vi.mocked(joinWithInvitation).mockImplementation(async () => {
+      sessionIs(signedInAs(member));
+      return { ok: true, data: undefined };
+    });
+    const router = await open('/invite/token-from-the-link');
+
+    expect(await screen.findByLabelText('E-mail')).toHaveValue('novo@example.test');
+    fireEvent.change(screen.getByLabelText('Nome'), { target: { value: 'Ana Souza' } });
+    fireEvent.change(screen.getByLabelText('Senha'), {
+      target: { value: 'a long enough password' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Criar conta' }));
+
+    await waitFor(() => expect(here(router)).toBe('/'));
+    expect(vi.mocked(openInvitation)).toHaveBeenCalledWith({ data: 'token-from-the-link' });
+    expect(vi.mocked(joinWithInvitation)).toHaveBeenCalledWith({
+      data: { token: 'token-from-the-link', name: 'Ana Souza', password: 'a long enough password' },
+    });
+    expect(await screen.findByRole('heading', { name: 'Início' })).toBeInTheDocument();
+  });
+
+  it('shows the invalid message and no form for a dead link', async () => {
+    sessionIs(anonymous);
+    vi.mocked(openInvitation).mockResolvedValue({ ok: false, status: 410 });
+
+    await open('/invite/dead-token');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Este convite não é mais válido. Peça um novo ao administrador.',
+    );
+    expect(screen.queryByRole('button', { name: 'Criar conta' })).toBeNull();
   });
 });
