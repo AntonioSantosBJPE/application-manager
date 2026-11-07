@@ -825,8 +825,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Cada controle e estado da spec testado, incluindo falha de cópia e lista vazia
-- [ ] Gate check passes: `pnpm test`
+- [x] Cada controle e estado da spec testado, incluindo falha de cópia e lista vazia
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick

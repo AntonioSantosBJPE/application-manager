@@ -1,5 +1,12 @@
 import { AppShell } from '@am/ui';
-import { createFileRoute, Link, Outlet, redirect, useRouter } from '@tanstack/react-router';
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  redirect,
+  useRouter,
+  useRouterState,
+} from '@tanstack/react-router';
 import {
   adminAreaAccess,
   endSession,
@@ -27,14 +34,18 @@ export const Route = createFileRoute('/admin/_protected')({
 function AdminLayout() {
   const { access } = Route.useRouteContext();
   const router = useRouter();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   if (access.kind === 'forbidden') return <NoAccessScreen />;
   if (access.kind !== 'allowed') return <UnavailableScreen />;
 
   return (
     <AppShell.Root>
       <AppShell.Sidebar aria-label="Navegação da administração">
-        <AppShell.NavItem asChild current>
+        <AppShell.NavItem asChild current={pathname === '/admin' || pathname === '/admin/'}>
           <Link to="/admin">Painel</Link>
+        </AppShell.NavItem>
+        <AppShell.NavItem asChild current={pathname.startsWith('/admin/invitations')}>
+          <Link to="/admin/invitations">Convites</Link>
         </AppShell.NavItem>
         <SessionMenu
           user={access.user}
