@@ -30,6 +30,12 @@ const io: CliIo = {
 
 try {
   process.exitCode = await runIdentityCli(process.argv.slice(2), io);
+} catch {
+  // A database error is reported as one line: the driver's own message repeats the query and, with
+  // it, the password hash the command just computed, which is credential material (AUTH-18). The
+  // details stay out of the log, and the operator sees that the command failed, not why verbatim.
+  io.stderr.write('the command could not reach the database; nothing was changed\n');
+  process.exitCode = 1;
 } finally {
   await pool.end();
 }

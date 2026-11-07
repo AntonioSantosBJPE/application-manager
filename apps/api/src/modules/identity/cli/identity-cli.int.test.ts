@@ -46,11 +46,11 @@ function buildEntrypoint(): Promise<void> {
  * Runs the compiled entrypoint the way an operator does: `node dist/cli.js <args>` against a real
  * Postgres, with the password reaching it on standard input (CLI-06).
  */
-function cli(database: Database, args: string[], stdin = ''): Promise<CliAnswer> {
+function cliAt(databaseUrl: string, args: string[], stdin = ''): Promise<CliAnswer> {
   return new Promise((resolve, reject) => {
     const child = spawn('node', [entrypoint, ...args], {
       cwd: apiRoot,
-      env: { ...process.env, DATABASE_URL: database.url, LOG_LEVEL: 'error' },
+      env: { ...process.env, DATABASE_URL: databaseUrl, LOG_LEVEL: 'error' },
     });
     let stdout = '';
     let stderr = '';
@@ -64,6 +64,10 @@ function cli(database: Database, args: string[], stdin = ''): Promise<CliAnswer>
     child.on('close', (code) => resolve({ code: code ?? -1, stdout, stderr }));
     child.stdin.end(stdin);
   });
+}
+
+function cli(database: Database, args: string[], stdin = ''): Promise<CliAnswer> {
+  return cliAt(database.url, args, stdin);
 }
 
 /** Runs the command in process, with a prompt the test answers and a standard input of its own. */
@@ -346,8 +350,32 @@ describe('identity cli', () => {
     });
   });
 
-  it('without --password-stdin reads the password only from the prompt', async () => {
-    await withDatabase(async (database) => {
+  it('prints one line and exits 1 when the database is unreachable', async () => {
+    // A port nothing listens on: the command fails at the first query, after hashing the password.
+    // The hash is credential material, so the message cannot carry the driver's error, whose own
+    // message repeats the query parameters (AUTH-18).
+    const answer = await cliAt('postgres://nobody:nobody@127.0.0.1:1/nothing', [
+      'create-admin',
+      '--email',
+      'sem-banco@example.com',
+      '--name',
+      'Sem Banco',
+      '--password-stdin',
+    ], `${password}\n`);
+
+    expect(answer.code).toBe(1);
+    expect(answer.stderr).not.toContain(password);
+    // Neither the Argon2id hash of the password nor the driver's parameter list reaches the log.
+    expect(answer.stderr).not.toMatch(/\$argon2id\$/);
+    expect(answer.stderr).not.toContain('params:');
+    expect(answer.stderr).not.toContain('sem-banco@example.com');
+    expect(answer.stderr).not.toContain('Failed query');
+    // One line, so a container log shows a refusal and not a stack trace.
+    expect(answer.stderr.trim().split('\n')).toHaveLength(1);
+    expect(answer.stdout).toBe('');
+  }, 120_000);
+
+  it('without --password-stdin reads the password only from the prompt', async () => {    await withDatabase(async (database) => {
       const prompted = await runWithPrompt(database, ['create-admin', '--email', 'prompt@example.com', '--name', 'Prompt'], {
         // Standard input carries something else entirely; only what the prompt asks for is used (CLI-06).
         stdin: `${password}\n`,
