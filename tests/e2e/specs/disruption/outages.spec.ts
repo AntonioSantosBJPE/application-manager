@@ -1,5 +1,5 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
-import { composeOk, waitHealthy } from '../../support/compose.js';
+import { compose, composeOk, inspectService, waitHealthy } from '../../support/compose.js';
 import { visibleText } from '../../support/html.js';
 
 async function statusPage(request: APIRequestContext): Promise<{ status: number; text: string }> {
@@ -79,15 +79,32 @@ test.describe('outages', () => {
 
   test('web stays healthy through /status when the api is down', async () => {
     // EDGE-06: the healthcheck of the web asks its own page, which answers 200 even with the api down, so
-    // an outage of the api never restarts the web.
+    // an outage of the api never restarts the web. Two facts have to hold, and the health state of the
+    // container proves neither on its own: the healthcheck asks `/status`, and its own command still
+    // exits 0 with the api stopped. The web was healthy before the outage and a healthcheck only re-runs
+    // after its interval, so `web healthy` is true during the outage either way.
+    const healthcheck = inspectService('web').Config.Healthcheck;
+    expect(healthcheck, 'the web declares a healthcheck').toBeDefined();
+    const command = healthcheck!.Test.join(' ');
+    // The page it asks is `/status`, not `/`: `/` needs the api, and a healthcheck on it would restart
+    // the web on every api outage. The path is read from the command the container actually runs.
+    expect(command, 'the healthcheck asks /status').toContain('/status');
+
     composeOk(['stop', 'api']);
     try {
+      // The very command of the healthcheck, run inside the running container: exit 0 means the page it
+      // asks answered ok while the api was gone.
+      const probe = compose(['exec', '-T', 'web', ...healthcheck!.Test.slice(1)]);
+      expect(probe.status, `the healthcheck command failed with the api down:\n${probe.output}`).toBe(0);
+
+      // And the container's own health history agrees: the last run of the outage exited 0, so Docker will
+      // not restart the web for it.
       await expect
-        .poll(
-          () => composeOk(['ps', '--format', '{{.Service}} {{.Health}}', 'web']).trim().split('\n')[0],
-          { timeout: 30_000 },
-        )
-        .toBe('web healthy');
+        .poll(() => inspectService('web').State.Health?.Log.at(-1)?.ExitCode, {
+          message: 'the last healthcheck run of the outage exits 0',
+          timeout: 30_000,
+        })
+        .toBe(0);
     } finally {
       composeOk(['start', 'api']);
       await waitHealthy('api');
