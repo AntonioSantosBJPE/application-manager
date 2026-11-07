@@ -55,12 +55,13 @@ function Row({
 }) {
   return (
     <li className="flex items-center justify-between gap-3 border-b border-border py-2 text-xs">
-      <span>{invitation.email}</span>
+      <span className="min-w-0 break-all">{invitation.email}</span>
       <ConfirmDialog
         trigger={
           <Button
             intent="secondary"
             size="sm"
+            className="shrink-0"
             aria-label={`Revogar convite de ${invitation.email}`}
           >
             Revogar

@@ -1,9 +1,10 @@
 import { createHash, randomUUID } from 'node:crypto';
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Browser, type BrowserContext, type Page } from '@playwright/test';
+import { expect, test, type Browser, type BrowserContext, type Locator, type Page } from '@playwright/test';
 import { composeOk, psql } from '../../support/compose.js';
 import {
   createAdminOk,
+  EMAIL_DOMAIN,
   expireInvitations,
   expireSessions,
   fixtureEmail,
@@ -657,6 +658,60 @@ test.describe('identity', () => {
       await anonymous.close();
       await admin.close();
       await member.context.close();
+    }
+  });
+
+  test('a long invitation email and link stay inside the page in both themes and widths', async ({ browser }) => {
+    // UI-25: an email or a link wider than the line wraps instead of pushing "Revogar" or "Copiar" out of the
+    // viewport or making the page scroll sideways. The emails have no break opportunity of their own, which is
+    // the worst case for a row, and each pass invites a new one so the link block is on screen right after
+    // "Convidar", the only moment the link exists.
+    const context = await browser.newContext();
+    try {
+      const page = await context.newPage();
+      await signIn(page, 'admin', adminEmail, adminPassword);
+      const insideViewport = async (locator: Locator, label: string): Promise<void> => {
+        await expect(locator, label).toBeVisible();
+        const box = await locator.boundingBox();
+        const width = page.viewportSize()!.width;
+        expect(box, label).not.toBeNull();
+        expect(box!.x, `${label} starts inside the viewport`).toBeGreaterThanOrEqual(0);
+        expect(box!.x + box!.width, `${label} ends inside the viewport`).toBeLessThanOrEqual(width);
+      };
+
+      for (const scheme of ['light', 'dark'] as const) {
+        for (const width of [375, 1280]) {
+          const label = `long invitation ${scheme} ${width}`;
+          const email = `${randomUUID().slice(0, 8)}long${'a'.repeat(52)}@${'d'.repeat(55)}.${EMAIL_DOMAIN}`;
+          expect(email.length, 'the email is wider than any row').toBeGreaterThan(100);
+
+          await page.setViewportSize({ width, height: 900 });
+          await page.emulateMedia({ colorScheme: scheme });
+          await page.goto('/admin/invitations');
+          await page.getByLabel('E-mail a convidar').fill(email);
+          await page.getByRole('button', { name: 'Convidar' }).click();
+          await expect(page.getByLabel('Link do convite'), label).toBeVisible();
+
+          await insideViewport(page.getByRole('button', { name: 'Copiar' }), `${label} Copiar`);
+          await insideViewport(page.getByRole('button', { name: `Revogar convite de ${email}` }), `${label} Revogar`);
+          const overflow = await page.evaluate(
+            () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          );
+          expect(overflow, `${label} scrolls horizontally`).toBeLessThanOrEqual(1);
+          // The whole link is in the box, wrapped, not cut by it.
+          const link = page.getByLabel('Link do convite');
+          expect(
+            await link.evaluate((element) => element.scrollWidth - element.clientWidth),
+            `${label} link hides width`,
+          ).toBeLessThanOrEqual(0);
+          expect(
+            await link.evaluate((element) => element.scrollHeight - element.clientHeight),
+            `${label} link hides lines`,
+          ).toBeLessThanOrEqual(0);
+        }
+      }
+    } finally {
+      await context.close();
     }
   });
 
