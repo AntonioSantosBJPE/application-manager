@@ -34,7 +34,7 @@ export function ConfirmDialog({
         <AlertDialog.Overlay className="fixed inset-0 bg-surface opacity-80" />
         <AlertDialog.Content className="fixed left-1/2 top-1/2 flex w-full max-w-md -translate-x-1/2 -translate-y-1/2 flex-col gap-3 rounded-md border border-border bg-surface-raised p-4 text-text">
           <AlertDialog.Title className="text-sm font-medium">{title}</AlertDialog.Title>
-          <AlertDialog.Description className="text-xs [overflow-wrap:anywhere] text-text-muted">
+          <AlertDialog.Description className="text-xs wrap-anywhere text-text-muted">
             {description}
           </AlertDialog.Description>
           <div className="flex justify-end gap-2">
