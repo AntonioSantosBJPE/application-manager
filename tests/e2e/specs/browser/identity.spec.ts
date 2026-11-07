@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Browser, type BrowserContext, type Locator, type Page } from '@playwright/test';
-import { composeOk, psql } from '../../support/compose.js';
+import { composeOk, psql, waitHealthy } from '../../support/compose.js';
 import {
   createAdminOk,
   EMAIL_DOMAIN,
@@ -23,6 +23,7 @@ import {
 
 const WRONG_CREDENTIALS = 'E-mail ou senha incorretos.';
 const EXPIRED_NOTICE = 'Sua sessão expirou. Entre novamente.';
+const MESSAGES_UNAVAILABLE = 'Serviço indisponível. Tente novamente em instantes.';
 const INVALID_INVITATION = 'Este convite não é mais válido. Peça um novo ao administrador.';
 
 const adminEmail = fixtureEmail('admin');
@@ -573,7 +574,9 @@ test.describe('identity', () => {
     // UI-22: every screen of the feature, in the light and the dark theme, at a phone and a desktop width.
     // Each screen is opened in the context of the role that sees it, so what is scanned is the screen a
     // person of that role actually gets: the login doors, the invite link good and dead, the member home,
-    // the no-access screen and both screens of the admin area.
+    // the no-access screen and both screens of the admin area. The states that appear only after an action are
+    // scanned too: the link block right after "Convidar", the open revoke confirmation, the alerts of a refused
+    // login (401, 429, expired session) and the unavailable screen of a stopped api.
     const anonymous = await browser.newContext();
     const admin = await browser.newContext();
     const member = await createMemberIn(browser, 'Pessoa da Acessibilidade');
@@ -586,10 +589,31 @@ test.describe('identity', () => {
       expireInvitations(expiredEmail);
 
       const anonymousPage = await anonymous.newPage();
+
+      // An email locked out by five wrong attempts, so the 429 alert can be opened in every theme and width.
+      // A blocked attempt records no failure, so the lock stays for the whole test.
+      const lockedEmail = fixtureEmail('locked');
+      const attemptWith = async (email: string): Promise<void> => {
+        await anonymousPage.goto('/login');
+        await anonymousPage.getByLabel('E-mail').fill(email);
+        await anonymousPage.getByLabel('Senha').fill(fixturePassword('wrong'));
+        await anonymousPage.getByRole('button', { name: 'Entrar' }).click();
+      };
+      for (let attempt = 0; attempt < 5; attempt += 1) {
+        await attemptWith(lockedEmail);
+        await expect(anonymousPage.getByRole('alert')).toHaveText(WRONG_CREDENTIALS);
+      }
+
       // Each screen carries a marker of its own: the login form, the invited email, the invalid message,
       // the member home, the no-access message, the dashboard and the invitations. A screen that silently
       // redirected would be scanned as another one without the marker, and the marker stops that.
-      const screens = [
+      const screens: {
+        page: Page;
+        path: string;
+        name: string;
+        open?: () => Promise<void>;
+        marker: () => Locator;
+      }[] = [
         { page: anonymousPage, path: '/login', name: 'login', marker: () => anonymousPage.getByRole('button', { name: 'Entrar' }) },
         {
           page: anonymousPage,
@@ -633,26 +657,92 @@ test.describe('identity', () => {
           name: 'admin invitations',
           marker: () => adminPage.getByRole('heading', { name: 'Convites' }),
         },
+        {
+          page: adminPage,
+          path: '/admin/invitations',
+          name: 'invitation link block',
+          // The link exists only right after "Convidar", so each pass creates a new invitation.
+          open: async () => {
+            await adminPage.goto('/admin/invitations');
+            await adminPage.getByLabel('E-mail a convidar').fill(memberEmail());
+            await adminPage.getByRole('button', { name: 'Convidar' }).click();
+          },
+          marker: () => adminPage.getByLabel('Link do convite'),
+        },
+        {
+          page: adminPage,
+          path: '/admin/invitations',
+          name: 'revoke confirmation',
+          open: async () => {
+            await adminPage.goto('/admin/invitations');
+            await adminPage.getByRole('button', { name: /^Revogar convite de / }).first().click();
+          },
+          marker: () => adminPage.getByRole('alertdialog', { name: 'Revogar convite' }),
+        },
+        {
+          page: anonymousPage,
+          path: '/login',
+          name: 'login 401',
+          open: () => attemptWith(memberEmail()),
+          marker: () => anonymousPage.getByRole('alert').filter({ hasText: WRONG_CREDENTIALS }),
+        },
+        {
+          page: anonymousPage,
+          path: '/login',
+          name: 'login 429',
+          open: () => attemptWith(lockedEmail),
+          marker: () => anonymousPage.getByRole('alert').filter({ hasText: /^Muitas tentativas\. Tente novamente em \d+ min\.$/ }),
+        },
+        {
+          page: anonymousPage,
+          path: '/login?redirect=%2F&reason=expired',
+          name: 'login expired',
+          marker: () => anonymousPage.getByText(EXPIRED_NOTICE),
+        },
       ];
+      const scan = async (page: Page, label: string): Promise<void> => {
+        const results = await new AxeBuilder({ page }).analyze();
+        expect(
+          results.violations.map((violation) => `${label}: ${violation.id} ${violation.help}`),
+        ).toEqual([]);
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        );
+        expect(overflow, `${label} scrolls horizontally`).toBeLessThanOrEqual(1);
+      };
       for (const scheme of ['light', 'dark'] as const) {
         for (const width of [375, 1280]) {
           for (const screen of screens) {
             const label = `${screen.name} ${scheme} ${width}`;
             await screen.page.setViewportSize({ width, height: 900 });
             await screen.page.emulateMedia({ colorScheme: scheme });
-            await screen.page.goto(screen.path);
+            if (screen.open === undefined) await screen.page.goto(screen.path);
+            else await screen.open();
             await expect(screen.marker(), label).toBeVisible();
-            await expect(screen.page.getByRole('main'), label).toBeVisible();
-            const results = await new AxeBuilder({ page: screen.page }).analyze();
-            expect(
-              results.violations.map((violation) => `${label}: ${violation.id} ${violation.help}`),
-            ).toEqual([]);
-            const overflow = await screen.page.evaluate(
-              () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-            );
-            expect(overflow, `${label} scrolls horizontally`).toBeLessThanOrEqual(1);
+            await expect(screen.page.locator('main'), label).toBeVisible();
+            await scan(screen.page, label);
           }
         }
+      }
+
+      // The unavailable screen needs the api down, so it is the last one: the api is brought back and
+      // waited for before anything else runs.
+      composeOk(['stop', 'api']);
+      try {
+        for (const scheme of ['light', 'dark'] as const) {
+          for (const width of [375, 1280]) {
+            const label = `unavailable ${scheme} ${width}`;
+            await anonymousPage.setViewportSize({ width, height: 900 });
+            await anonymousPage.emulateMedia({ colorScheme: scheme });
+            await anonymousPage.goto('/');
+            await expect(anonymousPage.getByText(MESSAGES_UNAVAILABLE), label).toBeVisible();
+            await expect(anonymousPage.getByRole('main'), label).toBeVisible();
+            await scan(anonymousPage, label);
+          }
+        }
+      } finally {
+        composeOk(['start', 'api']);
+        await waitHealthy('api');
       }
     } finally {
       await anonymous.close();
@@ -698,6 +788,19 @@ test.describe('identity', () => {
             () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
           );
           expect(overflow, `${label} scrolls horizontally`).toBeLessThanOrEqual(1);
+
+          // The confirmation repeats the email in its text: opened, it fits the viewport with its actions.
+          await page.getByRole('button', { name: `Revogar convite de ${email}` }).click();
+          const dialog = page.getByRole('alertdialog', { name: 'Revogar convite' });
+          await insideViewport(dialog, `${label} dialog`);
+          await insideViewport(dialog.getByRole('button', { name: 'Cancelar' }), `${label} dialog Cancelar`);
+          await insideViewport(dialog.getByRole('button', { name: 'Revogar' }), `${label} dialog Revogar`);
+          expect(
+            await dialog.evaluate((element) => element.scrollWidth - element.clientWidth),
+            `${label} dialog text hides width`,
+          ).toBeLessThanOrEqual(0);
+          await page.keyboard.press('Escape');
+          await expect(dialog, label).toBeHidden();
           // The whole link is in the box, wrapped, not cut by it.
           const link = page.getByLabel('Link do convite');
           expect(
@@ -788,19 +891,6 @@ test.describe('identity invitations', () => {
     const context = await browser.newContext();
     const email = memberEmail();
     try {
-
-          // The confirmation repeats the email in its text: opened, it fits the viewport with its actions.
-          await page.getByRole('button', { name: `Revogar convite de ${email}` }).click();
-          const dialog = page.getByRole('alertdialog', { name: 'Revogar convite' });
-          await insideViewport(dialog, `${label} dialog`);
-          await insideViewport(dialog.getByRole('button', { name: 'Cancelar' }), `${label} dialog Cancelar`);
-          await insideViewport(dialog.getByRole('button', { name: 'Revogar' }), `${label} dialog Revogar`);
-          expect(
-            await dialog.evaluate((element) => element.scrollWidth - element.clientWidth),
-            `${label} dialog text hides width`,
-          ).toBeLessThanOrEqual(0);
-          await page.keyboard.press('Escape');
-          await expect(dialog, label).toBeHidden();
       const page = await context.newPage();
       await signIn(page, 'admin', adminEmail, adminPassword);
       const inviteUrl = await inviteFromScreen(page, email);
