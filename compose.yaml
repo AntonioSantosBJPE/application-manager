@@ -50,7 +50,9 @@ services:
       WEB_PUBLIC_URL: ${WEB_PUBLIC_URL:?set WEB_PUBLIC_URL}
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
     ports:
-      - "${API_PORT:-3333}:3333"
+      # Loopback only, like the database: the browser reaches the api through the web, and a published
+      # port would let anyone on the network impersonate the address the lockout counts (AD-004, LOCK-09).
+      - "127.0.0.1:${API_PORT:-3333}:3333"
     depends_on:
       migrate:
         condition: service_completed_successfully

@@ -863,8 +863,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] IPs diferentes contam em separado; `X-Forwarded-For` falso não muda a contagem
-- [ ] Gate check passes: `pnpm test && pnpm test:e2e`
+- [x] IPs diferentes contam em separado; `X-Forwarded-For` falso não muda a contagem
+- [x] Gate check passes: `pnpm test && pnpm test:e2e`
 
 **Tests**: e2e
 **Gate**: full

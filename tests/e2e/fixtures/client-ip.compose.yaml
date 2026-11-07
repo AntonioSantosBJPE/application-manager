@@ -1,0 +1,8 @@
+# Override of the e2e stack. In production a reverse proxy sits in front of the web and fills one header
+# with the browser address; here the test does, so the stack runs under the condition LOCK-09/LOCK-10
+# describe. The name is deliberately not `X-Forwarded-For`: a browser sends that one itself, and the web
+# must never read it.
+services:
+  web:
+    environment:
+      CLIENT_IP_HEADER: x-am-e2e-client-ip

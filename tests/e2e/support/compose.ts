@@ -4,8 +4,8 @@ import { run, runOk, repoRoot, type CommandResult } from './docker.js';
 export const projectName = process.env.COMPOSE_PROJECT_NAME ?? 'application-manager';
 
 /** Runs `docker compose <args>` for this checkout and returns the result without throwing on a non-zero exit. */
-export function compose(args: string[], env: NodeJS.ProcessEnv = process.env): CommandResult {
-  return run('docker', ['compose', ...args], { env });
+export function compose(args: string[], env: NodeJS.ProcessEnv = process.env, input?: string): CommandResult {
+  return run('docker', ['compose', ...args], { env, input });
 }
 
 /** Runs `docker compose <args>` and throws, with the output, when it exits non-zero. */
@@ -13,6 +13,14 @@ export function composeOk(args: string[]): string {
   const result = compose(args);
   if (result.status !== 0) throw new Error(`docker compose ${args.join(' ')} exited ${result.status}\n${result.output}`);
   return result.output;
+}
+
+/** Fixture that runs the stack as it runs behind a reverse proxy: the web trusts one address header. */
+export const clientIpFixture = 'tests/e2e/fixtures/client-ip.compose.yaml';
+
+/** The stack of this checkout plus `files`, for a spec that needs the stack under another condition. */
+export function composeWith(files: string[], args: string[]): CommandResult {
+  return compose(['--file', 'compose.yaml', ...files.flatMap((file) => ['--file', file]), ...args]);
 }
 
 export interface ContainerState {
