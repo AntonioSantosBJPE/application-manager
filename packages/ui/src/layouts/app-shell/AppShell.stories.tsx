@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { page } from '@vitest/browser/context';
 import { expect, userEvent } from 'storybook/test';
+import { focusRing, settle } from '../../testing/contrast';
 import { DashboardPage } from '../dashboard-page';
 import { ListPage } from '../list-page';
 import { AppShell } from './app-shell';
@@ -232,3 +233,32 @@ export const ComDashboardTemaEscuro: Story = {
 };
 
 /** A CSS color as the browser resolves it, to compare with a computed style. */
+
+/** Tabs to the first navigation entry and asserts its focus ring stands out from the page (UI-24). */
+const focusContrast: Story['play'] = async ({ canvas }) => {
+  const item = canvas.getByRole('link', { name: 'Início' });
+  // Let the theme switch finish first, so only the focus itself can move a color from here on.
+  await settle(item);
+  await userEvent.tab();
+  await expect(item).toHaveFocus();
+
+  const ring = focusRing(item);
+  await expect(ring.drawn, 'the navigation entry draws an outline').toBe(true);
+  await expect(ring.ratio, 'focus ring against the page').toBeGreaterThanOrEqual(3);
+  await expect(ring.isFocusToken, 'the ring is the --color-focus token').toBe(true);
+  await expect(ring.isTextColor, 'the ring is not the text color').toBe(false);
+};
+
+/** Keyboard focus of a navigation entry in the light theme: a ring of at least 3:1 (UI-24). */
+export const FocoTemaClaro: Story = {
+  name: 'Foco por teclado, tema claro',
+  globals: { theme: 'light' },
+  play: focusContrast,
+};
+
+/** Keyboard focus of a navigation entry in the dark theme: a ring of at least 3:1 (UI-24). */
+export const FocoTemaEscuro: Story = {
+  name: 'Foco por teclado, tema escuro',
+  globals: { theme: 'dark' },
+  play: focusContrast,
+};

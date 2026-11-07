@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect } from 'storybook/test';
+import { expect, userEvent } from 'storybook/test';
+import { focusRing, settle } from '../../testing/contrast';
 import { Field } from './field';
 
 const meta = {
@@ -62,4 +63,33 @@ export const TemaEscuro: Story = {
     // The dark value of --color-danger in tokens.css.
     await expect(getComputedStyle(error).color).toBe(resolvedColor('oklch(0.75 0.14 27)'));
   },
+};
+
+/** Tabs to the control and asserts its focus ring stands out from the page (UI-24). */
+const focusContrast: Story['play'] = async ({ canvas }) => {
+  const control = canvas.getByLabelText('E-mail');
+  // Let the theme switch finish first, so only the focus itself can move a color from here on.
+  await settle(control);
+  await userEvent.tab();
+  await expect(control).toHaveFocus();
+
+  const ring = focusRing(control);
+  await expect(ring.drawn, 'the control draws an outline').toBe(true);
+  await expect(ring.ratio, 'focus ring against the page').toBeGreaterThanOrEqual(3);
+  await expect(ring.isFocusToken, 'the ring is the --color-focus token').toBe(true);
+  await expect(ring.isTextColor, 'the ring is not the text color').toBe(false);
+};
+
+/** Keyboard focus of the control in the light theme: a ring of at least 3:1 (UI-24). */
+export const FocoTemaClaro: Story = {
+  name: 'Foco por teclado, tema claro',
+  globals: { theme: 'light' },
+  play: focusContrast,
+};
+
+/** Keyboard focus of the control in the dark theme: a ring of at least 3:1 (UI-24). */
+export const FocoTemaEscuro: Story = {
+  name: 'Foco por teclado, tema escuro',
+  globals: { theme: 'dark' },
+  play: focusContrast,
 };

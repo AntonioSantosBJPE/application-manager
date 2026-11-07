@@ -39,3 +39,31 @@ export function pageBackground(): string {
 export async function settle(element: Element): Promise<void> {
   await Promise.all(element.getAnimations().map((animation) => animation.finished.catch(() => {})));
 }
+
+/** What a person sees of the keyboard focus ring of an element right now (UI-24). */
+export interface FocusRing {
+  /** The ring is drawn: an outline style other than `none` with a width above zero. */
+  drawn: boolean;
+  /** Contrast of the ring against the page background of the active theme. */
+  ratio: number;
+  /** The ring is the `--color-focus` token of the active theme, not a browser default. */
+  isFocusToken: boolean;
+  /** The ring has the text color of the element, which is what made it vanish before. */
+  isTextColor: boolean;
+}
+
+/** Reads the outline of a focused element against the page, the way Button's story judges it. */
+export function focusRing(element: Element): FocusRing {
+  const style = getComputedStyle(element);
+  const probe = document.createElement('span');
+  probe.style.color = 'var(--color-focus)';
+  document.body.append(probe);
+  const token = getComputedStyle(probe).color;
+  probe.remove();
+  return {
+    isFocusToken: style.outlineColor === token,
+    drawn: style.outlineStyle !== 'none' && Number.parseFloat(style.outlineWidth) > 0,
+    ratio: contrastRatio(style.outlineColor, pageBackground()),
+    isTextColor: style.outlineColor === style.color,
+  };
+}

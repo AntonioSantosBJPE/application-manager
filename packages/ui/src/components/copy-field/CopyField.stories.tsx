@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent } from 'storybook/test';
+import { focusRing, settle } from '../../testing/contrast';
 import { CopyField } from './copy-field';
 
 /** A CSS color as the browser resolves it, to compare with a computed style. */
@@ -125,4 +126,33 @@ export const LinkLongo: Story = {
     selected.focus();
     await expect(selected.selectionEnd - selected.selectionStart).toBe(longValue.length);
   },
+};
+
+/** Tabs to the value box and asserts its focus ring stands out from the page (UI-24). */
+const focusContrast: Story['play'] = async ({ canvas }) => {
+  const value = canvas.getByLabelText('Link do convite');
+  // Let the theme switch finish first, so only the focus itself can move a color from here on.
+  await settle(value);
+  await userEvent.tab();
+  await expect(value).toHaveFocus();
+
+  const ring = focusRing(value);
+  await expect(ring.drawn, 'the value box draws an outline').toBe(true);
+  await expect(ring.ratio, 'focus ring against the page').toBeGreaterThanOrEqual(3);
+  await expect(ring.isFocusToken, 'the ring is the --color-focus token').toBe(true);
+  await expect(ring.isTextColor, 'the ring is not the text color').toBe(false);
+};
+
+/** Keyboard focus of the value box in the light theme: a ring of at least 3:1 (UI-24). */
+export const FocoTemaClaro: Story = {
+  name: 'Foco por teclado, tema claro',
+  globals: { theme: 'light' },
+  play: focusContrast,
+};
+
+/** Keyboard focus of the value box in the dark theme: a ring of at least 3:1 (UI-24). */
+export const FocoTemaEscuro: Story = {
+  name: 'Foco por teclado, tema escuro',
+  globals: { theme: 'dark' },
+  play: focusContrast,
 };

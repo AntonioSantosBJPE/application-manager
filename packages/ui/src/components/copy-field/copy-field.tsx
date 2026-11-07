@@ -47,7 +47,7 @@ export function CopyField({
           rows={1}
           value={value}
           aria-label={valueLabel}
-          className="field-sizing-content min-h-8 min-w-0 flex-1 resize-none rounded-sm border border-border bg-surface px-2 py-1.5 text-xs break-all text-text"
+          className="field-sizing-content min-h-8 min-w-0 flex-1 resize-none rounded-sm border border-border bg-surface px-2 py-1.5 text-xs break-all text-text outline-focus focus-visible:outline-2 focus-visible:outline-offset-2"
           onFocus={(event) => event.currentTarget.select()}
         />
         <Button intent="secondary" className="shrink-0" onClick={onCopy}>
