@@ -21,7 +21,11 @@ once, with no timeout: a run's own parallelism is whatever the project configure
 Windows they run in Git for Windows' bash, because proofs are written for a POSIX shell.
 
 Usage:
-  python3 <skill-dir>/scripts/check_proofs.py <feature> [--root DIR]
+  python3 <skill-dir>/scripts/check_proofs.py <feature> [--root DIR] [--static]
+
+--static runs nothing: it only reads the mapping (every check has a proof, every named `Run` line
+exists, every screen picture is on disk, the walk is logged), prints what is missing and writes no
+proofs.md. It takes a second, so it is the gate to run on every commit; the full run is for the end.
 
 Writes .specs/features/<feature>/proofs.md. Exit 0 every proof passed on a clean tree, 1 otherwise,
 2 usage error.
@@ -167,6 +171,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[1])
     ap.add_argument("feature")
     ap.add_argument("--root", default=".")
+    ap.add_argument("--static", action="store_true", help="check the mapping only: run nothing, write no proofs.md")
     a = ap.parse_args(argv)
     root = os.path.abspath(a.root)
     fdir = os.path.join(root, ".specs", "features", a.feature)
@@ -187,10 +192,11 @@ def main(argv=None):
             elif not m and proof and not proof.lower().startswith(("browser", "walk")) and proof not in lone:
                 lone.append(proof)
     results = {}  # command -> (exit code, output)
+    execute = (lambda cmd: (0, "")) if a.static else (lambda cmd: run(root, cmd, bash))
     for name in used_runs:
-        results.setdefault(runs[name], run(root, runs[name], bash))
+        results.setdefault(runs[name], execute(runs[name]))
     for proof in lone:
-        results.setdefault(proof, run(root, proof, bash))
+        results.setdefault(proof, execute(proof))
 
     rows = []
     for cid, proofs in checks:
@@ -216,7 +222,7 @@ def main(argv=None):
                     result = f"**no such run** - no `Run {m.group(1)}:` line"
                 else:
                     code, output = results[runs[m.group(1)]]
-                    if not sees(output, _unquote(m.group(2))):
+                    if not a.static and not sees(output, _unquote(m.group(2))):
                         result = "**fail**" if code else "**no test ran**"
             elif results[proof][0]:
                 result = "**fail**"
@@ -226,12 +232,19 @@ def main(argv=None):
         code, _ = results[runs[name]]
         if code:
             rows.append((f"Run {name}", runs[name], f"**fail** - exit {code}"))
-    for cmd in build:
+    for cmd in [] if a.static else build:
         code, output = run(root, cmd, bash)
         lines = output.strip().splitlines()
         error = next((ln for ln in lines if "error" in ln.lower()), lines[-1] if lines else "")
         rows.append(("Build", cmd, "pass" if code == 0 else f"**fail** - {cell(error.strip(), 100)}"))
     failed = sum(1 for _, _, res in rows if not res.startswith("pass"))
+
+    if a.static:
+        for c, p, res in rows:
+            if not res.startswith("pass"):
+                print(f"  {c}: {res} - {p[:80]}")
+        print(f"check_proofs --static: {len(rows) - failed} mapped, {failed} missing")
+        return 0 if failed == 0 else 1
 
     dirty = dirty_paths(root)
     out = [f"# {a.feature} proofs", "",

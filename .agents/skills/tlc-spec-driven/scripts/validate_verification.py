@@ -8,7 +8,7 @@ pass/fail run as the closing step. It reads the artifacts, never the target code
 
 What it checks:
   ERROR  - no verification.md, or no proofs.md (run check_proofs.py)
-  ERROR  - proofs.md written at another commit than HEAD, or over uncommitted changes
+  ERROR  - proofs.md written at another commit than HEAD (unless only docs changed since), or over uncommitted changes
   ERROR  - a check in checks.md with no row in proofs.md, or a row that is not `pass`
   ERROR  - checks.md names `Build:` commands and proofs.md has no Build row, or one that failed
   ERROR  - no `## Checks` table in verification.md, a check with no row in it, or a row with no test
@@ -273,6 +273,20 @@ def _git_head(root):
     return p.stdout.strip() if p.returncode == 0 else None
 
 
+DOCS_ONLY_PREFIXES = (".specs/", "docs/", ".design/", ".prd/")
+
+
+def _only_docs_changed(root, proofs_head, head):
+    """True when every commit after the proofs touched documentation only: no test or code could change."""
+    try:
+        p = subprocess.run(["git", "diff", "--name-only", f"{proofs_head}..{head}"], cwd=root, capture_output=True, text=True)
+    except OSError:
+        return False
+    if p.returncode != 0:
+        return False
+    return all(f.startswith(DOCS_ONLY_PREFIXES) or f.endswith(".md") for f in p.stdout.split())
+
+
 def _check_with_proofs(fdir, name, lines, checks_lines):
     """The report format where check_proofs.py ran the proofs: proofs.md holds the evidence,
     verification.md the Verifier's judgement of each check and its findings, each closed by a commit."""
@@ -285,6 +299,8 @@ def _check_with_proofs(fdir, name, lines, checks_lines):
     head = _git_head(root)
     if not m:
         errors.append(f"{name}: proofs.md names no `**HEAD**` - run check_proofs.py again")
+    elif head and not (head.startswith(m.group(1)) or m.group(1).startswith(head)) and _only_docs_changed(root, m.group(1), head):
+        warnings.append(f"{name}: proofs.md was written at {m.group(1)}; only documentation changed up to HEAD {head}")
     elif head and not (head.startswith(m.group(1)) or m.group(1).startswith(head)):
         errors.append(f"{name}: proofs.md was written at {m.group(1)} and HEAD is {head} - run check_proofs.py again")
 

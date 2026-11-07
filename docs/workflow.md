@@ -57,3 +57,17 @@ Regras:
 - Uma feature por vez. Se uma feature depende de outra, a segunda começa depois do merge da primeira. Isso também evita dois planos não commitados misturados no mesmo working tree.
 - Planejar na `main` não inclui commitar nela: se for preciso trocar de branch no meio do planejamento, guarde os arquivos (`git stash -u`) ou crie a branch da feature antes.
 - Uma decisão de projeto (`AD-NNN` em `.specs/STATE.md`) tomada dentro de uma feature chega à `main` com o PR dela.
+
+## Gates e tempo
+
+Os gates têm orçamento de tempo; se um estoura, o gate muda, não a paciência.
+
+| Camada | Quando | Orçamento | O que roda |
+|---|---|---|---|
+| Commit | a cada commit | até 30 s | `pnpm lint`, `pnpm typecheck`, testes do pacote tocado, `check_proofs.py <feature> --static` (só confere o mapeamento check → prova) |
+| PR | CI, jobs em paralelo | até 3 min | lint, typecheck, `pnpm test`, `pnpm test:integration`, `pnpm test:repo-rules` |
+| Fechamento da feature | uma vez | ~4 min | `check_proofs.py <feature>` completo, com `proofs.md` sem commit, e o Verifier |
+
+- O E2E (`pnpm test:e2e`, ~2 min) e o build das imagens ficam fora do CI por enquanto, mas rodam localmente no fechamento da feature e quando mudam compose, Dockerfile, cookies ou a pilha.
+- `validate_verification.py` aceita o `proofs.md` de um commit anterior quando só documentação (`.specs/`, `docs/`, `*.md`) mudou depois dele; qualquer outra mudança exige rodar o `check_proofs.py` de novo.
+- Nenhuma suíte roda o repositório inteiro dentro de um teste do `pnpm test`: isso vira `test:repo-rules`, em job próprio.
