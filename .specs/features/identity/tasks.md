@@ -844,8 +844,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Painel, total e link aparecem; API fora mostra o painel como indisponível
-- [ ] Gate check passes: `pnpm test`
+- [x] Painel, total e link aparecem; API fora mostra o painel como indisponível
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick

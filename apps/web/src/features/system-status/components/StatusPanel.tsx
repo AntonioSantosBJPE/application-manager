@@ -19,6 +19,19 @@ function StatusRow({ label, state }: { label: string; state: ServiceState }) {
   );
 }
 
+/**
+ * The two status rows without a page around them, so a dashboard can place them in its own grid next to
+ * other widgets (ADM-14) and the page keeps a single `main`.
+ */
+export function StatusWidgets({ status }: { status: SystemStatus }) {
+  return (
+    <>
+      <StatusRow label="API" state={status.api} />
+      <StatusRow label="Banco de dados" state={status.database} />
+    </>
+  );
+}
+
 /** Status page body: one row for the API and one for the database (SKEL-05). */
 export function StatusPanel({ status }: { status: SystemStatus }) {
   return (
@@ -27,8 +40,7 @@ export function StatusPanel({ status }: { status: SystemStatus }) {
         <h1 className="text-lg font-semibold">Status do sistema</h1>
       </DashboardPage.Header>
       <DashboardPage.Grid>
-        <StatusRow label="API" state={status.api} />
-        <StatusRow label="Banco de dados" state={status.database} />
+        <StatusWidgets status={status} />
       </DashboardPage.Grid>
     </DashboardPage.Root>
   );

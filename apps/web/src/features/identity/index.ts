@@ -12,6 +12,7 @@ export {
   type SessionState,
 } from './api/server-functions';
 export { AcceptInvitationForm, type AcceptInvitationFormProps } from './components/AcceptInvitationForm';
+export { InvitationSummary, type InvitationSummaryProps } from './components/InvitationSummary';
 export {
   INVITATIONS_QUERY_KEY,
   InvitationsPanel,

@@ -3,7 +3,7 @@ import type { MeResponse } from '@am/contracts';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient } from '@tanstack/react-query';
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router';
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   adminLogin,
   endSession,
@@ -11,8 +11,10 @@ import {
   joinWithInvitation,
   memberLogin,
   openInvitation,
+  pendingInvitations,
   type SessionState,
 } from './features/identity';
+import { getSystemStatus } from './features/system-status';
 import { routeTree } from './routeTree.gen';
 
 // The session read is the BFF boundary: the guards ask a server function, and the unit test answers for it.
@@ -25,6 +27,12 @@ vi.mock('./features/identity/api/server-functions', async (importOriginal) => ({
   adminLogin: vi.fn(),
   openInvitation: vi.fn(),
   joinWithInvitation: vi.fn(),
+  pendingInvitations: vi.fn(),
+}));
+
+vi.mock('./features/system-status/api/get-system-status', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./features/system-status/api/get-system-status')>()),
+  getSystemStatus: vi.fn(),
 }));
 
 const member: MeResponse = {
@@ -59,6 +67,15 @@ const here = (router: Awaited<ReturnType<typeof open>>) => router.state.location
 // jsdom has no scrolling; the router asks for it on every navigation.
 beforeAll(() => {
   window.scrollTo = () => undefined;
+});
+
+// What the admin dashboard loader reads, so every test that lands on /admin gets a page to render.
+beforeEach(() => {
+  vi.mocked(getSystemStatus).mockResolvedValue({ api: 'operational', database: 'operational' });
+  vi.mocked(pendingInvitations).mockResolvedValue({
+    ok: true,
+    data: { items: [], nextCursor: null, totalPending: 0 },
+  });
 });
 
 afterEach(() => {
@@ -290,5 +307,51 @@ describe('invitation screen', () => {
       'Este convite não é mais válido. Peça um novo ao administrador.',
     );
     expect(screen.queryByRole('button', { name: 'Criar conta' })).toBeNull();
+  });
+});
+
+describe('admin dashboard', () => {
+  const page = { items: [], nextCursor: null, totalPending: 3 };
+
+  it('shows the status panel, the pending total and the link to the invitations screen', async () => {
+    sessionIs(signedInAs(admin));
+    vi.mocked(getSystemStatus).mockResolvedValue({ api: 'operational', database: 'operational' });
+    vi.mocked(pendingInvitations).mockResolvedValue({ ok: true, data: page });
+
+    await open('/admin');
+
+    const api = await screen.findByRole('group', { name: 'API' });
+    expect(api).toHaveTextContent('Operacional');
+    expect(screen.getByRole('group', { name: 'Banco de dados' })).toHaveTextContent('Operacional');
+    expect(screen.getByRole('group', { name: 'Convites pendentes' })).toHaveTextContent('3');
+    expect(screen.getByRole('link', { name: 'Ver convites' })).toHaveAttribute(
+      'href',
+      '/admin/invitations',
+    );
+    expect(screen.getAllByRole('main')).toHaveLength(1);
+  });
+
+  it('shows the panel as unavailable when the api is down', async () => {
+    sessionIs(signedInAs(admin));
+    vi.mocked(getSystemStatus).mockResolvedValue({ api: 'unavailable', database: 'unavailable' });
+    vi.mocked(pendingInvitations).mockResolvedValue({ ok: false, status: 503 });
+
+    await open('/admin');
+
+    expect(await screen.findByRole('group', { name: 'API' })).toHaveTextContent('Indisponível');
+    expect(screen.getByRole('group', { name: 'Banco de dados' })).toHaveTextContent('Indisponível');
+    expect(screen.getByRole('group', { name: 'Convites pendentes' })).toHaveTextContent(
+      'Indisponível',
+    );
+  });
+
+  it('does not read admin data for a member who is shown the no-access screen', async () => {
+    sessionIs(signedInAs(member));
+
+    await open('/admin');
+
+    expect(await screen.findByText('Você não tem acesso a esta área.')).toBeInTheDocument();
+    expect(vi.mocked(pendingInvitations)).not.toHaveBeenCalled();
+    expect(vi.mocked(getSystemStatus)).not.toHaveBeenCalled();
   });
 });
