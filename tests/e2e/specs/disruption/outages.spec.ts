@@ -61,4 +61,36 @@ test.describe('outages', () => {
       await expectRecovered(request);
     }
   });
+
+  test('shows the unavailable message without redirecting to login when the api is down', async ({ page }) => {
+    // UI-05: an api that does not answer during the session check is said on the page the person asked
+    // for, with no session and no redirect: sending them to login would blame them for an outage.
+    composeOk(['stop', 'api']);
+    try {
+      await page.goto('/');
+      await expect(page.getByText('Serviço indisponível. Tente novamente em instantes.')).toBeVisible();
+      expect(new URL(page.url()).pathname).toBe('/');
+      await expect(page.getByRole('button', { name: 'Entrar' })).toHaveCount(0);
+    } finally {
+      composeOk(['start', 'api']);
+      await waitHealthy('api');
+    }
+  });
+
+  test('web stays healthy through /status when the api is down', async () => {
+    // EDGE-06: the healthcheck of the web asks its own page, which answers 200 even with the api down, so
+    // an outage of the api never restarts the web.
+    composeOk(['stop', 'api']);
+    try {
+      await expect
+        .poll(
+          () => composeOk(['ps', '--format', '{{.Service}} {{.Health}}', 'web']).trim().split('\n')[0],
+          { timeout: 30_000 },
+        )
+        .toBe('web healthy');
+    } finally {
+      composeOk(['start', 'api']);
+      await waitHealthy('api');
+    }
+  });
 });

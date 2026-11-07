@@ -882,8 +882,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Busca nos logs da stack não encontra senha, token nem cookie usados no teste
-- [ ] Gate check passes: `pnpm test && pnpm test:e2e`
+- [x] Busca nos logs da stack não encontra senha, token nem cookie usados no teste
+- [x] Gate check passes: `pnpm test && pnpm test:e2e`
 
 **Tests**: e2e
 **Gate**: full
