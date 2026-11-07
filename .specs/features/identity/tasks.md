@@ -787,8 +787,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Cada destino de redirecionamento e a tela de sem acesso testados por papel
-- [ ] Gate check passes: `pnpm test`
+- [x] Cada destino de redirecionamento e a tela de sem acesso testados por papel
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
