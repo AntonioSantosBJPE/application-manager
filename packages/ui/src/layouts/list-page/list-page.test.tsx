@@ -63,4 +63,19 @@ describe('ListPage', () => {
 
     expect(screen.getByRole('main')).toHaveAttribute('data-archetype', 'list');
   });
+
+  it('renders a row as a list item whose text can take the whole line', () => {
+    render(
+      <ul>
+        <ListPage.Row>
+          <ListPage.RowText>ana@example.com</ListPage.RowText>
+          <button type="button">Revogar</button>
+        </ListPage.Row>
+      </ul>,
+    );
+
+    const item = screen.getByRole('listitem');
+    expect(item).toHaveClass('flex-wrap');
+    expect(screen.getByText('ana@example.com')).toHaveClass('basis-full');
+  });
 });

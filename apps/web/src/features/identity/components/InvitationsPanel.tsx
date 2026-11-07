@@ -16,7 +16,7 @@ import {
 } from '@am/ui';
 import { useForm } from '@tanstack/react-form';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { Outcome } from '../api/server-functions';
 import { MESSAGES } from '../model/messages';
 
@@ -42,6 +42,12 @@ export interface InvitationsPanelProps {
   onExpired: (outcome: Outcome<unknown>) => boolean;
 }
 
+/** Where the focus goes once the list changes: a row that is not there yet, or the title of the list. */
+type PendingFocus =
+  | { kind: 'first-new-row'; after: number }
+  | { kind: 'row'; id: string; revoked: string }
+  | { kind: 'title'; revoked: string };
+
 function totalText(total: number): string {
   return total === 1 ? '1 convite pendente' : `${total} convites pendentes`;
 }
@@ -54,8 +60,8 @@ function Row({
   onRevoke: (invitation: InvitationListItem) => void;
 }) {
   return (
-    <li className="flex items-center justify-between gap-3 border-b border-border py-2 text-xs">
-      <span className="min-w-0 break-all">{invitation.email}</span>
+    <ListPage.Row data-invitation-id={invitation.id} tabIndex={-1} className="outline-none">
+      <ListPage.RowText>{invitation.email}</ListPage.RowText>
       <ConfirmDialog
         trigger={
           <Button
@@ -73,7 +79,7 @@ function Row({
         cancelLabel="Cancelar"
         onConfirm={() => onRevoke(invitation)}
       />
-    </li>
+    </ListPage.Row>
   );
 }
 
@@ -89,6 +95,10 @@ export function InvitationsPanel({ api, onExpired }: InvitationsPanelProps) {
   const [copyStatus, setCopyStatus] = useState<CopyFieldStatus>('idle');
   const [existingAccount, setExistingAccount] = useState(false);
   const [failure, setFailure] = useState<string | undefined>();
+
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+  const pendingFocus = useRef<PendingFocus | undefined>(undefined);
 
   const invitations = useInfiniteQuery({
     queryKey: INVITATIONS_QUERY_KEY,
@@ -150,6 +160,11 @@ export function InvitationsPanel({ api, onExpired }: InvitationsPanelProps) {
     }
     if (outcome.ok || outcome.status === 404) {
       // A `404` means someone already revoked it: the list should simply stop showing it.
+      const index = items.findIndex((item) => item.id === invitation.id);
+      const next = items[index + 1];
+      pendingFocus.current = next
+        ? { kind: 'row', id: next.id, revoked: invitation.id }
+        : { kind: 'title', revoked: invitation.id };
       await refresh();
       return;
     }
@@ -160,10 +175,32 @@ export function InvitationsPanel({ api, onExpired }: InvitationsPanelProps) {
   const items = pages.flatMap((page) => page.items);
   const latest = pages.at(-1);
 
+  // The focus follows the list (UI-26): a row that appears or disappears must not leave it on the body.
+  useEffect(() => {
+    const pending = pendingFocus.current;
+    if (pending === undefined) return;
+    const rowOf = (rowId: string) =>
+      Array.from(listRef.current?.querySelectorAll<HTMLElement>('[data-invitation-id]') ?? []).find(
+        (row) => row.dataset.invitationId === rowId,
+      );
+    let target: HTMLElement | null | undefined;
+    if (pending.kind === 'first-new-row') {
+      if (items.length <= pending.after) return;
+      target = rowOf(items[pending.after]!.id);
+    } else {
+      if (items.some((item) => item.id === pending.revoked)) return;
+      target = pending.kind === 'row' ? rowOf(pending.id) : titleRef.current;
+    }
+    pendingFocus.current = undefined;
+    (target ?? titleRef.current)?.focus();
+  }, [items]);
+
   return (
     <ListPage.Root>
       <ListPage.Header>
-        <h1 className="text-lg font-semibold">Convites</h1>
+        <h1 ref={titleRef} tabIndex={-1} className="text-lg font-semibold outline-none">
+          Convites
+        </h1>
         {latest === undefined ? null : (
           <span className="text-xs text-text-muted">{totalText(latest.totalPending)}</span>
         )}
@@ -243,7 +280,7 @@ export function InvitationsPanel({ api, onExpired }: InvitationsPanelProps) {
           <p className="text-xs text-text-muted">{TEXT.empty}</p>
         ) : null}
         {items.length > 0 ? (
-          <ul aria-label="Convites pendentes" className="flex flex-col">
+          <ul ref={listRef} aria-label="Convites pendentes" className="flex flex-col">
             {items.map((invitation) => (
               <Row
                 key={invitation.id}
@@ -257,7 +294,10 @@ export function InvitationsPanel({ api, onExpired }: InvitationsPanelProps) {
           <Button
             intent="secondary"
             disabled={invitations.isFetchingNextPage}
-            onClick={() => void invitations.fetchNextPage()}
+            onClick={() => {
+              pendingFocus.current = { kind: 'first-new-row', after: items.length };
+              void invitations.fetchNextPage();
+            }}
           >
             Carregar mais
           </Button>

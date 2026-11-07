@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { page } from '@vitest/browser/context';
 import { expect } from 'storybook/test';
 import { Button } from '../../components/button';
 import { ListPage } from './list-page';
@@ -105,5 +106,52 @@ export const TemaEscuro: Story = {
     await expect(main).toHaveAttribute('data-archetype', 'list');
     // The dark value of --color-text in tokens.css.
     await expect(getComputedStyle(main).color).toBe(resolvedColor('oklch(0.96 0.005 260)'));
+  },
+};
+
+const longEmail = `${'a'.repeat(60)}@${'d'.repeat(55)}.example.com`;
+
+/**
+ * A row at 375 px (UI-26): the text takes the whole line instead of a squeezed column, the action stays
+ * inside the viewport and the page has no horizontal scroll.
+ */
+export const LinhaEstreita: Story = {
+  name: 'Linha estreita',
+  render: () => (
+    <ListPage.Root>
+      <ListPage.Header>
+        <h1 className="text-lg font-medium">Convites pendentes</h1>
+      </ListPage.Header>
+      <ListPage.Content>
+        <ul aria-label="Convites">
+          {['ana@example.com', longEmail].map((email) => (
+            <ListPage.Row key={email}>
+              <ListPage.RowText>{email}</ListPage.RowText>
+              <Button intent="secondary" size="sm">
+                Revogar
+              </Button>
+            </ListPage.Row>
+          ))}
+        </ul>
+      </ListPage.Content>
+    </ListPage.Root>
+  ),
+  play: async ({ canvas }) => {
+    await page.viewport(375, 700);
+    const width = document.documentElement.clientWidth;
+    const rows = canvas.getAllByRole('listitem');
+
+    for (const row of rows) {
+      const text = row.firstElementChild!.getBoundingClientRect();
+      const action = row.querySelector('button')!.getBoundingClientRect();
+      await expect(text.width, 'the text uses the whole row').toBeGreaterThanOrEqual(
+        row.clientWidth - 1,
+      );
+      await expect(text.left).toBeGreaterThanOrEqual(0);
+      await expect(action.right, 'the action stays on screen').toBeLessThanOrEqual(width);
+    }
+    await expect(document.documentElement.scrollWidth, 'no horizontal scroll').toBeLessThanOrEqual(
+      width,
+    );
   },
 };

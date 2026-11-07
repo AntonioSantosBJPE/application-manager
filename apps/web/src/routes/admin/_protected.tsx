@@ -35,7 +35,16 @@ function AdminLayout() {
   const { access } = Route.useRouteContext();
   const router = useRouter();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  if (access.kind === 'forbidden') return <NoAccessScreen />;
+  if (access.kind === 'forbidden')
+    return (
+      <NoAccessScreen
+        session={{
+          user: access.user,
+          signOut: () => endSession(),
+          onSignedOut: () => router.history.push(loginPathOf('member')),
+        }}
+      />
+    );
   if (access.kind !== 'allowed') return <UnavailableScreen />;
 
   return (

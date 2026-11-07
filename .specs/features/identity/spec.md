@@ -14,51 +14,51 @@ Toda fatia seguinte guarda dados pessoais reais de um usuário, e hoje o sistema
 
 ## Out of Scope
 
-| Feature | Reason |
-| --- | --- |
-| Recuperação de senha e convite por e-mail | Roadmap: envio de e-mail entra com o primeiro usuário além do autor |
-| Troca da própria senha pela interface | Fora do `.design`; a troca é feita pelo CLI |
-| Login social e 2FA | Roadmap: entram com cadastro aberto |
-| Cadastro aberto | Roadmap: depende da decisão de virar SaaS |
-| Tela de sessões ativas, lista de usuários, exclusão de conta, promoção de member a admin | Fora do `.design`; sem necessidade com poucos usuários |
-| Rotas do produto além da home mínima | Cada fatia seguinte cria as suas e aplica o guard de member |
-| Publicar a stack na VPS | Feature `production-deploy`, que recebe daqui a regra de a API não ter domínio público (AD-004) |
-| Redis e cache de sessão | Redis entra na fatia ResumeDocument, para a fila; sessões e bloqueio de login usam Postgres, e cache só entra com medição que o justifique |
-| Botão de tema, command palette, identidade visual definitiva | Etapa de design dedicada; aqui o tema segue o sistema |
+| Feature                                                                                  | Reason                                                                                                                                     |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Recuperação de senha e convite por e-mail                                                | Roadmap: envio de e-mail entra com o primeiro usuário além do autor                                                                        |
+| Troca da própria senha pela interface                                                    | Fora do `.design`; a troca é feita pelo CLI                                                                                                |
+| Login social e 2FA                                                                       | Roadmap: entram com cadastro aberto                                                                                                        |
+| Cadastro aberto                                                                          | Roadmap: depende da decisão de virar SaaS                                                                                                  |
+| Tela de sessões ativas, lista de usuários, exclusão de conta, promoção de member a admin | Fora do `.design`; sem necessidade com poucos usuários                                                                                     |
+| Rotas do produto além da home mínima                                                     | Cada fatia seguinte cria as suas e aplica o guard de member                                                                                |
+| Publicar a stack na VPS                                                                  | Feature `production-deploy`, que recebe daqui a regra de a API não ter domínio público (AD-004)                                            |
+| Redis e cache de sessão                                                                  | Redis entra na fatia ResumeDocument, para a fila; sessões e bloqueio de login usam Postgres, e cache só entra com medição que o justifique |
+| Botão de tema, command palette, identidade visual definitiva                             | Etapa de design dedicada; aqui o tema segue o sistema                                                                                      |
 
 ---
 
 ## Assumptions & Open Questions
 
-| Assumption / decision | Chosen default | Rationale | Confirmed? |
-| --- | --- | --- | --- |
-| Porta da Key decision 3 | BFF: o navegador só fala com o Start, e a API fica sem domínio público (AD-004) | Um único caminho de auth em SSR, client, local e preview | y |
-| Contas | Contas separadas: admin só administra, member só usa o produto; o e-mail é único entre os dois (AD-005) | Resposta do usuário: "Contas separadas" | y |
-| Entradas de login | `/login` só para member e `/admin/login` só para admin; credencial na entrada errada recebe o mesmo `401` | Resposta do usuário sobre login próprio do admin; o `401` igual não revela o papel | y |
-| CLI | `create-admin` e `reset-password`; senha por prompt oculto ou `--password-stdin` | Resposta do usuário: "Dois subcomandos"; e-mail digitado errado nunca cria admin | y |
-| Regra de senha | 12 a 128 caracteres, sem regra de composição | Resposta do usuário: "Mínimo 12 caracteres" | y |
-| Limites do `429` | 5 falhas por e-mail + IP e 50 por IP, em 15 min | Resposta do usuário: "E-mail + IP e teto por IP" | y |
-| Tela de convites | Formulário e lista de pendentes com revogação; acrescenta `GET /invitations` e `DELETE /invitations/:id` | Resposta do usuário: "Formulário + lista" | y |
-| Abertura do convite | `GET /invitations/:token` valida ao abrir | Resposta do usuário: "Ao abrir o link" | y |
-| Página de status | Vai para `/status`, pública; o dashboard do admin reaproveita o painel | Resposta do usuário: "/status público + widget" | y |
-| Arquétipos | `AuthPage` novo em `/login`, `/admin/login` e `/invite/:token`; `DashboardPage` em `/` e `/admin`; `ListPage` em `/admin/invitations` | Resposta do usuário: "AuthPage novo"; os outros seguem `docs/design/principles.md` | y |
-| Dashboard do admin | Painel de status, total de convites pendentes e link para convites | Conteúdo mínimo sem endpoint além do pedido; proposto por mim | y |
-| Convidar e-mail com convite pendente | O novo convite revoga o anterior | O link não pode ser reexibido, então é assim que se recupera um link perdido | y |
-| Token de convite desconhecido | `410`, igual a expirado, usado ou revogado | A tela é a mesma e o token tem 256 bits, então não há enumeração a evitar | y |
-| Papel do convidado | Sempre `member`; admin só nasce pelo CLI | `POST /invitations` do `.design` não recebe papel | y |
-| Aceitar convite estando logado | A sessão atual é revogada e a nova assume | Um navegador tem um único cookie de sessão | y |
-| Sessões simultâneas | Permitidas, sem limite | Uso em mais de um dispositivo; o `reset-password` revoga todas | y |
-| Duração da sessão | 30 dias deslizantes, sem teto absoluto; renovada quando restam menos de 29 dias | O `.design` define 30 dias deslizantes; o limiar evita uma escrita por requisição | y |
-| Consulta de sessão | Postgres a cada requisição, por índice único em `token_hash`, sem cache | Poucos usuários; sem cache, a revogação vale na requisição seguinte, sem invalidação para manter | y |
-| Hash de senha | Argon2id com `m=19456 KiB`, `t=2`, `p=1`, salt de 16 bytes, saída de 32 bytes, em formato PHC, via `node:crypto` | Configuração da OWASP; Node 24 já traz o algoritmo, sem dependência nativa, e o PHC permite trocar parâmetros depois | y |
-| Tokens | 32 bytes de CSPRNG em base64url; o banco guarda só o SHA-256 em hex | 256 bits de entropia dispensam hash lento | y |
-| Cookie | `HttpOnly`, `SameSite=Lax`, `Path=/`, `Max-Age` de 30 dias, sem `Domain`; `Secure` e nome `__Host-am_session` por padrão, `am_session` com `SESSION_COOKIE_SECURE=false` no ambiente local | `Lax` mantém a sessão ao chegar por link externo; `__Host-` trava o cookie no host | y |
-| CSRF | `SameSite=Lax` + middleware de CSRF do Start nas server functions; a API não habilita CORS | O navegador nunca chama a API diretamente | y |
-| Estado do bloqueio | Tabela `identity.login_attempts` no Postgres, com linhas apagadas após a janela | A API escala em réplicas sem estado e o Redis ainda não existe; IP é dado pessoal, então a retenção é curta | y |
-| IP do cliente | O web obtém o IP do header definido em `CLIENT_IP_HEADER` (ou do socket, sem a variável) e o repassa à API | Cloudflare e Coolify ficam na frente do web; a config fica por ambiente | y |
-| Link do convite | `WEB_PUBLIC_URL`, obrigatória na API | Config por env; o `inviteUrl` é contrato da API | y |
-| Corpo inválido | `400` em Problem Details | Convenção de erros do `.design`; nenhum contrato define outro status | y |
-| Larguras de tela | 375 px e 1280 px, sem rolagem horizontal da página | Sem captura de referência; diretriz de acessibilidade e densidade | y |
+| Assumption / decision                | Chosen default                                                                                                                                                                             | Rationale                                                                                                            | Confirmed? |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Porta da Key decision 3              | BFF: o navegador só fala com o Start, e a API fica sem domínio público (AD-004)                                                                                                            | Um único caminho de auth em SSR, client, local e preview                                                             | y          |
+| Contas                               | Contas separadas: admin só administra, member só usa o produto; o e-mail é único entre os dois (AD-005)                                                                                    | Resposta do usuário: "Contas separadas"                                                                              | y          |
+| Entradas de login                    | `/login` só para member e `/admin/login` só para admin; credencial na entrada errada recebe o mesmo `401`                                                                                  | Resposta do usuário sobre login próprio do admin; o `401` igual não revela o papel                                   | y          |
+| CLI                                  | `create-admin` e `reset-password`; senha por prompt oculto ou `--password-stdin`                                                                                                           | Resposta do usuário: "Dois subcomandos"; e-mail digitado errado nunca cria admin                                     | y          |
+| Regra de senha                       | 12 a 128 caracteres, sem regra de composição                                                                                                                                               | Resposta do usuário: "Mínimo 12 caracteres"                                                                          | y          |
+| Limites do `429`                     | 5 falhas por e-mail + IP e 50 por IP, em 15 min                                                                                                                                            | Resposta do usuário: "E-mail + IP e teto por IP"                                                                     | y          |
+| Tela de convites                     | Formulário e lista de pendentes com revogação; acrescenta `GET /invitations` e `DELETE /invitations/:id`                                                                                   | Resposta do usuário: "Formulário + lista"                                                                            | y          |
+| Abertura do convite                  | `GET /invitations/:token` valida ao abrir                                                                                                                                                  | Resposta do usuário: "Ao abrir o link"                                                                               | y          |
+| Página de status                     | Vai para `/status`, pública; o dashboard do admin reaproveita o painel                                                                                                                     | Resposta do usuário: "/status público + widget"                                                                      | y          |
+| Arquétipos                           | `AuthPage` novo em `/login`, `/admin/login` e `/invite/:token`; `DashboardPage` em `/` e `/admin`; `ListPage` em `/admin/invitations`                                                      | Resposta do usuário: "AuthPage novo"; os outros seguem `docs/design/principles.md`                                   | y          |
+| Dashboard do admin                   | Painel de status, total de convites pendentes e link para convites                                                                                                                         | Conteúdo mínimo sem endpoint além do pedido; proposto por mim                                                        | y          |
+| Convidar e-mail com convite pendente | O novo convite revoga o anterior                                                                                                                                                           | O link não pode ser reexibido, então é assim que se recupera um link perdido                                         | y          |
+| Token de convite desconhecido        | `410`, igual a expirado, usado ou revogado                                                                                                                                                 | A tela é a mesma e o token tem 256 bits, então não há enumeração a evitar                                            | y          |
+| Papel do convidado                   | Sempre `member`; admin só nasce pelo CLI                                                                                                                                                   | `POST /invitations` do `.design` não recebe papel                                                                    | y          |
+| Aceitar convite estando logado       | A sessão atual é revogada e a nova assume                                                                                                                                                  | Um navegador tem um único cookie de sessão                                                                           | y          |
+| Sessões simultâneas                  | Permitidas, sem limite                                                                                                                                                                     | Uso em mais de um dispositivo; o `reset-password` revoga todas                                                       | y          |
+| Duração da sessão                    | 30 dias deslizantes, sem teto absoluto; renovada quando restam menos de 29 dias                                                                                                            | O `.design` define 30 dias deslizantes; o limiar evita uma escrita por requisição                                    | y          |
+| Consulta de sessão                   | Postgres a cada requisição, por índice único em `token_hash`, sem cache                                                                                                                    | Poucos usuários; sem cache, a revogação vale na requisição seguinte, sem invalidação para manter                     | y          |
+| Hash de senha                        | Argon2id com `m=19456 KiB`, `t=2`, `p=1`, salt de 16 bytes, saída de 32 bytes, em formato PHC, via `node:crypto`                                                                           | Configuração da OWASP; Node 24 já traz o algoritmo, sem dependência nativa, e o PHC permite trocar parâmetros depois | y          |
+| Tokens                               | 32 bytes de CSPRNG em base64url; o banco guarda só o SHA-256 em hex                                                                                                                        | 256 bits de entropia dispensam hash lento                                                                            | y          |
+| Cookie                               | `HttpOnly`, `SameSite=Lax`, `Path=/`, `Max-Age` de 30 dias, sem `Domain`; `Secure` e nome `__Host-am_session` por padrão, `am_session` com `SESSION_COOKIE_SECURE=false` no ambiente local | `Lax` mantém a sessão ao chegar por link externo; `__Host-` trava o cookie no host                                   | y          |
+| CSRF                                 | `SameSite=Lax` + middleware de CSRF do Start nas server functions; a API não habilita CORS                                                                                                 | O navegador nunca chama a API diretamente                                                                            | y          |
+| Estado do bloqueio                   | Tabela `identity.login_attempts` no Postgres, com linhas apagadas após a janela                                                                                                            | A API escala em réplicas sem estado e o Redis ainda não existe; IP é dado pessoal, então a retenção é curta          | y          |
+| IP do cliente                        | O web obtém o IP do header definido em `CLIENT_IP_HEADER` (ou do socket, sem a variável) e o repassa à API                                                                                 | Cloudflare e Coolify ficam na frente do web; a config fica por ambiente                                              | y          |
+| Link do convite                      | `WEB_PUBLIC_URL`, obrigatória na API                                                                                                                                                       | Config por env; o `inviteUrl` é contrato da API                                                                      | y          |
+| Corpo inválido                       | `400` em Problem Details                                                                                                                                                                   | Convenção de erros do `.design`; nenhum contrato define outro status                                                 | y          |
+| Larguras de tela                     | 375 px e 1280 px, sem rolagem horizontal da página                                                                                                                                         | Sem captura de referência; diretriz de acessibilidade e densidade                                                    | y          |
 
 **Open questions:** none - all resolved or logged above (required before the spec is confirmed).
 
@@ -197,6 +197,9 @@ Toda fatia seguinte guarda dados pessoais reais de um usuário, e hoje o sistema
 23. WHILE um formulário aguarda resposta a ação de envio SHALL ficar desabilitada, impedindo envio duplicado. (UI-23)
 24. The keyboard focus indicator of every `packages/ui` control SHALL have a contrast of at least 3:1 against the page background in the light and dark themes, using a design token and never the text color of the control. (UI-24)
 25. WHEN o e-mail de um convite ou o link do convite é mais largo que a linha THEN a tela SHALL quebrar ou conter o texto, manter "Revogar" e "Copiar" visíveis dentro da viewport e não ter rolagem horizontal da página em 375 px e 1280 px. (UI-25)
+26. WHEN a lista de convites ganha uma página ou perde um convite THEN o foco SHALL ir para a primeira linha nova ou para a próxima linha, e para o título da lista quando não restar linha, nunca para o `body`. (UI-26)
+27. WHEN a tela de serviço indisponível ou a de acesso negado é aberta THEN ela SHALL oferecer "Tentar novamente", que recarrega a rota, na indisponível e "Sair", quando houver sessão, na de acesso negado. (UI-27)
+28. WHEN uma linha de convite é mostrada em 375 px THEN o texto SHALL usar a largura toda da linha, sem coluna espremida, com "Revogar" dentro da viewport e sem rolagem horizontal da página. (UI-28)
 
 **Independent Test**: Playwright na stack do compose: criar o admin pelo CLI, convidar pelo navegador, aceitar em outro contexto e sair.
 
@@ -243,17 +246,17 @@ Toda fatia seguinte guarda dados pessoais reais de um usuário, e hoje o sistema
 
 ## Implicit-Requirement Sweep
 
-| Dimension | Coverage |
-| --- | --- |
-| Input validation & bounds | INV-08, CLI-05, EDGE-01, EDGE-02, EDGE-03 |
-| Failure / partial-failure states | INV-07 (transação), UI-05, EDGE-04 |
-| Idempotency / retry / duplicate handling | AUTH-12, INV-04, INV-09, UI-23 |
-| Auth boundaries & rate limits | AUTH-03, AUTH-10, AUTH-14, AUTH-15, INV-02, ADM-04, LOCK-01 a LOCK-10 |
-| Concurrency / ordering | INV-09, EDGE-05 |
-| Data lifecycle / expiry | AUTH-11, AUTH-13, LOCK-07, INV-06 |
-| Observability | AUTH-18; logs e request id já existem no skeleton |
-| External-dependency failure | UI-05; a stack só depende de Postgres e da API |
-| State-transition integrity | INV-04, INV-06, INV-07, ADM-02, ADM-03 |
+| Dimension                                | Coverage                                                              |
+| ---------------------------------------- | --------------------------------------------------------------------- |
+| Input validation & bounds                | INV-08, CLI-05, EDGE-01, EDGE-02, EDGE-03                             |
+| Failure / partial-failure states         | INV-07 (transação), UI-05, EDGE-04                                    |
+| Idempotency / retry / duplicate handling | AUTH-12, INV-04, INV-09, UI-23                                        |
+| Auth boundaries & rate limits            | AUTH-03, AUTH-10, AUTH-14, AUTH-15, INV-02, ADM-04, LOCK-01 a LOCK-10 |
+| Concurrency / ordering                   | INV-09, EDGE-05                                                       |
+| Data lifecycle / expiry                  | AUTH-11, AUTH-13, LOCK-07, INV-06                                     |
+| Observability                            | AUTH-18; logs e request id já existem no skeleton                     |
+| External-dependency failure              | UI-05; a stack só depende de Postgres e da API                        |
+| State-transition integrity               | INV-04, INV-06, INV-07, ADM-02, ADM-03                                |
 
 ---
 
@@ -261,125 +264,131 @@ Toda fatia seguinte guarda dados pessoais reais de um usuário, e hoje o sistema
 
 Os estados do `.design` e o teste que prova cada um. O comando exato de cada check fica em `tasks.md`.
 
-| Estado | Requisitos | Prova |
-| --- | --- | --- |
-| Login válido `204` e flags do cookie | AUTH-01, AUTH-02, AUTH-07, AUTH-08 | Integração HTTP com Postgres real: lê o `Set-Cookie` e confere a sessão no banco |
-| `401` igual para usuário inexistente, senha errada e entrada errada | AUTH-03, AUTH-04 | Integração compara status, headers de conteúdo e corpo byte a byte; unit prova que o verificador roda uma vez nos dois casos, sem depender de medir tempo |
-| `429` e liberação | LOCK-01 a LOCK-08 | Integração com relógio controlado, nos dois limites, conferindo que a senha correta também é recusada |
-| IP real pelo BFF | LOCK-09, LOCK-10 | E2E na stack do compose com headers de IP diferentes |
-| Expiração, revogação e renovação | AUTH-10, AUTH-11, AUTH-12 | Integração com relógio controlado em cada caso; E2E volta ao login preservando a rota |
-| `403` para não admin | INV-02, ADM-04, AUTH-14, UI-10 | Integração nos endpoints; E2E na tela |
-| Convite `201`, aceite `201`, duplo aceite | INV-01, INV-07, INV-09 | Integração, incluindo aceites simultâneos contra Postgres real |
-| `410` expirado, usado, revogado e desconhecido | INV-06, UI-16 | Integração nos quatro casos, nos dois endpoints; E2E na tela |
-| Logout `204` | AUTH-12, UI-13 | Integração reutiliza o cookie antigo e recebe `401`; E2E usa "Sair" |
-| Toda rota declara o acesso | AUTH-19 | Teste de arquitetura percorre as rotas registradas na aplicação real e falha com uma rota de fixture sem declaração, com mensagem que nomeia a rota e as declarações aceitas |
-| Segredos fora dos logs | AUTH-18 | Integração lê as linhas JSON do pino depois de login e aceite e busca o token, a senha e o cookie |
-| Jornada completa | Goals | E2E: CLI, login de admin, convite, aceite, home e saída, com axe nos dois temas |
-| CLI | CLI-01 a CLI-06 | Integração roda o entrypoint real com Postgres real |
-| Componentes | UI-21, ADM-15 | Testes e stories em `packages/ui`; a regra de fronteiras cobre o resto |
-| Foco visível | UI-24 | Story em `packages/ui` lê a cor do foco de cada intent nos dois temas e calcula o contraste contra o fundo |
-| Texto longo em 375 px | UI-25 | Story do `CopyField` com valor longo; E2E com e-mail de mais de 100 caracteres em 375 e 1280 px, nos dois temas |
+| Estado                                                              | Requisitos                         | Prova                                                                                                                                                                        |
+| ------------------------------------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Login válido `204` e flags do cookie                                | AUTH-01, AUTH-02, AUTH-07, AUTH-08 | Integração HTTP com Postgres real: lê o `Set-Cookie` e confere a sessão no banco                                                                                             |
+| `401` igual para usuário inexistente, senha errada e entrada errada | AUTH-03, AUTH-04                   | Integração compara status, headers de conteúdo e corpo byte a byte; unit prova que o verificador roda uma vez nos dois casos, sem depender de medir tempo                    |
+| `429` e liberação                                                   | LOCK-01 a LOCK-08                  | Integração com relógio controlado, nos dois limites, conferindo que a senha correta também é recusada                                                                        |
+| IP real pelo BFF                                                    | LOCK-09, LOCK-10                   | E2E na stack do compose com headers de IP diferentes                                                                                                                         |
+| Expiração, revogação e renovação                                    | AUTH-10, AUTH-11, AUTH-12          | Integração com relógio controlado em cada caso; E2E volta ao login preservando a rota                                                                                        |
+| `403` para não admin                                                | INV-02, ADM-04, AUTH-14, UI-10     | Integração nos endpoints; E2E na tela                                                                                                                                        |
+| Convite `201`, aceite `201`, duplo aceite                           | INV-01, INV-07, INV-09             | Integração, incluindo aceites simultâneos contra Postgres real                                                                                                               |
+| `410` expirado, usado, revogado e desconhecido                      | INV-06, UI-16                      | Integração nos quatro casos, nos dois endpoints; E2E na tela                                                                                                                 |
+| Logout `204`                                                        | AUTH-12, UI-13                     | Integração reutiliza o cookie antigo e recebe `401`; E2E usa "Sair"                                                                                                          |
+| Toda rota declara o acesso                                          | AUTH-19                            | Teste de arquitetura percorre as rotas registradas na aplicação real e falha com uma rota de fixture sem declaração, com mensagem que nomeia a rota e as declarações aceitas |
+| Segredos fora dos logs                                              | AUTH-18                            | Integração lê as linhas JSON do pino depois de login e aceite e busca o token, a senha e o cookie                                                                            |
+| Jornada completa                                                    | Goals                              | E2E: CLI, login de admin, convite, aceite, home e saída, com axe nos dois temas                                                                                              |
+| CLI                                                                 | CLI-01 a CLI-06                    | Integração roda o entrypoint real com Postgres real                                                                                                                          |
+| Componentes                                                         | UI-21, ADM-15                      | Testes e stories em `packages/ui`; a regra de fronteiras cobre o resto                                                                                                       |
+| Foco visível                                                        | UI-24                              | Story em `packages/ui` lê a cor do foco de cada intent nos dois temas e calcula o contraste contra o fundo                                                                   |
+| Texto longo em 375 px                                               | UI-25                              | Story do `CopyField` com valor longo; E2E com e-mail de mais de 100 caracteres em 375 e 1280 px, nos dois temas                                                              |
+| Foco da lista                                                       | UI-26                              | Teste do `InvitationsPanel` confere o elemento focado depois de Carregar mais e de Revogar                                                                                   |
+| Saída das telas de erro                                             | UI-27                              | Testes de `UnavailableScreen` e `NoAccessScreen`                                                                                                                             |
+| Linha de convite em 375 px                                          | UI-28                              | Story `ListPage` com `Row` em 375 px mede a largura do texto, o botão e a rolagem                                                                                            |
 
 ---
 
 ## Requirement Traceability
 
-| Requirement ID | Story | Phase | Status |
-| --- | --- | --- | --- |
-| CLI-01 | P1: CLI | Design | Pending |
-| CLI-02 | P1: CLI | Design | Pending |
-| CLI-03 | P1: CLI | Design | Pending |
-| CLI-04 | P1: CLI | Design | Pending |
-| CLI-05 | P1: CLI | Design | Pending |
-| CLI-06 | P1: CLI | Design | Pending |
-| CLI-07 | P1: CLI | Design | Pending |
-| AUTH-01 | P1: Login e sessão | Design | Pending |
-| AUTH-02 | P1: Login e sessão | Design | Pending |
-| AUTH-03 | P1: Login e sessão | Design | Pending |
-| AUTH-04 | P1: Login e sessão | Design | Pending |
-| AUTH-05 | P1: Login e sessão | Design | Pending |
-| AUTH-06 | P1: Login e sessão | Design | Pending |
-| AUTH-07 | P1: Login e sessão | Design | Pending |
-| AUTH-08 | P1: Login e sessão | Design | Pending |
-| AUTH-09 | P1: Login e sessão | Design | Pending |
-| AUTH-10 | P1: Login e sessão | Design | Pending |
-| AUTH-11 | P1: Login e sessão | Design | Pending |
-| AUTH-12 | P1: Login e sessão | Design | Pending |
-| AUTH-13 | P1: Login e sessão | Design | Pending |
-| AUTH-14 | P1: Login e sessão | Design | Pending |
-| AUTH-15 | P1: Login e sessão | Design | Pending |
-| AUTH-16 | P1: Login e sessão | Design | Pending |
-| AUTH-17 | P1: Login e sessão | Design | Pending |
-| AUTH-18 | P1: Login e sessão | Design | Pending |
-| AUTH-19 | P1: Login e sessão | Design | Pending |
-| LOCK-01 | P1: Bloqueio | Design | Pending |
-| LOCK-02 | P1: Bloqueio | Design | Pending |
-| LOCK-03 | P1: Bloqueio | Design | Pending |
-| LOCK-04 | P1: Bloqueio | Design | Pending |
-| LOCK-05 | P1: Bloqueio | Design | Pending |
-| LOCK-06 | P1: Bloqueio | Design | Pending |
-| LOCK-07 | P1: Bloqueio | Design | Pending |
-| LOCK-08 | P1: Bloqueio | Design | Pending |
-| LOCK-09 | P1: Bloqueio | Design | Pending |
-| LOCK-10 | P1: Bloqueio | Design | Pending |
-| INV-01 | P1: Convite | Design | Pending |
-| INV-02 | P1: Convite | Design | Pending |
-| INV-03 | P1: Convite | Design | Pending |
-| INV-04 | P1: Convite | Design | Pending |
-| INV-05 | P1: Convite | Design | Pending |
-| INV-06 | P1: Convite | Design | Pending |
-| INV-07 | P1: Convite | Design | Pending |
-| INV-08 | P1: Convite | Design | Pending |
-| INV-09 | P1: Convite | Design | Pending |
-| INV-10 | P1: Convite | Design | Pending |
-| UI-01 | P1: Telas | Design | Pending |
-| UI-02 | P1: Telas | Design | Pending |
-| UI-03 | P1: Telas | Design | Pending |
-| UI-04 | P1: Telas | Design | Pending |
-| UI-05 | P1: Telas | Design | Pending |
-| UI-06 | P1: Telas | Design | Pending |
-| UI-07 | P1: Telas | Design | Pending |
-| UI-08 | P1: Telas | Design | Pending |
-| UI-09 | P1: Telas | Design | Pending |
-| UI-10 | P1: Telas | Design | Pending |
-| UI-11 | P1: Telas | Design | Pending |
-| UI-12 | P1: Telas | Design | Pending |
-| UI-13 | P1: Telas | Design | Pending |
-| UI-14 | P1: Telas | Design | Pending |
-| UI-15 | P1: Telas | Design | Pending |
-| UI-16 | P1: Telas | Design | Pending |
-| UI-17 | P1: Telas | Design | Pending |
-| UI-18 | P1: Telas | Design | Pending |
-| UI-19 | P1: Telas | Design | Pending |
-| UI-20 | P1: Telas | Design | Pending |
-| UI-21 | P1: Telas | Design | Pending |
-| UI-22 | P1: Telas | Design | Pending |
-| UI-23 | P1: Telas | Design | Pending |
-| UI-24 | P1: Telas | Design | Pending |
-| UI-25 | P1: Telas | Design | Pending |
-| ADM-01 | P2: Administrar convites | Design | Pending |
-| ADM-02 | P2: Administrar convites | Design | Pending |
-| ADM-03 | P2: Administrar convites | Design | Pending |
-| ADM-04 | P2: Administrar convites | Design | Pending |
-| ADM-05 | P2: Administrar convites | Design | Pending |
-| ADM-06 | P2: Administrar convites | Design | Pending |
-| ADM-07 | P2: Administrar convites | Design | Pending |
-| ADM-08 | P2: Administrar convites | Design | Pending |
-| ADM-09 | P2: Administrar convites | Design | Pending |
-| ADM-10 | P2: Administrar convites | Design | Pending |
-| ADM-11 | P2: Administrar convites | Design | Pending |
-| ADM-12 | P2: Administrar convites | Design | Pending |
-| ADM-13 | P2: Administrar convites | Design | Pending |
-| ADM-14 | P2: Administrar convites | Design | Pending |
-| ADM-15 | P2: Administrar convites | Design | Pending |
-| EDGE-01 | Edge Cases | Design | Pending |
-| EDGE-02 | Edge Cases | Design | Pending |
-| EDGE-03 | Edge Cases | Design | Pending |
-| EDGE-04 | Edge Cases | Design | Pending |
-| EDGE-05 | Edge Cases | Design | Pending |
-| EDGE-06 | Edge Cases | Design | Pending |
-| EDGE-07 | Edge Cases | Design | Pending |
-| EDGE-08 | Edge Cases | Design | Pending |
+| Requirement ID | Story                    | Phase  | Status  |
+| -------------- | ------------------------ | ------ | ------- |
+| CLI-01         | P1: CLI                  | Design | Pending |
+| CLI-02         | P1: CLI                  | Design | Pending |
+| CLI-03         | P1: CLI                  | Design | Pending |
+| CLI-04         | P1: CLI                  | Design | Pending |
+| CLI-05         | P1: CLI                  | Design | Pending |
+| CLI-06         | P1: CLI                  | Design | Pending |
+| CLI-07         | P1: CLI                  | Design | Pending |
+| AUTH-01        | P1: Login e sessão       | Design | Pending |
+| AUTH-02        | P1: Login e sessão       | Design | Pending |
+| AUTH-03        | P1: Login e sessão       | Design | Pending |
+| AUTH-04        | P1: Login e sessão       | Design | Pending |
+| AUTH-05        | P1: Login e sessão       | Design | Pending |
+| AUTH-06        | P1: Login e sessão       | Design | Pending |
+| AUTH-07        | P1: Login e sessão       | Design | Pending |
+| AUTH-08        | P1: Login e sessão       | Design | Pending |
+| AUTH-09        | P1: Login e sessão       | Design | Pending |
+| AUTH-10        | P1: Login e sessão       | Design | Pending |
+| AUTH-11        | P1: Login e sessão       | Design | Pending |
+| AUTH-12        | P1: Login e sessão       | Design | Pending |
+| AUTH-13        | P1: Login e sessão       | Design | Pending |
+| AUTH-14        | P1: Login e sessão       | Design | Pending |
+| AUTH-15        | P1: Login e sessão       | Design | Pending |
+| AUTH-16        | P1: Login e sessão       | Design | Pending |
+| AUTH-17        | P1: Login e sessão       | Design | Pending |
+| AUTH-18        | P1: Login e sessão       | Design | Pending |
+| AUTH-19        | P1: Login e sessão       | Design | Pending |
+| LOCK-01        | P1: Bloqueio             | Design | Pending |
+| LOCK-02        | P1: Bloqueio             | Design | Pending |
+| LOCK-03        | P1: Bloqueio             | Design | Pending |
+| LOCK-04        | P1: Bloqueio             | Design | Pending |
+| LOCK-05        | P1: Bloqueio             | Design | Pending |
+| LOCK-06        | P1: Bloqueio             | Design | Pending |
+| LOCK-07        | P1: Bloqueio             | Design | Pending |
+| LOCK-08        | P1: Bloqueio             | Design | Pending |
+| LOCK-09        | P1: Bloqueio             | Design | Pending |
+| LOCK-10        | P1: Bloqueio             | Design | Pending |
+| INV-01         | P1: Convite              | Design | Pending |
+| INV-02         | P1: Convite              | Design | Pending |
+| INV-03         | P1: Convite              | Design | Pending |
+| INV-04         | P1: Convite              | Design | Pending |
+| INV-05         | P1: Convite              | Design | Pending |
+| INV-06         | P1: Convite              | Design | Pending |
+| INV-07         | P1: Convite              | Design | Pending |
+| INV-08         | P1: Convite              | Design | Pending |
+| INV-09         | P1: Convite              | Design | Pending |
+| INV-10         | P1: Convite              | Design | Pending |
+| UI-01          | P1: Telas                | Design | Pending |
+| UI-02          | P1: Telas                | Design | Pending |
+| UI-03          | P1: Telas                | Design | Pending |
+| UI-04          | P1: Telas                | Design | Pending |
+| UI-05          | P1: Telas                | Design | Pending |
+| UI-06          | P1: Telas                | Design | Pending |
+| UI-07          | P1: Telas                | Design | Pending |
+| UI-08          | P1: Telas                | Design | Pending |
+| UI-09          | P1: Telas                | Design | Pending |
+| UI-10          | P1: Telas                | Design | Pending |
+| UI-11          | P1: Telas                | Design | Pending |
+| UI-12          | P1: Telas                | Design | Pending |
+| UI-13          | P1: Telas                | Design | Pending |
+| UI-14          | P1: Telas                | Design | Pending |
+| UI-15          | P1: Telas                | Design | Pending |
+| UI-16          | P1: Telas                | Design | Pending |
+| UI-17          | P1: Telas                | Design | Pending |
+| UI-18          | P1: Telas                | Design | Pending |
+| UI-19          | P1: Telas                | Design | Pending |
+| UI-20          | P1: Telas                | Design | Pending |
+| UI-21          | P1: Telas                | Design | Pending |
+| UI-22          | P1: Telas                | Design | Pending |
+| UI-23          | P1: Telas                | Design | Pending |
+| UI-24          | P1: Telas                | Design | Pending |
+| UI-25          | P1: Telas                | Design | Pending |
+| UI-26          | P1: Telas                | Design | Pending |
+| UI-27          | P1: Telas                | Design | Pending |
+| UI-28          | P1: Telas                | Design | Pending |
+| ADM-01         | P2: Administrar convites | Design | Pending |
+| ADM-02         | P2: Administrar convites | Design | Pending |
+| ADM-03         | P2: Administrar convites | Design | Pending |
+| ADM-04         | P2: Administrar convites | Design | Pending |
+| ADM-05         | P2: Administrar convites | Design | Pending |
+| ADM-06         | P2: Administrar convites | Design | Pending |
+| ADM-07         | P2: Administrar convites | Design | Pending |
+| ADM-08         | P2: Administrar convites | Design | Pending |
+| ADM-09         | P2: Administrar convites | Design | Pending |
+| ADM-10         | P2: Administrar convites | Design | Pending |
+| ADM-11         | P2: Administrar convites | Design | Pending |
+| ADM-12         | P2: Administrar convites | Design | Pending |
+| ADM-13         | P2: Administrar convites | Design | Pending |
+| ADM-14         | P2: Administrar convites | Design | Pending |
+| ADM-15         | P2: Administrar convites | Design | Pending |
+| EDGE-01        | Edge Cases               | Design | Pending |
+| EDGE-02        | Edge Cases               | Design | Pending |
+| EDGE-03        | Edge Cases               | Design | Pending |
+| EDGE-04        | Edge Cases               | Design | Pending |
+| EDGE-05        | Edge Cases               | Design | Pending |
+| EDGE-06        | Edge Cases               | Design | Pending |
+| EDGE-07        | Edge Cases               | Design | Pending |
+| EDGE-08        | Edge Cases               | Design | Pending |
 
 **Coverage:** 94 total, 0 mapped to tasks, 94 unmapped até a fase de Tasks.
 
@@ -389,16 +398,16 @@ Os estados do `.design` e o teste que prova cada um. O comando exato de cada che
 
 O `.design` não é captura de tela; as linhas abaixo registram onde esta spec muda o que ele define.
 
-| Source shows | Product shows | Confirmed |
-| --- | --- | --- |
-| Key decision 3: cookie compartilhado pelos subdomínios do front e da API | Cookie host-only no web, API sem domínio público | y - AD-004 |
-| Admin e member usam a mesma entrada; admin é só um papel | Duas entradas e contas separadas; admin não usa o produto | y - AD-005 |
-| `POST /auth/login` para todos | `POST /auth/login` para member e `POST /auth/admin/login` para admin | y - AD-005 |
-| Sem listagem nem revogação de convites | `GET /invitations`, `DELETE /invitations/:id` e coluna `invitations.revoked_at` | y - usuário: "Formulário + lista" |
-| Convite validado só no aceite | `GET /invitations/:token` | y - usuário: "Ao abrir o link" |
-| Tabelas `users`, `sessions`, `invitations` | Também `identity.login_attempts` | y - usuário: "Aprovo a spec" |
-| Quatro arquétipos | Quinto arquétipo `AuthPage` | y - usuário: "AuthPage novo" |
-| "Mesmo comando" para criar admin e trocar senha | Mesmo CLI com dois subcomandos | y - usuário: "Dois subcomandos" |
+| Source shows                                                             | Product shows                                                                   | Confirmed                         |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------- | --------------------------------- |
+| Key decision 3: cookie compartilhado pelos subdomínios do front e da API | Cookie host-only no web, API sem domínio público                                | y - AD-004                        |
+| Admin e member usam a mesma entrada; admin é só um papel                 | Duas entradas e contas separadas; admin não usa o produto                       | y - AD-005                        |
+| `POST /auth/login` para todos                                            | `POST /auth/login` para member e `POST /auth/admin/login` para admin            | y - AD-005                        |
+| Sem listagem nem revogação de convites                                   | `GET /invitations`, `DELETE /invitations/:id` e coluna `invitations.revoked_at` | y - usuário: "Formulário + lista" |
+| Convite validado só no aceite                                            | `GET /invitations/:token`                                                       | y - usuário: "Ao abrir o link"    |
+| Tabelas `users`, `sessions`, `invitations`                               | Também `identity.login_attempts`                                                | y - usuário: "Aprovo a spec"      |
+| Quatro arquétipos                                                        | Quinto arquétipo `AuthPage`                                                     | y - usuário: "AuthPage novo"      |
+| "Mesmo comando" para criar admin e trocar senha                          | Mesmo CLI com dois subcomandos                                                  | y - usuário: "Dois subcomandos"   |
 
 ## Sources
 

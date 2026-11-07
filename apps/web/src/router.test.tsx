@@ -169,7 +169,8 @@ describe('admin area guard', () => {
     expect(await screen.findByText('Você não tem acesso a esta área.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Voltar para o início' })).toHaveAttribute('href', '/');
     expect(screen.queryByRole('navigation')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Sair' })).toBeNull();
+    // The way out is the screen's own (UI-27), not a shell menu: there is no navigation around it.
+    expect(screen.getAllByRole('button', { name: 'Sair' })).toHaveLength(1);
   });
 
   it('says the service is unavailable on the same url without going to login', async () => {

@@ -29,27 +29,27 @@ As linhas esperadas dos proofs seguem o formato do reporter (`✓ <describe> > <
 
 > Generated from codebase, project guidelines, and spec - confirm before Execute. Guidelines found: `AGENTS.md`, `docs/engineering-guidelines.md` (seção Testes), `docs/design/principles.md`, `apps/api/vitest.config.ts`, `apps/web/vitest.config.ts`.
 
-| Code Layer | Required Test Type | Coverage Expectation | Location Pattern | Run Command |
-| ---------- | ------------------ | -------------------- | ---------------- | ----------- |
-| Contratos (`packages/contracts`) | unit | Cada forma válida aceita; cada limite rejeitado | `packages/contracts/src/**/*.test.ts` | `pnpm --filter @am/contracts test` |
-| Componentes de UI (`packages/ui`) | unit + storybook (browser) | Cada variante e parte do compound; toda story renderiza nos dois temas | `packages/ui/src/**/*.test.tsx`, `*.stories.tsx` | `pnpm --filter @am/ui test` |
-| API: domínio e config | unit | Todos os ramos; 1:1 com os critérios; sem DI do Nest | `apps/api/src/**/*.test.ts` | `pnpm --filter @am/api test` |
-| API: HTTP, guard, serviços, repositórios, CLI | integration (Testcontainers, PG 18) | Toda rota: sucesso + cada erro da spec; relógio controlado; sem mock de banco | `apps/api/src/**/*.int.test.ts` | `pnpm --filter @am/api test:integration` |
-| Web: model, BFF, componentes | unit (MSW, Testing Library) | Todos os ramos do mapeamento e do repasse; cada estado de tela | `apps/web/src/**/*.test.ts(x)` | `pnpm --filter @am/web test` |
-| Regras do repositório | unit (`tooling/guardrails`) | Cada violação barrada com arquivo e import | `tooling/guardrails/src/**/*.test.ts` | `pnpm --filter @am/guardrails test` |
-| Jornadas, headers, stack | e2e (Playwright + compose) | Jornadas críticas, estados de sessão, IP real, axe e larguras | `tests/e2e/specs/**/*.spec.ts` | `pnpm test:e2e` |
-| Documentação | none | build gate only | - | build gate |
+| Code Layer                                    | Required Test Type                  | Coverage Expectation                                                          | Location Pattern                                 | Run Command                              |
+| --------------------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------ | ---------------------------------------- |
+| Contratos (`packages/contracts`)              | unit                                | Cada forma válida aceita; cada limite rejeitado                               | `packages/contracts/src/**/*.test.ts`            | `pnpm --filter @am/contracts test`       |
+| Componentes de UI (`packages/ui`)             | unit + storybook (browser)          | Cada variante e parte do compound; toda story renderiza nos dois temas        | `packages/ui/src/**/*.test.tsx`, `*.stories.tsx` | `pnpm --filter @am/ui test`              |
+| API: domínio e config                         | unit                                | Todos os ramos; 1:1 com os critérios; sem DI do Nest                          | `apps/api/src/**/*.test.ts`                      | `pnpm --filter @am/api test`             |
+| API: HTTP, guard, serviços, repositórios, CLI | integration (Testcontainers, PG 18) | Toda rota: sucesso + cada erro da spec; relógio controlado; sem mock de banco | `apps/api/src/**/*.int.test.ts`                  | `pnpm --filter @am/api test:integration` |
+| Web: model, BFF, componentes                  | unit (MSW, Testing Library)         | Todos os ramos do mapeamento e do repasse; cada estado de tela                | `apps/web/src/**/*.test.ts(x)`                   | `pnpm --filter @am/web test`             |
+| Regras do repositório                         | unit (`tooling/guardrails`)         | Cada violação barrada com arquivo e import                                    | `tooling/guardrails/src/**/*.test.ts`            | `pnpm --filter @am/guardrails test`      |
+| Jornadas, headers, stack                      | e2e (Playwright + compose)          | Jornadas críticas, estados de sessão, IP real, axe e larguras                 | `tests/e2e/specs/**/*.spec.ts`                   | `pnpm test:e2e`                          |
+| Documentação                                  | none                                | build gate only                                                               | -                                                | build gate                               |
 
 ## Gate Check Commands
 
 > Generated from codebase - confirm before Execute.
 
-| Gate Level | When to Use | Command |
-| ---------- | ----------- | ------- |
-| Quick | Tasks com testes unit | `pnpm test` |
-| Full | Tasks com testes de integração | `pnpm test && pnpm test:integration` |
-| E2E | Tasks com testes Playwright | `pnpm test && pnpm test:e2e` |
-| Build | Tasks de documentação e fim de fase | `pnpm build && pnpm typecheck && pnpm lint && pnpm test` |
+| Gate Level | When to Use                         | Command                                                  |
+| ---------- | ----------------------------------- | -------------------------------------------------------- |
+| Quick      | Tasks com testes unit               | `pnpm test`                                              |
+| Full       | Tasks com testes de integração      | `pnpm test && pnpm test:integration`                     |
+| E2E        | Tasks com testes Playwright         | `pnpm test && pnpm test:e2e`                             |
+| Build      | Tasks de documentação e fim de fase | `pnpm build && pnpm typecheck && pnpm lint && pnpm test` |
 
 ---
 
@@ -1224,13 +1224,28 @@ Proof: run ui | ✓ |storybook (chromium)| src/layouts/app-shell/AppShell.storie
 **C104** - O `ConfirmDialog` com descrição de palavra sem ponto de quebra, aberto a 375 px, fica dentro da viewport sem largura escondida e mantém "Cancelar" e a ação dentro dela (UI-25, AC 25)
 Proof: run ui | ✓ |storybook (chromium)| src/components/confirm-dialog/ConfirmDialog.stories.tsx > Descrição longa
 
+**C105** - Depois de "Carregar mais" o foco vai para a primeira linha nova (UI-26, AC 26)
+Proof: run web | ✓ InvitationsPanel > moves the focus to the first new row after Carregar mais
+
+**C106** - Depois de revogar, o foco vai para a próxima linha ou, sem linha, para o título da lista, nunca para o `body` (UI-26, AC 26)
+Proof: run web | ✓ InvitationsPanel > moves the focus to the next row after revoking, and to the title after the last one
+
+**C107** - A tela de serviço indisponível oferece "Tentar novamente", que roda a nova tentativa (UI-27, AC 27)
+Proof: run web | ✓ UnavailableScreen > offers Tentar novamente, which runs the retry
+
+**C108** - A tela de acesso negado oferece "Sair" quando há sessão, e entrega a saída ao terminar a sessão (UI-27, AC 27)
+Proof: run web | ✓ NoAccessScreen > offers Sair when there is a session, and hands over once it ends
+
+**C109** - A linha de convite em 375 px usa a largura toda para o texto, mantém "Revogar" dentro da viewport e não gera rolagem horizontal (UI-28, AC 28)
+Proof: run ui | ✓ |storybook (chromium)| src/layouts/list-page/ListPage.stories.tsx > Linha estreita
+
 ---
 
 ## Handoff
 
 The feature's live state, written as it happens - a compaction gives no warning.
 
-**Settled mid-build:** the walk's gaps became criteria and checks, with no new numbered task: focus ring of `Button` vanishing on keyboard focus (UI-24, C94-C95; cause: `transition-colors` faded the ring in from the label color, fixed with an always-set `--color-focus` token) and long invitation email or link overflowing at 375 px (UI-25, C96-C97; `CopyField` is now a wrapping read-only text box, the row breaks the email and keeps "Revogar"). The Verifier's UI gaps (findings 8-11) added C98-C103 (focus ring of the `CopyField` text box, `Field.Control` and `AppShell.NavItem`, both themes; the `CopyField` box had no `--color-focus` ring) and C104 (open `ConfirmDialog` with a long description, wrapped with `overflow-wrap:anywhere`); the tests of C68, C69 and C97 grew and keep their names. The other walk gaps wait for the user's decision. user resumed after Phase 5 and moved the Phase 6 implementer from DeepSeek to Sonnet 5.5 ("mude para o sonnet 5.5"). E2E T41 must assert: Set-Cookie am_session reaches the browser on UI login, and the AUTH-11 renewal cookie reaches the SSR HTML response of a protected page.
+**Settled mid-build:** the walk's gaps became criteria and checks, with no new numbered task: focus ring of `Button` vanishing on keyboard focus (UI-24, C94-C95; cause: `transition-colors` faded the ring in from the label color, fixed with an always-set `--color-focus` token) and long invitation email or link overflowing at 375 px (UI-25, C96-C97; `CopyField` is now a wrapping read-only text box, the row breaks the email and keeps "Revogar"). The Verifier's UI gaps (findings 8-11) added C98-C103 (focus ring of the `CopyField` text box, `Field.Control` and `AppShell.NavItem`, both themes; the `CopyField` box had no `--color-focus` ring) and C104 (open `ConfirmDialog` with a long description, wrapped with `overflow-wrap:anywhere`); the tests of C68, C69 and C97 grew and keep their names. Three more walk gaps became UI-26..UI-28 and C105-C109: list focus after "Carregar mais" and revoke, "Tentar novamente" and "Sair" on the error screens (the `router.test.tsx` assertion that the no-access screen had no "Sair" now expects that screen's own one), and `ListPage.Row`/`RowText` using the full line at 375 px. The other walk gaps wait for the user's decision. user resumed after Phase 5 and moved the Phase 6 implementer from DeepSeek to Sonnet 5.5 ("mude para o sonnet 5.5"). E2E T41 must assert: Set-Cookie am_session reaches the browser on UI login, and the AUTH-11 renewal cookie reaches the SSR HTML response of a protected page.
 **Dispatched:** Verifier (Sonnet 5.5) over HEAD ff7fcba; no screens sub-agent (no capture cited)
 **Walked:** stack do compose (imagens de produção, `SESSION_COOKIE_SECURE=false`, `http://localhost:3000`), Chromium a 1280 e 375 px, temas claro e escuro. CLI/admin: `docker compose run --rm --no-deps -T api node dist/cli.js create-admin --email admin.walk@example.com --name "Ana Admin" --password-stdin` (senha curta e `--password` na linha de comando saem com 2; e-mail repetido recusado; `reset-password` revoga as sessões). Login: `/login` e `/admin/login` mostram o formulário de `AuthPage`, o `401` mostra "E-mail ou senha incorretos." com o e-mail mantido, `/` e `/admin/invitations` sem sessão redirecionam preservando a rota; admin entra em `/admin/login` e vê `/admin` com API e Banco "Operacional" e "Convites pendentes" com "Ver convites". Convites: `/admin/invitations` (admin logado) vazia, "Convidar" mostra o aviso "Este link só aparece desta vez", o link e "Copiar" vira "Copiado"; cópia recusada mostra "Não foi possível copiar. Selecione o link."; e-mail de conta existente mostra "Este e-mail já tem uma conta."; 24 convites a mais criados pela API na porta de loopback deixam 20 linhas e "Carregar mais" (+6); "Revogar" abre o diálogo com o e-mail, "Escape" cancela e confirmar remove a linha e baixa o total. Aceite: o link copiado abre `/invite/:token` (e-mail só leitura, nome, senha, "Use de 12 a 128 caracteres."), senha curta e nome com 130 caracteres mostram o erro de campo, "Criar conta" abre `/` como member com "Maria Membro" e "Sair" (a home é só o título "Início"); `/login` logado volta para `/`; "Sair" volta a `/login`. Member em `/admin` ou `/admin/invitations` mostra "Você não tem acesso a esta área." com "Voltar para o início". Convite usado, token desconhecido: "Este convite não é mais válido. Peça um novo ao administrador." sem formulário (HTML 200, `no-referrer`, `no-store`). Sessão expirada: com a linha de `identity.sessions` do admin com `expires_at` no passado (`update identity.sessions set expires_at = now() - interval '1 second'`), "Convidar" leva a `/admin/login?redirect=...&reason=expired` com "Sua sessão expirou. Entre novamente." e o novo login volta à rota. Bloqueio: 6 tentativas erradas com o mesmo e-mail em `/login` mostram na sexta "Muitas tentativas. Tente novamente em 15 min.". API fora (`docker compose stop api`): login mostra "Serviço indisponível. Tente novamente em instantes." sem redirecionar, `/`, `/admin` e `/invite/:token` mostram só o título com o aviso, `/status` mostra API e Banco "Indisponível". Lacunas achadas (ver relatório do walk): foco do botão primário invisível, e-mail longo e link de convite estouram a largura a 375 px.
 

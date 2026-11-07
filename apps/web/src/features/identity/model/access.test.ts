@@ -50,7 +50,7 @@ describe('adminAreaAccess', () => {
   });
 
   it('shows a member the no-access screen', () => {
-    expect(adminAreaAccess(as(member), '/admin')).toEqual({ kind: 'forbidden' });
+    expect(adminAreaAccess(as(member), '/admin')).toEqual({ kind: 'forbidden', user: member });
   });
 
   it('reports unavailable when the api does not answer', () => {

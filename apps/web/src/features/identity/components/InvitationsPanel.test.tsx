@@ -224,6 +224,46 @@ describe('InvitationsPanel', () => {
     expect(requests.revoked).toEqual([uuid(1)]);
   });
 
+  it('moves the focus to the first new row after Carregar mais', async () => {
+    apiWith(
+      [1, 2, 3].map((n) => ({ id: uuid(n), email: `p${n}@example.test` })),
+      2,
+    );
+    renderPanel();
+    await list();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Carregar mais' }));
+
+    const row = (await screen.findByText('p3@example.test')).closest('li');
+    await waitFor(() => expect(row).toHaveFocus());
+  });
+
+  it('moves the focus to the next row after revoking, and to the title after the last one', async () => {
+    apiWith([
+      { id: uuid(1), email: 'a@example.test' },
+      { id: uuid(2), email: 'b@example.test' },
+    ]);
+    renderPanel();
+    await list();
+
+    const revoke = async (email: string) => {
+      fireEvent.click(screen.getByRole('button', { name: `Revogar convite de ${email}` }));
+      fireEvent.click(
+        within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Revogar' }),
+      );
+      await waitFor(() => expect(screen.queryByText(email)).toBeNull());
+    };
+
+    await revoke('a@example.test');
+    await waitFor(() => expect(screen.getByText('b@example.test').closest('li')).toHaveFocus());
+
+    await revoke('b@example.test');
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: 'Convites', level: 1 })).toHaveFocus(),
+    );
+    expect(document.body).not.toHaveFocus();
+  });
+
   it('shows the empty message and the form', async () => {
     apiWith([]);
     renderPanel();

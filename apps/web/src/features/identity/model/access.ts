@@ -13,7 +13,7 @@ export type AreaAccess =
   /** An admin on the member area belongs on the admin home (UI-11). */
   | { kind: 'move-to-admin' }
   /** A member on the admin area gets the no-access screen, with no admin data (UI-10). */
-  | { kind: 'forbidden' }
+  | { kind: 'forbidden'; user: MeResponse }
   /** The api did not answer: say so, and do not send anyone to login (UI-05). */
   | { kind: 'unavailable' };
 
@@ -32,7 +32,7 @@ export function adminAreaAccess(session: SessionState, returnTo: string): AreaAc
   if (session.kind === 'anonymous') return { kind: 'sign-in', area: 'admin', returnTo };
   return areaOf(session.user.role) === 'admin'
     ? { kind: 'allowed', user: session.user }
-    : { kind: 'forbidden' };
+    : { kind: 'forbidden', user: session.user };
 }
 
 /**
