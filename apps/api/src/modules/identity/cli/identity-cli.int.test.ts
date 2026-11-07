@@ -4,6 +4,7 @@ import { PassThrough } from 'node:stream';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { beforeAll, describe, expect, inject, it } from 'vitest';
 import { argon2idPasswordHasher } from '../application/password-hasher.js';
+import { promptHidden } from './hidden-prompt.js';
 import { runIdentityCli } from './run-identity-cli.js';
 import { createPool } from '../../../infra/database/pool.js';
 import { createMigratedDatabase, dropDatabase, query } from '../../../../test/database.js';
@@ -116,6 +117,25 @@ async function withDatabase(runTest: (database: Database) => Promise<void>) {
   } finally {
     await dropDatabase(inject('databaseUrl'), database);
   }
+}
+
+/**
+ * A stream `promptHidden` sees as a terminal. `isTTY` is what readline reads to decide that what is
+ * typed is echoed back, so flagging a pair of pipes is the portable half of a pty: no dependency, and
+ * the same code path on macOS and Linux. The typed answer is written into `input`; everything the
+ * prompt writes while it waits lands in `written`.
+ */
+function terminalStreams(question: string) {
+  const input = new PassThrough() as PassThrough & { isTTY: boolean; setRawMode: (mode: boolean) => void };
+  input.isTTY = true;
+  // Readline calls this on a terminal; the stream is not one, so the call does nothing.
+  input.setRawMode = () => {};
+  const output = new PassThrough();
+  let written = question;
+  output.on('data', (chunk) => {
+    written += String(chunk);
+  });
+  return { input, output, written: () => written };
 }
 
 describe('identity cli', () => {
@@ -313,6 +333,16 @@ describe('identity cli', () => {
       // An unknown subcommand and a missing variable are usage errors, not silent successes.
       expect((await cli(database, ['drop-table'])).code).toBe(2);
       expect((await cli(database, ['create-admin', '--name', 'Sem Email', '--password-stdin'], `${password}\n`)).code).toBe(2);
+
+      // The hidden prompt itself, over a stream flagged as a terminal: what is typed reaches the
+      // command and never comes back out, so a screen share or a terminal log holds no password (CLI-06).
+      const streams = terminalStreams('Password: ');
+      const prompted = promptHidden('Password: ', streams);
+      setImmediate(() => streams.input.write(`${password}\n`));
+
+      await expect(prompted).resolves.toBe(password);
+      expect(streams.written()).toContain('Password: ');
+      expect(streams.written()).not.toContain(password);
     });
   });
 

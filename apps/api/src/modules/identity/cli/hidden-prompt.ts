@@ -1,15 +1,27 @@
 import { createInterface } from 'node:readline';
+import type { Readable, Writable } from 'node:stream';
+
+/** The streams of the prompt: standard input and error unless a caller passes its own. */
+export interface HiddenPromptStreams {
+  /** Where the answer is typed; a terminal is detected through its `isTTY` flag. */
+  input?: Readable;
+  /** Where the question is written and where a terminal would echo the answer. */
+  output?: Writable;
+}
 
 /**
  * Asks for a password without echoing it: what is typed never reaches a log line, and on a terminal
  * it is also kept off the screen (CLI-06). The answer is read from `process.stdin`, like any other
  * prompt: with standard input at end-of-file there is nothing to read, which is what
  * `--password-stdin` exists for.
+ *
+ * The streams are parameters so a test can hand over a stream flagged as a terminal and watch what
+ * the prompt writes while the answer is typed (CLI-06).
  */
-export function promptHidden(question: string): Promise<string> {
+export function promptHidden(question: string, streams: HiddenPromptStreams = {}): Promise<string> {
   return new Promise((resolve, reject) => {
-    const input = process.stdin;
-    const output = process.stderr;
+    const input = (streams.input ?? process.stdin) as Readable & { isTTY?: boolean };
+    const output = (streams.output ?? process.stderr) as Writable;
     const terminal = input.isTTY === true;
     const rl = createInterface({ input, output, terminal });
 
