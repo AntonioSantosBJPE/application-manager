@@ -21,7 +21,11 @@ async function checkBoundaries(fixture: string): Promise<Boundaries> {
   const { output: report } = await format(result, { outputType: 'err' });
   return {
     edges: result.modules.flatMap((m) => m.dependencies.map((d) => `${m.source} → ${d.resolved}`)),
-    violations: result.summary.violations.map((v) => ({ rule: v.rule.name, from: v.from, to: v.to })),
+    violations: result.summary.violations.map((v) => ({
+      rule: v.rule.name,
+      from: v.from,
+      to: v.to,
+    })),
     report: report as string,
   };
 }
@@ -100,7 +104,8 @@ describe('dependency boundaries', () => {
     );
   });
 
-  it('allows imports inside the same feature and the same module', async () => {    const { edges, violations } = await checkBoundaries('own-internals');
+  it('allows imports inside the same feature and the same module', async () => {
+    const { edges, violations } = await checkBoundaries('own-internals');
 
     expect(edges).toEqual(
       expect.arrayContaining([
