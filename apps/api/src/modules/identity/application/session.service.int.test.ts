@@ -8,8 +8,12 @@ import { runMigrations } from '../../../infra/database/migrations.js';
 import { createPool } from '../../../infra/database/pool.js';
 import { hashToken } from '../domain/tokens.js';
 import { SESSION_DURATION_MS } from '../domain/session-renewal.js';
-import { sessions, users } from '../infra/schema.js';
+import { invitations, sessions, users } from '../infra/schema.js';
+import { InvitationsRepository } from '../infra/invitations.repository.js';
 import { SessionsRepository } from '../infra/sessions.repository.js';
+import { UsersRepository } from '../infra/users.repository.js';
+import { argon2idPasswordHasher } from './password-hasher.js';
+import { InvitationService } from './invitation.service.js';
 import { SessionService } from './session.service.js';
 
 const migrationsFolder = join(import.meta.dirname, '../../../../drizzle');
@@ -79,8 +83,29 @@ describe('session service', () => {
     expect(rows[0]!.tokenHash).toBe(hashToken(token));
     expect(rows[0]!.tokenHash).toMatch(/^[0-9a-f]{64}$/);
     expect(JSON.stringify(rows)).not.toContain(token);
+    // 32 random bytes carried in base64url, so 43 characters of 256 bits of entropy (AUTH-06).
+    expect(Buffer.from(token, 'base64url')).toHaveLength(32);
     expect(expiresAt.toISOString()).toBe('2026-12-03T12:00:00.000Z');
     expect(SESSION_DURATION_MS).toBe(30 * 24 * 60 * 60 * 1000);
+
+    // The invitation token follows the same rule: the link carries it, the table keeps only its hash.
+    const invitationService = new InvitationService(
+      new InvitationsRepository(database.db),
+      new UsersRepository(database.db),
+      service,
+      argon2idPasswordHasher,
+      clock,
+      { webPublicUrl: 'https://app.example.com' },
+    );
+    const created = await invitationService.create('convidada@example.com', userId);
+    const invitationToken = created!.inviteUrl.split('/').at(-1)!;
+
+    expect(Buffer.from(invitationToken, 'base64url')).toHaveLength(32);
+    const invitationRows = await database.db.select().from(invitations);
+    expect(invitationRows).toHaveLength(1);
+    expect(invitationRows[0]!.tokenHash).toBe(hashToken(invitationToken));
+    expect(invitationRows[0]!.tokenHash).toMatch(/^[0-9a-f]{64}$/);
+    expect(JSON.stringify(invitationRows)).not.toContain(invitationToken);
   });
 
   it('resolves a live session to its user', async () => {
