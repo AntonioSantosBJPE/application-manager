@@ -209,6 +209,18 @@ describe('login lockout', () => {
       expect(rows).toHaveLength(9);
       expect(rows.filter((row) => row.pair_cleared)).toHaveLength(4);
       expect(rows.filter((row) => !row.pair_cleared && row.email === memberEmail)).toHaveLength(5);
+
+      // Those nine are failures of the address, so 41 more of other emails reach its 50 failures and
+      // every one of them is still judged on its own pair: 401 (LOCK-02, LOCK-06).
+      for (let i = 0; i < 41; i += 1) {
+        expect((await attempt(api.baseUrl, { email: `other-${i}@example.com`, password }, { ip: pairIp })).status).toBe(401);
+      }
+      expect(await failureRows(database.url, pairIp)).toHaveLength(50);
+
+      // The address is now blocked for an email that never failed from it: the four rows the success
+      // cleared are part of the 50, and leaving them out would answer this attempt with a 401.
+      const thirdEmail = await attempt(api.baseUrl, { email: 'third@example.com', password }, { ip: pairIp });
+      expect(thirdEmail.status).toBe(429);
     } finally {
       await api.close();
     }
