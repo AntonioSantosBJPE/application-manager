@@ -28,6 +28,8 @@ Leia antes de qualquer trabalho:
 
 `tlc-discover` (`.design/`) → `tlc-prd` (`.prd/`) → `tlc-spec-driven` por feature (`.specs/`). Backend com `nestjs-modular-monolith`; manutenção com `codenavi`.
 
+Neste projeto o fechamento de uma feature **não** roda `check_proofs.py` nem `validate_verification.py`: os gates são rápidos (lint, tipos, testes, verificações de padrão) e a revisão independente continua — ver [docs/workflow.md](docs/workflow.md#gates-e-tempo).
+
 Spec, design e tasks de uma feature são escritos na `main`, sem commitar. Quando as tasks são aprovadas, cria-se a branch `feat/<feature>` a partir da `main` no checkout principal; o plano é o primeiro commit dela e o código vem depois, até o PR — ver [docs/workflow.md](docs/workflow.md).
 
 ## Skills

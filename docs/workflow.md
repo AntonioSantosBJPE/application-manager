@@ -64,10 +64,12 @@ Os gates têm orçamento de tempo; se um estoura, o gate muda, não a paciência
 
 | Camada | Quando | Orçamento | O que roda |
 |---|---|---|---|
-| Commit | a cada commit | até 30 s | `pnpm lint`, `pnpm typecheck`, testes do pacote tocado, `check_proofs.py <feature> --static` (só confere o mapeamento check → prova) |
-| PR | CI, jobs em paralelo | até 3 min | lint, typecheck, `pnpm test`, `pnpm test:integration`, `pnpm test:repo-rules` |
-| Fechamento da feature | uma vez | ~4 min | `check_proofs.py <feature>` completo, com `proofs.md` sem commit, e o Verifier |
+| Commit | a cada commit | até 30 s | `pnpm lint`, `pnpm typecheck`, `pnpm test` (inclui as verificações de padrão de `tooling/guardrails/src/code-patterns.test.ts`) |
+| PR | CI, jobs em paralelo | até 3 min | lint, typecheck, `pnpm test`, `pnpm test:integration`, `pnpm test:repo-rules`, scan de segredos |
+| Fim da feature | uma vez | ~3 min | os gates acima, `pnpm test:e2e` local e a revisão independente (Verifier) lendo o diff e os testes |
 
-- O E2E (`pnpm test:e2e`, ~2 min) e o build das imagens ficam fora do CI por enquanto, mas rodam localmente no fechamento da feature e quando mudam compose, Dockerfile, cookies ou a pilha.
-- `validate_verification.py` aceita o `proofs.md` de um commit anterior quando só documentação (`.specs/`, `docs/`, `*.md`) mudou depois dele; qualquer outra mudança exige rodar o `check_proofs.py` de novo.
+- **Este projeto não usa `check_proofs.py` nem `validate_verification.py` para fechar uma feature.** Rodar todas as provas de novo a cada commit custou mais de 35 min numa spec sem acrescentar nada ao que o CI e a revisão já provam. A skill continua intacta em `.agents/skills/`; só não é parte do fluxo daqui.
+- A rastreabilidade (critério → check → teste) continua em `spec.md` e `tasks.md`, e a revisão independente continua: o Verifier julga se o teste de cada check segura o critério e registra o que achou em `verification.md`.
+- Regra de qualidade vira script rápido, não rodada longa: quando o lint não pega um padrão (teste pulado, `console`, componente sem story, controle HTML cru), acrescenta-se uma verificação em `code-patterns.test.ts`.
+- O E2E (`pnpm test:e2e`, ~2 min) e o build das imagens ficam fora do CI por enquanto, mas rodam localmente quando mudam compose, Dockerfile, cookies ou a pilha.
 - Nenhuma suíte roda o repositório inteiro dentro de um teste do `pnpm test`: isso vira `test:repo-rules`, em job próprio.
