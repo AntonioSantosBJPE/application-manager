@@ -129,13 +129,13 @@ async function withDatabase(runTest: (database: Database) => Promise<void>) {
  * the same code path on macOS and Linux. The typed answer is written into `input`; everything the
  * prompt writes while it waits lands in `written`.
  */
-function terminalStreams(question: string) {
+function terminalStreams() {
   const input = new PassThrough() as PassThrough & { isTTY: boolean; setRawMode: (mode: boolean) => void };
   input.isTTY = true;
   // Readline calls this on a terminal; the stream is not one, so the call does nothing.
   input.setRawMode = () => {};
   const output = new PassThrough();
-  let written = question;
+  let written = '';
   output.on('data', (chunk) => {
     written += String(chunk);
   });
@@ -340,7 +340,7 @@ describe('identity cli', () => {
 
       // The hidden prompt itself, over a stream flagged as a terminal: what is typed reaches the
       // command and never comes back out, so a screen share or a terminal log holds no password (CLI-06).
-      const streams = terminalStreams('Password: ');
+      const streams = terminalStreams();
       const prompted = promptHidden('Password: ', streams);
       setImmediate(() => streams.input.write(`${password}\n`));
 
