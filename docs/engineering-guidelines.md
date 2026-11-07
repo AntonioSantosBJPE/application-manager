@@ -43,6 +43,8 @@ packages/ui/        design system: tokens, primitivos, padrões (com Storybook)
 ```
 
 - Server functions são **BFF**: repassar auth, buscar dados para SSR, agregar chamadas. **Regra de negócio fica no Nest.**
+- **O BFF tem uma server function por endpoint da API, sobre o `callApi` de `apps/web/src/lib/call-api.ts`. Não existe rota proxy genérica** (AD-007). O navegador só alcança o que tem função, o CSRF do Start cobre exatamente esse caminho, e SSR e client usam a mesma função. O custo aceito é uma função curta a mais por endpoint em cada fatia.
+- **O navegador nunca chama a API diretamente** (AD-004): a API não tem domínio público nem CORS, e o cookie de sessão é host-only no web. Por isso o BFF repassa o cookie, o request id e o IP do cliente; `CLIENT_IP_HEADER` nomeia o header que o proxy na frente do web preenche, e `X-Forwarded-For` do navegador nunca é lido.
 - Contratos de API vêm de `packages/contracts`, nunca são redeclarados.
 - **Rotas não têm lógica.** Carregam dados e compõem componentes de features.
 - **Features não importam o interior de outras features**, só o `index.ts`.
@@ -60,7 +62,16 @@ packages/ui/        design system: tokens, primitivos, padrões (com Storybook)
 
 ### Design system
 
-Regras visuais em [design/principles.md](design/principles.md). Toda página usa um arquétipo (`ListPage`, `DetailPage`, `FormPage`, `DashboardPage`); página que não se encaixa vira discussão de design. Todo componente de `packages/ui` tem story no Storybook, que é a referência que pessoas e agentes seguem.
+Regras visuais em [design/principles.md](design/principles.md). Toda página usa um arquétipo (`ListPage`, `DetailPage`, `FormPage`, `DashboardPage`, `AuthPage`); página que não se encaixa vira discussão de design. Todo componente de `packages/ui` tem story no Storybook, que é a referência que pessoas e agentes seguem.
+
+## Acesso — regra de toda a API (AD-006)
+
+Todo módulo do backend nasce fechado: toda rota exige sessão, a menos que declare o contrário, e um teste de arquitetura percorre as rotas registradas da aplicação real e falha quando uma delas não declara o acesso. O módulo `identity` é o dono da regra, e outro módulo a alcança pela API pública dele (`Public`, `Roles`, `AnySession`, `CurrentUser`), nunca importando o interior.
+
+- **A declaração fica na rota**: pública, de um papel específico ou de qualquer sessão. Nada de base class nem middleware decidindo quem entra.
+- **A sessão é lida a cada requisição**, pelo SHA-256 do token em `identity.sessions`, com o papel vindo da tabela do usuário. Sem papel no token e sem cache, então revogação e mudança de papel valem na requisição seguinte. O custo é uma consulta por requisição autenticada; cache só entra com medição, atrás da interface de sessão do módulo.
+- **O usuário vem sempre da sessão**, nunca do corpo: todo módulo lê o dono do recurso do `CurrentUser` e descarta qualquer id que o cliente mande.
+- **Contas separadas** (AD-005): `admin` só administra a área de administração e `member` só usa o produto; o e-mail é único entre os dois papéis e cada um entra pela porta da sua área.
 
 ## Backend — NestJS monolito modular
 
@@ -116,6 +127,8 @@ Exercício planejado: migrar de verdade para uma segunda VPS temporária e docum
 3. Grafana + Loki + Prometheus + Tempo, coletados pelo Grafana Alloy, com retenção curta (7–15 dias).
 4. Uptime Kuma para disponibilidade e alertas.
 5. Erros no Sentry free (ou GlitchTip self-hosted, compatível com o SDK).
+
+**Segredo nunca entra em log.** Senha, token de sessão, token de convite e valor de `Cookie` ficam fora de toda linha, da API e do web. Na API isso é `redact` mais um serializer que troca o token da URL por `[token]`; no web, o log de acesso do runtime é ajustado para o mesmo, porque ele imprime a URL como chegou. A prova é um E2E que faz a jornada inteira e procura nos logs das duas imagens a senha, os tokens e o cookie que aquele teste usou.
 
 Futuro: erro no Sentry → issue no GitHub → agente propõe PR → CI + preview → **merge sempre humano**.
 

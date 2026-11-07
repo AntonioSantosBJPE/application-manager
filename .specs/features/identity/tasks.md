@@ -901,8 +901,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] Os documentos citam AD-004 a AD-007, sem dados reais nem detalhes de infraestrutura
-- [ ] Gate check passes: `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
+- [x] Os documentos citam AD-004 a AD-007, sem dados reais nem detalhes de infraestrutura
+- [x] Gate check passes: `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
 
 **Tests**: none
 **Gate**: build

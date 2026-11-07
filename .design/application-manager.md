@@ -43,7 +43,7 @@ A alternativa mais pesada — versões como referências aos itens do mestre com
 
 1. **Todo registro pertence a um usuário e toda leitura é filtrada pelo usuário da sessão; nenhum endpoint aceita `user_id` vindo do cliente.** Vale para todos os módulos desde o primeiro dia — é o que permite abrir para multiusuário sem migração e o que impede vazamento de dados entre contas.
 2. **Cada módulo tem o próprio schema no Postgres, sem foreign keys nem joins entre schemas.** Referências entre módulos são ids validados pela API pública do módulo dono. É o pré-requisito para extrair um módulo como serviço depois; o custo aceito é não ter integridade referencial no banco entre módulos.
-3. **Autenticação por sessão opaca guardada no servidor, não por JWT, num cookie `httpOnly` compartilhado pelos subdomínios do front e da API; cadastro só por convite.** Sessão revogável e simples de raciocinar com SSR; o token é guardado apenas como hash. Só o papel `admin` convida usuários e promove skills.
+3. **Autenticação por sessão opaca guardada no servidor, não por JWT, num cookie `httpOnly` host-only na aplicação web; cadastro só por convite.** *Revista na feature Identity (AD-004):* o cookie não é compartilhado entre subdomínios. O navegador fala só com o TanStack Start, que repassa as chamadas à API pela rede interna (BFF); a API não tem domínio público nem CORS, e o cookie vale só no host do web. Sessão revogável e simples de raciocinar com SSR; o token é guardado apenas como hash. Só o papel `admin` convida usuários e promove skills. O custo aceito é um salto a mais por chamada e o repasse explícito do IP do cliente para o bloqueio de login.
 4. **Skill tem uma identidade canônica com apelidos, e tanto vagas quanto bullets do currículo referenciam o mesmo catálogo.** Uma skill sem dono é global; uma com dono é privada daquele usuário até ser promovida. A chave normalizada é única por escopo. É isso que torna possível a ordenação de bullets agora e os insights na fase 4.
 5. **ResumeVersion é uma cópia do MasterResume feita na criação, nunca uma referência viva.** Editar a versão nunca altera o mestre; editar o mestre nunca altera versões existentes. Recomeçar a partir do mestre é uma ação explícita que descarta as edições da versão.
 6. **ResumeDocument é imutável: depois de pronto, o PDF e o conteúdo usado para gerá-lo nunca mudam.** Gerar de novo cria outro documento, e a Application registra qual documento foi de fato enviado. O usuário sempre sabe o que mandou para cada empresa.
@@ -88,6 +88,14 @@ Convenções do projeto, decididas uma vez para todas as fatias: chave primária
 
 **Delivers** acesso por convite com sessão no servidor. **Status: open.** Contém a porta da Key decision 3.
 
+> **Revisto na feature Identity.** O que mudou, com o registro nas decisões (AD-004 a AD-007):
+> - **AD-004** — o navegador fala só com o web (BFF); a API não tem domínio público nem CORS, e o cookie de sessão é host-only. Substitui o cookie compartilhado pelos subdomínios.
+> - **AD-005** — contas separadas: `admin` só administra e `member` só usa o produto, com entradas próprias e o mesmo `401` na porta errada.
+> - **AD-006** — o acesso é decidido no servidor a cada requisição, e toda rota declara o seu nível; um teste de arquitetura falha quando falta a declaração.
+> - **AD-007** — o BFF tem uma server function por endpoint, sem rota proxy genérica.
+>
+> Contratos acrescentados ao pedido original: `POST /auth/admin/login`; `GET /invitations/:token`; `GET /invitations` e `DELETE /invitations/:id`; e a tabela `login_attempts`, que guarda as falhas por e-mail + IP e por IP na janela de bloqueio. O aceite do convite é uma transação só, e o login bem-sucedido limpa as falhas do par sem zerar o teto por IP. O primeiro admin nasce pelo CLI (`create-admin`), e `reset-password` troca a senha e revoga as sessões; nenhuma rota cria admin nem troca senha.
+
 | State | What should happen | Caller sees |
 |---|---|---|
 | Login válido | cria sessão, define o cookie | `204` |
@@ -101,12 +109,16 @@ Convenções do projeto, decididas uma vez para todas as fatias: chave primária
 | Logout | sessão revogada | `204` |
 
 `POST /auth/login` `{ email, password }` → `204`
+`POST /auth/admin/login` `{ email, password }` → `204` (AD-005)
 `POST /auth/logout` → `204`
 `GET /auth/me` → `200` `{ id, email, name, role }`
 `POST /invitations` `{ email }` → `201` `{ inviteUrl, expiresAt }`
+`GET /invitations` → `200` `{ items, nextCursor, totalPending }`
+`DELETE /invitations/:id` → `204`
+`GET /invitations/:token` → `200` `{ email, expiresAt }`
 `POST /invitations/:token/accept` `{ name, password }` → `201`
 
-Tables `identity.users`, `identity.sessions`, `identity.invitations`.
+Tables `identity.users`, `identity.sessions`, `identity.invitations`, `identity.login_attempts`.
 
 | Column | Type | Null | References | Note |
 |---|---|---|---|---|
@@ -127,10 +139,23 @@ Tables `identity.users`, `identity.sessions`, `identity.invitations`.
 | `invitations.expires_at` | timestamptz | no | | 7 dias |
 | `invitations.accepted_at` | timestamptz | yes | | |
 
+Tabelas e colunas acrescentadas na feature Identity:
+
+| Column | Type | Null | References | Note |
+|---|---|---|---|---|
+| `invitations.revoked_at` | timestamptz | yes | | revogação pelo admin; único parcial de convite pendente por e-mail |
+| `login_attempts.id` | uuid | no | | |
+| `login_attempts.email` | text | no | | normalizado em minúsculas |
+| `login_attempts.ip` | text | no | | endereço que o web resolveu, nunca um header do navegador |
+| `login_attempts.attempted_at` | timestamptz | no | | linha apagada quando sai da janela de bloqueio |
+| `login_attempts.pair_cleared` | boolean | no | | login certo deixa de contar para o par e continua contando para o IP |
+
 Alternatives considered: biblioteca de auth pronta - vence se login social ou 2FA entrarem no roadmap próximo.
 
 1. O primeiro admin é criado por um comando de linha de comando no servidor, nunca por endpoint - default.
 2. Troca de senha esquecida é feita pelo admin com o mesmo comando, até existir envio de e-mail - default.
+
+Contas e acesso, decididos na feature Identity: contas separadas para operador e cliente (AD-005); o guard é global e toda rota declara o seu acesso (AD-006); o web é o único caminho até a API (AD-004) e tem uma server function por endpoint (AD-007).
 
 ### Skill
 
