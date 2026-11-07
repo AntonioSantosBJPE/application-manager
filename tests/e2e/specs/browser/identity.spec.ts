@@ -622,12 +622,27 @@ test.describe('identity', () => {
   test('stack logs contain no password token or cookie after a full journey', async ({ browser }) => {
     // AUTH-18, the strongest form of the check: the whole journey runs, and afterwards every log line of
     // both services is searched for the password, the session token, the invite token and the cookie that
-    // this test actually used. Any of them in a log is a leak.
+    // this test actually used. Any of them in a log is a leak. The password typed on a refused attempt is
+    // searched too: a login that loses the credential loses it as well as one that wins.
     const admin = await browser.newContext();
     const invited = await browser.newContext();
+    const anonymous = await browser.newContext();
     const email = memberEmail();
     const inviteEmailPassword = fixturePassword('logs-member');
+    const wrongAttemptPassword = fixturePassword('logs-wrong');
     try {
+      // A refused attempt on each door, with a password of its own, before the journey succeeds.
+      const attemptsPage = await anonymous.newPage();
+      const refusedAt = async (door: '/login' | '/admin/login'): Promise<void> => {
+        await attemptsPage.goto(door);
+        await attemptsPage.getByLabel('E-mail').fill(memberEmail());
+        await attemptsPage.getByLabel('Senha').fill(wrongAttemptPassword);
+        await attemptsPage.getByRole('button', { name: 'Entrar' }).click();
+        await expect(attemptsPage.getByRole('alert'), door).toHaveText(WRONG_CREDENTIALS);
+      };
+      await refusedAt('/login');
+      await refusedAt('/admin/login');
+
       const adminPage = await admin.newPage();
       await signIn(adminPage, 'admin', adminEmail, adminPassword);
       const adminCookie = await sessionCookie(adminPage);
@@ -647,6 +662,7 @@ test.describe('identity', () => {
       const secrets = [
         { label: 'the admin password', value: adminPassword },
         { label: 'the invited password', value: inviteEmailPassword },
+        { label: 'the wrong password of a login attempt', value: wrongAttemptPassword },
         { label: 'the session token of the admin', value: adminCookie },
         { label: 'the session token of the member', value: memberCookie },
         { label: 'the invitation token', value: inviteToken },
@@ -665,6 +681,7 @@ test.describe('identity', () => {
     } finally {
       await admin.close();
       await invited.close();
+      await anonymous.close();
     }
   });
 });
