@@ -1,11 +1,12 @@
 import { fileURLToPath } from 'node:url';
-import { loadEnv, type ApiEnv } from './config/env.js';
+import { loadDatabaseEnv, type DatabaseEnv } from './config/env.js';
 import { runMigrations } from './infra/database/migrations.js';
 
 // Entrypoint of the `migrate` service: exits 0 when every migration is applied, 1 otherwise.
-let env: ApiEnv;
+// Only the database variables are read: `WEB_PUBLIC_URL` belongs to the API and does not exist here.
+let env: DatabaseEnv;
 try {
-  env = loadEnv();
+  env = loadDatabaseEnv();
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
   process.exit(1);

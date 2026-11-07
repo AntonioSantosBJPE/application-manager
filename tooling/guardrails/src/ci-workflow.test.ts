@@ -36,7 +36,7 @@ describe('ci workflow', () => {
     expect((workflow.on?.push as { branches?: string[] }).branches).toEqual(['main']);
 
     // One job per concern.
-    expect(Object.keys(jobs).sort()).toEqual(['e2e', 'images', 'integration', 'quality', 'secrets', 'workflow-lint']);
+    expect(Object.keys(jobs).sort()).toEqual(['e2e', 'images', 'integration', 'quality', 'repo-rules', 'secrets', 'workflow-lint']);
 
     // Lint, typecheck and unit tests, with the frozen lockfile.
     expect(commands('quality')).toMatch(/pnpm install --frozen-lockfile/);

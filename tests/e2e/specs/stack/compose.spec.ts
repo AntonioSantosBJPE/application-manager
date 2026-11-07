@@ -45,9 +45,10 @@ test.describe('compose', () => {
     const apiPort = process.env.API_PORT ?? '3333';
     const postgresPort = process.env.POSTGRES_PORT ?? '5432';
 
-    // The running stack publishes the configured ports, the database only on the loopback interface.
+    // The running stack publishes the configured ports; the api and the database only on the loopback
+    // interface, so nothing outside this machine reaches the api and the address it counts (AD-004).
     expect(composeOk(['port', 'web', '3000']).trim()).toMatch(new RegExp(`:${webPort}$`));
-    expect(composeOk(['port', 'api', '3333']).trim()).toMatch(new RegExp(`:${apiPort}$`));
+    expect(composeOk(['port', 'api', '3333']).trim()).toBe(`127.0.0.1:${apiPort}`);
     expect(composeOk(['port', 'postgres', '5432']).trim()).toBe(`127.0.0.1:${postgresPort}`);
     // SKEL-13: Playwright targets the published web port.
     expect(baseURL).toBe(`http://localhost:${webPort}`);
@@ -61,7 +62,7 @@ test.describe('compose', () => {
     expect(model.status, model.output).toBe(0);
     const services = (JSON.parse(model.output) as { services: Record<string, { ports?: { host_ip?: string; published: string; target: number }[] }> }).services;
     expect(services.web?.ports).toEqual([expect.objectContaining({ published: '3000', target: 3000 })]);
-    expect(services.api?.ports).toEqual([expect.objectContaining({ published: '3333', target: 3333 })]);
+    expect(services.api?.ports).toEqual([expect.objectContaining({ host_ip: '127.0.0.1', published: '3333', target: 3333 })]);
     expect(services.postgres?.ports).toEqual([expect.objectContaining({ host_ip: '127.0.0.1', published: '5432', target: 5432 })]);
   });
 
@@ -72,7 +73,7 @@ test.describe('compose', () => {
     expect(web.Config.Labels['com.docker.compose.project.working_dir']).toBe(repoRoot);
 
     const requestId = `e2e-project-${Date.now()}`;
-    const response = await request.get('/', { headers: { 'x-request-id': requestId } });
+    const response = await request.get('/status', { headers: { 'x-request-id': requestId } });
     expect(response.status()).toBe(200);
     expect(composeOk(['logs', 'web']), 'the visit reached this project\'s web container').toContain(requestId);
   });

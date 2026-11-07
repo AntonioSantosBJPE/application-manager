@@ -9,60 +9,246 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as MemberRouteImport } from './routes/_member'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as StatusRouteImport } from './routes/status'
+import { Route as MemberIndexRouteImport } from './routes/_member/index'
+import { Route as AdminProtectedRouteImport } from './routes/admin/_protected'
+import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as InviteTokenRouteImport } from './routes/invite.$token'
+import { Route as AdminProtectedIndexRouteImport } from './routes/admin/_protected/index'
+import { Route as AdminProtectedInvitationsRouteImport } from './routes/admin/_protected/invitations'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const MemberRoute = MemberRouteImport.update({
+  id: '/_member',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MemberIndexRoute = MemberIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MemberRoute,
+} as any)
+const AdminProtectedRoute = AdminProtectedRouteImport.update({
+  id: '/admin/_protected',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InviteTokenRoute = InviteTokenRouteImport.update({
+  id: '/invite/$token',
+  path: '/invite/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminProtectedIndexRoute = AdminProtectedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminProtectedRoute,
+} as any)
+const AdminProtectedInvitationsRoute =
+  AdminProtectedInvitationsRouteImport.update({
+    id: '/invitations',
+    path: '/invitations',
+    getParentRoute: () => AdminProtectedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof MemberIndexRoute
+  '/login': typeof LoginRoute
+  '/status': typeof StatusRoute
+  '/admin': typeof AdminProtectedRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/invite/$token': typeof InviteTokenRoute
+  '/admin/invitations': typeof AdminProtectedInvitationsRoute
+  '/admin/': typeof AdminProtectedIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/status': typeof StatusRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/invite/$token': typeof InviteTokenRoute
+  '/': typeof MemberIndexRoute
+  '/admin/invitations': typeof AdminProtectedInvitationsRoute
+  '/admin': typeof AdminProtectedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_member': typeof MemberRouteWithChildren
+  '/login': typeof LoginRoute
+  '/status': typeof StatusRoute
+  '/admin/_protected': typeof AdminProtectedRouteWithChildren
+  '/admin/login': typeof AdminLoginRoute
+  '/invite/$token': typeof InviteTokenRoute
+  '/_member/': typeof MemberIndexRoute
+  '/admin/_protected/invitations': typeof AdminProtectedInvitationsRoute
+  '/admin/_protected/': typeof AdminProtectedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/status'
+    | '/admin'
+    | '/admin/login'
+    | '/invite/$token'
+    | '/admin/invitations'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/login'
+    | '/status'
+    | '/admin/login'
+    | '/invite/$token'
+    | '/'
+    | '/admin/invitations'
+    | '/admin'
+  id:
+    | '__root__'
+    | '/_member'
+    | '/login'
+    | '/status'
+    | '/admin/_protected'
+    | '/admin/login'
+    | '/invite/$token'
+    | '/_member/'
+    | '/admin/_protected/invitations'
+    | '/admin/_protected/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  MemberRoute: typeof MemberRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  StatusRoute: typeof StatusRoute
+  AdminProtectedRoute: typeof AdminProtectedRouteWithChildren
+  AdminLoginRoute: typeof AdminLoginRoute
+  InviteTokenRoute: typeof InviteTokenRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_member': {
+      id: '/_member'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof MemberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_member/': {
+      id: '/_member/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof MemberIndexRouteImport
+      parentRoute: typeof MemberRoute
+    }
+    '/admin/_protected': {
+      id: '/admin/_protected'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminProtectedRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invite/$token': {
+      id: '/invite/$token'
+      path: '/invite/$token'
+      fullPath: '/invite/$token'
+      preLoaderRoute: typeof InviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/_protected/': {
+      id: '/admin/_protected/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminProtectedIndexRouteImport
+      parentRoute: typeof AdminProtectedRoute
+    }
+    '/admin/_protected/invitations': {
+      id: '/admin/_protected/invitations'
+      path: '/invitations'
+      fullPath: '/admin/invitations'
+      preLoaderRoute: typeof AdminProtectedInvitationsRouteImport
+      parentRoute: typeof AdminProtectedRoute
     }
   }
 }
 
+interface MemberRouteChildren {
+  MemberIndexRoute: typeof MemberIndexRoute
+}
+
+const MemberRouteChildren: MemberRouteChildren = {
+  MemberIndexRoute: MemberIndexRoute,
+}
+
+const MemberRouteWithChildren =
+  MemberRoute._addFileChildren(MemberRouteChildren)
+
+interface AdminProtectedRouteChildren {
+  AdminProtectedInvitationsRoute: typeof AdminProtectedInvitationsRoute
+  AdminProtectedIndexRoute: typeof AdminProtectedIndexRoute
+}
+
+const AdminProtectedRouteChildren: AdminProtectedRouteChildren = {
+  AdminProtectedInvitationsRoute: AdminProtectedInvitationsRoute,
+  AdminProtectedIndexRoute: AdminProtectedIndexRoute,
+}
+
+const AdminProtectedRouteWithChildren = AdminProtectedRoute._addFileChildren(
+  AdminProtectedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  MemberRoute: MemberRouteWithChildren,
+  LoginRoute: LoginRoute,
+  StatusRoute: StatusRoute,
+  AdminProtectedRoute: AdminProtectedRouteWithChildren,
+  AdminLoginRoute: AdminLoginRoute,
+  InviteTokenRoute: InviteTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

@@ -8,14 +8,27 @@ export class MissingEnvError extends Error {
   }
 }
 
-const required = ['API_INTERNAL_URL'] as const;
+// Order matters only for the message a container without any variable prints: the api comes first.
+const required = ['API_INTERNAL_URL', 'WEB_PUBLIC_URL'] as const;
 
 const envSchema = z
   .object({
     API_INTERNAL_URL: z.string().min(1),
+    WEB_PUBLIC_URL: z.url(),
+    // Not every environment has a proxy in front of the web; without one the socket address is used.
+    // Compose may pass the variable empty, which means the same as absent.
+    CLIENT_IP_HEADER: z.preprocess(
+      (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+      z.string().min(1).optional(),
+    ),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
   })
-  .transform((env) => ({ apiInternalUrl: env.API_INTERNAL_URL, logLevel: env.LOG_LEVEL }));
+  .transform((env) => ({
+    apiInternalUrl: env.API_INTERNAL_URL,
+    webPublicUrl: env.WEB_PUBLIC_URL,
+    clientIpHeader: env.CLIENT_IP_HEADER,
+    logLevel: env.LOG_LEVEL,
+  }));
 
 export type ServerEnv = z.output<typeof envSchema>;
 

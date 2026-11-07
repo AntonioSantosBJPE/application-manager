@@ -47,8 +47,12 @@ services:
       DATABASE_URL: *database-url
       LOG_LEVEL: ${LOG_LEVEL:-info}
       PORT: "3333"
+      WEB_PUBLIC_URL: ${WEB_PUBLIC_URL:?set WEB_PUBLIC_URL}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
     ports:
-      - "${API_PORT:-3333}:3333"
+      # Loopback only, like the database: the browser reaches the api through the web, and a published
+      # port would let anyone on the network impersonate the address the lockout counts (AD-004, LOCK-09).
+      - "127.0.0.1:${API_PORT:-3333}:3333"
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -68,6 +72,9 @@ services:
       API_INTERNAL_URL: http://api:3333
       LOG_LEVEL: ${LOG_LEVEL:-info}
       PORT: "3000"
+      WEB_PUBLIC_URL: ${WEB_PUBLIC_URL:?set WEB_PUBLIC_URL}
+      # Header the proxy in front of the web fills with the browser address; empty means no proxy.
+      CLIENT_IP_HEADER: ${CLIENT_IP_HEADER:-}
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:
@@ -75,7 +82,7 @@ services:
       api:
         condition: service_started
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/status').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
       interval: 2s
       timeout: 3s
       retries: 30

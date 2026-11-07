@@ -11,6 +11,19 @@ import { runMigrations } from './migrations.js';
 
 const migrationsFolder = join(import.meta.dirname, '../../../drizzle');
 
+/** Every migration the folder holds, in the order the journal applies them (tag + hash of its SQL). */
+async function migrationsOnDisk(): Promise<{ tag: string; hash: string }[]> {
+  const journal = JSON.parse(await readFile(join(migrationsFolder, 'meta/_journal.json'), 'utf8')) as {
+    entries: { idx: number; tag: string }[];
+  };
+  return Promise.all(
+    [...journal.entries].sort((a, b) => a.idx - b.idx).map(async ({ tag }) => ({
+      tag,
+      hash: createHash('sha256').update(await readFile(join(migrationsFolder, `${tag}.sql`), 'utf8')).digest('hex'),
+    })),
+  );
+}
+
 /** A fresh database in the shared container, so each test starts with nothing applied. */
 async function createDatabase(): Promise<string> {
   const url = new URL(inject('databaseUrl'));
@@ -68,22 +81,23 @@ afterEach(async () => {
 describe('runMigrations', () => {
   it('applies the migrations and records them in drizzle.__drizzle_migrations', async () => {
     const databaseUrl = await createDatabase();
-    const sql = await readFile(join(migrationsFolder, '0000_require_postgres_18.sql'), 'utf8');
+    const onDisk = await migrationsOnDisk();
 
     await runMigrations({ databaseUrl, migrationsFolder });
 
     const applied = await appliedMigrations(databaseUrl);
-    expect(applied.map((m) => m.hash)).toEqual([createHash('sha256').update(sql).digest('hex')]);
+    expect(applied.map((m) => m.hash)).toEqual(onDisk.map((m) => m.hash));
   });
 
   it('applies nothing on a second run', async () => {
     const databaseUrl = await createDatabase();
+    const onDisk = await migrationsOnDisk();
     await runMigrations({ databaseUrl, migrationsFolder });
     const first = await appliedMigrations(databaseUrl);
 
     await runMigrations({ databaseUrl, migrationsFolder });
 
-    expect(first).toHaveLength(1);
+    expect(first).toHaveLength(onDisk.length);
     expect(await appliedMigrations(databaseUrl)).toEqual(first);
   });
 
@@ -122,7 +136,7 @@ describe('runMigrations', () => {
       .start();
     try {
       await expect(run).resolves.toBeUndefined();
-      expect(await appliedMigrations(databaseUrl)).toHaveLength(1);
+      expect(await appliedMigrations(databaseUrl)).toHaveLength((await migrationsOnDisk()).length);
     } finally {
       await container.stop();
     }

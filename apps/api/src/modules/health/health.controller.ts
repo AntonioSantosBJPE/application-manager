@@ -1,5 +1,6 @@
 import type { HealthResponse } from '@am/contracts';
 import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
+import { Public } from '../identity/index.js';
 import { DatabaseProbe } from './database-probe.js';
 
 /** The part of the platform response this controller touches. */
@@ -7,6 +8,8 @@ interface StatusResponse {
   status(code: number): unknown;
 }
 
+/** `GET /health` stays reachable without a session: the platform probes it (AUTH-15). */
+@Public()
 @Controller('health')
 export class HealthController {
   constructor(private readonly probe: DatabaseProbe) {}

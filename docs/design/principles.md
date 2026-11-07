@@ -36,10 +36,13 @@
 
 | Arquétipo | Uso | Slots |
 |---|---|---|
-| `ListPage` | Coleções (vagas, candidaturas) | Header, Filters, Content |
+| `AuthPage` | Entrada: login das duas áreas e criação de conta por convite | Header, Form, Footer |
+| `ListPage` | Coleções (vagas, candidaturas, convites pendentes) | Header, Filters, Content |
 | `DetailPage` | Um item com propriedades | Header, Main, Sidebar (propriedades) |
 | `FormPage` | Criação/edição extensa (currículo mestre) | Header, Sections, Actions |
-| `DashboardPage` | Insights | Header, Grid de widgets |
+| `DashboardPage` | Insights e painéis de uma área | Header, Grid de widgets |
+
+`AuthPage` é a exceção deliberada ao padrão de tela cheia de dados: coluna estreita, sem card e sem hero, só o formulário dentro do landmark `main`. Entrar e criar conta são a mesma página em dois momentos, então o arquétipo tem `Header`, `Form` e `Footer` e não conhece produto. São duas entradas, e não uma, porque operador e cliente são contas separadas (AD-005): `/login` para member, `/admin/login` para admin.
 
 ## Proibido (sinais de layout genérico)
 

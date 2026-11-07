@@ -47,3 +47,6 @@ Thumbs.db
 
 # Skill installer backups
 *.backup
+
+# Written by check_proofs.py at one commit; it must never be committed (its HEAD would stop matching).
+.specs/features/*/proofs.md

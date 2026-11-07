@@ -6,7 +6,8 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --exclude src/root-commands.test.ts",
+    "test:repo-rules": "vitest run src/root-commands.test.ts"
   },
   "devDependencies": {
     "@am/config": "workspace:*",

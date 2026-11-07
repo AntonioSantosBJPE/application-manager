@@ -5,9 +5,10 @@ on:
   push:
     branches: [main]
 
-# Tests and image builds are off for now: everything runs locally until the first VPS deploy
-# flow exists. They are gated on the repository variable CI_FULL; to turn them back on, set
-# CI_FULL=true (Settings > Secrets and variables > Actions > Variables) or drop the gated `if:` lines.
+# Unit and integration tests run on every PR. The end-to-end tests and the image builds are off for
+# now (they run locally, see docs/workflow.md) until the first VPS deploy flow exists. They are gated
+# on the repository variable CI_FULL; to turn them back on, set CI_FULL=true (Settings > Secrets and
+# variables > Actions > Variables) or drop the gated `if:` lines.
 
 # Read-only token for every job; no job asks for more.
 permissions:
@@ -35,16 +36,34 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # The storybook project of @am/ui renders every story in headless Chromium.
       - name: Install Chromium for Storybook tests
-        if: ${{ vars.CI_FULL == 'true' }} # off until the VPS flow; see header
         run: pnpm --filter @am/ui exec playwright install --with-deps chromium
       - run: pnpm lint
       - run: pnpm typecheck
-      - if: ${{ vars.CI_FULL == 'true' }} # off until the VPS flow; see header
-        run: pnpm test
+      - run: pnpm test
+
+  repo-rules:
+    name: Repository rules (planted violations)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Enable corepack
+        run: corepack enable
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The copy's `pnpm test` renders the stories of @am/ui in headless Chromium.
+      - name: Install Chromium for Storybook tests
+        run: pnpm --filter @am/ui exec playwright install --with-deps chromium
+      # Runs the real root commands over a copy of the repo with a violation planted; slow, so its own job.
+      - run: pnpm test:repo-rules
 
   integration:
     name: Integration tests
-    if: ${{ vars.CI_FULL == 'true' }} # off until the VPS flow; see header
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

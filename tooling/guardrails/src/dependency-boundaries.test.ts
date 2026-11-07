@@ -21,7 +21,11 @@ async function checkBoundaries(fixture: string): Promise<Boundaries> {
   const { output: report } = await format(result, { outputType: 'err' });
   return {
     edges: result.modules.flatMap((m) => m.dependencies.map((d) => `${m.source} → ${d.resolved}`)),
-    violations: result.summary.violations.map((v) => ({ rule: v.rule.name, from: v.from, to: v.to })),
+    violations: result.summary.violations.map((v) => ({
+      rule: v.rule.name,
+      from: v.from,
+      to: v.to,
+    })),
     report: report as string,
   };
 }
@@ -82,6 +86,22 @@ describe('dependency boundaries', () => {
       'apps/api/src/modules/billing/billing.service.ts → apps/api/src/modules/health/index.ts',
     );
     expect(violations).toEqual([]);
+  });
+
+  it('blocks importing identity internals from another module', async () => {
+    const { violations, report } = await checkBoundaries('identity-internals');
+
+    // The guard and the session cookie are reachable only through identity's index.ts (EDGE-08, AUTH-19).
+    expect(violations).toEqual([
+      {
+        rule: 'no-module-internals',
+        from: 'apps/api/src/modules/reports/reports.service.ts',
+        to: 'apps/api/src/modules/identity/http/session.guard.ts',
+      },
+    ]);
+    expect(report).toContain(
+      'no-module-internals: apps/api/src/modules/reports/reports.service.ts → apps/api/src/modules/identity/http/session.guard.ts',
+    );
   });
 
   it('allows imports inside the same feature and the same module', async () => {
