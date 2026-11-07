@@ -40,8 +40,13 @@ interface UserFixture {
 }
 
 /** A user written with the real hasher: the login meets a hash produced the way production does. */
-async function createUser(databaseUrl: string, email: string, role: 'admin' | 'member'): Promise<UserFixture> {
-  const passwordHash = await argon2idPasswordHasher.hash(password);
+async function createUser(
+  databaseUrl: string,
+  email: string,
+  role: 'admin' | 'member',
+  rawPassword = password,
+): Promise<UserFixture> {
+  const passwordHash = await argon2idPasswordHasher.hash(rawPassword);
   const [row] = await query<{ id: string; email: string }>(
     databaseUrl,
     'insert into identity.users (email, name, password_hash, role) values ($1, $2, $3, $4) returning id, email',
@@ -304,6 +309,29 @@ describe('login failures', () => {
       expect(await response.text()).toBe(await wrong.text());
       // Control: a wrong password inside the window does reach the derivation, so the check above is not vacuous.
       expect(derivations.parameters).toHaveLength(1);
+
+      // The boundary itself is inside the rule: 128 characters is the longest password the invitation
+      // accept and the CLI allow, so the login must accept it too. A `>=` there would lock those
+      // members out of their own accounts.
+      const longest = 'p'.repeat(128);
+      const boundary = await createUser(database.url, 'member-128@example.com', 'member', longest);
+      forgetDerivations();
+      const accepted = await login(api.baseUrl, { email: boundary.email, password: longest }, '/auth/login', {
+        'x-am-client-ip': ip,
+      });
+
+      expect(accepted.status).toBe(204);
+      const acceptedToken = sessionTokenOf(accepted);
+      expect((await sessionsOf(database.url, boundary.id)).map((row) => row.token_hash)).toEqual([
+        hashToken(acceptedToken),
+      ]);
+      // The password was verified against its real hash, not refused before the hashing.
+      expect(derivations.algorithms).toEqual(['argon2id']);
+      expect(recordedCosts()).toEqual([{ ...productionCost, nonce: boundary.salt }]);
+      // A success clears the reservation it made, so this address keeps no failure from that login.
+      expect(await query(database.url, 'select 1 from identity.login_attempts where email = $1', [boundary.email])).toEqual(
+        [],
+      );
     } finally {
       await api.close();
     }
