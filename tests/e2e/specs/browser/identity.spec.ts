@@ -470,23 +470,43 @@ test.describe('identity', () => {
         })(),
       ]);
 
-      // The id of a real server function, posted the way a hostile page would.
+      // The url and the body the screen itself sent: a hostile page can copy both, and what must stop it is
+      // the origin check at the web, not the shape of the payload.
+      const url = login.url();
+      const body = login.postData() ?? '';
+      expect(body, 'the login screen posts a body worth replaying').not.toBe('');
+      const post = (headers: Record<string, string>) =>
+        request.post(url, {
+          data: body,
+          headers: { 'content-type': 'application/json', 'x-tsr-serverfn': 'true', ...headers },
+          maxRedirects: 0,
+        });
+      const apiIds = () => new Set(jsonLogs('api').map((line) => line.requestId));
+
+      // The control: a post of this origin with an id of its own does reach the api, and the api logs that
+      // id. Without it, a missing id below could mean "the api does not log ids" instead of "no call".
+      const acceptedId = `e2e-csrf-accepted-${randomUUID()}`;
+      const accepted = await post({ origin: new URL(url).origin, 'x-request-id': acceptedId });
+      expect(accepted.status(), await accepted.text()).toBe(200);
+      await expect.poll(() => apiIds().has(acceptedId), { timeout: 10_000 }).toBe(true);
+
       const requestId = `e2e-csrf-${randomUUID()}`;
-      const forged = await request.post(login.url(), {
-        data: { data: { email: adminEmail, password: adminPassword } },
-        headers: {
-          'content-type': 'application/json',
-          origin: 'https://evil.test',
-          'sec-fetch-site': 'cross-site',
-          'x-request-id': requestId,
-        },
-        maxRedirects: 0,
+      const forged = await post({
+        origin: 'https://evil.test',
+        'sec-fetch-site': 'cross-site',
+        'x-request-id': requestId,
       });
       expect(forged.status()).toBe(403);
+
+      // The bounded wait, tied to a real event: one more accepted post, whose id is written after the
+      // forged one would have been, marks the moment the api log holds everything up to the refusal.
+      const laterId = `e2e-csrf-later-${randomUUID()}`;
+      const later = await post({ origin: new URL(url).origin, 'x-request-id': laterId });
+      expect(later.status(), await later.text()).toBe(200);
+      await expect.poll(() => apiIds().has(laterId), { timeout: 10_000 }).toBe(true);
+
       // The api never saw the attempt: the refused call leaves no trace in its logs.
-      await expect
-        .poll(() => jsonLogs('api').filter((line) => line.requestId === requestId).length, { timeout: 5_000 })
-        .toBe(0);
+      expect(jsonLogs('api').filter((line) => line.requestId === requestId)).toEqual([]);
     } finally {
       await context.close();
     }
