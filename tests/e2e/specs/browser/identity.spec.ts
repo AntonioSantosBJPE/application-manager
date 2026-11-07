@@ -788,6 +788,19 @@ test.describe('identity invitations', () => {
     const context = await browser.newContext();
     const email = memberEmail();
     try {
+
+          // The confirmation repeats the email in its text: opened, it fits the viewport with its actions.
+          await page.getByRole('button', { name: `Revogar convite de ${email}` }).click();
+          const dialog = page.getByRole('alertdialog', { name: 'Revogar convite' });
+          await insideViewport(dialog, `${label} dialog`);
+          await insideViewport(dialog.getByRole('button', { name: 'Cancelar' }), `${label} dialog Cancelar`);
+          await insideViewport(dialog.getByRole('button', { name: 'Revogar' }), `${label} dialog Revogar`);
+          expect(
+            await dialog.evaluate((element) => element.scrollWidth - element.clientWidth),
+            `${label} dialog text hides width`,
+          ).toBeLessThanOrEqual(0);
+          await page.keyboard.press('Escape');
+          await expect(dialog, label).toBeHidden();
       const page = await context.newPage();
       await signIn(page, 'admin', adminEmail, adminPassword);
       const inviteUrl = await inviteFromScreen(page, email);
