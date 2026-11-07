@@ -5,6 +5,7 @@ import { argon2idPasswordHasher } from '../application/password-hasher.js';
 import { hashToken } from '../domain/tokens.js';
 import { createMigratedDatabase, dropDatabase, query } from '../../../../test/database.js';
 import { startApi } from '../../../../test/api.js';
+import { testClock, type TestClock } from '../../../../test/clock.js';
 
 const password = 'correct-horse-battery';
 const webPublicUrl = 'https://app.example.com';
@@ -52,18 +53,24 @@ describe('POST /invitations', () => {
   let adminToken: string;
   let memberToken: string;
 
-  async function setup() {
+  async function setup(options: { clock?: TestClock } = {}) {
     database = await createMigratedDatabase(inject('databaseUrl'), 'invite_create');
     adminId = await createUser(database.url, 'admin.invite@example.com', 'admin');
     memberId = await createUser(database.url, 'member.invite@example.com', 'member');
-    const api = await startApi(database.url, { webPublicUrl });
+    const api = await startApi(database.url, {
+      webPublicUrl,
+      ...(options.clock === undefined ? {} : { clock: options.clock }),
+    });
     adminToken = await signIn(api.baseUrl, 'admin.invite@example.com', 'admin');
     memberToken = await signIn(api.baseUrl, 'member.invite@example.com', 'member');
     return api;
   }
 
   it('answers 201 with a 7-day invitation and a url from WEB_PUBLIC_URL', async () => {
-    const api = await setup();
+    // A clock of the test's own: the validity is read from the API's clock, not from Postgres or the
+    // wall clock, so two hours more or less cannot hide behind a tolerance (INV-01).
+    const clock = testClock('2026-11-03T12:00:00.000Z');
+    const api = await setup({ clock });
     try {
       const response = await invite(api.baseUrl, { email: 'novo.invite@example.com' }, adminToken);
       const body = createInvitationResponseSchema.parse(await response.json());
@@ -72,11 +79,11 @@ describe('POST /invitations', () => {
       // The contract is exactly the link and its expiry; the token exists only inside the link (INV-01).
       expect(Object.keys(body).sort()).toEqual(['expiresAt', 'inviteUrl']);
       expect(body.inviteUrl).toMatch(/^https:\/\/app\.example\.com\/invite\/[A-Za-z0-9_-]{43}$/);
-      // Seven days, from the clock the API uses, not from Postgres.
+      // Seven days exactly, from the clock the API uses, not from Postgres.
       const [row] = await invitationRows(database.url, 'novo.invite@example.com');
       expect(row!.expires_at.toISOString()).toBe(body.expiresAt);
-      expect(new Date(body.expiresAt).getTime() - Date.now()).toBeGreaterThan(6.9 * 24 * 60 * 60 * 1000);
-      expect(new Date(body.expiresAt).getTime() - Date.now()).toBeLessThan(7.1 * 24 * 60 * 60 * 1000);
+      expect(new Date(body.expiresAt).getTime()).toBe(clock.now().getTime() + 7 * 86_400_000);
+      expect(body.expiresAt).toBe('2026-11-10T12:00:00.000Z');
 
       // The row keeps the hash of the token in the link and nothing of the token itself.
       const token = body.inviteUrl.split('/').at(-1)!;
