@@ -36,13 +36,8 @@ function runCli(args: string[], password: string): CliResult {
 }
 
 /** `create-admin` from the image of the api: the only way an admin is born (CLI-01, CLI-02). */
-export function createAdmin(email: string, name: string, password: string): CliResult {
+function createAdmin(email: string, name: string, password: string): CliResult {
   return runCli(['create-admin', '--email', email, '--name', name, '--password-stdin'], password);
-}
-
-/** `reset-password` from the image of the api, which also revokes every session of the account (CLI-03). */
-export function resetPassword(email: string, password: string): CliResult {
-  return runCli(['reset-password', '--email', email, '--password-stdin'], password);
 }
 
 /** Creates the admin and fails the spec when the command refuses, so later steps start from a real account. */

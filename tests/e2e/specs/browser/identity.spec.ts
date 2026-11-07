@@ -5,8 +5,11 @@ import { composeOk, psql } from '../../support/compose.js';
 import {
   createAdminOk,
   expireInvitations,
+  expireSessions,
   fixtureEmail,
   fixturePassword,
+  revokePendingInvitations,
+  revokeSessions,
   shortenSession,
 } from '../../support/identity.js';
 
@@ -230,23 +233,29 @@ test.describe('identity', () => {
 
   test('an action with an expired session opens login with the expired message and the route', async ({ browser }) => {
     // UI-08: the session ends while the page is open, and the next action puts the person back on the
-    // login of the area, saying why, with the page they were on.
+    // login of the area, saying why, with the page they were on. The api refuses the session in both
+    // ways it can end, and both have to say the same thing to the person: revoked, and past its expiry.
     const context = await browser.newContext();
     try {
       const page = await context.newPage();
-      await signIn(page, 'admin', adminEmail, adminPassword);
-      await page.goto('/admin/invitations');
-      await expect(page.getByRole('heading', { name: 'Convites' })).toBeVisible();
 
-      psql(`update identity.sessions set revoked_at = now()
-            where user_id = (select id from identity.users where email = '${adminEmail}') and revoked_at is null`);
+      const endSessionWhileThePageIsOpen = async (label: string, endSession: () => void): Promise<void> => {
+        await signIn(page, 'admin', adminEmail, adminPassword);
+        await page.goto('/admin/invitations');
+        await expect(page.getByRole('heading', { name: 'Convites' }), label).toBeVisible();
 
-      await page.getByLabel('E-mail a convidar').fill(memberEmail());
-      await page.getByRole('button', { name: 'Convidar' }).click();
+        endSession();
 
-      await page.waitForURL('**/admin/login?redirect=*reason=expired');
-      await expect(page.getByText(EXPIRED_NOTICE)).toBeVisible();
-      expect(new URL(page.url()).searchParams.get('redirect')).toBe('/admin/invitations');
+        await page.getByLabel('E-mail a convidar').fill(memberEmail());
+        await page.getByRole('button', { name: 'Convidar' }).click();
+
+        await page.waitForURL('**/admin/login?redirect=*reason=expired');
+        await expect(page.getByText(EXPIRED_NOTICE), label).toBeVisible();
+        expect(new URL(page.url()).searchParams.get('redirect'), label).toBe('/admin/invitations');
+      };
+
+      await endSessionWhileThePageIsOpen('revoked', () => revokeSessions(adminEmail));
+      await endSessionWhileThePageIsOpen('expired', () => expireSessions(adminEmail));
     } finally {
       await context.close();
     }
