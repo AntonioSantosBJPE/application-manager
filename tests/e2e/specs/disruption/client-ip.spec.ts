@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type BrowserContext, type Page } from '@playwright/test';
-import { clientIpFixture, composeOk, composeWith, waitHealthy } from '../../support/compose.js';
+import { clientIpFixture, composeOk, composeWith, psql, waitHealthy } from '../../support/compose.js';
 import {
   clearLoginAttempts,
   createAdminOk,
@@ -24,12 +24,20 @@ function contextFor(browser: Browser, ip: string): Promise<BrowserContext> {
   return browser.newContext({ extraHTTPHeaders: { [ADDRESS_HEADER]: ip } });
 }
 
-/** Types the credentials on `/admin/login` and presses "Entrar", the way a person signs in. */
+/**
+ * Types the credentials on `/admin/login` and presses "Entrar", the way a person signs in, and returns once
+ * the web answered that press. The alert of a previous attempt is still on screen, so waiting for the alert
+ * alone would let it satisfy the wait of the next attempt; the response of this post is what it waits for.
+ */
 async function attemptSignIn(page: Page, password: string): Promise<void> {
   await page.goto('/admin/login');
   await page.getByLabel('E-mail').fill(adminEmail);
   await page.getByLabel('Senha').fill(password);
-  await page.getByRole('button', { name: 'Entrar' }).click();
+  const [answer] = await Promise.all([
+    page.waitForResponse((response) => response.request().method() === 'POST' && response.url().includes('_serverFn')),
+    page.getByRole('button', { name: 'Entrar' }).click(),
+  ]);
+  expect(answer.status(), 'the web answered the attempt').toBe(200);
 }
 
 test.describe('client ip', () => {
@@ -88,18 +96,35 @@ test.describe('client ip', () => {
       const page = await context.newPage();
       await page.goto('/admin/login');
       await page.getByLabel('E-mail').fill(adminEmail);
-      for (let attempt = 1; attempt <= PAIR_LIMIT; attempt += 1) {
-        await page.setExtraHTTPHeaders({ [ADDRESS_HEADER]: FIRST_IP, 'x-forwarded-for': `203.0.113.${attempt}` });
-        await page.getByLabel('Senha').fill(fixturePassword(`wrong-${attempt}`));
-        await page.getByRole('button', { name: 'Entrar' }).click();
-        await expect(page.getByRole('alert'), `failure ${attempt}`).toHaveText(WRONG_CREDENTIALS);
+      const attempt = async (password: string, forwardedFor: string): Promise<string> => {
+        // Each attempt is judged by its own answer: the alert of the previous one is still on the page.
+        await page.setExtraHTTPHeaders({ [ADDRESS_HEADER]: FIRST_IP, 'x-forwarded-for': forwardedFor });
+        await page.getByLabel('Senha').fill(password);
+        const [answer] = await Promise.all([
+          page.waitForResponse(
+            (response) => response.request().method() === 'POST' && response.url().includes('_serverFn'),
+          ),
+          page.getByRole('button', { name: 'Entrar' }).click(),
+        ]);
+        expect(answer.status()).toBe(200);
+        const alert = page.getByRole('alert');
+        await expect(alert).toBeVisible();
+        return (await alert.textContent()) ?? '';
+      };
+
+      for (let failure = 1; failure <= PAIR_LIMIT; failure += 1) {
+        const message = await attempt(fixturePassword(`wrong-${failure}`), `203.0.113.${failure}`);
+        expect(message, `failure ${failure}`).toBe(WRONG_CREDENTIALS);
       }
 
       // Still a fresh forged address in the header, and the right password: the counted address is blocked.
-      await page.setExtraHTTPHeaders({ [ADDRESS_HEADER]: FIRST_IP, 'x-forwarded-for': '203.0.113.99' });
-      await page.getByLabel('Senha').fill(adminPassword);
-      await page.getByRole('button', { name: 'Entrar' }).click();
-      await expect(page.getByRole('alert')).toHaveText(BLOCKED);
+      const blocked = await attempt(adminPassword, '203.0.113.99');
+      expect(blocked).toMatch(BLOCKED);
+
+      // The count sits on the address the proxy named, and the refused attempt did not add to it (LOCK-05).
+      expect(Number(psql(`select count(*) from identity.login_attempts where ip = '${FIRST_IP}'`)), 'the counted failures').toBe(
+        PAIR_LIMIT,
+      );
     } finally {
       await context.close();
     }

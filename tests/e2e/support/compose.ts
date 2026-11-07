@@ -29,11 +29,17 @@ export interface ContainerState {
   ExitCode: number;
   StartedAt: string;
   FinishedAt: string;
+  /** The healthcheck history, oldest first; absent when the service declares no healthcheck. */
+  Health?: { Status: string; Log: { Start: string; End: string; ExitCode: number; Output: string }[] };
 }
 
 export interface ContainerInfo {
   Id: string;
-  Config: { Labels: Record<string, string> };
+  Config: {
+    Labels: Record<string, string>;
+    /** The healthcheck as the container runs it; absent when the service declares none. */
+    Healthcheck?: { Test: string[]; Interval: number; Timeout: number; Retries: number };
+  };
   State: ContainerState;
 }
 
