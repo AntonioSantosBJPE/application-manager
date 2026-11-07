@@ -11,7 +11,8 @@
     "lint": "turbo run lint && pnpm lint:boundaries",
     "lint:boundaries": "depcruise . --config .dependency-cruiser.cjs --output-type err",
     "typecheck": "turbo run typecheck",
-    "test": "turbo run test",
+    "test": "turbo run test --concurrency=4",
+    "test:repo-rules": "pnpm --filter @am/guardrails test:repo-rules",
     "test:integration": "turbo run test:integration",
     "test:e2e": "pnpm --filter @am/e2e e2e",
     "storybook:build": "turbo run storybook:build --filter @am/ui"

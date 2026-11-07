@@ -124,6 +124,7 @@ Todos rodam na raiz e cobrem todos os workspaces:
 | `pnpm lint` | ESLint em cada workspace e fronteiras entre módulos (dependency-cruiser) |
 | `pnpm typecheck` | `tsc --noEmit` em cada workspace |
 | `pnpm test` | Vitest de cada workspace, incluindo as stories do `packages/ui` em Chromium headless |
+| `pnpm test:repo-rules` | Roda `lint`, `typecheck` e `test` reais numa cópia do repositório com uma violação plantada (~1 min; job próprio no CI) |
 | `pnpm test:integration` | Testes da api contra PostgreSQL 18 iniciado pelo Testcontainers (precisa de Docker) |
 | `pnpm test:e2e` | Constrói as imagens, sobe a stack do compose e roda o Playwright contra ela |
 | `pnpm storybook:build` | Gera o Storybook estático do `packages/ui` |
