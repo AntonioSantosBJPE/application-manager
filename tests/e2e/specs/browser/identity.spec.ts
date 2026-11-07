@@ -298,15 +298,22 @@ test.describe('identity', () => {
 
   test('a signed-in user on the login of their area goes to its home', async ({ browser }) => {
     // UI-12: the login of the area is not shown again to someone who is already inside it.
-    const context = await browser.newContext();
+    const admin = await browser.newContext();
+    const member = await createMemberIn(browser, 'Pessoa da Entrada');
     try {
-      const page = await context.newPage();
-      await signIn(page, 'admin', adminEmail, adminPassword);
-      await page.goto('/admin/login');
-      await page.waitForURL('**/admin');
-      await expect(page.getByRole('heading', { name: 'Administração' })).toBeVisible();
+      const adminPage = await admin.newPage();
+      await signIn(adminPage, 'admin', adminEmail, adminPassword);
+      await adminPage.goto('/admin/login');
+      await adminPage.waitForURL('**/admin');
+      await expect(adminPage.getByRole('heading', { name: 'Administração' })).toBeVisible();
+
+      // The member door belongs to the member, so it opens the member home for a member.
+      await member.page.goto('/login');
+      await member.page.waitForURL((url) => url.pathname === '/');
+      await expect(member.page.getByRole('heading', { name: 'Início' })).toBeVisible();
     } finally {
-      await context.close();
+      await admin.close();
+      await member.context.close();
     }
   });
 
