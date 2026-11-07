@@ -109,6 +109,36 @@ describe('InvitationsPanel', () => {
     expect(screen.getByLabelText('E-mail a convidar')).toHaveValue('');
   });
 
+  it('disables Convidar while waiting and sends one request', async () => {
+    // UI-23: a second submit would create a second invitation, which revokes the link just received.
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const requests = apiWith([]);
+    server.use(
+      http.post(`${apiInternalUrl}/invitations`, async ({ request }) => {
+        requests.created.push(await request.json());
+        await gate;
+        return HttpResponse.json(
+          { inviteUrl, expiresAt: '2026-11-13T12:00:00.000Z' },
+          { status: 201 },
+        );
+      }),
+    );
+    renderPanel();
+    await screen.findByText('Nenhum convite pendente.');
+
+    invite('novo@example.test');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Convidar' })).toBeDisabled());
+    fireEvent.click(screen.getByRole('button', { name: 'Convidar' }));
+    fireEvent.submit(screen.getByLabelText('E-mail a convidar').closest('form')!);
+    release();
+
+    expect(await screen.findByLabelText('Link do convite')).toHaveValue(inviteUrl);
+    expect(requests.created).toHaveLength(1);
+  });
+
   it('copies the link and shows Copiado', async () => {
     apiWith([]);
     const writeText = vi.fn().mockResolvedValue(undefined);

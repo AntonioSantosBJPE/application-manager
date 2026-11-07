@@ -175,6 +175,9 @@ export function InvitationsPanel({ api, onExpired }: InvitationsPanelProps) {
           onSubmit={(event) => {
             event.preventDefault();
             event.stopPropagation();
+            // Enter in the field or a second submit event must not start a second invitation: it would
+            // revoke the link the first one just returned.
+            if (form.state.isSubmitting) return;
             void form.handleSubmit();
           }}
         >
