@@ -14,7 +14,7 @@ import {
   invitationsPageSchema,
   meResponseSchema,
 } from '@am/contracts';
-import { createServerFn } from '@tanstack/react-start';
+import { createServerFn, createServerOnlyFn } from '@tanstack/react-start';
 import { appendResponseHeader, getRequestHeader, getRequestIP } from '@tanstack/react-start/server';
 import type { z } from 'zod';
 import {
@@ -132,23 +132,23 @@ export function revokeInvitation(id: string, context: ApiRequestContext, options
  * What the BFF forwards from the browser: the cookie, the request id and the address the lockout counts.
  * Everything else about the caller is decided by the api (AD-005).
  */
-export function contextOfCurrentRequest(): ApiRequestContext {
+export const contextOfCurrentRequest = createServerOnlyFn((): ApiRequestContext => {
   const env = loadServerEnv();
   return apiContextOf(
     env.apiInternalUrl,
     { header: (name) => getRequestHeader(name), socketAddress: getRequestIP() },
     env.clientIpHeader,
   );
-}
+});
 
 /**
  * The one link between the api answer and the browser response: every `Set-Cookie` the api sends
  * becomes a header of the server function answer, one header per cookie, so login, the invitation
  * accept, logout and the renewal riding on `/auth/me` all reach the browser (AUTH-07, AUTH-11, UI-13).
  */
-export function responseOptionsOfCurrentRequest(): CallApiOptions {
-  return { appendSetCookie: (value) => appendResponseHeader('set-cookie', value) };
-}
+export const responseOptionsOfCurrentRequest = createServerOnlyFn((): CallApiOptions => ({
+  appendSetCookie: (value) => appendResponseHeader('set-cookie', value),
+}));
 
 // One server function per endpoint (AD-007): the browser can only reach what has a function here, and
 // each one forwards method, path and body, with no rule of its own. The pure functions above carry the

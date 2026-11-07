@@ -768,8 +768,8 @@ T40 → T41 → T42
 
 **Done when**:
 
-- [ ] `401`, `429`, `503` e envio em andamento testados; e-mail mantido após erro
-- [ ] Gate check passes: `pnpm test`
+- [x] `401`, `429`, `503` e envio em andamento testados; e-mail mantido após erro
+- [x] Gate check passes: `pnpm test`
 
 **Tests**: unit
 **Gate**: quick
