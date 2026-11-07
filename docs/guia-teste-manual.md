@@ -39,6 +39,8 @@ Redefinir a senha (e derrubar as sessões abertas): `node dist/cli.js reset-pass
 
 ## 3. Login e proteção de rotas
 
+Em todas as telas, espere a página terminar de carregar antes de digitar: o formulário só reage depois da hidratação (~1 s).
+
 1. Sem sessão, abra `http://localhost:3000/` → vai para `/login` (a rota pedida fica guardada).
 2. Abra `http://localhost:3000/admin/invitations` → vai para `/admin/login`.
 3. Em `/admin/login`, entre com `admin@example.com` e senha errada → "E-mail ou senha incorretos." (o e-mail continua no campo).
@@ -64,14 +66,14 @@ Use uma janela anônima (cookies separados) e cole o link copiado.
 
 ## 6. Sessão expirada e bloqueio
 
-- **Expirada:** com o admin logado, force a expiração e tente uma ação.
+- **Expirada:** com o admin logado, deixe `/admin/invitations` aberta, expire a sessão **depois** de a página carregar e só então use a tela.
 
   ```bash
   docker compose exec postgres psql -U app -d app \
     -c "update identity.sessions set expires_at = now() - interval '1 second';"
   ```
 
-  Clique em "Convidar" → vai para `/admin/login` com "Sua sessão expirou. Entre novamente."; depois de entrar, volta à rota anterior.
+  Volte à página aberta, digite um e-mail e clique em "Convidar" → em cerca de 1 s abre `/admin/login?...&reason=expired` com "Sua sessão expirou. Entre novamente."; depois de entrar, volta para `/admin/invitations`.
 - **Bloqueio:** em `/login`, erre a senha do mesmo e-mail 6 vezes → na sexta aparece "Muitas tentativas. Tente novamente em 15 min.".
   Para tirar o bloqueio no teste: `docker compose exec postgres psql -U app -d app -c "truncate identity.login_attempts;"`.
 
