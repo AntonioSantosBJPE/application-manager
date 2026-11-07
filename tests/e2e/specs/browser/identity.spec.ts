@@ -571,6 +571,8 @@ test.describe('identity', () => {
   });
 
   test('identity screens have no axe violations or horizontal scroll in both themes and widths', async ({ browser }) => {
+    // Eleven screens and states, two themes, two widths, one axe scan each: more than the default 2 minutes.
+    test.setTimeout(10 * 60_000);
     // UI-22: every screen of the feature, in the light and the dark theme, at a phone and a desktop width.
     // Each screen is opened in the context of the role that sees it, so what is scanned is the screen a
     // person of that role actually gets: the login doors, the invite link good and dead, the member home,
