@@ -195,6 +195,8 @@ Toda fatia seguinte guarda dados pessoais reais de um usuário, e hoje o sistema
 21. The login, invite and home screens SHALL use `AuthPage` or `DashboardPage` from `packages/ui`, and each new component SHALL have a story in both themes. (UI-21)
 22. The screens of this feature SHALL have no axe violations in light and dark themes and no horizontal page scroll at 375 px and 1280 px. (UI-22)
 23. WHILE um formulário aguarda resposta a ação de envio SHALL ficar desabilitada, impedindo envio duplicado. (UI-23)
+24. The keyboard focus indicator of every `packages/ui` control SHALL have a contrast of at least 3:1 against the page background in the light and dark themes, using a design token and never the text color of the control. (UI-24)
+25. WHEN o e-mail de um convite ou o link do convite é mais largo que a linha THEN a tela SHALL quebrar ou conter o texto, manter "Revogar" e "Copiar" visíveis dentro da viewport e não ter rolagem horizontal da página em 375 px e 1280 px. (UI-25)
 
 **Independent Test**: Playwright na stack do compose: criar o admin pelo CLI, convidar pelo navegador, aceitar em outro contexto e sair.
 
@@ -275,6 +277,8 @@ Os estados do `.design` e o teste que prova cada um. O comando exato de cada che
 | Jornada completa | Goals | E2E: CLI, login de admin, convite, aceite, home e saída, com axe nos dois temas |
 | CLI | CLI-01 a CLI-06 | Integração roda o entrypoint real com Postgres real |
 | Componentes | UI-21, ADM-15 | Testes e stories em `packages/ui`; a regra de fronteiras cobre o resto |
+| Foco visível | UI-24 | Story em `packages/ui` lê a cor do foco de cada intent nos dois temas e calcula o contraste contra o fundo |
+| Texto longo em 375 px | UI-25 | Story do `CopyField` com valor longo; E2E com e-mail de mais de 100 caracteres em 375 e 1280 px, nos dois temas |
 
 ---
 
@@ -351,6 +355,8 @@ Os estados do `.design` e o teste que prova cada um. O comando exato de cada che
 | UI-21 | P1: Telas | Design | Pending |
 | UI-22 | P1: Telas | Design | Pending |
 | UI-23 | P1: Telas | Design | Pending |
+| UI-24 | P1: Telas | Design | Pending |
+| UI-25 | P1: Telas | Design | Pending |
 | ADM-01 | P2: Administrar convites | Design | Pending |
 | ADM-02 | P2: Administrar convites | Design | Pending |
 | ADM-03 | P2: Administrar convites | Design | Pending |
@@ -375,7 +381,7 @@ Os estados do `.design` e o teste que prova cada um. O comando exato de cada che
 | EDGE-07 | Edge Cases | Design | Pending |
 | EDGE-08 | Edge Cases | Design | Pending |
 
-**Coverage:** 92 total, 0 mapped to tasks, 92 unmapped até a fase de Tasks.
+**Coverage:** 94 total, 0 mapped to tasks, 94 unmapped até a fase de Tasks.
 
 ---
 
