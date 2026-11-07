@@ -129,16 +129,20 @@ describe('login lockout', () => {
   it('sends Retry-After until the oldest counted failure leaves the window', async () => {
     const api = await startApi(database.url, { clock, passwordHasher: refuseEveryPassword });
     try {
-      await fillPair(api.baseUrl, pairIp, memberEmail);
-      // A minute later the oldest failure is still 14 minutes from leaving the window.
-      clock.advance(60_000);
+      // Five failures one minute apart: the oldest is now four minutes old, the newest one instant,
+      // so a wait counted from the wrong end of the window is a different number (LOCK-03).
+      for (let i = 0; i < 5; i += 1) {
+        if (i > 0) clock.advance(60_000);
+        expect((await attempt(api.baseUrl, { email: memberEmail, password: 'wrong' }, { ip: pairIp })).status).toBe(401);
+      }
 
       const blocked = await attempt(api.baseUrl, { email: memberEmail, password: 'wrong' }, { ip: pairIp });
       expect(blocked.status).toBe(429);
-      expect(blocked.headers.get('retry-after')).toBe('840');
+      // 11 minutes from the first failure (12:00 leaving at 12:15), not 15 from the last one.
+      expect(blocked.headers.get('retry-after')).toBe('660');
 
       // The wait is exact: one second before it, still refused; one second after, the window is open.
-      clock.advance((840 - 1) * 1000);
+      clock.advance((660 - 1) * 1000);
       expect((await attempt(api.baseUrl, { email: memberEmail, password: 'wrong' }, { ip: pairIp })).status).toBe(429);
       clock.advance(1000);
       expect((await attempt(api.baseUrl, { email: memberEmail, password: 'wrong' }, { ip: pairIp })).status).toBe(401);
