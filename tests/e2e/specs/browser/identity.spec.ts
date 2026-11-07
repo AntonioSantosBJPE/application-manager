@@ -583,39 +583,94 @@ test.describe('identity', () => {
   });
 
   test('identity screens have no axe violations or horizontal scroll in both themes and widths', async ({ browser }) => {
-    // UI-22: the same screens, in the light and the dark theme, at a phone and a desktop width.
-    const context = await browser.newContext();
-    const email = memberEmail();
+    // UI-22: every screen of the feature, in the light and the dark theme, at a phone and a desktop width.
+    // Each screen is opened in the context of the role that sees it, so what is scanned is the screen a
+    // person of that role actually gets: the login doors, the invite link good and dead, the member home,
+    // the no-access screen and both screens of the admin area.
+    const anonymous = await browser.newContext();
+    const admin = await browser.newContext();
+    const member = await createMemberIn(browser, 'Pessoa da Acessibilidade');
     try {
-      const page = await context.newPage();
-      await signIn(page, 'admin', adminEmail, adminPassword);
-      const inviteUrl = await inviteFromScreen(page, email);
-      await page.getByRole('button', { name: 'Sair' }).click();
-      await page.waitForURL('**/admin/login');
+      const adminPage = await admin.newPage();
+      await signIn(adminPage, 'admin', adminEmail, adminPassword);
+      const pendingInvite = await inviteFromScreen(adminPage, memberEmail());
+      const expiredEmail = memberEmail();
+      const expiredInvite = await inviteFromScreen(adminPage, expiredEmail);
+      expireInvitations(expiredEmail);
 
+      const anonymousPage = await anonymous.newPage();
+      // Each screen carries a marker of its own: the login form, the invited email, the invalid message,
+      // the member home, the no-access message, the dashboard and the invitations. A screen that silently
+      // redirected would be scanned as another one without the marker, and the marker stops that.
       const screens = [
-        { path: '/login', name: 'login' },
-        { path: '/admin/login', name: 'admin login' },
-        { path: new URL(inviteUrl).pathname, name: 'invite' },
+        { page: anonymousPage, path: '/login', name: 'login', marker: () => anonymousPage.getByRole('button', { name: 'Entrar' }) },
+        {
+          page: anonymousPage,
+          path: '/admin/login',
+          name: 'admin login',
+          marker: () => anonymousPage.getByRole('heading', { name: 'Administração' }),
+        },
+        {
+          page: anonymousPage,
+          path: new URL(pendingInvite).pathname,
+          name: 'invite',
+          marker: () => anonymousPage.getByRole('button', { name: 'Criar conta' }),
+        },
+        {
+          page: anonymousPage,
+          path: new URL(expiredInvite).pathname,
+          name: 'invite 410',
+          marker: () => anonymousPage.getByText(INVALID_INVITATION),
+        },
+        {
+          page: member.page,
+          path: '/',
+          name: 'member home',
+          marker: () => member.page.getByRole('heading', { name: 'Início' }),
+        },
+        {
+          page: member.page,
+          path: '/admin',
+          name: 'no access',
+          marker: () => member.page.getByRole('heading', { name: 'Você não tem acesso a esta área.' }),
+        },
+        {
+          page: adminPage,
+          path: '/admin',
+          name: 'admin dashboard',
+          marker: () => adminPage.getByRole('heading', { name: 'Administração' }),
+        },
+        {
+          page: adminPage,
+          path: '/admin/invitations',
+          name: 'admin invitations',
+          marker: () => adminPage.getByRole('heading', { name: 'Convites' }),
+        },
       ];
       for (const scheme of ['light', 'dark'] as const) {
         for (const width of [375, 1280]) {
-          await page.setViewportSize({ width, height: 900 });
-          await page.emulateMedia({ colorScheme: scheme });
           for (const screen of screens) {
-            await page.goto(screen.path);
-            await expect(page.getByRole('main'), `${screen.name} ${scheme} ${width}`).toBeVisible();
-            const results = await new AxeBuilder({ page }).analyze();
+            const label = `${screen.name} ${scheme} ${width}`;
+            await screen.page.setViewportSize({ width, height: 900 });
+            await screen.page.emulateMedia({ colorScheme: scheme });
+            await screen.page.goto(screen.path);
+            await expect(screen.marker(), label).toBeVisible();
+            await expect(screen.page.getByRole('main'), label).toBeVisible();
+            const results = await new AxeBuilder({ page: screen.page }).analyze();
             expect(
-              results.violations.map((violation) => `${screen.name} ${scheme} ${width}: ${violation.id} ${violation.help}`),
+              results.violations.map((violation) => `${label}: ${violation.id} ${violation.help}`),
             ).toEqual([]);
-            const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-            expect(overflow, `${screen.name} ${scheme} ${width} scrolls horizontally`).toBeLessThanOrEqual(1);
+            const overflow = await screen.page.evaluate(
+              () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+            );
+            expect(overflow, `${label} scrolls horizontally`).toBeLessThanOrEqual(1);
           }
         }
       }
     } finally {
-      await context.close();
+      await anonymous.close();
+      await admin.close();
+      await member.context.close();
     }
   });
 
