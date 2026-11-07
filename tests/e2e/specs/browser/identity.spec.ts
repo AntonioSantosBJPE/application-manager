@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Browser, type BrowserContext, type Page } from '@playwright/test';
 import { composeOk, psql } from '../../support/compose.js';
 import {
   createAdminOk,
@@ -84,6 +84,45 @@ function tokenOf(inviteUrl: string): string {
   return new URL(inviteUrl).pathname.split('/').filter(Boolean).at(-1)!;
 }
 
+interface MemberAccount {
+  /** The context of the member alone: the admin that invited never shares a browser with it. */
+  context: BrowserContext;
+  /** The page of the member, left on the home already signed in. */
+  page: Page;
+  email: string;
+  name: string;
+}
+
+/**
+ * Creates a member the way the product does (INV-07, UI-15): an admin signs in and invites in a context of
+ * its own, and the invited person accepts in a second context, which never holds the admin session. The
+ * member is left signed in on the home, ready for the journey of the test.
+ */
+async function createMemberIn(browser: Browser, name: string): Promise<MemberAccount> {
+  const email = memberEmail();
+  const admin = await browser.newContext();
+  const context = await browser.newContext();
+  try {
+    const adminPage = await admin.newPage();
+    await signIn(adminPage, 'admin', adminEmail, adminPassword);
+    const inviteUrl = await inviteFromScreen(adminPage, email);
+
+    const page = await context.newPage();
+    await page.goto(inviteUrl);
+    await expect(page.getByLabel('E-mail')).toHaveValue(email);
+    await page.getByLabel('Nome').fill(name);
+    await page.getByLabel('Senha').fill(memberPassword);
+    await page.getByRole('button', { name: 'Criar conta' }).click();
+    await page.waitForURL((url) => url.pathname === '/');
+    return { context, page, email, name };
+  } catch (error) {
+    await context.close();
+    throw error;
+  } finally {
+    await admin.close();
+  }
+}
+
 test.describe('identity', () => {
   test.beforeAll(() => {
     test.setTimeout(5 * 60_000);
@@ -123,27 +162,37 @@ test.describe('identity', () => {
 
   test('a member signs in and reaches the preserved route with name and Sair', async ({ browser }) => {
     // UI-01: the member entrance opens the page that was asked for, with who is signed in and the way out.
-    const context = await browser.newContext();
-    const email = memberEmail();
+    const member = await createMemberIn(browser, 'Pessoa do Member');
     try {
-      const setup = await context.newPage();
-      await signIn(setup, 'admin', adminEmail, adminPassword);
-      const inviteUrl = await inviteFromScreen(setup, email);
-      const acceptPage = await context.newPage();
-      await acceptPage.goto(inviteUrl);
-      await acceptPage.getByLabel('Nome').fill('Pessoa do Member');
-      await acceptPage.getByLabel('Senha').fill(memberPassword);
-      await acceptPage.getByRole('button', { name: 'Criar conta' }).click();
-      await acceptPage.waitForURL((url) => url.pathname === '/');
-      await acceptPage.getByRole('button', { name: 'Sair' }).click();
-      await acceptPage.waitForURL('**/login');
+      const { page, email } = member;
+      await expect(page.getByText('Pessoa do Member')).toBeVisible();
+      await page.getByRole('button', { name: 'Sair' }).click();
+      await page.waitForURL('**/login');
 
-      await signIn(acceptPage, 'member', email, memberPassword);
-      await expect(acceptPage.getByRole('heading', { name: 'Início' })).toBeVisible();
-      await expect(acceptPage.getByText('Pessoa do Member')).toBeVisible();
-      await expect(acceptPage.getByRole('button', { name: 'Sair' })).toBeVisible();
+      // The route asked for survives the login, and it is not the default home: `/status` is what opens.
+      await page.goto('/login?redirect=%2Fstatus');
+      await page.getByLabel('E-mail').fill(email);
+      await page.getByLabel('Senha').fill(memberPassword);
+      await page.getByRole('button', { name: 'Entrar' }).click();
+      await page.waitForURL('**/status');
+      await expect(page.getByRole('group', { name: 'API' })).toBeVisible();
+
+      // And with no route asked for, `/` is where a member lands: the visitor who opens `/` signed out is
+      // sent to the login with the route preserved, and the login opens it again.
+      await page.goto('/');
+      await page.getByRole('button', { name: 'Sair' }).click();
+      await page.waitForURL('**/login');
+      await page.goto('/');
+      await page.waitForURL('**/login?redirect=%2F');
+      await page.getByLabel('E-mail').fill(email);
+      await page.getByLabel('Senha').fill(memberPassword);
+      await page.getByRole('button', { name: 'Entrar' }).click();
+      await page.waitForURL((url) => url.pathname === '/');
+      await expect(page.getByRole('heading', { name: 'Início' })).toBeVisible();
+      await expect(page.getByText('Pessoa do Member')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Sair' })).toBeVisible();
     } finally {
-      await context.close();
+      await member.context.close();
     }
   });
 
