@@ -1,4 +1,6 @@
 import handler, { createServerEntry } from '@tanstack/react-start/server-entry';
+import type { ServerMiddleware } from 'srvx';
+import { hideInvitationToken } from './lib/access-log';
 import { loadServerEnv } from './lib/env';
 import { withResponseHeaders } from './lib/response-headers';
 
@@ -21,3 +23,10 @@ export default createServerEntry({
     return withResponseHeaders(response, new URL(request.url).pathname);
   },
 });
+
+/**
+ * The middleware of the runner, exported from the server entry because that is where the runtime reads
+ * it: the access log prints the URL it finds once the handler answers, and the token of an invite link
+ * must not reach it (AUTH-18).
+ */
+export const middleware: ServerMiddleware[] = [hideInvitationToken()];
