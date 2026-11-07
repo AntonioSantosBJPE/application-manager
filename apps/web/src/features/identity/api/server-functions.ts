@@ -180,7 +180,7 @@ export const invite = createServerFn({ method: 'POST' })
     createInvitation(data, contextOfCurrentRequest(), responseOptionsOfCurrentRequest()),
   );
 
-export const openInvitation = createServerFn({ method: 'GET' })
+export const openInvitation = createServerFn({ method: 'POST' })
   .validator((token: string) => token)
   .handler(({ data }): Promise<Outcome<InvitationDetails>> =>
     loadInvitation(data, contextOfCurrentRequest(), responseOptionsOfCurrentRequest()),

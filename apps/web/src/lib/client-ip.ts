@@ -1,6 +1,3 @@
-import { createServerOnlyFn } from '@tanstack/react-start';
-import { getRequestHeader, getRequestIP } from '@tanstack/react-start/server';
-
 /** The variable that names the header the proxy in front of the web fills with the browser address. */
 export const CLIENT_IP_HEADER_VARIABLE = 'CLIENT_IP_HEADER';
 
@@ -27,12 +24,3 @@ export function clientIpOf(request: BrowserRequest, configuredHeader: string | u
   const socket = request.socketAddress?.trim() ?? '';
   return socket === '' ? undefined : socket;
 }
-
-/** `clientIpOf` over the request being served; the address the request carries never comes from a client header. */
-export const clientIpOfServerRequest = createServerOnlyFn(
-  (env: Record<string, string | undefined> = process.env): string | undefined =>
-    clientIpOf(
-      { header: (name) => getRequestHeader(name), socketAddress: getRequestIP() },
-      env[CLIENT_IP_HEADER_VARIABLE],
-    ),
-);

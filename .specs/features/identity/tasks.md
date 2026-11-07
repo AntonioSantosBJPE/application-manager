@@ -1198,7 +1198,7 @@ Proof: run ui | ✓ stories coverage > every component and archetype has a story
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** user resumed after Phase 5 and moved the Phase 6 implementer from DeepSeek to Sonnet 5.5 ("mude para o sonnet 5.5"). E2E T41 must assert: Set-Cookie am_session reaches the browser on UI login, and the AUTH-11 renewal cookie reaches the SSR HTML response of a protected page.
-**Dispatched:** Phase 6 (T35-T39) worker (Sonnet 5.5, by user decision), started from HEAD 2e1533f
+**Dispatched:** Phase 7 (T40-T42) worker (DeepSeek V4.1 Flash, original assignment), started after the phase 6 review fixes
 **Walked:** none
 
 ---
