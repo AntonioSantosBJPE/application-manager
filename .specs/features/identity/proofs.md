@@ -1,9 +1,9 @@
 # identity proofs
 
-**HEAD**: ff7fcba
+**HEAD**: 7950b47
 **Tree**: clean
 **Shell**: /bin/sh
-**Result**: 100 pass, 0 fail
+**Result**: 107 pass, 0 fail
 
 | Check | Proof | Result |
 | --- | --- | --- |
@@ -104,6 +104,13 @@
 | C95 | `run ui / ✓ /storybook (chromium)/ src/components/button/Button.stories.tsx > Foco por teclado, tema escuro` | pass |
 | C96 | `run ui / ✓ /storybook (chromium)/ src/components/copy-field/CopyField.stories.tsx > Link longo` | pass |
 | C97 | `run e2e / ✓ identity › a long invitation email and link stay inside the page in both themes and widths` | pass |
+| C98 | `run ui / ✓ /storybook (chromium)/ src/components/copy-field/CopyField.stories.tsx > Foco por teclado, tema cla` | pass |
+| C99 | `run ui / ✓ /storybook (chromium)/ src/components/copy-field/CopyField.stories.tsx > Foco por teclado, tema esc` | pass |
+| C100 | `run ui / ✓ /storybook (chromium)/ src/components/field/Field.stories.tsx > Foco por teclado, tema claro` | pass |
+| C101 | `run ui / ✓ /storybook (chromium)/ src/components/field/Field.stories.tsx > Foco por teclado, tema escuro` | pass |
+| C102 | `run ui / ✓ /storybook (chromium)/ src/layouts/app-shell/AppShell.stories.tsx > Foco por teclado, tema claro` | pass |
+| C103 | `run ui / ✓ /storybook (chromium)/ src/layouts/app-shell/AppShell.stories.tsx > Foco por teclado, tema escuro` | pass |
+| C104 | `run ui / ✓ /storybook (chromium)/ src/components/confirm-dialog/ConfirmDialog.stories.tsx > Descrição longa` | pass |
 | Build | `pnpm build` | pass |
 | Build | `pnpm typecheck` | pass |
 | Build | `pnpm lint` | pass |
@@ -113,51 +120,51 @@
 `Run api-integration` - exit 0
 
 ```
- ✓ |integration| src/modules/health/database-probe.int.test.ts > DatabaseProbe > returns down when the database container is stopped 1755ms
- ✓ |integration| src/modules/health/health.int.test.ts > GET /health > returns 503 degraded/down within 2 seconds when the database does not answer 7433ms
- ✓ |integration| src/modules/identity/cli/identity-cli.int.test.ts > identity cli > refuses passwords of 11 and 129 characters without writing 1265ms
- ✓ |integration| src/modules/health/health.int.test.ts > GET /health > returns 503 degraded/down when the database container is stopped 1137ms
- ✓ |integration| src/modules/identity/cli/identity-cli.int.test.ts > identity cli > refuses an invalid email, a blank or oversized name and an unknown flag without writing 1907ms
- ✓ |integration| src/modules/identity/cli/identity-cli.int.test.ts > identity cli > keeps a name with an equals sign whole and trims it 450ms
- ✓ |integration| src/modules/identity/cli/identity-cli.int.test.ts > identity cli > refuses with a usage error instead of hanging when the prompt finds standard input closed 399ms
- ✓ |integration| src/modules/identity/cli/identity-cli.int.test.ts > identity cli > reads the password from stdin and rejects it as an argument 1722ms
- ✓ |integration| src/modules/identity/cli/identity-cli.int.test.ts > identity cli > without --password-stdin reads the password only from the prompt 148ms
- ✓ |integration| src/infra/database/migrations.int.test.ts > runMigrations > retries for 30 seconds before failing when the database is down 30059ms
+ ✓ |integration| src/modules/health/database-probe.int.test.ts > DatabaseProbe > returns down when the database container is stopped 1497ms
+ ✓ |integration| src/modules/identity/cli/identity-cli.int.test.ts > identity cli > refuses passwords of 11 and 129 characters without writing 1539ms
+ ✓ |integration| src/modules/health/health.int.test.ts > GET /health > returns 503 degraded/down when the database container is stopped 1147ms
+ ✓ |integration| src/modules/identity/cli/identity-cli.int.test.ts > identity cli > refuses an invalid email, a blank or oversized name and an unknown flag without writing 1915ms
+ ✓ |integration| src/modules/identity/cli/identity-cli.int.test.ts > identity cli > keeps a name with an equals sign whole and trims it 445ms
+ ✓ |integration| src/modules/identity/cli/identity-cli.int.test.ts > identity cli > refuses with a usage error instead of hanging when the prompt finds standard input closed 410ms
+ ✓ |integration| src/modules/identity/cli/identity-cli.int.test.ts > identity cli > reads the password from stdin and rejects it as an argument 1821ms
+ ✓ |integration| src/modules/identity/cli/identity-cli.int.test.ts > identity cli > prints one line and exits 1 when the database is unreachable 353ms
+ ✓ |integration| src/modules/identity/cli/identity-cli.int.test.ts > identity cli > without --password-stdin reads the password only from the prompt 174ms
+ ✓ |integration| src/infra/database/migrations.int.test.ts > runMigrations > retries for 30 seconds before failing when the database is down 30084ms
 
  Test Files  17 passed (17)
-      Tests  95 passed (95)
-   Start at  09:01:51
-   Duration  85.66s (tests 88%, import 11%, transform 1%)
+      Tests  97 passed (97)
+   Start at  10:21:23
+   Duration  36.85s (tests 86%, import 13%, transform 1%)
 ```
 
 `Run api-unit` - exit 0
 
 ```
  ✓ |unit| src/infra/clock/clock.test.ts > CLOCK > injects the system clock by default 21ms
- ✓ |unit| src/infra/clock/clock.test.ts > CLOCK > injects the clock given to AppModule.forRoot, which advances without waiting 3ms
+ ✓ |unit| src/infra/clock/clock.test.ts > CLOCK > injects the clock given to AppModule.forRoot, which advances without waiting 2ms
  ✓ |unit| src/infra/clock/clock.test.ts > CLOCK > hands out copies, so a caller cannot move the clock by mutating the answer 2ms
- ✓ |unit| src/infra/logging/request-logging.test.ts > request logging > writes json lines with level, time, msg and requestId 11ms
+ ✓ |unit| src/infra/logging/request-logging.test.ts > request logging > writes json lines with level, time, msg and requestId 12ms
  ✓ |unit| src/infra/logging/request-logging.test.ts > request logging > reuses x-request-id and returns it 9ms
  ✓ |unit| src/infra/logging/request-logging.test.ts > request logging > generates an id and returns it when the header is absent 1ms
  ✓ |unit| src/infra/logging/request-logging.test.ts > request logging > replaces a malformed x-request-id with a generated id 2ms
  ✓ |unit| src/infra/logging/request-logging.test.ts > request logging > keeps the cookie set-cookie and internal ip out of the json lines 1ms
  ✓ |unit| src/infra/logging/request-logging.test.ts > request logging > replaces the invitation token in the logged url 1ms
- ✓ |unit| src/main.test.ts > api entrypoint > exits non-zero naming DATABASE_URL when it is missing 356ms
+ ✓ |unit| src/main.test.ts > api entrypoint > exits non-zero naming DATABASE_URL when it is missing 361ms
 
  Test Files  11 passed (11)
       Tests  60 passed (60)
-   Start at  09:03:17
-   Duration  1.09s (tests 52%, import 41%, transform 5%, worker 1%)
+   Start at  10:22:01
+   Duration  1.12s (tests 52%, import 42%, transform 5%, worker 1%)
 ```
 
 `Run e2e` - exit 0
 
 ```
-  ✓  37 [browser] › specs/browser/status-page.spec.ts:44:3 › status page › follows the system color scheme with dark and light tokens (121ms)
-  ✓  38 [browser] › specs/browser/status-page.spec.ts:64:3 › status page › has no accessibility violations in light and dark (437ms)
-  ✓  39 [browser] › specs/browser/status-page.spec.ts:74:3 › status page › web and api log the same requestId for one visit (396ms)
-  ✓  40 [disruption] › specs/disruption/client-ip.spec.ts:64:3 › client ip › failures from two client ips are counted separately through the web (960ms)
-  ✓  41 [disruption] › specs/disruption/client-ip.spec.ts:90:3 › client ip › a forged X-Forwarded-For does not change the count (606ms)
+  ✓  37 [browser] › specs/browser/status-page.spec.ts:44:3 › status page › follows the system color scheme with dark and light tokens (120ms)
+  ✓  38 [browser] › specs/browser/status-page.spec.ts:64:3 › status page › has no accessibility violations in light and dark (450ms)
+  ✓  39 [browser] › specs/browser/status-page.spec.ts:74:3 › status page › web and api log the same requestId for one visit (373ms)
+  ✓  40 [disruption] › specs/disruption/client-ip.spec.ts:64:3 › client ip › failures from two client ips are counted separately through the web (1.0s)
+  ✓  41 [disruption] › specs/disruption/client-ip.spec.ts:90:3 › client ip › a forged X-Forwarded-For does not change the count (651ms)
   ✓  42 [disruption] › specs/disruption/outages.spec.ts:19:3 › outages › shows both rows Indisponível with 200 when the api is down (6.9s)
   ✓  43 [disruption] › specs/disruption/outages.spec.ts:33:3 › outages › treats an api slower than 3 seconds as Indisponível (5.6s)
   ✓  44 [disruption] › specs/disruption/outages.spec.ts:51:3 › outages › shows API Operacional and Banco de dados Indisponível when the database is down (2.8s)
@@ -165,7 +172,7 @@
   ✓  46 [disruption] › specs/disruption/outages.spec.ts:80:3 › outages › web stays healthy through /status when the api is down (7.0s)
   ✓  47 [teardown] › specs/setup/compose.teardown.ts:5:3 › compose › is removed with its volumes after the run (4.6s)
 
-  47 passed (1.4m)
+  47 passed (1.7m)
 $ pnpm --filter @am/e2e e2e
 $ playwright test
 ```
@@ -193,21 +200,21 @@ An empty string ("") was passed to the href attribute. To fix this, either do no
 `Run guardrails` - exit 0
 
 ```
- ✓ src/pre-commit-secrets.test.ts > pre-commit secrets > lets a commit without secrets through 841ms
- ✓ src/pre-commit-secrets.test.ts > pre-commit secrets > hooks are installed by pnpm install 1873ms
- ✓ src/pre-commit-secrets.test.ts > pre-commit secrets > pnpm install outside a git repository installs no hooks and succeeds 439ms
- ✓ src/root-commands.test.ts > root commands > pnpm lint runs eslint in every workspace and fails on a violation 16237ms
- ✓ src/root-commands.test.ts > root commands > pnpm lint fails an app importing another app naming file and import 3453ms
+ ✓ src/pre-commit-secrets.test.ts > pre-commit secrets > lets a commit without secrets through 868ms
+ ✓ src/pre-commit-secrets.test.ts > pre-commit secrets > hooks are installed by pnpm install 1959ms
+ ✓ src/pre-commit-secrets.test.ts > pre-commit secrets > pnpm install outside a git repository installs no hooks and succeeds 539ms
+ ✓ src/root-commands.test.ts > root commands > pnpm lint runs eslint in every workspace and fails on a violation 17681ms
+ ✓ src/root-commands.test.ts > root commands > pnpm lint fails an app importing another app naming file and import 309534ms
  ✓ src/root-commands.test.ts > root commands > pnpm lint fails a feature importing another feature internals naming file and import 0ms
  ✓ src/root-commands.test.ts > root commands > pnpm lint fails a module importing another module internals naming file and import 0ms
- ✓ src/root-commands.test.ts > root commands > pnpm typecheck fails on a type error in any workspace 17898ms
- ✓ src/root-commands.test.ts > root commands > pnpm test runs vitest in every workspace 11370ms
- ✓ src/root-commands.test.ts > root commands > pnpm test fails when a packages/ui story throws 3952ms
+ ✓ src/root-commands.test.ts > root commands > pnpm typecheck fails on a type error in any workspace 439232ms
+ ✓ src/root-commands.test.ts > root commands > pnpm test runs vitest in every workspace 11328ms
+ ✓ src/root-commands.test.ts > root commands > pnpm test fails when a packages/ui story throws 3967ms
 
  Test Files  6 passed (6)
       Tests  29 passed (29)
-   Start at  09:04:54
-   Duration  57.87s (tests 99%, import 1%)
+   Start at  10:23:52
+   Duration  787.01s (tests 100%)
 ```
 
 `Run ui` - exit 0
@@ -218,9 +225,9 @@ An empty string ("") was passed to the href attribute. To fix this, either do no
  ✓ |unit| src/components/field/field.test.tsx > Field > uses the danger token for the invalid border and the error text 1ms
 
  Test Files  21 passed (21)
-      Tests  98 passed (98)
-   Start at  09:05:53
-   Duration  2.81s (environment 23%, setup 22%, transform 21%, tests 16%, worker 14%, import 4%)
+      Tests  105 passed (105)
+   Start at  10:37:00
+   Duration  2.78s (environment 26%, setup 26%, worker 16%, transform 15%, tests 14%, import 3%)
 
 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
   - import "./vite.config" without a file extension (vitest.config.ts:6:24). Add the file extension
