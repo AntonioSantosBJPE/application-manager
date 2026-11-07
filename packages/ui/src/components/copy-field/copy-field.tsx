@@ -23,7 +23,7 @@ function join(...classes: (string | undefined)[]): string {
 }
 
 /**
- * A read-only value with a copy action (UI-21). The value sits in a read-only input, so it
+ * A read-only value with a copy action (UI-21, UI-25). The value sits in a read-only text box, so it
  * stays focusable and selectable when the clipboard fails; the caller passes the status and
  * the messages, since the component knows no product copy.
  */
@@ -40,15 +40,17 @@ export function CopyField({
 }: CopyFieldProps) {
   return (
     <div className={join('flex flex-col gap-2', className)} {...props}>
-      <div className="flex items-center gap-2">
-        <input
+      <div className="flex items-start gap-2">
+        {/* A textarea, not an input: a link wider than the line wraps whole instead of being cut. */}
+        <textarea
           readOnly
+          rows={1}
           value={value}
           aria-label={valueLabel}
-          className="h-8 flex-1 rounded-sm border border-border bg-surface px-2 text-xs text-text"
+          className="field-sizing-content min-h-8 min-w-0 flex-1 resize-none rounded-sm border border-border bg-surface px-2 py-1.5 text-xs break-all text-text"
           onFocus={(event) => event.currentTarget.select()}
         />
-        <Button intent="secondary" onClick={onCopy}>
+        <Button intent="secondary" className="shrink-0" onClick={onCopy}>
           {status === 'copied' ? copiedLabel : copyLabel}
         </Button>
       </div>
