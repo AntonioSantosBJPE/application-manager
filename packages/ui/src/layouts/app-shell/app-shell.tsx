@@ -53,7 +53,7 @@ function NavItem({ asChild = false, current = false, className, ...props }: NavI
       aria-current={current ? 'page' : undefined}
       className={join(
         'rounded-sm px-2 py-1 text-xs text-text-muted hover:bg-surface-raised hover:text-text',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+        'outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
         current ? 'bg-surface-raised text-text' : undefined,
         className,
       )}

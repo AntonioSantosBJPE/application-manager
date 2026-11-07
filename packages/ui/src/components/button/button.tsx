@@ -6,7 +6,9 @@ const buttonVariants = cva(
   [
     'inline-flex items-center justify-center gap-2 rounded-sm border text-xs font-medium',
     'transition-colors duration-150',
-    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+    // The ring color is set at all times: only the width appears on focus. Were the color set on focus
+    // alone, `transition-colors` would fade it in from the label color (UI-24).
+    'outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
     'disabled:cursor-not-allowed disabled:opacity-50',
   ].join(' '),
   {

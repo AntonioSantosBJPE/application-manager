@@ -84,7 +84,7 @@ function FieldControl({ className, ...props }: ComponentProps<'input'>) {
       className={join(
         'h-8 rounded-sm border bg-surface px-2 text-xs text-text',
         invalid ? 'border-danger' : 'border-border',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent',
+        'outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
         className,
       )}
       aria-describedby={describedBy}
