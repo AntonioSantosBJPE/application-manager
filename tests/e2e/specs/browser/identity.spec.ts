@@ -432,16 +432,24 @@ test.describe('identity', () => {
     const invited = await request.get('/invite/any-token', { maxRedirects: 0 });
     expect(invited.headers()['cache-control']).toBe('no-store');
 
-    const context = await browser.newContext();
+    const admin = await browser.newContext();
+    const member = await createMemberIn(browser, 'Pessoa do Cache');
     try {
-      const page = await context.newPage();
+      const page = await admin.newPage();
       await signIn(page, 'admin', adminEmail, adminPassword);
       for (const path of ['/', '/admin', '/admin/invitations']) {
         const response = await page.goto(path);
         expect(response?.headers()['cache-control'], path).toBe('no-store');
       }
+
+      // The member home is the one `/` that answers with the page itself, because a member stays where an
+      // admin is moved away from; the header read here is therefore the one of the home.
+      const home = await member.page.goto('/');
+      expect(home?.status(), 'the member home answers with the page').toBe(200);
+      expect(home?.headers()['cache-control'], '/ as a member').toBe('no-store');
     } finally {
-      await context.close();
+      await admin.close();
+      await member.context.close();
     }
   });
 
@@ -526,18 +534,26 @@ test.describe('identity', () => {
   test('the admin dashboard shows status pending total and the invitations link', async ({ browser }) => {
     // ADM-14: the status of the stack, how many invitations are pending, and the way to the list.
     const context = await browser.newContext();
-    const email = memberEmail();
     try {
       const page = await context.newPage();
       await signIn(page, 'admin', adminEmail, adminPassword);
-      await inviteFromScreen(page, email);
+
+      // The total is arranged, not inherited: every pending invitation is revoked, then exactly one is
+      // created from the screen, so the number on the dashboard has one right answer.
+      revokePendingInvitations();
+      await inviteFromScreen(page, memberEmail());
+      expect(
+        Number(psql('select count(*) from identity.invitations where accepted_at is null and revoked_at is null')),
+        'one pending invitation',
+      ).toBe(1);
 
       await page.goto('/admin');
       await expect(page.getByRole('group', { name: 'API' })).toContainText('Operacional');
       await expect(page.getByRole('group', { name: 'Banco de dados' })).toContainText('Operacional');
       const summary = page.getByRole('group', { name: 'Convites pendentes' });
-      const pending = Number(psql('select count(*) from identity.invitations where accepted_at is null and revoked_at is null'));
-      await expect(summary).toContainText(String(pending));
+      // Read as a whole, not as a substring: a screen showing "12" for one pending invitation fails here.
+      await expect(summary.getByText('1', { exact: true })).toBeVisible();
+      await expect(summary).toHaveText(/^Convites pendentes\s*1\s*Ver convites$/);
       await page.getByRole('link', { name: 'Ver convites' }).click();
       await page.waitForURL('**/admin/invitations');
       await expect(page.getByRole('heading', { name: 'Convites' })).toBeVisible();

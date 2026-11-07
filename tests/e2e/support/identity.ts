@@ -89,3 +89,8 @@ export function expireInvitations(email: string): void {
 export function clearLoginAttempts(ip: string): void {
   psql(`delete from identity.login_attempts where ip = ${quoted(ip)}`);
 }
+
+/** Revokes every pending invitation, so a spec can start the pending total from a number it chose (ADM-01). */
+export function revokePendingInvitations(): void {
+  psql('update identity.invitations set revoked_at = now() where accepted_at is null and revoked_at is null');
+}
