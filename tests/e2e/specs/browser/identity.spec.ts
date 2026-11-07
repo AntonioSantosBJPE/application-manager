@@ -264,30 +264,16 @@ test.describe('identity', () => {
   test('a member on /admin sees the no-access message and no admin data', async ({ browser }) => {
     // UI-10: the admin area answers a member with the message and the way home, and with nothing of the
     // admin area: no navigation, no invitations, no status.
-    const context = await browser.newContext();
-    const email = memberEmail();
+    const member = await createMemberIn(browser, 'Pessoa Sem Acesso');
     try {
-      const page = await context.newPage();
-      await signIn(page, 'admin', adminEmail, adminPassword);
-      const inviteUrl = await inviteFromScreen(page, email);
-      await page.getByRole('button', { name: 'Sair' }).click();
-      await page.waitForURL('**/admin/login');
-
-      const member = await context.newPage();
-      await member.goto(inviteUrl);
-      await member.getByLabel('Nome').fill('Pessoa Sem Acesso');
-      await member.getByLabel('Senha').fill(memberPassword);
-      await member.getByRole('button', { name: 'Criar conta' }).click();
-      await member.waitForURL((url) => url.pathname === '/');
-
-      await member.goto('/admin');
-      await expect(member.getByRole('heading', { name: 'Você não tem acesso a esta área.' })).toBeVisible();
-      await expect(member.getByRole('link', { name: 'Voltar para o início' })).toBeVisible();
-      await expect(member.getByRole('heading', { name: 'Administração' })).toHaveCount(0);
-      await expect(member.getByRole('navigation', { name: 'Navegação da administração' })).toHaveCount(0);
-      await expect(member.getByText('Convites pendentes')).toHaveCount(0);
+      await member.page.goto('/admin');
+      await expect(member.page.getByRole('heading', { name: 'Você não tem acesso a esta área.' })).toBeVisible();
+      await expect(member.page.getByRole('link', { name: 'Voltar para o início' })).toBeVisible();
+      await expect(member.page.getByRole('heading', { name: 'Administração' })).toHaveCount(0);
+      await expect(member.page.getByRole('navigation', { name: 'Navegação da administração' })).toHaveCount(0);
+      await expect(member.page.getByText('Convites pendentes')).toHaveCount(0);
     } finally {
-      await context.close();
+      await member.context.close();
     }
   });
 
@@ -514,26 +500,26 @@ test.describe('identity', () => {
 
   test('login invite and home render the auth and dashboard archetypes', async ({ browser }) => {
     // UI-21: every screen belongs to an archetype of the design system, which is what `data-archetype` marks.
-    const context = await browser.newContext();
-    const email = memberEmail();
+    const anonymous = await browser.newContext();
+    const member = await createMemberIn(browser, 'Pessoa da Archetype');
     try {
-      const page = await context.newPage();
+      const page = await anonymous.newPage();
       await page.goto('/login');
       await expect(page.locator('[data-archetype="auth"]')).toHaveCount(1);
       await page.goto('/admin/login');
       await expect(page.locator('[data-archetype="auth"]')).toHaveCount(1);
 
-      await signIn(page, 'admin', adminEmail, adminPassword);
-      const inviteUrl = await inviteFromScreen(page, email);
+      const adminPage = await anonymous.newPage();
+      await signIn(adminPage, 'admin', adminEmail, adminPassword);
+      const inviteUrl = await inviteFromScreen(adminPage, memberEmail());
       await page.goto(inviteUrl);
       await expect(page.locator('[data-archetype="auth"]')).toHaveCount(1);
-      await page.getByLabel('Nome').fill('Pessoa da Archetype');
-      await page.getByLabel('Senha').fill(memberPassword);
-      await page.getByRole('button', { name: 'Criar conta' }).click();
-      await page.waitForURL((url) => url.pathname === '/');
-      await expect(page.locator('[data-archetype="dashboard"]')).toHaveCount(1);
+
+      // The member home is the dashboard of the person who accepted an invitation (UI-15).
+      await expect(member.page.locator('[data-archetype="dashboard"]')).toHaveCount(1);
     } finally {
-      await context.close();
+      await anonymous.close();
+      await member.context.close();
     }
   });
 
