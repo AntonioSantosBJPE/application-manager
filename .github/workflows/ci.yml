@@ -56,6 +56,9 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # The copy's `pnpm test` renders the stories of @am/ui in headless Chromium.
+      - name: Install Chromium for Storybook tests
+        run: pnpm --filter @am/ui exec playwright install --with-deps chromium
       # Runs the real root commands over a copy of the repo with a violation planted; slow, so its own job.
       - run: pnpm test:repo-rules
 

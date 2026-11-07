@@ -138,6 +138,8 @@ describe('root commands', () => {
     env = { ...process.env };
     // Nothing from a surrounding CI or git hook leaks into the copy; turbo keeps its own cache and always re-runs.
     for (const key of Object.keys(env)) if (key.startsWith('GIT_')) delete env[key];
+    // Under GitHub Actions turbo and ESLint switch to annotation output that drops the file names these tests look for.
+    delete env.GITHUB_ACTIONS;
     Object.assign(env, {
       TURBO_CACHE_DIR: join(copy, '.turbo-cache'),
       TURBO_FORCE: 'true',
