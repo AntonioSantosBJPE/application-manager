@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { composeOk, psql } from '../../support/compose.js';
@@ -38,12 +38,17 @@ async function signIn(page: Page, area: 'member' | 'admin', email: string, passw
   await page.waitForURL(area === 'admin' ? '**/admin' : (url) => !url.pathname.startsWith('/login'));
 }
 
-/** The value of the session cookie the browser holds, which is the credential itself (AUTH-06). */
-async function sessionCookie(page: Page): Promise<string> {
+/** The session cookie the browser holds, with the name the running configuration gives it (AUTH-08). */
+async function sessionCookieOf(page: Page): Promise<{ name: string; value: string }> {
   const cookies = await page.context().cookies();
   const session = cookies.find((cookie) => cookie.name.endsWith('am_session'));
   expect(session, 'the browser holds the session cookie').toBeDefined();
-  return session!.value;
+  return { name: session!.name, value: session!.value };
+}
+
+/** The value of the session cookie the browser holds, which is the credential itself (AUTH-06). */
+async function sessionCookie(page: Page): Promise<string> {
+  return (await sessionCookieOf(page)).value;
 }
 
 /** JSON log lines of a compose service; the access log of the web is plain text and is searched as it is. */
@@ -262,17 +267,29 @@ test.describe('identity', () => {
     try {
       const page = await context.newPage();
       await signIn(page, 'admin', adminEmail, adminPassword);
-      const oldCookie = await sessionCookie(page);
+      const oldCookie = await sessionCookieOf(page);
+      // The row the cookie stands for, found by the hash the api stores (AUTH-06).
+      const tokenHash = createHash('sha256').update(oldCookie.value).digest('hex');
+      expect(psql(`select count(*) from identity.sessions where token_hash = '${tokenHash}'`)).toBe('1');
 
       await page.getByRole('button', { name: 'Sair' }).click();
       await page.waitForURL('**/admin/login');
       await expect(page.getByRole('heading', { name: 'Administração' })).toBeVisible();
 
-      // The old token on a page that needs a session: the api refuses it.
-      const reuse = await context.request.get('/admin', { headers: { cookie: `am_session=${oldCookie}` }, maxRedirects: 0 });
-      expect([307, 200]).toContain(reuse.status());
-      const response = await context.request.get('/admin', { headers: { cookie: `am_session=${oldCookie}` } });
-      expect(new URL(response.url()).pathname).toBe('/admin/login');
+      // The session is revoked on the api, not only dropped from the browser (AUTH-12).
+      expect(
+        psql(`select revoked_at is not null from identity.sessions where token_hash = '${tokenHash}'`),
+        'the session row of the old cookie is revoked',
+      ).toBe('t');
+
+      // The old token on a page that needs a session: the server sends it to the login of the area, so
+      // the credential the browser once held opens nothing.
+      const reuse = await context.request.get('/admin', {
+        headers: { cookie: `${oldCookie.name}=${oldCookie.value}` },
+        maxRedirects: 0,
+      });
+      expect(reuse.status()).toBe(307);
+      expect(reuse.headers()['location']).toBe('/admin/login?redirect=%2Fadmin');
     } finally {
       await context.close();
     }
