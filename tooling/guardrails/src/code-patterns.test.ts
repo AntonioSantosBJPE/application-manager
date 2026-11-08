@@ -39,6 +39,59 @@ function scan(selected: string[], pattern: RegExp): string[] {
   return selected.flatMap((file) => matches(file, pattern));
 }
 
+/**
+ * `import ... from 'lucide-react'` statements (a subpath such as `lucide-react/icons` counts too). The
+ * negative lookahead leaves out `import type { LucideIcon } from 'lucide-react'`, which draws nothing.
+ */
+const LUCIDE_IMPORT = /import\s+(?!type\b)([^;]*?)\s+from\s+['"]lucide-react(?:\/[^'"]*)?['"]/g;
+
+/** Local names a source binds to a Lucide value (`Mail`, `Mail as MailIcon`, a default import) and its namespaces (`* as Lucide`). */
+function lucideBindings(source: string): { icons: string[]; namespaces: string[] } {
+  const icons: string[] = [];
+  const namespaces: string[] = [];
+  for (const [, clause = ''] of source.matchAll(LUCIDE_IMPORT)) {
+    const namespace = /\*\s+as\s+(\w+)/.exec(clause)?.[1];
+    if (namespace !== undefined) namespaces.push(namespace);
+    const named = /\{([^}]*)\}/.exec(clause)?.[1] ?? '';
+    for (const entry of named.split(',')) {
+      const item = entry.trim();
+      if (item === '' || /^type\s/.test(item)) continue; // `type LucideIcon` is only a type
+      icons.push(item.split(/\s+as\s+/).at(-1)!.trim());
+    }
+    const defaults = clause.replace(/\{[^}]*\}|\*\s+as\s+\w+/g, '').split(',');
+    icons.push(...defaults.map((name) => name.trim()).filter((name) => name !== ''));
+  }
+  return { icons, namespaces };
+}
+
+/**
+ * `line  code` of every JSX element that renders a Lucide icon straight from `lucide-react`. An icon
+ * handed as a value (`icon={Mail}`, `icon={open ? Eye : EyeOff}`) is the allowed way: the wrapper
+ * `packages/ui/src/icons/icon.tsx` draws it with the stroke, size, color and `aria-hidden` of PRU-01.
+ * This reads text, so an icon first copied to another variable (`const Glyph = Mail; <Glyph />`) is
+ * out of its sight; the review catches that one.
+ */
+function lucideRenderedDirectly(source: string): string[] {
+  const { icons, namespaces } = lucideBindings(source);
+  if (icons.length === 0 && namespaces.length === 0) return [];
+  const rendered = new RegExp(
+    [...icons.map((name) => `<${name}(?![\\w.$])`), ...namespaces.map((name) => `<${name}\\.`)].join('|'),
+  );
+  return source.split('\n').flatMap((line, index) => {
+    const code = line.trim();
+    const isComment = code.startsWith('//') || code.startsWith('*') || code.startsWith('/*');
+    return !isComment && rendered.test(code) ? [`${index + 1}  ${code}`] : [];
+  });
+}
+
+/** Source that must draw icons through `Icon`: packages/ui and the web app, except the wrapper itself, stories and tests. */
+const drawsIcons = (file: string) =>
+  /^(packages\/ui|apps\/web)\/src\//.test(file) &&
+  isSource(file) &&
+  !isTest(file) &&
+  !/\.stories\.tsx$/.test(file) &&
+  file !== 'packages/ui/src/icons/icon.tsx';
+
 describe('code patterns', () => {
   it('never skips, focuses or leaves a test as todo (AGENTS.md: no weakening a test to make it pass)', () => {
     const pattern =
@@ -94,5 +147,59 @@ describe('code patterns', () => {
     const pattern = /<(button|input|select|textarea)\b/;
     const screens = files.filter((file) => /^apps\/web\/src\/.*\.tsx$/.test(file) && !isTest(file));
     expect(scan(screens, pattern)).toEqual([]);
+  });
+
+  it('draws every icon through the Icon wrapper, never straight from lucide-react (PRU-01 AC11)', () => {
+    const violations = files
+      .filter((file) => drawsIcons(file) && /\.tsx$/.test(file))
+      .flatMap((file) =>
+        lucideRenderedDirectly(readFileSync(join(repoRoot, file), 'utf8')).map(
+          (line) => `${file}:${line}`,
+        ),
+      );
+    expect(violations).toEqual([]);
+  });
+});
+
+describe('lucide-react wrapper check', () => {
+  it('fails an icon rendered straight from lucide-react, however it was imported', () => {
+    const planted = {
+      direct: `import { Mail } from 'lucide-react';\nexport const View = () => <Mail />;\n`,
+      withProps: `import { Mail } from 'lucide-react';\nexport const View = () => <Mail size={16} className="x" />;\n`,
+      aliased: `import { Mail as MailIcon } from 'lucide-react';\nexport const View = () => <MailIcon />;\n`,
+      multiline: `import {\n  Eye,\n  type LucideIcon,\n  Mail,\n} from 'lucide-react';\nexport const View = () => <span><Mail></Mail></span>;\n`,
+      namespace: `import * as Lucide from 'lucide-react';\nexport const View = () => <Lucide.Mail />;\n`,
+      defaultOfSubpath: `import Mail from 'lucide-react/dist/esm/icons/mail';\nexport const View = () => <Mail />;\n`,
+    };
+
+    for (const [name, source] of Object.entries(planted)) {
+      expect(lucideRenderedDirectly(source), name).toHaveLength(1);
+    }
+    expect(lucideRenderedDirectly(planted.direct)).toEqual(['2  export const View = () => <Mail />;']);
+  });
+
+  it('allows types and icons handed as a value to a prop', () => {
+    const allowed = [
+      `import type { LucideIcon } from 'lucide-react';\nexport interface Props { icon: LucideIcon }\n`,
+      `import { Mail, type LucideIcon } from 'lucide-react';\nexport const View = () => <Button icon={Mail} />;\n`,
+      `import { Eye, EyeOff } from 'lucide-react';\nexport const View = () => <Icon icon={open ? EyeOff : Eye} />;\n`,
+      `import { CircleAlert, Info } from 'lucide-react';\nconst byIntent = { danger: CircleAlert, info: Info };\nexport const View = () => <Icon icon={byIntent.danger} />;\n`,
+      `import { Mail } from 'lucide-react';\n// <Mail /> would bypass Icon\n/**\n * Use <Mail /> through Icon.\n */\nexport const View = () => <MailForm />;\n`,
+      `export const View = () => <Mail />;\n`,
+    ];
+
+    for (const source of allowed) {
+      expect(lucideRenderedDirectly(source), source).toEqual([]);
+    }
+  });
+
+  it('covers packages/ui and apps/web but not the wrapper, stories or tests', () => {
+    expect(drawsIcons('packages/ui/src/components/alert/alert.tsx')).toBe(true);
+    expect(drawsIcons('apps/web/src/routes/_member.tsx')).toBe(true);
+    expect(drawsIcons('packages/ui/src/icons/icon.tsx')).toBe(false);
+    expect(drawsIcons('packages/ui/src/components/alert/alert.stories.tsx')).toBe(false);
+    expect(drawsIcons('packages/ui/src/components/alert/alert.test.tsx')).toBe(false);
+    expect(drawsIcons('apps/web/src/routes/login.test.tsx')).toBe(false);
+    expect(drawsIcons('apps/api/src/main.ts')).toBe(false);
   });
 });
