@@ -134,10 +134,10 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `normalizeSkillKey` devolve `nodejs`, `c++`, `c#`, `comunicacao` e `net` para "Node.js", "C++", "C#", "Comunicação" e ".NET"
-- [ ] `skillTextSchema` apara, reduz espaços internos, exige 1 a 60 caracteres e chave não vazia
-- [ ] Existem os schemas de criar, editar (ao menos um campo), apelido, busca (`q` até 60), query do admin (`scope` com padrão `all`) e as respostas da spec; corpo com `ownerUserId` ou `scope` é aparado
-- [ ] Tudo exportado por `packages/contracts/src/index.ts`; testes `SKL-01`, `SKL-09`, `SKL-15`, `SKL-16`, `SKL-31`, `SKL-37`, `SKL-66` passam
+- [x] `normalizeSkillKey` devolve `nodejs`, `c++`, `c#`, `comunicacao` e `net` para "Node.js", "C++", "C#", "Comunicação" e ".NET"
+- [x] `skillTextSchema` apara, reduz espaços internos, exige 1 a 60 caracteres e chave não vazia
+- [x] Existem os schemas de criar, editar (ao menos um campo), apelido, busca (`q` até 60), query do admin (`scope` com padrão `all`) e as respostas da spec; corpo com `ownerUserId` ou `scope` é aparado
+- [x] Tudo exportado por `packages/contracts/src/index.ts`; testes `SKL-01`, `SKL-09`, `SKL-15`, `SKL-16`, `SKL-31`, `SKL-37`, `SKL-66` passam
 
 **Tests**: unit
 **Gate**: quick
@@ -1098,8 +1098,8 @@ Proof: run web | ✓ SKL-76
 
 The feature's live state, written as it happens - a compaction gives no warning.
 
-**Settled mid-build:** none
-**Dispatched:** none
+**Settled mid-build:** 2026-11-08 - user: "Pode executar as task até o final, só pare se precisar de uma decisão importante minha"
+**Dispatched:** B1 (T1–T8, Sonnet 5.5) at HEAD 373a398, 2026-11-08 13:05
 **Walked:** none
 
 ---
