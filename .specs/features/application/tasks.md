@@ -118,6 +118,22 @@ T47 → T48
 
 ---
 
+## Model Assignment
+
+Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não implementa; **todas as tasks são executadas por sub-agentes Sonnet 5.5 com esforço médio**, um lote por vez, em sequência, despachados por `delegate_task` no checkout principal. O orquestrador confere os gates por conta própria, lê o diff e os testes de cada lote e devolve defeitos a um worker (até 2 rodadas por lote). O Verifier e o sub-agente de telas rodam em Opus 5.5 depois da T48.
+
+| Lote | Fases | Tasks |
+| ---- | ----- | ----- |
+| B1 | 1 e 2 | T1–T9 (9) |
+| B2 | 3 e 4 | T10–T17 (8) |
+| B3 | 5 | T18–T25 (8) |
+| B4 | 6 | T26–T30 (5) |
+| B5 | 7 | T31–T36 (6) |
+| B6 | 8 | T37–T44 (8) |
+| B7 | 9 e 10 | T45–T48 (4) |
+
+---
+
 ## Task Breakdown
 
 ### T1: Contratos de candidaturas
