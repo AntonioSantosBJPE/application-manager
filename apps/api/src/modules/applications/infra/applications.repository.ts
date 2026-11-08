@@ -1,7 +1,8 @@
-import { FUNNEL_ORDER, type ApplicationStatus, type JobLevel, type SkillRequirement, type Stage, type WorkModel } from '@am/contracts';
+import { FUNNEL_ORDER, type ApplicationsSort, type ApplicationStatus, type JobLevel, type SkillRequirement, type Stage, type WorkModel } from '@am/contracts';
 import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, desc, eq, exists, inArray, like, or, sql, type SQL } from 'drizzle-orm';
 import { DATABASE, type Database } from '../../../infra/database/database.module.js';
+import type { ApplicationCursor } from '../domain/cursor.js';
 import { applicationEvents, applications, jobPostings, jobPostingSkills } from './schema.js';
 
 /** What a write runs on: the database or a transaction of it, so the rows of one request commit together. */
@@ -192,8 +193,25 @@ export class ApplicationsRepository {
     );
   }
 
-  /** One page of the member's applications, by status group in funnel order and then the most recent activity first. */
-  async page(userId: string, filters: ListFilters, limit: number): Promise<ApplicationRecord[]> {
+  /**
+   * One page of the member's applications: by status group in funnel order, inside a group the most
+   * recent `last_activity_at` first (or `created_at` with `sort=created`), and an id breaks the ties, so
+   * the order is total. A cursor continues after the row it names without repeating or skipping one (APP-14, APP-15).
+   */
+  async page(
+    userId: string,
+    filters: ListFilters,
+    options: { sort: ApplicationsSort; cursor?: ApplicationCursor; limit: number },
+  ): Promise<ApplicationRecord[]> {
+    const dated = options.sort === 'created' ? applications.createdAt : applications.lastActivityAt;
+    const { cursor } = options;
+    const afterCursor =
+      cursor === undefined
+        ? undefined
+        : sql`(${funnelRank} > ${cursor.rank}::int
+            or (${funnelRank} = ${cursor.rank}::int
+              and (${dated} < ${cursor.at.toISOString()}::timestamptz
+                or (${dated} = ${cursor.at.toISOString()}::timestamptz and ${applications.id} < ${cursor.id}::uuid))))`;
     return this.db
       .select({
         id: applications.id,
@@ -212,9 +230,15 @@ export class ApplicationsRepository {
       })
       .from(applications)
       .innerJoin(jobPostings, eq(applications.jobPostingId, jobPostings.id))
-      .where(this.where(userId, filters))
-      .orderBy(asc(funnelRank), desc(applications.lastActivityAt), desc(applications.id))
-      .limit(limit);
+      .where(and(this.where(userId, filters), afterCursor))
+      .orderBy(asc(funnelRank), desc(dated), desc(applications.id))
+      .limit(options.limit);
+  }
+
+  /** How many applications the member has, whatever the status (the total of the sidebar). */
+  async countAll(userId: string): Promise<number> {
+    const [row] = await this.db.select({ total: sql<string>`count(*)` }).from(applications).where(eq(applications.userId, userId));
+    return Number(row?.total ?? 0);
   }
 
   /** How many applications of the member each status holds under the filters; a status with none is absent (APP-16). */

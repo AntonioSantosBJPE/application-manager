@@ -2,6 +2,7 @@ import {
   createApplicationRequestSchema,
   listApplicationsQuerySchema,
   type ApplicationDetail,
+  type ApplicationsCount,
   type ApplicationsPage,
   type CreateApplicationRequest,
   type InvalidSkillsProblem,
@@ -50,6 +51,13 @@ export class ApplicationsController {
       throw new ProblemDetailsException(problemFor(400, 'Invalid cursor', [{ path: 'cursor', code: 'invalid_cursor' }]));
     }
     return this.applications.list(user.id, query);
+  }
+
+  /** Declared before `:id`, which would otherwise take "count" for an application id. */
+  @Roles('member')
+  @Get('count')
+  count(@CurrentUser() user: AuthenticatedUser): Promise<ApplicationsCount> {
+    return this.applications.count(user.id);
   }
 
   @Roles('member')

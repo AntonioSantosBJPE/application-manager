@@ -5,6 +5,7 @@ import {
   type ApplicationDetail,
   type ApplicationEvent,
   type ApplicationStatus,
+  type ApplicationsCount,
   type ApplicationsPage,
   type ApplicationSummary,
   type CreateApplicationRequest,
@@ -14,7 +15,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { CLOCK, type Clock } from '../../../infra/clock/clock.js';
 import { SkillsCatalog } from '../../skills/index.js';
-import { statusesOf } from '../domain/funnel.js';
+import { decodeCursor, encodeCursor } from '../domain/cursor.js';
+import { funnelRank, statusesOf } from '../domain/funnel.js';
 import { isGhostSuggested } from '../domain/ghost.js';
 import { isUuid } from '../domain/ids.js';
 import { searchPatternOf, searchTextOf } from '../domain/search-text.js';
@@ -121,14 +123,29 @@ export class ApplicationsService {
       workModel,
       search,
     };
-    const [records, counted] = await Promise.all([
-      this.repository.page(userId, filters, LIST_PAGE_SIZE),
+    const cursor = query.cursor === undefined ? undefined : decodeCursor(query.cursor);
+    const [found, counted] = await Promise.all([
+      this.repository.page(userId, filters, { sort: query.sort, cursor, limit: LIST_PAGE_SIZE + 1 }),
       this.repository.countByStatus(userId, { level, workModel, search }),
     ]);
+    const records = found.slice(0, LIST_PAGE_SIZE);
+    const last = records.at(-1);
     const byStatus = Object.fromEntries(FUNNEL_ORDER.map((status) => [status, counted.get(status) ?? 0])) as Record<ApplicationStatus, number>;
     const active = ACTIVE_STATUSES.reduce((sum, status) => sum + byStatus[status], 0);
     const closed = FUNNEL_ORDER.reduce((sum, status) => sum + byStatus[status], 0) - active;
-    return { items: await this.summaries(userId, records), nextCursor: null, counts: { active, closed, byStatus } };
+    return {
+      items: await this.summaries(userId, records),
+      nextCursor:
+        found.length > LIST_PAGE_SIZE && last !== undefined
+          ? encodeCursor({ rank: funnelRank(last.status), at: query.sort === 'created' ? last.createdAt : last.lastActivityAt, id: last.id })
+          : null,
+      counts: { active, closed, byStatus },
+    };
+  }
+
+  /** The total of applications of the member, for the sidebar and the home (APP-43, APP-84). */
+  async count(userId: string): Promise<ApplicationsCount> {
+    return { total: await this.repository.countAll(userId) };
   }
 
   /** The text pattern and the skills of `q`; a `q` with nothing to compare filters nothing. */

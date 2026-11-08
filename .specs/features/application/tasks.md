@@ -323,11 +323,11 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Ordem por posição no funil e, no grupo, `last_activity_at` desc (ou `created_at` desc com `sort=created`), desempate por id
-- [ ] Com 60 candidaturas, as duas páginas somam todas sem repetição, inclusive com empates de data
-- [ ] `counts` respeita nível, modelo e busca e ignora aba, status e cursor; `GET /applications/count` devolve `{ total }` da sessão
-- [ ] Testes `APP-14` a `APP-16` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Ordem por posição no funil e, no grupo, `last_activity_at` desc (ou `created_at` desc com `sort=created`), desempate por id
+- [x] Com 60 candidaturas, as duas páginas somam todas sem repetição, inclusive com empates de data
+- [x] `counts` respeita nível, modelo e busca e ignora aba, status e cursor; `GET /applications/count` devolve `{ total }` da sessão
+- [x] Testes `APP-14` a `APP-16` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
