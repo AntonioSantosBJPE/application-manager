@@ -1,4 +1,5 @@
 import {
+  changeStatusRequestSchema,
   createApplicationRequestSchema,
   listApplicationsQuerySchema,
   replaceSkillsRequestSchema,
@@ -6,13 +7,14 @@ import {
   type ApplicationDetail,
   type ApplicationsCount,
   type ApplicationsPage,
+  type ChangeStatusRequest,
   type CreateApplicationRequest,
   type InvalidSkillsProblem,
   type ListApplicationsQuery,
   type ReplaceSkillsRequest,
   type UpdateJobPostingRequest,
 } from '@am/contracts';
-import { Body, Controller, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
 import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
@@ -88,5 +90,17 @@ export class ApplicationsController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<ApplicationDetail> {
     return answering(() => this.applications.replaceSkills(user.id, id, body));
+  }
+
+  /** `200` also when the status is the one it already has: nothing is written then (APP-22). */
+  @Roles('member')
+  @HttpCode(200)
+  @Post(':id/status')
+  changeStatus(
+    @Param('id') id: string,
+    @Body(zodBody(changeStatusRequestSchema)) body: ChangeStatusRequest,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ApplicationDetail> {
+    return answering(() => this.applications.changeStatus(user.id, id, body));
   }
 }

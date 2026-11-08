@@ -8,6 +8,7 @@ import {
   type ApplicationsCount,
   type ApplicationsPage,
   type ApplicationSummary,
+  type ChangeStatusRequest,
   type CreateApplicationRequest,
   type ListApplicationsQuery,
   type ReplaceSkillsRequest,
@@ -33,7 +34,7 @@ import {
 /** The list shows 50 applications per page (APP-09). */
 export const LIST_PAGE_SIZE = 50;
 
-type ApplicationEventName = 'application.created' | 'application.posting_updated' | 'application.skills_replaced';
+type ApplicationEventName = 'application.created' | 'application.posting_updated' | 'application.skills_replaced' | 'application.status_changed';
 
 /** The application does not exist, is somebody else's or the id is not a uuid (`404`, APP-19). */
 export class ApplicationNotFoundError extends Error {
@@ -203,6 +204,35 @@ export class ApplicationsService {
     await this.repository.updatePosting(userId, record.jobPostingId, { ...request, searchText });
     this.record('application.posting_updated', record.id, userId);
     return this.detailOf(userId, record.id);
+  }
+
+  /**
+   * Moves the application to any status from any status and records it on the timeline with the status it left
+   * and the one it reached (APP-20, APP-21). The row is locked while it is read and written, so two changes at
+   * once run one after the other and each event names the status it really found (APP-27). The same status again
+   * writes nothing and leaves the activity as it was (APP-22).
+   */
+  async changeStatus(userId: string, id: string, request: ChangeStatusRequest): Promise<ApplicationDetail> {
+    if (!isUuid(id)) throw new ApplicationNotFoundError();
+    const changed = await this.repository.transaction(async (tx) => {
+      const record = await this.repository.findOwned(userId, id, tx, { forUpdate: true });
+      if (record === undefined) throw new ApplicationNotFoundError();
+      if (record.status === request.status) return false;
+      const now = this.clock.now();
+      await this.repository.setStatus(tx, record.id, request.status);
+      await this.repository.insertEvent(tx, {
+        applicationId: record.id,
+        kind: 'status_changed',
+        fromStatus: record.status,
+        toStatus: request.status,
+        note: request.note,
+        occurredAt: now,
+        createdAt: now,
+      });
+      return true;
+    });
+    if (changed) this.record('application.status_changed', id, userId);
+    return this.detailOf(userId, id);
   }
 
   /** The skill ids as stored: a uuid in lowercase, anything else untouched so it is refused as sent. */

@@ -42,6 +42,18 @@ export interface EventRecord {
   occurredAt: Date;
 }
 
+/** An event to append: a status change carries `fromStatus` and `toStatus`, a stage its `stage`, a note its `note` (the table checks it). */
+export interface NewEvent {
+  applicationId: string;
+  kind: EventRecord['kind'];
+  fromStatus?: ApplicationStatus;
+  toStatus?: ApplicationStatus;
+  stage?: Stage;
+  note?: string;
+  occurredAt: Date;
+  createdAt: Date;
+}
+
 export interface NewApplication {
   userId: string;
   posting: PostingValues & { searchText: string };
@@ -116,8 +128,13 @@ export class ApplicationsRepository {
   }
 
   /** The application of this user with its posting, or `undefined` when it does not exist or is somebody else's (APP-19). */
-  async findOwned(userId: string, id: string, executor: DatabaseExecutor = this.db): Promise<ApplicationRecord | undefined> {
-    const [row] = await executor
+  async findOwned(
+    userId: string,
+    id: string,
+    executor: DatabaseExecutor = this.db,
+    options: { forUpdate?: boolean } = {},
+  ): Promise<ApplicationRecord | undefined> {
+    const query = executor
       .select({
         id: applications.id,
         status: applications.status,
@@ -137,7 +154,38 @@ export class ApplicationsRepository {
       .innerJoin(jobPostings, eq(applications.jobPostingId, jobPostings.id))
       .where(and(eq(applications.id, id), eq(applications.userId, userId)))
       .limit(1);
+    // `for update` locks the application row (and its posting) until the transaction ends, so two writers of the same application run one after the other (APP-27).
+    const [row] = options.forUpdate === true ? await query.for('update') : await query;
     return row;
+  }
+
+  /** Sets the status of the application; the activity moves with the event that is written next (`insertEvent`). */
+  async setStatus(tx: DatabaseExecutor, applicationId: string, status: ApplicationStatus): Promise<void> {
+    await tx.update(applications).set({ status }).where(eq(applications.id, applicationId));
+  }
+
+  /**
+   * Appends an event to the timeline and sets `last_activity_at` to the later of its current value and the
+   * date of the event, so an event dated in the past never moves the activity back (APP-24). Run it inside a transaction.
+   */
+  async insertEvent(tx: DatabaseExecutor, event: NewEvent): Promise<EventRecord> {
+    const [row] = await tx
+      .insert(applicationEvents)
+      .values(event)
+      .returning({
+        id: applicationEvents.id,
+        kind: applicationEvents.kind,
+        fromStatus: applicationEvents.fromStatus,
+        toStatus: applicationEvents.toStatus,
+        stage: applicationEvents.stage,
+        note: applicationEvents.note,
+        occurredAt: applicationEvents.occurredAt,
+      });
+    await tx
+      .update(applications)
+      .set({ lastActivityAt: sql`greatest(${applications.lastActivityAt}, ${event.occurredAt.toISOString()}::timestamptz)` })
+      .where(eq(applications.id, event.applicationId));
+    return row!;
   }
 
   /** Writes only the fields given; `null` clears an optional one and an absent field is left alone (APP-28, APP-29). */

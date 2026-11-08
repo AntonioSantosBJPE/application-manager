@@ -390,12 +390,12 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Status diferente: muda, grava `status_changed` com `from_status`, `to_status`, nota opcional e `occurred_at` do relógio, e atualiza `last_activity_at`
-- [ ] Mesmo status: `200` sem evento e sem mexer na atividade
-- [ ] Teste `APP-21` percorre transições para frente, para trás e entre finais
-- [ ] Teste `APP-27`: duas mudanças paralelas geram dois eventos encadeados
-- [ ] Testes `APP-20` a `APP-22` e `APP-27` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Status diferente: muda, grava `status_changed` com `from_status`, `to_status`, nota opcional e `occurred_at` do relógio, e atualiza `last_activity_at`
+- [x] Mesmo status: `200` sem evento e sem mexer na atividade
+- [x] Teste `APP-21` percorre transições para frente, para trás e entre finais
+- [x] Teste `APP-27`: duas mudanças paralelas geram dois eventos encadeados
+- [x] Testes `APP-20` a `APP-22` e `APP-27` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
