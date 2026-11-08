@@ -752,9 +752,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Título "Convites" com "{n} pendentes", formulário na linha de filtros, faixa do link recém-criado com nota, grupo "Pendentes", linhas com expiração (`warning` com ≤ 2 dias), "Revogar" `ghost` com `ConfirmDialog`, `EmptyState` vazio e `Alert danger` na falha
-- [ ] Foco, 409, 404 e `401` como hoje; testes atualizados
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Título "Convites" com "{n} pendentes", formulário na linha de filtros, faixa do link recém-criado com nota, grupo "Pendentes", linhas com expiração (`warning` com ≤ 2 dias), "Revogar" `ghost` com `ConfirmDialog`, `EmptyState` vazio e `Alert danger` na falha
+- [x] Foco, 409, 404 e `401` como hoje; testes atualizados
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit (web)
 **Gate**: quick
