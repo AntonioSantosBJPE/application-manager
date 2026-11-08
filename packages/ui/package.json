@@ -46,6 +46,7 @@
     "@radix-ui/react-alert-dialog": "^1.2.1",
     "@radix-ui/react-slot": "^1.5.0",
     "class-variance-authority": "^0.7.1",
+    "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
   }

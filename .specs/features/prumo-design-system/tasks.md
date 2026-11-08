@@ -145,9 +145,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] `Icon` interno aplica traço 1.75, 16 px (padrão) ou 14 px (`size="sm"`) e `currentColor`, `aria-hidden`
-- [ ] `lucide-react` adicionado a `packages/ui`; importação nomeada por ícone
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `Icon` interno aplica traço 1.75, 16 px (padrão) ou 14 px (`size="sm"`) e `currentColor`, `aria-hidden`
+- [x] `lucide-react` adicionado a `packages/ui`; importação nomeada por ícone
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

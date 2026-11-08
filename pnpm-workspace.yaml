@@ -15,6 +15,7 @@ catalog:
   vitest: ^5.0.5
   '@fontsource-variable/geist': ^5.3.0
   '@fontsource-variable/geist-mono': ^5.3.0
+  lucide-react: ^1.70.0
 
 # pnpm 11 runs dependency build scripts only when listed here (strictDepBuilds is on).
 allowBuilds:
