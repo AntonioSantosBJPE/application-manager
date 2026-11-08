@@ -452,6 +452,7 @@ Cada diferença entre as cartas e o produto, aprovada pelo usuário.
 | "18 vagas", "1 vagas" no catálogo do admin | "18 vagas", "1 vaga" | y - [AD-019] |
 | Título "Mais usadas · por número de vagas" e as linhas ordenadas por uso | Sem o título; as linhas seguem em ordem alfabética | y - [AD-019] |
 | "+ Skill" só na linha "Desejáveis" do detalhe | "+ Skill" em "Obrigatórias" e em "Desejáveis" | y - [AD-022] |
+| Tags de skill do detalhe sem "×" | Cada tag com o "×" de remover | y - [AD-023] |
 
 ## Sources
 
@@ -463,7 +464,7 @@ Cada diferença entre as cartas e o produto, aprovada pelo usuário.
 - [components/ListPage, DetailPage, PipelineStatus, SkillTag, ConfirmDialog, EmptyState, Alert, Field, Button, Combobox, AppShell](../../../docs/design/system/components/) - binding - README e prévia de cada componente e arquétipo
 - [docs/design/system/prumo.md](../../../docs/design/system/prumo.md) - binding - guia do Prumo
 - [.specs/features/skills/spec.md](../skills/spec.md) - SKL-05, SKL-11, SKL-58 e SKL-59: busca, criação de privada e a API pública do catálogo
-- [.specs/STATE.md](../../STATE.md) - AD-005, AD-006, AD-007, AD-008, AD-010, AD-013, AD-016 e AD-017 a AD-022
+- [.specs/STATE.md](../../STATE.md) - AD-005, AD-006, AD-007, AD-008, AD-010, AD-013, AD-016 e AD-017 a AD-023
 
 ---
 

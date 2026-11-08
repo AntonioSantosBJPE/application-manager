@@ -178,6 +178,14 @@
 - **Date**: 2026-11-08
 - **Status**: active
 
+### AD-023 (active)
+- **Decision**: As tags de skill do diálogo de cadastro e do detalhe mostram o "×" de remover; as cartas `PageNewApplication` e `PageApplicationDetail` desenham as tags do detalhe sem ele.
+- **Reason**: Os critérios aprovados APP-59 ("tag removível") e APP-73 ("o '×' de uma tag") pedem o gesto; spec aprovada pelo usuário em 2026-11-08 ("Sim"). Registrado como diferença pelo orquestrador depois do achado 13 do Verifier.
+- **Trade-off**: As tags ficam mais largas que na carta, e a linha "Obrigatórias" pode quebrar.
+- **Scope**: `apps/web` features `applications` e `skills`
+- **Date**: 2026-11-08
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: `skills` - closed on branch `feat/skills`, 2026-11-08.
