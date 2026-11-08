@@ -156,6 +156,66 @@ describe('member area guard', () => {
   });
 });
 
+describe('member home', () => {
+  it('PRU-06 AC12 shows the home: h1, greeting, line, the three steps and the empty state', async () => {
+    sessionIs(signedInAs(member));
+
+    await open('/');
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Início' })).toBeInTheDocument();
+    expect(screen.getByText('Olá, Ana Souza')).toBeInTheDocument();
+    expect(
+      screen.getByText('Três passos para a primeira candidatura com currículo adaptado.'),
+    ).toBeInTheDocument();
+
+    const steps = screen.getAllByRole('heading', { level: 2 }).map((heading) => {
+      const step = heading.closest('section');
+      return [step?.firstElementChild?.firstElementChild?.textContent, heading.textContent];
+    });
+    expect(steps).toEqual([
+      ['01', 'Conta criada'],
+      ['02', 'Preencha o currículo mestre'],
+      ['03', 'Cadastre uma vaga'],
+    ]);
+    expect(screen.getByText('Você entrou por convite. Nada a fazer aqui.')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Experiências e bullets marcados por skill. É dele que sai cada versão adaptada.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Empresa, título, nível e as skills pedidas. Leva menos de 2 minutos.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Quando houver candidaturas, aqui aparecem o pipeline, o que precisa de atenção e a atividade recente.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('PRU-06 AC12 promises nothing that does not exist yet: no step buttons, no ⌘K tip', async () => {
+    sessionIs(signedInAs(member));
+
+    await open('/');
+    await screen.findByRole('heading', { level: 1, name: 'Início' });
+
+    expect(screen.queryByRole('button', { name: /Começar pelo perfil|Nova candidatura/ })).toBeNull();
+    expect(screen.queryByText(/⌘K/)).toBeNull();
+    // The only button in the page is the way out of the shell.
+    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Sair']);
+  });
+
+  it('PRU-06 AC12 greets without a name when the session has none', async () => {
+    sessionIs(signedInAs({ ...member, name: '' }));
+
+    await open('/');
+    await screen.findByRole('heading', { level: 1, name: 'Início' });
+
+    expect(screen.getByText('Olá')).toBeInTheDocument();
+    expect(screen.queryByText(/Olá,/)).toBeNull();
+  });
+});
+
 describe('admin area guard', () => {
   it('sends a visitor on an admin route to /admin/login preserving the route', async () => {
     sessionIs(anonymous);

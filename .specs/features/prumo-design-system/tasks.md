@@ -653,9 +653,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] h1 "Início", "Olá, {nome}", três passos e `EmptyState` sem a dica do ⌘K e sem botões
-- [ ] Teste de rota para o nome, os passos e a ausência do nome
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] h1 "Início", "Olá, {nome}", três passos e `EmptyState` sem a dica do ⌘K e sem botões
+- [x] Teste de rota para o nome, os passos e a ausência do nome
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit (web)
 **Gate**: quick
