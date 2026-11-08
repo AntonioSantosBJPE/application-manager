@@ -629,8 +629,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `confirmIntent` tem padrão `danger`; com promessa, o diálogo fica aberto, os botões desabilitados e `aria-busy` no de confirmar até a promessa terminar
-- [ ] Os testes e a story atuais passam sem edição; novos testes cobrem a intenção `primary` e o estado pendente
+- [x] `confirmIntent` tem padrão `danger`; com promessa, o diálogo fica aberto, os botões desabilitados e `aria-busy` no de confirmar até a promessa terminar
+- [x] Os testes e a story atuais passam sem edição; novos testes cobrem a intenção `primary` e o estado pendente
 
 **Tests**: unit
 **Gate**: quick
