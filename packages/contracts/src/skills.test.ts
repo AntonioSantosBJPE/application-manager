@@ -53,6 +53,13 @@ describe('skillTextSchema', () => {
     expect(ok(skillTextSchema, 42)).toBe(false);
   });
 
+  it('SKL-15 rejects a control character such as U+0000 or U+0007 and keeps tab and line break as spaces', () => {
+    expect(ok(skillTextSchema, 'Probe\u0000Nul')).toBe(false);
+    expect(ok(skillTextSchema, '\u0000')).toBe(false);
+    expect(ok(skillTextSchema, 'Probe\u0007Bell')).toBe(false);
+    expect(skillTextSchema.parse('Drizzle\tORM\nTeste')).toBe('Drizzle ORM Teste');
+  });
+
   it('SKL-15 accepts 1 and 60 characters', () => {
     expect(skillTextSchema.parse('C')).toBe('C');
     expect(skillTextSchema.parse('a'.repeat(60))).toBe('a'.repeat(60));
@@ -64,6 +71,8 @@ describe('skillTextSchema', () => {
     expect(ok(aliasRequestSchema, { alias: 'a'.repeat(61) })).toBe(false);
     expect(ok(aliasRequestSchema, { alias: '!!' })).toBe(false);
     expect(ok(aliasRequestSchema, {})).toBe(false);
+    expect(ok(aliasRequestSchema, { alias: 'probe\u0000alias' })).toBe(false);
+    expect(ok(aliasRequestSchema, { alias: 'probe\u0007alias' })).toBe(false);
   });
 });
 
@@ -114,6 +123,8 @@ describe('updateSkillRequestSchema', () => {
     expect(ok(updateSkillRequestSchema, { name: 'a'.repeat(61) })).toBe(false);
     expect(ok(updateSkillRequestSchema, { name: '---' })).toBe(false);
     expect(ok(updateSkillRequestSchema, { category: 'hobby' })).toBe(false);
+    expect(ok(updateSkillRequestSchema, { name: 'Probe\u0000Nul' })).toBe(false);
+    expect(ok(updateSkillRequestSchema, { name: 'Probe\u0007Bell' })).toBe(false);
   });
 });
 

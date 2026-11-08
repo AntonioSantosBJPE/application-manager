@@ -17,7 +17,7 @@ export function normalizeSkillKey(text: string): string {
     .replace(/[^\p{L}\p{N}+#]/gu, '');
 }
 
-/** A name or an alias: trimmed, inner whitespace collapsed to one space, 1 to 60 characters, key not empty (SKL-15, SKL-31, SKL-66). */
+/** A name or an alias: trimmed, inner whitespace collapsed to one space, 1 to 60 characters, no control character (such as U+0000, which Postgres refuses), key not empty (SKL-15, SKL-31, SKL-66). */
 export const skillTextSchema = z
   .string()
   .transform((text) => text.trim().replace(/\s+/g, ' '))
@@ -26,6 +26,7 @@ export const skillTextSchema = z
       .string()
       .min(SKILL_TEXT_MIN_LENGTH)
       .max(SKILL_TEXT_MAX_LENGTH)
+      .refine((text) => !/\p{Cc}/u.test(text), { message: 'Control characters are not allowed' })
       .refine((text) => normalizeSkillKey(text).length > 0, { message: 'The normalized key is empty' }),
   );
 

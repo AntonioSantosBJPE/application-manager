@@ -143,6 +143,13 @@ describe('PATCH /skills/:id', () => {
       expect(response.status, JSON.stringify(body)).toBe(400);
       expect(response.headers.get('content-type'), JSON.stringify(body)).toContain('application/problem+json');
     }
+    for (const name of ['Zeta\u0000Fictícia', 'Zeta\u0007Fictícia']) {
+      const response = await patch(id, { name });
+      expect(response.status, JSON.stringify(name)).toBe(400);
+      expect(response.headers.get('content-type')).toContain('application/problem+json');
+      const problem = (await response.json()) as { errors: { path: string }[] };
+      expect(problem.errors.map((e) => e.path), JSON.stringify(name)).toContain('name');
+    }
     for (const unknown of ['0198a5b0-0000-7000-8000-000000000000', 'not-a-uuid']) {
       const response = await patch(unknown, { name: 'Qualquer Fictícia' });
       expect(response.status, unknown).toBe(404);

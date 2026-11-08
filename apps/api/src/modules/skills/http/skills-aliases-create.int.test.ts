@@ -114,10 +114,22 @@ describe('POST /skills/:id/aliases', () => {
       expect(response.status, id).toBe(404);
       expect(await response.json(), id).toMatchObject({ title: 'Not Found', status: 404 });
     }
-    for (const body of [{ alias: '' }, { alias: '   ' }, { alias: 'a'.repeat(61) }, { alias: '...' }, {}, { alias: 5 }]) {
+    const invalid = [
+      { alias: '' },
+      { alias: '   ' },
+      { alias: 'a'.repeat(61) },
+      { alias: '...' },
+      {},
+      { alias: 5 },
+      { alias: 'Beta\u0000Fictícia' },
+      { alias: 'Beta\u0007Fictícia' },
+    ];
+    for (const body of invalid) {
       const response = await post(admin, beta, body);
       expect(response.status, JSON.stringify(body)).toBe(400);
       expect(response.headers.get('content-type')).toContain('application/problem+json');
+      const problem = (await response.json()) as { errors: { path: string }[] };
+      expect(problem.errors.map((e) => e.path), JSON.stringify(body)).toContain('alias');
     }
     expect(await aliases()).toEqual(before);
   });

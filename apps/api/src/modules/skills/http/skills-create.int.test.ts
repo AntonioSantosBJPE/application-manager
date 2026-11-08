@@ -155,6 +155,8 @@ describe('POST /skills', () => {
         [{ name: 'a'.repeat(61), category: 'tool' }, 'name'],
         [{ name: '...', category: 'tool' }, 'name'],
         [{ name: 42, category: 'tool' }, 'name'],
+        [{ name: 'Skill\u0000Fictícia', category: 'tool' }, 'name'],
+        [{ name: 'Skill\u0007Fictícia', category: 'tool' }, 'name'],
         [{ name: 'Skill Fictícia Alfa' }, 'category'],
         [{ name: 'Skill Fictícia Alfa', category: 'hobby' }, 'category'],
       ];

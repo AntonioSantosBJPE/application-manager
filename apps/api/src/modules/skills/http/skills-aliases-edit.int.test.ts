@@ -100,10 +100,22 @@ describe('PATCH and DELETE /skills/:id/aliases/:aliasId', () => {
       expect(response.headers.get('content-type'), alias).toContain('application/problem+json');
       expect(await response.json(), alias).toMatchObject({ title: 'Conflict', status: 409 });
     }
-    for (const body of [{ alias: '' }, { alias: '   ' }, { alias: 'a'.repeat(61) }, { alias: '...' }, {}, { alias: 5 }]) {
+    const invalid = [
+      { alias: '' },
+      { alias: '   ' },
+      { alias: 'a'.repeat(61) },
+      { alias: '...' },
+      {},
+      { alias: 5 },
+      { alias: 'Alfa\u0000Fictícia' },
+      { alias: 'Alfa\u0007Fictícia' },
+    ];
+    for (const body of invalid) {
       const response = await patch(alfa, aliasAlfa, body);
       expect(response.status, JSON.stringify(body)).toBe(400);
       expect(response.headers.get('content-type')).toContain('application/problem+json');
+      const problem = (await response.json()) as { errors: { path: string }[] };
+      expect(problem.errors.map((e) => e.path), JSON.stringify(body)).toContain('alias');
     }
     const missing = '0198a5b0-0000-7000-8000-000000000000';
     for (const [skillId, aliasId] of [
