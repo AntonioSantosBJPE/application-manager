@@ -529,8 +529,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] Exportado em `packages/ui/src/index.ts`; story nos dois temas
-- [ ] Teste unitário e de navegador do estado pressionado, do foco visível e do contraste
+- [x] Exportado em `packages/ui/src/index.ts`; story nos dois temas
+- [x] Teste unitário e de navegador do estado pressionado, do foco visível e do contraste
 
 **Tests**: unit
 **Gate**: quick
