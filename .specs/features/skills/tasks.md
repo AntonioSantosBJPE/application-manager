@@ -669,8 +669,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] Mostra a carta `PageSkills` com os textos copiados; "Carregar mais" só com `nextCursor`; falha da leitura vira `Alert` `danger` sem linhas
-- [ ] Testes `SKL-38`, `SKL-44` e `SKL-51` passam (incluindo o `401` que aciona `onExpired`)
+- [x] Mostra a carta `PageSkills` com os textos copiados; "Carregar mais" só com `nextCursor`; falha da leitura vira `Alert` `danger` sem linhas
+- [x] Testes `SKL-38`, `SKL-44` e `SKL-51` passam (incluindo o `401` que aciona `onExpired`)
 
 **Tests**: unit
 **Gate**: quick
