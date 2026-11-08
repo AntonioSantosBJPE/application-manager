@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { page } from '@vitest/browser/context';
+import { Activity, LayoutDashboard, LogOut, Mail } from 'lucide-react';
 import { expect, userEvent } from 'storybook/test';
-import { focusRing, settle } from '../../testing/contrast';
+import { Button } from '../../components/button';
+import { Icon } from '../../icons/icon';
+import { expectContrast, focusRing, settle } from '../../testing/contrast';
 import { DashboardPage } from '../dashboard-page';
 import { ListPage } from '../list-page';
 import { AppShell } from './app-shell';
@@ -261,4 +264,131 @@ export const FocoTemaEscuro: Story = {
   name: 'Foco por teclado, tema escuro',
   globals: { theme: 'dark' },
   play: focusContrast,
+};
+
+const signOut = (
+  <Button intent="ghost" size="sm" aria-label="Sair">
+    <Icon icon={LogOut} size="sm" />
+  </Button>
+);
+
+/** The member shell: wordmark, the one destination that exists, the person and the topbar. */
+function MemberShell() {
+  return (
+    <AppShell.Root>
+      <AppShell.Sidebar aria-label="Navegação principal">
+        <AppShell.Brand />
+        <AppShell.NavItem href="/" current icon={LayoutDashboard} onClick={(e) => e.preventDefault()}>
+          Início
+        </AppShell.NavItem>
+        <AppShell.User initials="MA" name="Marina Alves">
+          {signOut}
+        </AppShell.User>
+      </AppShell.Sidebar>
+      <AppShell.Main>
+        <AppShell.Topbar>
+          <b className="text-body font-medium">Início</b>
+        </AppShell.Topbar>
+        <p className="px-6 py-4 text-text-muted">Conteúdo da página.</p>
+      </AppShell.Main>
+    </AppShell.Root>
+  );
+}
+
+/** The admin shell: wordmark with the area tag, a section, counts, the person and page actions. */
+function AdminShell() {
+  return (
+    <AppShell.Root>
+      <AppShell.Sidebar aria-label="Navegação da administração">
+        <AppShell.Brand tag="admin" />
+        <AppShell.Section title="Administração">
+          <AppShell.NavItem href="/admin" current icon={LayoutDashboard} onClick={(e) => e.preventDefault()}>
+            Painel
+          </AppShell.NavItem>
+          <AppShell.NavItem href="/admin/invitations" icon={Mail} count="3" onClick={(e) => e.preventDefault()}>
+            Convites
+          </AppShell.NavItem>
+          <AppShell.NavItem href="/status" icon={Activity} onClick={(e) => e.preventDefault()}>
+            Status do sistema
+          </AppShell.NavItem>
+        </AppShell.Section>
+        <AppShell.User initials="AD" name="Admin">
+          {signOut}
+        </AppShell.User>
+      </AppShell.Sidebar>
+      <AppShell.Main>
+        <AppShell.Topbar>
+          <b className="text-body font-medium">Painel</b>
+          <Button size="sm">Convidar pessoa</Button>
+        </AppShell.Topbar>
+        <p className="px-6 py-4 text-text-muted">Conteúdo da página.</p>
+      </AppShell.Main>
+    </AppShell.Root>
+  );
+}
+
+export const Membro: Story = {
+  name: 'Member',
+  parameters: { layout: 'fullscreen' },
+  render: () => <MemberShell />,
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('link', { name: 'Início' })).toHaveAttribute('aria-current', 'page');
+    await expect(canvas.getByRole('button', { name: 'Sair' })).toBeVisible();
+  },
+};
+
+export const Administrador: Story = {
+  name: 'Admin',
+  parameters: { layout: 'fullscreen' },
+  render: () => <AdminShell />,
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('admin')).toBeVisible();
+    await expect(canvas.getByRole('link', { name: 'Painel' })).toHaveAttribute('aria-current', 'page');
+  },
+};
+
+/** At 360 px the sidebar is a bar on top and the page does not scroll sideways (PRU-04 AC05). */
+export const Estreito: Story = {
+  name: 'PRU-04 AC05 Estreito, 360 px',
+  parameters: { layout: 'fullscreen' },
+  render: () => <AdminShell />,
+  play: async ({ canvas }) => {
+    await page.viewport(360, 800);
+    const navigation = canvas.getByRole('navigation');
+    await expect(navigation.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      canvas.getByRole('main').getBoundingClientRect().top,
+    );
+    await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(360);
+    await expect(canvas.getByRole('button', { name: 'Sair' }).getBoundingClientRect().right).toBeLessThanOrEqual(360);
+    await page.viewport(1280, 800);
+  },
+};
+
+/** Text of the shell at 4.5:1 over what is painted behind it: sidebar, current item, topbar. */
+const contrast: Story['play'] = async ({ canvas }) => {
+  await page.viewport(1280, 800);
+  for (const item of [canvas.getByRole('link', { name: /Painel/ }), canvas.getByRole('link', { name: /Convites/ }), canvas.getByRole('link', { name: 'Status do sistema' })]) {
+    await expectContrast(item, 4.5);
+  }
+  await expectContrast(canvas.getByText('Admin'), 4.5);
+  await expectContrast(canvas.getByText('3'), 4.5);
+  await expectContrast(canvas.getByText('admin'), 4.5);
+  await expectContrast(canvas.getByText('Administração'), 4.5);
+  await expectContrast(canvas.getByText('Painel', { selector: 'b' }), 4.5);
+};
+
+export const ContrasteClaro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema claro',
+  parameters: { layout: 'fullscreen' },
+  globals: { theme: 'light' },
+  render: () => <AdminShell />,
+  play: contrast,
+};
+
+export const ContrasteEscuro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema escuro',
+  parameters: { layout: 'fullscreen' },
+  globals: { theme: 'dark' },
+  render: () => <AdminShell />,
+  play: contrast,
 };

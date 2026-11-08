@@ -347,10 +347,10 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Partes `Sidebar`, `Brand`, `Section`, `NavItem` (ícone, contagem, `current`, `asChild`), `User`, `Topbar` e `Main` (`asChild`); `Root`/`Sidebar`/`NavItem`/`Main` mantêm nome e props
-- [ ] 232 px, `surface-raised`, `NavItem` de 30 px, topbar de 48 px; abaixo de `md` vira barra superior sem rolagem horizontal
-- [ ] Testes unit/browser e stories (member, admin, estreito) nos dois temas
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Partes `Sidebar`, `Brand`, `Section`, `NavItem` (ícone, contagem, `current`, `asChild`), `User`, `Topbar` e `Main` (`asChild`); `Root`/`Sidebar`/`NavItem`/`Main` mantêm nome e props
+- [x] 232 px, `surface-raised`, `NavItem` de 30 px, topbar de 48 px; abaixo de `md` vira barra superior sem rolagem horizontal
+- [x] Testes unit/browser e stories (member, admin, estreito) nos dois temas
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick
@@ -1115,7 +1115,7 @@ Proof: run ui | ✓ PRU-08 AC06
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** 2026-11-08 - user: "se vocer conseguir baixar as fontes, use local as fpntes" - na T34, `docs/design/system/prumo.md` (linha 54) passa a dizer que Geist e Geist Mono são auto-hospedadas via `@fontsource` (AD-012), não Google Fonts.
-**Dispatched:** lote 1a (Fase 1, T1–T4, Opus 5.5) from a537d9b - returned 8dc02aa; lote 1b (Fase 2, T5–T12, Opus 5.5) from 8dc02aa - 2026-11-08 - pending
+**Dispatched:** lote 1a (Fase 1, T1–T4, Opus 5.5) from a537d9b - returned 8dc02aa; lote 1b (Fase 2, T5–T12, Opus 5.5) from 8dc02aa - returned a54b165; lote 2 (Fases 3–4, T13–T22, Sonnet 5.5) from a54b165 - 2026-11-08 - pending
 **Walked:** none
 
 ---
