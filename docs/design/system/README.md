@@ -2,7 +2,7 @@
 
 > **Rumo Carreira** é o nome do produto; **Prumo**, o do design system. "Application Manager" continua sendo só o nome do repositório.
 >
-> Registrado em 2026-11-08. É a referência visual para ajustar `packages/ui`, o Storybook e as telas de `apps/web`; ainda **não** está aplicado no código.
+> Registrado em 2026-11-08 e aplicado no código na feature `prumo-design-system`: os tokens, os componentes e os arquétipos de `packages/ui`, o Storybook e as telas atuais de `apps/web` seguem este design. Ele continua sendo a referência para as telas das fases futuras.
 
 ## O que tem aqui
 
@@ -25,14 +25,14 @@ Abra [index.html](index.html) no navegador; cada carta também abre sozinha (`co
 - **Componentes existentes em `packages/ui`, redesenhados:** `Button` (+ intent `ghost`), `Alert` (+ intent `warning`), `Field` (+ textarea), `StatusBadge`, `CopyField`, `ConfirmDialog`.
 - **Arquétipos existentes, redesenhados:** `AppShell`, `AuthPage`, `ListPage` (+ cabeçalho de grupo), `DashboardPage` (grade de 12 colunas).
 - **Novos:** `Logo`, `PipelineStatus`, `SkillTag`, `Kbd`, `CommandMenu`, `EmptyState`, e os arquétipos `DetailPage` e `FormPage` previstos em [principles.md](../principles.md).
-- **Telas atuais (refazer):** `PageLogin` (`/login` e `/admin/login`), `PageInvite`, `PageAccessStates` (convite inválido, sem acesso, indisponível), `PageMemberHome`, `PageAdminDashboard`, `PageAdminInvitations`, `PageStatus`.
+- **Telas atuais (aplicadas em `apps/web`):** `PageLogin` (`/login` e `/admin/login`), `PageInvite`, `PageAccessStates` (convite inválido, sem acesso, indisponível), `PageMemberHome`, `PageAdminDashboard`, `PageAdminInvitations`, `PageStatus`.
 - **Telas futuras (referência para as fases 1 a 4):** `PageApplications`, `PageNewApplication`, `PageApplicationDetail`, `PageMasterResume`, `PageResumeVersion`, `PageSkills`, `PageHomeDashboard`, `PageInsights`, `PageCommandPalette`.
 - **Capa:** `components/Cover`.
 
 ## Decisões que este design toma
 
 - Accent verde-petróleo (`oklch(0.5 0.08 195)` no claro, `oklch(0.74 0.105 195)` no escuro) no lugar do placeholder azul-violeta; neutros levemente frios.
-- Geist e Geist Mono (Google Fonts, OFL); texto base de 13px.
+- Geist e Geist Mono (OFL); texto base de 13px. No app e no Storybook as duas são auto-hospedadas via `@fontsource` (AD-012); só as prévias deste diretório as carregam do Google Fonts.
 - Lucide como conjunto de ícones (`lucide-react` no app).
 - Oito status de candidatura, cada um com cor e ícone próprios (o anel que se preenche); a marca do Rumo Carreira usa a mesma forma.
 - Os nomes de token de `packages/ui/src/styles/tokens.css` foram mantidos; os novos tokens só acrescentam.

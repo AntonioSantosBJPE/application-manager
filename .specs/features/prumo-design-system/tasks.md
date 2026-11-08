@@ -772,9 +772,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] E2E atualizado nas frases que mudaram, com a jornada de mostrar/ocultar senha e a varredura axe e de rolagem horizontal a 360 px nos dois temas
-- [ ] `docs/design/system/README.md` e `docs/design/principles.md` passam a dizer que o Prumo está aplicado
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test` e `pnpm test:e2e` (local)
+- [x] E2E atualizado nas frases que mudaram, com a jornada de mostrar/ocultar senha e a varredura axe e de rolagem horizontal a 360 px nos dois temas
+- [x] `docs/design/system/README.md` e `docs/design/principles.md` passam a dizer que o Prumo está aplicado
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test` e `pnpm test:e2e` (local)
 
 **Tests**: e2e
 **Gate**: e2e

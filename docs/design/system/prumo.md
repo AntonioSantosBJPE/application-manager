@@ -51,7 +51,7 @@ Cada status tem cor **e** forma; a cor nunca aparece sozinha. Em linhas densas p
 
 ## Tipografia
 
-- Família `sans` (Geist) para tudo; `mono` (Geist Mono) para datas, ids, contagens, pontuações e atalhos, sempre com números tabulares. As duas vêm do Google Fonts (OFL).
+- Família `sans` (Geist) para tudo; `mono` (Geist Mono) para datas, ids, contagens, pontuações e atalhos, sempre com números tabulares. As duas são OFL e vêm auto-hospedadas via `@fontsource` no app e no Storybook, sem chamada a terceiro (AD-012); só as prévias estáticas as carregam do Google Fonts.
 - `body` (13/20) é o padrão da interface. `body-lg` (14/22) para texto longo: descrição da vaga, bullets, resumo.
 - `heading-lg` (18px) é o h1 de toda página do app; `heading-xl` (24px) só nas telas de entrada e em números de widget. `heading-md` para seção, widget e diálogo; `heading-sm` para cabeçalho de grupo.
 - `label` (12px/500) para rótulos de campo e nomes de propriedade; `caption` (12px) para metadados e chips.
@@ -83,7 +83,7 @@ Cada status tem cor **e** forma; a cor nunca aparece sozinha. Em linhas densas p
 
 - Um conjunto só: **Lucide** (ISC), traço 1.75, 16px (`am-icon`) ou 14px (`am-icon-sm`), cor herdada (`currentColor`). Nas prévias vem do pacote `lucide@0.469.0`; no app, `lucide-react`.
 - Ícone acompanha texto; ícone sozinho só em botão com `aria-label`.
-- O repositório ainda não tinha conjunto de ícones: Lucide é uma escolha deste design, a confirmar no código.
+- Lucide é uma escolha deste design, aplicada no código via `lucide-react`, por importação nomeada de cada ícone.
 
 ## Arquétipos de página
 
