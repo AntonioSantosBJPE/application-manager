@@ -590,10 +590,10 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Layout de `PageLogin`: símbolo, "Entrar", linha do produto, alertas acima dos campos, botão de largura total, rodapé; `/admin/login` com o título da administração
-- [ ] Campo de senha com mostrar/ocultar (rótulo fixo "Mostrar senha"), estado mantido após erro
-- [ ] Testes de `LoginForm` atualizados nas frases e novos para o rodapé e a senha
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Layout de `PageLogin`: símbolo, "Entrar", linha do produto, alertas acima dos campos, botão de largura total, rodapé; `/admin/login` com o título da administração
+- [x] Campo de senha com mostrar/ocultar (rótulo fixo "Mostrar senha"), estado mantido após erro
+- [x] Testes de `LoginForm` atualizados nas frases e novos para o rodapé e a senha
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit (web)
 **Gate**: quick
