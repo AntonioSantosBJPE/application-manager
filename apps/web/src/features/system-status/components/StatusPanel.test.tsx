@@ -18,7 +18,7 @@ describe('StatusPanel', () => {
   ];
 
   it.each(combinations)('shows API %s and Banco de dados %s', (api, database) => {
-    render(<StatusPanel status={{ api, database }} />);
+    render(<StatusPanel status={{ api, database, checkedAt: '2026-11-08T17:32:07.000Z' }} />);
 
     const apiRow = screen.getByRole('group', { name: 'API' });
     const databaseRow = screen.getByRole('group', { name: 'Banco de dados' });

@@ -10,20 +10,25 @@ export interface LoadSystemStatusInput {
   incomingRequestId: string | undefined;
   apiInternalUrl: string;
   logger: Logger;
+  /** The clock that stamps `checkedAt`; a test fixes it. */
+  now?: () => Date;
 }
 
 /**
  * Logs the request id and sends the same id to the api (LOG-04). Never throws: an api that
  * fails or does not answer becomes both rows unavailable, so the page still renders (SKEL-06).
+ * The status carries the instant the web read the health, since `/health` does not say (AD-009).
  */
 export async function loadSystemStatus({
   incomingRequestId,
   apiInternalUrl,
   logger,
+  now = () => new Date(),
 }: LoadSystemStatusInput): Promise<SystemStatus> {
   const requestId = resolveRequestId(incomingRequestId);
   logger.info({ requestId }, 'health check requested');
-  return toSystemStatus(await fetchHealth(apiInternalUrl, requestId));
+  const states = toSystemStatus(await fetchHealth(apiInternalUrl, requestId));
+  return { ...states, checkedAt: now().toISOString() };
 }
 
 let serverLogger: Logger | undefined;

@@ -49,6 +49,11 @@ const admin: MeResponse = {
 };
 const signedInAs = (user: MeResponse): SessionState => ({ kind: 'authenticated', user });
 const anonymous: SessionState = { kind: 'anonymous' };
+const operationalStatus = {
+  api: 'operational',
+  database: 'operational',
+  checkedAt: '2026-11-08T17:32:07.000Z',
+} as const;
 
 function sessionIs(state: SessionState) {
   vi.mocked(getSession).mockResolvedValue(state);
@@ -71,7 +76,7 @@ beforeAll(() => {
 
 // What the admin dashboard loader reads, so every test that lands on /admin gets a page to render.
 beforeEach(() => {
-  vi.mocked(getSystemStatus).mockResolvedValue({ api: 'operational', database: 'operational' });
+  vi.mocked(getSystemStatus).mockResolvedValue(operationalStatus);
   vi.mocked(pendingInvitations).mockResolvedValue({
     ok: true,
     data: { items: [], nextCursor: null, totalPending: 0 },
@@ -436,7 +441,7 @@ describe('admin dashboard', () => {
 
   it('shows the status panel, the pending total and the link to the invitations screen', async () => {
     sessionIs(signedInAs(admin));
-    vi.mocked(getSystemStatus).mockResolvedValue({ api: 'operational', database: 'operational' });
+    vi.mocked(getSystemStatus).mockResolvedValue(operationalStatus);
     vi.mocked(pendingInvitations).mockResolvedValue({ ok: true, data: page });
 
     await open('/admin');
@@ -454,7 +459,11 @@ describe('admin dashboard', () => {
 
   it('shows the panel as unavailable when the api is down', async () => {
     sessionIs(signedInAs(admin));
-    vi.mocked(getSystemStatus).mockResolvedValue({ api: 'unavailable', database: 'unavailable' });
+    vi.mocked(getSystemStatus).mockResolvedValue({
+      ...operationalStatus,
+      api: 'unavailable',
+      database: 'unavailable',
+    });
     vi.mocked(pendingInvitations).mockResolvedValue({ ok: false, status: 503 });
 
     await open('/admin');

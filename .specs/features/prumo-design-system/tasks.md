@@ -673,8 +673,8 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] `SystemStatus.checkedAt` (ISO) preenchido por `loadSystemStatus` com relógio injetável; veredito e ordem dos itens (degradado: afetado primeiro) em função pura testada
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `SystemStatus.checkedAt` (ISO) preenchido por `loadSystemStatus` com relógio injetável; veredito e ordem dos itens (degradado: afetado primeiro) em função pura testada
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit (web)
 **Gate**: quick
@@ -1115,7 +1115,7 @@ Proof: run ui | ✓ PRU-08 AC06
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** 2026-11-08 - user: "se vocer conseguir baixar as fontes, use local as fpntes" - na T34, `docs/design/system/prumo.md` (linha 54) passa a dizer que Geist e Geist Mono são auto-hospedadas via `@fontsource` (AD-012), não Google Fonts. 2026-11-08 - user: "Topbar como na carta" - dashboards abrem com a `AppShell.Topbar` de ponta a ponta dentro do `DashboardPage.Root` e o padding vai para a nova parte `DashboardPage.Content` (PRU-04 AC13 e design atualizados; correção da home num commit próprio). 2026-11-08 - user: "Nome e sobrenome" - iniciais do avatar = primeira letra do primeiro e do último nome; nome único = duas primeiras letras. 2026-11-08 - user: "Rótulo fixo" - o botão de mostrar/ocultar senha tem um único rótulo, "Mostrar senha", e o `aria-pressed` diz o estado (PRU-03 AC4 e AC8 e o `design.md` atualizados; `toggleLabel` no lugar de `showLabel`/`hideLabel`).
-**Dispatched:** lote 1a (Fase 1, T1–T4, Opus 5.5) from a537d9b - returned 8dc02aa; lote 1b (Fase 2, T5–T12, Opus 5.5) from 8dc02aa - returned a54b165; lote 2 (Fases 3–4, T13–T22, Sonnet 5.5) from a54b165 - returned 8b7b3aa; lote 3 (Fase 5, T23–T28, Sonnet 5.5) from 6d03cbd - returned cb90cb9; correção topbar e iniciais (Opus 5.5) from cb90cb9 - 2026-11-08 - pending
+**Dispatched:** lote 1a (Fase 1, T1–T4, Opus 5.5) from a537d9b - returned 8dc02aa; lote 1b (Fase 2, T5–T12, Opus 5.5) from 8dc02aa - returned a54b165; lote 2 (Fases 3–4, T13–T22, Sonnet 5.5) from a54b165 - returned 8b7b3aa; lote 3 (Fase 5, T23–T28, Sonnet 5.5) from 6d03cbd - returned cb90cb9; correção topbar e iniciais (Opus 5.5) from cb90cb9 - returned 32ba6f9; lote 4 (Fase 6, T29–T34, Opus 5.5) from 32ba6f9 - 2026-11-08 - pending
 **Walked:** none
 
 ---
