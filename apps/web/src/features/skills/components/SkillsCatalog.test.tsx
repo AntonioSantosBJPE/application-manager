@@ -33,7 +33,7 @@ describe('SkillsCatalog', () => {
     );
   });
 
-  it('SKL-38 lists the skills in the alphabetical order the api answers, with no "N vagas" and no group "Mais usadas" (AD-013)', async () => {
+  it('SKL-38 lists the skills in the alphabetical order the api answers, with no group "Mais usadas" (AD-013)', async () => {
     fakeCatalog(server, [beta, drizzle, alfa]);
     renderCatalog();
 
@@ -44,7 +44,7 @@ describe('SkillsCatalog', () => {
       'Skill Fictícia Alfa',
       'Skill Fictícia Beta',
     ]);
-    expect(screen.queryByText(/vagas/)).toBeNull();
+    // The old "no N vagas" line is superseded by APP-85: each row now counts its postings.
     expect(screen.queryByText('Mais usadas')).toBeNull();
     expect(screen.queryByRole('heading', { level: 2 })).toBeNull();
   });

@@ -1136,9 +1136,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Número em `font-mono`, alinhado como coluna; testes existentes de `SkillRow` passam sem edição de asserção
-- [ ] Teste `APP-85` (web) passa
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Número em `font-mono`, alinhado como coluna; testes existentes de `SkillRow` passam sem edição de asserção
+- [x] Teste `APP-85` (web) passa
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
