@@ -12,6 +12,8 @@ playwright-report/
 test-results/
 .vitest/
 *.tsbuildinfo
+__pycache__/
+*.py[cod]
 
 # Environment and secrets — only .env.example is committed
 .env
