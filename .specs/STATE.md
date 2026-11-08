@@ -137,5 +137,4 @@
 - **Gates at `ba12ec7`**: `pnpm build`, `typecheck`, `lint`, `pnpm test --force` (contracts 42, guardrails 32, api 74, web 401, ui 474), `pnpm test:integration` (163, twice), `pnpm test:e2e` (54).
 - **Lessons**: L-014 and L-015 recorded as candidates.
 - **Open for the author**: review the seed list `apps/api/src/modules/skills/seed/global-skills.json` (322 skills) in the PR before the merge; Verifier observations with no finding: the 60-character limit counts the text without NFC, and the web drops a search above 60 characters silently.
-- **Note for the next features**: turbo caches `@am/guardrails`, so a change outside that package does not rerun the repository pattern checks; run `pnpm test --force` in the gates.
 - **Next**: PR `feat/skills` -> `main`, merge with green CI, then `git switch main && git pull --ff-only && git branch -d feat/skills`.
