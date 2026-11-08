@@ -247,7 +247,7 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [x] `Field.PasswordControl` com `showLabel`/`hideLabel`, começa oculto, `aria-pressed`, mantém valor e cursor, `autoComplete` e `aria-*`; botão `type="button"` que não vai no envio; desabilitado junto com o campo
+- [x] `Field.PasswordControl` com `toggleLabel` (rótulo fixo nos dois estados), começa oculto, `aria-pressed`, mantém valor e cursor, `autoComplete` e `aria-*`; botão `type="button"` que não vai no envio; desabilitado junto com o campo
 - [x] Testes unit e de teclado (Tab/Enter/Space) e story "Senha" nos dois temas
 - [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
@@ -591,7 +591,7 @@ T29 → T30 → T31 → T32 → T33 → T34
 **Done when**:
 
 - [ ] Layout de `PageLogin`: símbolo, "Entrar", linha do produto, alertas acima dos campos, botão de largura total, rodapé; `/admin/login` com o título da administração
-- [ ] Campo de senha com mostrar/ocultar ("Mostrar senha"/"Ocultar senha"), estado mantido após erro
+- [ ] Campo de senha com mostrar/ocultar (rótulo fixo "Mostrar senha"), estado mantido após erro
 - [ ] Testes de `LoginForm` atualizados nas frases e novos para o rodapé e a senha
 - [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
@@ -901,7 +901,7 @@ Proof: run ui | ✓ PRU-03 AC06
 **C39** - Campo desabilitado desabilita o botão de alternar (PRU-03, AC 7)
 Proof: run ui | ✓ PRU-03 AC07
 
-**C40** - `/login`, `/admin/login` e `/invite/$token` usam o campo com "Mostrar senha" e "Ocultar senha" (PRU-03, AC 8)
+**C40** - `/login`, `/admin/login` e `/invite/$token` usam o campo com o rótulo "Mostrar senha" nos dois estados (PRU-03, AC 8)
 Proof: run web | ✓ PRU-03 AC08
 
 **C41** - Após um envio com erro o estado do botão e o valor digitado se mantêm (PRU-03, AC 9)
@@ -1114,8 +1114,8 @@ Proof: run ui | ✓ PRU-08 AC06
 
 The feature's live state, written as it happens - a compaction gives no warning.
 
-**Settled mid-build:** 2026-11-08 - user: "se vocer conseguir baixar as fontes, use local as fpntes" - na T34, `docs/design/system/prumo.md` (linha 54) passa a dizer que Geist e Geist Mono são auto-hospedadas via `@fontsource` (AD-012), não Google Fonts.
-**Dispatched:** lote 1a (Fase 1, T1–T4, Opus 5.5) from a537d9b - returned 8dc02aa; lote 1b (Fase 2, T5–T12, Opus 5.5) from 8dc02aa - returned a54b165; lote 2 (Fases 3–4, T13–T22, Sonnet 5.5) from a54b165 - 2026-11-08 - pending
+**Settled mid-build:** 2026-11-08 - user: "se vocer conseguir baixar as fontes, use local as fpntes" - na T34, `docs/design/system/prumo.md` (linha 54) passa a dizer que Geist e Geist Mono são auto-hospedadas via `@fontsource` (AD-012), não Google Fonts. 2026-11-08 - user: "Rótulo fixo" - o botão de mostrar/ocultar senha tem um único rótulo, "Mostrar senha", e o `aria-pressed` diz o estado (PRU-03 AC4 e AC8 e o `design.md` atualizados; `toggleLabel` no lugar de `showLabel`/`hideLabel`).
+**Dispatched:** lote 1a (Fase 1, T1–T4, Opus 5.5) from a537d9b - returned 8dc02aa; lote 1b (Fase 2, T5–T12, Opus 5.5) from 8dc02aa - returned a54b165; lote 2 (Fases 3–4, T13–T22, Sonnet 5.5) from a54b165 - returned 8b7b3aa
 **Walked:** none
 
 ---

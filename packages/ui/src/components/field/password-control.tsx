@@ -6,10 +6,11 @@ import { Button } from '../button';
 import { controlClassName, join, useField } from './field-context';
 
 export type FieldPasswordControlProps = Omit<ComponentProps<'input'>, 'type'> & {
-  /** Accessible name of the toggle while the password is hidden, such as "Mostrar senha". */
-  showLabel: string;
-  /** Accessible name of the toggle while the password is visible, such as "Ocultar senha". */
-  hideLabel: string;
+  /**
+   * Accessible name of the toggle, such as "Mostrar senha". It stays the same in both states:
+   * `aria-pressed` tells whether the password is visible (WAI-ARIA toggle button).
+   */
+  toggleLabel: string;
 };
 
 /** Hands the input node to the caller's ref as well as to ours. */
@@ -25,8 +26,7 @@ function assignRef<T>(ref: Ref<T> | undefined, node: T | null): void {
  * value and the caret, and leaves `autoComplete` and the `aria-*` of the field as they are.
  */
 export function FieldPasswordControl({
-  showLabel,
-  hideLabel,
+  toggleLabel,
   className,
   readOnly,
   disabled,
@@ -72,7 +72,7 @@ export function FieldPasswordControl({
         intent="ghost"
         size="sm"
         className="absolute right-0.5 w-control-sm px-0"
-        aria-label={visible ? hideLabel : showLabel}
+        aria-label={toggleLabel}
         aria-pressed={visible}
         disabled={disabled}
         onClick={toggle}

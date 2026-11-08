@@ -12,8 +12,7 @@ function PasswordField() {
         id="password"
         name="password"
         autoComplete="current-password"
-        showLabel="Mostrar senha"
-        hideLabel="Ocultar senha"
+        toggleLabel="Mostrar senha"
       />
     </Field.Root>
   );
@@ -44,7 +43,7 @@ describe('Field.PasswordControl in the browser', () => {
     expect(control.value).toBe('correct-horse-battery');
     expect([control.selectionStart, control.selectionEnd]).toEqual([7, 7]);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Ocultar senha' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Mostrar senha', pressed: true }));
 
     expect(control.type).toBe('password');
     expect([control.selectionStart, control.selectionEnd]).toEqual([7, 7]);

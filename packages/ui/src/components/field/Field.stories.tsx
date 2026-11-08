@@ -200,8 +200,7 @@ const passwordField: Story['render'] = () => (
       id="field-password"
       name="password"
       autoComplete="current-password"
-      showLabel="Mostrar senha"
-      hideLabel="Ocultar senha"
+      toggleLabel="Mostrar senha"
     />
     <Field.Hint>Use de 12 a 128 caracteres.</Field.Hint>
   </Field.Root>
@@ -221,7 +220,7 @@ const showAndHide: Story['play'] = async ({ canvas }) => {
   await expect(control).toHaveAttribute('type', 'text');
   await expect(control).toHaveValue('correct-horse-battery');
 
-  const toggle = canvas.getByRole('button', { name: 'Ocultar senha' });
+  const toggle = canvas.getByRole('button', { name: 'Mostrar senha', pressed: true });
   await expect(toggle).toHaveAttribute('aria-pressed', 'true');
   await settle(toggle);
   await expectContrast(toggle.querySelector('svg')!, 3);

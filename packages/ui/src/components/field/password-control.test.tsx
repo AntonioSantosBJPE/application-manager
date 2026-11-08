@@ -4,7 +4,7 @@ import type { FormEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { Field } from './field';
 
-const labels = { showLabel: 'Mostrar senha', hideLabel: 'Ocultar senha' };
+const labels = { toggleLabel: 'Mostrar senha' };
 
 function PasswordField({
   invalid = false,
@@ -70,7 +70,7 @@ describe('Field.PasswordControl', () => {
     expect(control).toHaveAttribute('type', 'text');
     expect(control).toHaveValue('correct-horse-battery');
 
-    await user.click(screen.getByRole('button', { name: 'Ocultar senha' }));
+    await user.click(screen.getByRole('button', { name: 'Mostrar senha', pressed: true }));
 
     expect(control).toHaveAttribute('type', 'password');
     expect(control).toHaveValue('correct-horse-battery');
@@ -87,7 +87,8 @@ describe('Field.PasswordControl', () => {
 
     await user.click(toggle);
 
-    expect(toggle).toHaveAccessibleName('Ocultar senha');
+    // The label stays the same in both states; aria-pressed carries the state (PRU-03 AC4).
+    expect(toggle).toHaveAccessibleName('Mostrar senha');
     expect(toggle).toHaveAttribute('aria-pressed', 'true');
     expect(toggle.querySelector('svg')).toHaveClass('lucide-eye-off');
   });
@@ -110,7 +111,7 @@ describe('Field.PasswordControl', () => {
 
     // Submitting with the toggle focused and the password visible...
     await user.click(screen.getByRole('button', { name: 'Mostrar senha' }));
-    const toggle = screen.getByRole('button', { name: 'Ocultar senha' });
+    const toggle = screen.getByRole('button', { name: 'Mostrar senha', pressed: true });
     expect(toggle).toHaveFocus();
     (toggle as HTMLButtonElement).form?.requestSubmit();
     // ...and from the control, with Enter, the toggle not focused.

@@ -120,8 +120,7 @@ function EntrarPage() {
           <Field.Label htmlFor="entrar-senha">Senha</Field.Label>
           <Field.PasswordControl
             id="entrar-senha"
-            showLabel="Mostrar senha"
-            hideLabel="Ocultar senha"
+            toggleLabel="Mostrar senha"
             defaultValue="senha-de-exemplo"
           />
         </Field.Root>
@@ -153,7 +152,7 @@ function ConvitePage() {
         </Field.Root>
         <Field.Root>
           <Field.Label htmlFor="convite-senha">Senha</Field.Label>
-          <Field.PasswordControl id="convite-senha" showLabel="Mostrar senha" hideLabel="Ocultar senha" />
+          <Field.PasswordControl id="convite-senha" toggleLabel="Mostrar senha" />
           <Field.Hint>Use de 12 a 128 caracteres.</Field.Hint>
         </Field.Root>
         <Button type="submit">Criar conta</Button>

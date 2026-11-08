@@ -125,11 +125,11 @@
 1. The system SHALL offer `Field.PasswordControl`, a `Field` part that renders the control and a toggle button at its right end.  <!-- ubiquitous -->
 2. The `Field.PasswordControl` SHALL start with the value hidden (`type="password"`).  <!-- ubiquitous -->
 3. WHEN the person activates the toggle THEN the system SHALL switch the control between `type="password"` and `type="text"` and keep the typed value and the caret position.  <!-- event-driven -->
-4. The toggle SHALL be a `button` of `type="button"` with `aria-pressed` reflecting whether the value is visible, with an `aria-label` and icons (`eye`, `eye-off`) supplied by the caller.  <!-- ubiquitous -->
+4. The toggle SHALL be a `button` of `type="button"` with `aria-pressed` reflecting whether the value is visible, with one `aria-label` supplied by the caller that stays the same in both states, and icons `eye` and `eye-off`.  <!-- ubiquitous --> <!-- changed 2026-11-08 - user: "Rótulo fixo" (WAI-ARIA toggle button: the label does not change with aria-pressed) -->
 5. WHEN the person submits the form with the toggle focused or not THEN the system SHALL NOT send the toggle as a field.  <!-- event-driven -->
 6. WHILE the value is visible THE system SHALL keep `autoComplete`, `aria-describedby` and `aria-invalid` of the control unchanged.  <!-- state-driven -->
 7. WHERE the field is `disabled` THE system SHALL disable the toggle as well.  <!-- optional-feature -->
-8. The system SHALL use `Field.PasswordControl` in the password field of `/login`, `/admin/login` and `/invite/$token`, with the labels "Mostrar senha" and "Ocultar senha".  <!-- ubiquitous -->
+8. The system SHALL use `Field.PasswordControl` in the password field of `/login`, `/admin/login` and `/invite/$token`, with the label "Mostrar senha" in both states.  <!-- ubiquitous --> <!-- changed 2026-11-08 - user: "Rótulo fixo" -->
 9. IF a submit fails THEN the system SHALL keep the toggle state and the typed value as the person left them.  <!-- unwanted-behavior -->
 10. The toggle SHALL be reachable by `Tab` right after the control and operable with `Enter` and `Space`, with the 2px focus ring.  <!-- ubiquitous -->
 

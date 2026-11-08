@@ -78,7 +78,7 @@ Todos em `packages/ui/src/components/<nome>/` ou `layouts/<nome>/` (arquivo, tes
 - **Interfaces** (só o que muda):
   - `Button`: `intent: 'primary' | 'secondary' | 'ghost' | 'danger'`; `size: 'default' | 'sm'` (`h-control-md` / `h-control-sm`).
   - `Alert`: `intent: 'danger' | 'info' | 'warning'`; ícone por intent (`CircleAlert`, `Info`, `Clock`); `action?: ReactNode` à direita.
-  - `Field.Textarea`; `Field.PasswordControl` (props de `input` exceto `type`; `showLabel: string`, `hideLabel: string`); `Field.Error` ganha o ícone.
+  - `Field.Textarea`; `Field.PasswordControl` (props de `input` exceto `type`; `toggleLabel: string`); `Field.Error` ganha o ícone.
   - `StatusBadge`: ponto antes do texto, fundo transparente.
   - `CopyField`: ícone `Check` quando `copied`.
   - `ConfirmDialog`: superfície `surface-overlay`, véu `backdrop`, `radius-lg`, `shadow-overlay`, `max-w-110` (440 px).
@@ -87,7 +87,7 @@ Todos em `packages/ui/src/components/<nome>/` ou `layouts/<nome>/` (arquivo, tes
 ### Field.PasswordControl
 
 - **Purpose**: Campo de senha com ação de mostrar e ocultar.
-- **Interfaces**: `<Field.PasswordControl showLabel="Mostrar senha" hideLabel="Ocultar senha" … />`. Estado interno `visible` (começa `false`); renderiza o `input` (tipo `password`/`text`, ids e `aria-*` do contexto) e um `button type="button"` com `aria-pressed={visible}`, `aria-label` = `visible ? hideLabel : showLabel`, ícone `Eye`/`EyeOff`. Trocar o tipo mantém o `value` e a posição do cursor (o React reaproveita o mesmo nó `input`).
+- **Interfaces**: `<Field.PasswordControl toggleLabel="Mostrar senha" … />`. Estado interno `visible` (começa `false`); renderiza o `input` (tipo `password`/`text`, ids e `aria-*` do contexto) e um `button type="button"` com `aria-pressed={visible}`, `aria-label` = `toggleLabel`, fixo nos dois estados (padrão de botão de alternância do WAI-ARIA: o rótulo não muda quando o `aria-pressed` muda; decidido em 2026-11-08, user: "Rótulo fixo"), ícone `Eye`/`EyeOff`. Trocar o tipo mantém o `value` e a posição do cursor (o React reaproveita o mesmo nó `input`).
 - **Dependencies**: `useField`, `Button` `ghost` `sm`, `lucide-react`.
 - **Reuses**: `FieldControl` (extrai o `className` do controle).
 
