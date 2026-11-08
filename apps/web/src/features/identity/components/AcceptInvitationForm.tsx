@@ -11,8 +11,9 @@ import { Alert, AuthPage, Button, Field } from '@am/ui';
 import { useForm } from '@tanstack/react-form';
 import { useId, useState } from 'react';
 import type { Outcome } from '../api/server-functions';
+import { formatDate } from '../model/dates';
 import { MESSAGES, problemMessage } from '../model/messages';
-import { UnavailableScreen } from './AccessScreens';
+import { InvalidInvitationScreen, UnavailableScreen } from './AccessScreens';
 
 export interface AcceptInvitationFormProps {
   /** What `GET /invitations/:token` answered when the page opened. */
@@ -20,18 +21,6 @@ export interface AcceptInvitationFormProps {
   accept: (input: AcceptInvitationRequest) => Promise<Outcome<undefined>>;
   /** Runs once the account exists and the session started, so the route opens the home (UI-15). */
   onSuccess: () => void;
-}
-
-/** The only thing a dead link shows: the message, and no form to fill in (UI-16). */
-function InvalidInvitation() {
-  return (
-    <AuthPage.Root>
-      <AuthPage.Header>
-        <h1 className="text-lg font-semibold">Convite</h1>
-      </AuthPage.Header>
-      <Alert intent="danger">{MESSAGES.invitationInvalid}</Alert>
-    </AuthPage.Root>
-  );
 }
 
 /**
@@ -70,14 +59,17 @@ export function AcceptInvitationForm({ invitation, accept, onSuccess }: AcceptIn
   });
 
   if (!invitation.ok) {
-    return invitation.status === 410 ? <InvalidInvitation /> : <UnavailableScreen />;
+    return invitation.status === 410 ? <InvalidInvitationScreen /> : <UnavailableScreen />;
   }
-  if (expired) return <InvalidInvitation />;
+  if (expired) return <InvalidInvitationScreen />;
+
+  const expiresOn = formatDate(invitation.data.expiresAt);
 
   return (
     <AuthPage.Root>
       <AuthPage.Header>
-        <h1 className="text-lg font-semibold">Criar conta</h1>
+        <h1 className="text-heading-xl">Criar conta</h1>
+        <p className="text-text-muted">Você recebeu um convite para o Rumo Carreira.</p>
       </AuthPage.Header>
       <AuthPage.Form
         noValidate
@@ -127,9 +119,9 @@ export function AcceptInvitationForm({ invitation, accept, onSuccess }: AcceptIn
           {(field) => (
             <Field.Root invalid={field.state.meta.errors.length > 0}>
               <Field.Label htmlFor={`${id}-password`}>Senha</Field.Label>
-              <Field.Control
+              <Field.PasswordControl
                 id={`${id}-password`}
-                type="password"
+                toggleLabel="Mostrar senha"
                 autoComplete="new-password"
                 value={field.state.value}
                 onBlur={field.handleBlur}
@@ -148,6 +140,11 @@ export function AcceptInvitationForm({ invitation, accept, onSuccess }: AcceptIn
           )}
         </form.Subscribe>
       </AuthPage.Form>
+      {expiresOn === undefined ? null : (
+        <AuthPage.Footer>
+          O convite vale até <span className="font-mono">{expiresOn}</span>.
+        </AuthPage.Footer>
+      )}
     </AuthPage.Root>
   );
 }

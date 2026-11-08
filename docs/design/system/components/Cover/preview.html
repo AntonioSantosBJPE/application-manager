@@ -1,0 +1,52 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="pt-BR"><head><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../bundle.css"><meta charset="utf-8"><title>Prumo</title>
+<style>
+html,body{margin:0;height:288px;background:var(--surface);overflow:hidden}
+.cover{position:relative;width:960px;height:288px}
+svg{position:absolute;inset:0}
+.teal{fill:var(--accent);rx:var(--radius-md)}
+.ink{fill:var(--text);rx:var(--radius-md)}
+.subtle{fill:var(--accent-subtle);rx:var(--radius-md)}
+.amber{fill:var(--status-interviewing);rx:var(--radius-sm)}
+.raised{fill:var(--border-strong);rx:var(--radius-md)}
+.cut-s{stroke:var(--on-accent)} .cut-f{fill:var(--on-accent)}
+.acc-s{stroke:var(--accent-text)} .acc-f{fill:var(--accent-text)}
+.ink-s{stroke:var(--surface)} .ink-f{fill:var(--surface)}
+.name{position:absolute;left:32px;bottom:32px;max-width:440px;font-family:var(--font-sans);color:var(--text)}
+.name h1{margin:0;font-size:120px;line-height:.9;font-weight:600;letter-spacing:-0.03em}
+.name p{margin:16px 0 0;font-size:14px;line-height:20px;color:var(--text-muted)}
+</style></head>
+<body><div class="cover">
+<svg viewBox="0 0 960 288" width="960" height="288" aria-hidden="true">
+<!--
+blocks: accent 280x152 (slab, bleeds top) · text 184x120 (bleeds top/right) · accent-subtle 184x136 (bleeds bottom/right) · border-strong 280x64 · status-interviewing 48x24 (signal)
+arrangement: flush modular grid right of x=480, 8px (space-2) gutters, like rows of a dense list
+pattern: literal motif — the pipeline status icon, a ring that fills (dashed → empty → half → three-quarters → full) as an application advances; chosen because the system's one shape that is its own is that progression
+scales: rings r16 stroke 3 at a 48px (space-12) pitch; radius-md on blocks, radius-sm on the signal
+-->
+<rect class="teal" x="480" y="-8" width="280" height="152"/>
+<rect class="raised" x="480" y="152" width="280" height="64"/>
+<rect class="amber" x="480" y="224" width="48" height="24"/>
+<rect class="ink" x="768" y="-8" width="200" height="128"/>
+<rect class="subtle" x="768" y="128" width="200" height="168"/>
+<circle class="cut-s" cx="528" cy="48" r="16" fill="none" stroke-width="3" stroke-dasharray="4 4"/>
+<circle class="cut-s" cx="576" cy="48" r="16" fill="none" stroke-width="3"/>
+<circle class="cut-s" cx="624" cy="48" r="16" fill="none" stroke-width="3"/><path class="cut-f" d="M624 48 L624 38 A10 10 0 0 1 624.00 58.00 Z"/>
+<circle class="cut-s" cx="672" cy="48" r="16" fill="none" stroke-width="3"/><path class="cut-f" d="M672 48 L672 38 A10 10 0 1 1 662.00 48.00 Z"/>
+<circle class="cut-s" cx="720" cy="48" r="16" fill="none" stroke-width="3"/><circle class="cut-f" cx="720" cy="48" r="10"/>
+<circle class="cut-s" cx="528" cy="104" r="16" fill="none" stroke-width="3"/><circle class="cut-f" cx="528" cy="104" r="10"/>
+<circle class="cut-s" cx="576" cy="104" r="16" fill="none" stroke-width="3"/><path class="cut-f" d="M576 104 L576 94 A10 10 0 1 1 566.00 104.00 Z"/>
+<circle class="cut-s" cx="624" cy="104" r="16" fill="none" stroke-width="3"/><path class="cut-f" d="M624 104 L624 94 A10 10 0 0 1 624.00 114.00 Z"/>
+<circle class="cut-s" cx="672" cy="104" r="16" fill="none" stroke-width="3"/>
+<circle class="cut-s" cx="720" cy="104" r="16" fill="none" stroke-width="3" stroke-dasharray="4 4"/>
+<circle class="acc-s" cx="808" cy="216" r="16" fill="none" stroke-width="3"/><path class="acc-f" d="M808 216 L808 206 A10 10 0 0 1 818.00 216.00 Z"/>
+<circle class="acc-s" cx="856" cy="216" r="16" fill="none" stroke-width="3"/><path class="acc-f" d="M856 216 L856 206 A10 10 0 0 1 856.00 226.00 Z"/>
+<circle class="acc-s" cx="904" cy="216" r="16" fill="none" stroke-width="3"/><path class="acc-f" d="M904 216 L904 206 A10 10 0 1 1 894.00 216.00 Z"/>
+<circle class="ink-s" cx="808" cy="56" r="16" fill="none" stroke-width="3" stroke-dasharray="2 4"/>
+<circle class="ink-s" cx="856" cy="56" r="16" fill="none" stroke-width="3"/>
+<line class="ink-s" x1="892" y1="68" x2="916" y2="44" stroke-width="3"/>
+<circle class="ink-s" cx="904" cy="56" r="16" fill="none" stroke-width="3"/>
+</svg>
+<div class="name"><h1>Prumo</h1><p>O design system do Rumo Carreira: denso, sóbrio e feito para o teclado.</p></div>
+</div></body></html>

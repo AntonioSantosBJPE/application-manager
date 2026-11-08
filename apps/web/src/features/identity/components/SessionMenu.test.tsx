@@ -26,6 +26,32 @@ function renderMenu(onSignedOut = vi.fn()) {
 }
 
 describe('SessionMenu', () => {
+  it('PRU-06 AC13 shows the initials, the name and Sair at the bottom of the sidebar', () => {
+    renderMenu();
+
+    expect(screen.getByText('AS')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByText('Ana Souza')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sair' })).toBeEnabled();
+  });
+
+  it('PRU-06 AC13 draws Sair as the log-out icon, named by its aria-label', () => {
+    renderMenu();
+
+    const leave = screen.getByRole('button', { name: 'Sair' });
+    expect(leave.textContent).toBe('');
+    expect(leave).toHaveAttribute('aria-label', 'Sair');
+    expect(leave.querySelectorAll('svg')).toHaveLength(1);
+    expect(leave.querySelector('svg')).toHaveClass('lucide-log-out');
+    expect(leave).toHaveClass('bg-transparent', 'h-control-sm', 'w-control-sm');
+  });
+
+  it('draws no initials when the session has no name', () => {
+    render(<SessionMenu user={{ ...user, name: '' }} signOut={() => logout(context)} onSignedOut={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: 'Sair' })).toBeInTheDocument();
+    expect(screen.queryByText(/^[A-Z]{1,2}$/)).toBeNull();
+  });
+
   it('shows the name of the user and the Sair action', () => {
     renderMenu();
 

@@ -1,5 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { expect } from 'storybook/test';
+import { CloudOff, Link2Off } from 'lucide-react';
+import { expect, fn, userEvent } from 'storybook/test';
+import { expectContrast, settle } from '../../testing/contrast';
+import { Button } from '../button';
 import { Alert } from './alert';
 
 const meta = {
@@ -18,6 +21,39 @@ export const Perigo: Story = {
 export const Informacao: Story = {
   name: 'Informação',
   args: { intent: 'info', children: 'Este link aparece uma única vez.' },
+};
+
+export const Aviso: Story = {
+  name: 'Aviso',
+  args: { intent: 'warning', children: 'Sem atividade há 21 dias.' },
+};
+
+const onMark = fn();
+
+/** A warning with its action at the right end; the click reaches the caller (PRU-02 AC08). */
+export const ComAcao: Story = {
+  name: 'PRU-02 AC08 Aviso com ação',
+  args: {
+    intent: 'warning',
+    children: 'Sem atividade há 21 dias.',
+    action: (
+      <Button intent="secondary" size="sm" onClick={onMark}>
+        Marcar sem retorno
+      </Button>
+    ),
+  },
+  decorators: [
+    (Story) => (
+      <div style={{ width: 480 }}>
+        <Story />
+      </div>
+    ),
+  ],
+  play: async ({ canvas }) => {
+    onMark.mockClear();
+    await userEvent.click(canvas.getByRole('button', { name: 'Marcar sem retorno' }));
+    await expect(onMark).toHaveBeenCalledTimes(1);
+  },
 };
 
 /** A CSS color as the browser resolves it, to compare with a computed style. */
@@ -40,7 +76,7 @@ export const TemaClaro: Story = {
 
     await expect(document.documentElement).toHaveAttribute('data-theme', 'light');
     // The light value of --color-danger in tokens.css.
-    await expect(getComputedStyle(alert).color).toBe(resolvedColor('oklch(0.5 0.17 27)'));
+    await expect(getComputedStyle(alert).color).toBe(resolvedColor('oklch(0.52 0.17 27)'));
   },
 };
 
@@ -54,6 +90,83 @@ export const TemaEscuro: Story = {
 
     await expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
     // The dark value of --color-danger in tokens.css.
-    await expect(getComputedStyle(alert).color).toBe(resolvedColor('oklch(0.75 0.14 27)'));
+    await expect(getComputedStyle(alert).color).toBe(resolvedColor('oklch(0.72 0.15 25)'));
   },
+};
+
+const threeIntents: Story['render'] = () => (
+  <div className="flex w-96 flex-col gap-3 bg-surface p-4">
+    <Alert intent="danger">E-mail ou senha incorretos.</Alert>
+    <Alert intent="info">Sua sessão expirou. Entre de novo para continuar.</Alert>
+    <Alert intent="warning">Sem atividade há 21 dias.</Alert>
+  </div>
+);
+
+/** The message reaches 4.5:1 on its fill and the icon 3:1, for every intent (PRU-08 AC03). */
+const contrast: Story['play'] = async ({ canvasElement }) => {
+  const alerts = [...canvasElement.querySelectorAll('[role="alert"], [role="status"]')];
+  await expect(alerts).toHaveLength(3);
+  for (const alert of alerts) {
+    await settle(alert);
+    const message = alert.children[1]!;
+    const icon = alert.querySelector('svg')!;
+    await expectContrast(message, 4.5);
+    await expectContrast(icon, 3);
+  }
+};
+
+export const ContrasteClaro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema claro',
+  args: { intent: 'info' },
+  globals: { theme: 'light' },
+  render: threeIntents,
+  play: contrast,
+};
+
+export const ContrasteEscuro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema escuro',
+  args: { intent: 'info' },
+  globals: { theme: 'dark' },
+  render: threeIntents,
+  play: contrast,
+};
+
+const ownIcons: Story['render'] = () => (
+  <div className="flex w-96 flex-col gap-3 bg-surface p-4">
+    <Alert intent="danger" icon={Link2Off}>
+      Este convite expirou ou já foi usado.
+    </Alert>
+    <Alert intent="danger" icon={CloudOff}>
+      O serviço não respondeu.
+    </Alert>
+  </div>
+);
+
+/** An icon of the caller's in place of the intent's own; it keeps the intent's color at 3:1. */
+const ownIconsPlay: Story['play'] = async ({ canvasElement }) => {
+  const alerts = [...canvasElement.querySelectorAll('[role="alert"]')];
+  await expect(alerts).toHaveLength(2);
+  await expect(alerts[0]!.querySelector('svg')).toHaveClass('lucide-link-2-off');
+  await expect(alerts[1]!.querySelector('svg')).toHaveClass('lucide-cloud-off');
+  for (const alert of alerts) {
+    await settle(alert);
+    await expectContrast(alert.children[1]!, 4.5);
+    await expectContrast(alert.querySelector('svg')!, 3);
+  }
+};
+
+export const IconeProprioClaro: Story = {
+  name: 'Ícone próprio, tema claro',
+  args: { intent: 'danger' },
+  globals: { theme: 'light' },
+  render: ownIcons,
+  play: ownIconsPlay,
+};
+
+export const IconeProprioEscuro: Story = {
+  name: 'Ícone próprio, tema escuro',
+  args: { intent: 'danger' },
+  globals: { theme: 'dark' },
+  render: ownIcons,
+  play: ownIconsPlay,
 };

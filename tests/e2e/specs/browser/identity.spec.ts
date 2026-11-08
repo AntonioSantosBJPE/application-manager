@@ -22,9 +22,9 @@ import {
  */
 
 const WRONG_CREDENTIALS = 'E-mail ou senha incorretos.';
-const EXPIRED_NOTICE = 'Sua sessão expirou. Entre novamente.';
-const MESSAGES_UNAVAILABLE = 'Serviço indisponível. Tente novamente em instantes.';
-const INVALID_INVITATION = 'Este convite não é mais válido. Peça um novo ao administrador.';
+const EXPIRED_NOTICE = 'Sua sessão expirou. Entre de novo para continuar.';
+const GUARD_UNAVAILABLE = 'O serviço não respondeu. Seus dados estão seguros; tente de novo em instantes.';
+const INVALID_INVITATION = 'Este convite expirou ou já foi usado. Peça um novo link a quem te convidou.';
 
 const adminEmail = fixtureEmail('admin');
 const adminPassword = fixturePassword('admin');
@@ -38,7 +38,7 @@ function memberEmail(): string {
 async function signIn(page: Page, area: 'member' | 'admin', email: string, password: string): Promise<void> {
   await page.goto(area === 'admin' ? '/admin/login' : '/login');
   await page.getByLabel('E-mail').fill(email);
-  await page.getByLabel('Senha').fill(password);
+  await page.getByLabel('Senha', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Entrar' }).click();
   await page.waitForURL(area === 'admin' ? '**/admin' : (url) => !url.pathname.startsWith('/login'));
 }
@@ -78,7 +78,7 @@ function jsonLogs(service: 'api' | 'web'): Record<string, unknown>[] {
 async function inviteFromScreen(page: Page, email: string): Promise<string> {
   await page.goto('/admin/invitations');
   await page.getByLabel('E-mail a convidar').fill(email);
-  await page.getByRole('button', { name: 'Convidar' }).click();
+  await page.getByRole('button', { name: 'Convidar', exact: true }).click();
   const link = page.getByLabel('Link do convite');
   await expect(link).toBeVisible();
   return link.inputValue();
@@ -116,7 +116,7 @@ async function createMemberIn(browser: Browser, name: string): Promise<MemberAcc
     await page.goto(inviteUrl);
     await expect(page.getByLabel('E-mail')).toHaveValue(email);
     await page.getByLabel('Nome').fill(name);
-    await page.getByLabel('Senha').fill(memberPassword);
+    await page.getByLabel('Senha', { exact: true }).fill(memberPassword);
     await page.getByRole('button', { name: 'Criar conta' }).click();
     await page.waitForURL((url) => url.pathname === '/');
     return { context, page, email, name };
@@ -150,12 +150,12 @@ test.describe('identity', () => {
       await invitedPage.goto(inviteUrl);
       await expect(invitedPage.getByLabel('E-mail')).toHaveValue(email);
       await invitedPage.getByLabel('Nome').fill('Pessoa Convidada');
-      await invitedPage.getByLabel('Senha').fill(memberPassword);
+      await invitedPage.getByLabel('Senha', { exact: true }).fill(memberPassword);
       await invitedPage.getByRole('button', { name: 'Criar conta' }).click();
 
       await invitedPage.waitForURL((url) => url.pathname === '/');
       await expect(invitedPage.getByRole('heading', { name: 'Início' })).toBeVisible();
-      await expect(invitedPage.getByText('Pessoa Convidada')).toBeVisible();
+      await expect(invitedPage.getByText('Pessoa Convidada', { exact: true })).toBeVisible();
       // The account exists once, with the role of every invited person (INV-07).
       expect(psql(`select role from identity.users where email = '${email}'`)).toBe('member');
       expect(psql(`select count(*) from identity.users where email = '${email}'`)).toBe('1');
@@ -170,14 +170,14 @@ test.describe('identity', () => {
     const member = await createMemberIn(browser, 'Pessoa do Member');
     try {
       const { page, email } = member;
-      await expect(page.getByText('Pessoa do Member')).toBeVisible();
+      await expect(page.getByText('Pessoa do Member', { exact: true })).toBeVisible();
       await page.getByRole('button', { name: 'Sair' }).click();
       await page.waitForURL('**/login');
 
       // The route asked for survives the login, and it is not the default home: `/status` is what opens.
       await page.goto('/login?redirect=%2Fstatus');
       await page.getByLabel('E-mail').fill(email);
-      await page.getByLabel('Senha').fill(memberPassword);
+      await page.getByLabel('Senha', { exact: true }).fill(memberPassword);
       await page.getByRole('button', { name: 'Entrar' }).click();
       await page.waitForURL('**/status');
       await expect(page.getByRole('group', { name: 'API' })).toBeVisible();
@@ -190,11 +190,11 @@ test.describe('identity', () => {
       await page.goto('/');
       await page.waitForURL('**/login?redirect=%2F');
       await page.getByLabel('E-mail').fill(email);
-      await page.getByLabel('Senha').fill(memberPassword);
+      await page.getByLabel('Senha', { exact: true }).fill(memberPassword);
       await page.getByRole('button', { name: 'Entrar' }).click();
       await page.waitForURL((url) => url.pathname === '/');
       await expect(page.getByRole('heading', { name: 'Início' })).toBeVisible();
-      await expect(page.getByText('Pessoa do Member')).toBeVisible();
+      await expect(page.getByText('Pessoa do Member', { exact: true })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Sair' })).toBeVisible();
     } finally {
       await member.context.close();
@@ -209,7 +209,7 @@ test.describe('identity', () => {
       await page.goto('/admin/invitations');
       await page.waitForURL('**/admin/login?redirect=%2Fadmin%2Finvitations');
       await page.getByLabel('E-mail').fill(adminEmail);
-      await page.getByLabel('Senha').fill(adminPassword);
+      await page.getByLabel('Senha', { exact: true }).fill(adminPassword);
       await page.getByRole('button', { name: 'Entrar' }).click();
 
       await page.waitForURL('**/admin/invitations');
@@ -249,7 +249,7 @@ test.describe('identity', () => {
         endSession();
 
         await page.getByLabel('E-mail a convidar').fill(memberEmail());
-        await page.getByRole('button', { name: 'Convidar' }).click();
+        await page.getByRole('button', { name: 'Convidar', exact: true }).click();
 
         await page.waitForURL('**/admin/login?redirect=*reason=expired');
         await expect(page.getByText(EXPIRED_NOTICE), label).toBeVisible();
@@ -269,7 +269,7 @@ test.describe('identity', () => {
     const member = await createMemberIn(browser, 'Pessoa Sem Acesso');
     try {
       await member.page.goto('/admin');
-      await expect(member.page.getByRole('heading', { name: 'Você não tem acesso a esta área.' })).toBeVisible();
+      await expect(member.page.getByRole('heading', { name: 'Sem acesso' })).toBeVisible();
       await expect(member.page.getByRole('link', { name: 'Voltar para o início' })).toBeVisible();
       await expect(member.page.getByRole('heading', { name: 'Administração' })).toHaveCount(0);
       await expect(member.page.getByRole('navigation', { name: 'Navegação da administração' })).toHaveCount(0);
@@ -357,7 +357,7 @@ test.describe('identity', () => {
       const page = await context.newPage();
       await page.goto('/admin/login');
       await page.getByLabel('E-mail').fill(adminEmail);
-      await page.getByLabel('Senha').fill(adminPassword);
+      await page.getByLabel('Senha', { exact: true }).fill(adminPassword);
       const [answer] = await Promise.all([
         page.waitForResponse((response) => response.request().method() === 'POST' && response.url().includes('_serverFn')),
         page.getByRole('button', { name: 'Entrar' }).click(),
@@ -452,7 +452,7 @@ test.describe('identity', () => {
         page.waitForRequest((candidate) => candidate.url().includes('_serverFn') && candidate.method() === 'POST'),
         (async () => {
           await page.getByLabel('E-mail').fill(adminEmail);
-          await page.getByLabel('Senha').fill('a-wrong-password-to-fail');
+          await page.getByLabel('Senha', { exact: true }).fill('a-wrong-password-to-fail');
           await page.getByRole('button', { name: 'Entrar' }).click();
           await expect(page.getByRole('alert')).toHaveText(WRONG_CREDENTIALS);
         })(),
@@ -561,7 +561,9 @@ test.describe('identity', () => {
       const summary = page.getByRole('group', { name: 'Convites pendentes' });
       // Read as a whole, not as a substring: a screen showing "12" for one pending invitation fails here.
       await expect(summary.getByText('1', { exact: true })).toBeVisible();
-      await expect(summary).toHaveText(/^Convites pendentes\s*1\s*Ver convites$/);
+      await expect(summary).toHaveText(
+        /^Convites pendentes\s*Ver convites\s*1\s*O mais antigo expira em 7 d\.\s*Convidar pessoa$/,
+      );
       await page.getByRole('link', { name: 'Ver convites' }).click();
       await page.waitForURL('**/admin/invitations');
       await expect(page.getByRole('heading', { name: 'Convites' })).toBeVisible();
@@ -598,7 +600,7 @@ test.describe('identity', () => {
       const attemptWith = async (email: string): Promise<void> => {
         await anonymousPage.goto('/login');
         await anonymousPage.getByLabel('E-mail').fill(email);
-        await anonymousPage.getByLabel('Senha').fill(fixturePassword('wrong'));
+        await anonymousPage.getByLabel('Senha', { exact: true }).fill(fixturePassword('wrong'));
         await anonymousPage.getByRole('button', { name: 'Entrar' }).click();
       };
       for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -645,7 +647,7 @@ test.describe('identity', () => {
           page: member.page,
           path: '/admin',
           name: 'no access',
-          marker: () => member.page.getByRole('heading', { name: 'Você não tem acesso a esta área.' }),
+          marker: () => member.page.getByRole('heading', { name: 'Sem acesso' }),
         },
         {
           page: adminPage,
@@ -667,7 +669,7 @@ test.describe('identity', () => {
           open: async () => {
             await adminPage.goto('/admin/invitations');
             await adminPage.getByLabel('E-mail a convidar').fill(memberEmail());
-            await adminPage.getByRole('button', { name: 'Convidar' }).click();
+            await adminPage.getByRole('button', { name: 'Convidar', exact: true }).click();
           },
           marker: () => adminPage.getByLabel('Link do convite'),
         },
@@ -737,7 +739,7 @@ test.describe('identity', () => {
             await anonymousPage.setViewportSize({ width, height: 900 });
             await anonymousPage.emulateMedia({ colorScheme: scheme });
             await anonymousPage.goto('/');
-            await expect(anonymousPage.getByText(MESSAGES_UNAVAILABLE), label).toBeVisible();
+            await expect(anonymousPage.getByText(GUARD_UNAVAILABLE), label).toBeVisible();
             await expect(anonymousPage.getByRole('main'), label).toBeVisible();
             await scan(anonymousPage, label);
           }
@@ -781,7 +783,7 @@ test.describe('identity', () => {
           await page.emulateMedia({ colorScheme: scheme });
           await page.goto('/admin/invitations');
           await page.getByLabel('E-mail a convidar').fill(email);
-          await page.getByRole('button', { name: 'Convidar' }).click();
+          await page.getByRole('button', { name: 'Convidar', exact: true }).click();
           await expect(page.getByLabel('Link do convite'), label).toBeVisible();
 
           await insideViewport(page.getByRole('button', { name: 'Copiar' }), `${label} Copiar`);
@@ -837,7 +839,7 @@ test.describe('identity', () => {
       const refusedAt = async (door: '/login' | '/admin/login'): Promise<void> => {
         await attemptsPage.goto(door);
         await attemptsPage.getByLabel('E-mail').fill(memberEmail());
-        await attemptsPage.getByLabel('Senha').fill(wrongAttemptPassword);
+        await attemptsPage.getByLabel('Senha', { exact: true }).fill(wrongAttemptPassword);
         await attemptsPage.getByRole('button', { name: 'Entrar' }).click();
         await expect(attemptsPage.getByRole('alert'), door).toHaveText(WRONG_CREDENTIALS);
       };
@@ -853,7 +855,7 @@ test.describe('identity', () => {
       const invitedPage = await invited.newPage();
       await invitedPage.goto(inviteUrl);
       await invitedPage.getByLabel('Nome').fill('Pessoa dos Logs');
-      await invitedPage.getByLabel('Senha').fill(inviteEmailPassword);
+      await invitedPage.getByLabel('Senha', { exact: true }).fill(inviteEmailPassword);
       await invitedPage.getByRole('button', { name: 'Criar conta' }).click();
       await invitedPage.waitForURL((url) => url.pathname === '/');
       const memberCookie = await sessionCookie(invitedPage);
@@ -904,6 +906,285 @@ test.describe('identity invitations', () => {
       await expect(page.getByLabel('Nome')).toHaveCount(0);
     } finally {
       await context.close();
+    }
+  });
+});
+
+test.describe('Prumo screens', () => {
+  test('PRU-03 AC08 the password fields show and hide what was typed with the fixed label Mostrar senha', async ({
+    browser,
+  }) => {
+    // PRU-03: the toggle sits right after the field, keeps one label and says its state in aria-pressed;
+    // the value survives every switch and a refused login, and the field never leaves as text.
+    const context = await browser.newContext();
+    try {
+      const page = await context.newPage();
+      for (const door of ['/login', '/admin/login'] as const) {
+        await page.goto(door);
+        const password = page.getByLabel('Senha', { exact: true });
+        const toggle = page.getByRole('button', { name: 'Mostrar senha' });
+        await expect(password, door).toHaveAttribute('type', 'password');
+        await expect(toggle, door).toHaveAttribute('aria-pressed', 'false');
+
+        await page.getByLabel('E-mail').fill(memberEmail());
+        await password.fill('a-wrong-password-to-see');
+        await toggle.click();
+        await expect(password, door).toHaveAttribute('type', 'text');
+        await expect(password, door).toHaveValue('a-wrong-password-to-see');
+        await expect(toggle, door).toHaveAttribute('aria-pressed', 'true');
+        await expect(toggle, door).toHaveAccessibleName('Mostrar senha');
+
+        // A refused login keeps the state and the value as the person left them (PRU-03 AC9).
+        await page.getByRole('button', { name: 'Entrar' }).click();
+        await expect(page.getByRole('alert'), door).toHaveText(WRONG_CREDENTIALS);
+        await expect(password, door).toHaveAttribute('type', 'text');
+        await expect(password, door).toHaveValue('a-wrong-password-to-see');
+
+        // By keyboard: Tab from the field reaches the toggle, and Space hides the value again.
+        await password.focus();
+        await page.keyboard.press('Tab');
+        await expect(toggle, door).toBeFocused();
+        await page.keyboard.press('Space');
+        await expect(password, door).toHaveAttribute('type', 'password');
+        await expect(toggle, door).toHaveAttribute('aria-pressed', 'false');
+        await page.keyboard.press('Enter');
+        await expect(password, door).toHaveAttribute('type', 'text');
+      }
+
+      // The invite link has the same field, and the account is created with the password as typed.
+      const adminPage = await context.newPage();
+      await signIn(adminPage, 'admin', adminEmail, adminPassword);
+      const inviteUrl = await inviteFromScreen(adminPage, memberEmail());
+      await adminPage.getByRole('button', { name: 'Sair' }).click();
+      await adminPage.waitForURL('**/admin/login');
+
+      const invitePage = await context.newPage();
+      await invitePage.goto(inviteUrl);
+      const password = invitePage.getByLabel('Senha', { exact: true });
+      await invitePage.getByLabel('Nome').fill('Pessoa da Senha');
+      await password.fill(memberPassword);
+      await invitePage.getByRole('button', { name: 'Mostrar senha' }).click();
+      await expect(password).toHaveAttribute('type', 'text');
+      await expect(password).toHaveValue(memberPassword);
+      await invitePage.getByRole('button', { name: 'Criar conta' }).click();
+      await invitePage.waitForURL((url) => url.pathname === '/');
+      await expect(invitePage.getByRole('heading', { name: 'Início' })).toBeVisible();
+    } finally {
+      await context.close();
+    }
+  });
+
+  test('PRU-06 AC26 keeps the redirects, guards, forms and calls of the screens with the Prumo copy', async ({
+    browser,
+    request,
+  }) => {
+    // PRU-06 AC26: the redesign changes the look and the sentences the cards redo, not the behavior.
+    const redirect = await request.get('/admin', { maxRedirects: 0 });
+    expect(redirect.status()).toBe(307);
+    expect(redirect.headers()['location']).toBe('/admin/login?redirect=%2Fadmin');
+
+    const member = await createMemberIn(browser, 'Pessoa do Comportamento');
+    const admin = await browser.newContext();
+    try {
+      const { page, email } = member;
+      await expect(page.getByText('Olá, Pessoa do Comportamento')).toBeVisible();
+
+      // The guard of the admin area answers a member on the same url, and the way back opens the home.
+      await page.goto('/admin');
+      await expect(page.getByRole('heading', { name: 'Sem acesso' })).toBeVisible();
+      await expect(page.getByText('Esta área é da administração. Sua conta é de uso do produto.')).toBeVisible();
+      expect(new URL(page.url()).pathname).toBe('/admin');
+      await page.getByRole('link', { name: 'Voltar para o início' }).click();
+      await page.waitForURL((url) => url.pathname === '/');
+
+      // Sair, then a refused login keeps the e-mail, and the right password opens the asked route.
+      await page.getByRole('button', { name: 'Sair' }).click();
+      await page.waitForURL('**/login');
+      await page.goto('/login?redirect=%2Fstatus');
+      await page.getByLabel('E-mail').fill(email);
+      await page.getByLabel('Senha', { exact: true }).fill(fixturePassword('wrong'));
+      await page.getByRole('button', { name: 'Entrar' }).click();
+      await expect(page.getByRole('alert')).toHaveText(WRONG_CREDENTIALS);
+      await expect(page.getByLabel('E-mail')).toHaveValue(email);
+      await page.getByLabel('Senha', { exact: true }).fill(memberPassword);
+      await page.getByRole('button', { name: 'Entrar' }).click();
+      await page.waitForURL('**/status');
+      await expect(page.getByRole('heading', { level: 1, name: 'Status' })).toBeVisible();
+
+      // The admin invites, revokes behind the confirmation, and the revoked link is dead.
+      const adminPage = await admin.newPage();
+      await signIn(adminPage, 'admin', adminEmail, adminPassword);
+      const invited = memberEmail();
+      const inviteUrl = await inviteFromScreen(adminPage, invited);
+      await expect(adminPage.getByRole('status')).toHaveText(
+        `Convite criado para ${invited}· este link só aparece desta vez. Copie-o agora.`,
+      );
+      await adminPage.getByRole('button', { name: `Revogar convite de ${invited}` }).click();
+      const dialog = adminPage.getByRole('alertdialog', { name: 'Revogar convite' });
+      await expect(dialog).toContainText(invited);
+      await dialog.getByRole('button', { name: 'Revogar' }).click();
+      await expect(adminPage.getByRole('button', { name: `Revogar convite de ${invited}` })).toHaveCount(0);
+      expect(psql(`select revoked_at is not null from identity.invitations where email = '${invited}'`)).toBe('t');
+
+      const deadPage = await admin.newPage();
+      await deadPage.goto(inviteUrl);
+      await expect(deadPage.getByRole('heading', { name: 'Convite inválido' })).toBeVisible();
+      await expect(deadPage.getByText(INVALID_INVITATION)).toBeVisible();
+      await expect(deadPage.getByRole('button', { name: 'Criar conta' })).toHaveCount(0);
+    } finally {
+      await member.context.close();
+      await admin.close();
+    }
+  });
+
+  test('PRU-06 AC27 the screens have no axe violations, no horizontal scroll and every control in reach at 360 px in both themes', async ({
+    browser,
+  }) => {
+    test.setTimeout(5 * 60_000);
+    // PRU-06 AC27 at the narrowest width the spec names, for every screen of the feature: the doors, the
+    // invite good and dead, the member home, no access, the admin dashboard, the invitations with the link
+    // strip, the empty invitations, the revoke confirmation and the public status.
+    const anonymous = await browser.newContext({ viewport: { width: 360, height: 800 } });
+    const admin = await browser.newContext({ viewport: { width: 360, height: 800 } });
+    const member = await createMemberIn(browser, 'Pessoa dos 360');
+    try {
+      await member.page.setViewportSize({ width: 360, height: 800 });
+      const adminPage = await admin.newPage();
+      await signIn(adminPage, 'admin', adminEmail, adminPassword);
+      const pendingInvite = await inviteFromScreen(adminPage, memberEmail());
+      const expiredEmail = memberEmail();
+      const expiredInvite = await inviteFromScreen(adminPage, expiredEmail);
+      expireInvitations(expiredEmail);
+      const anonymousPage = await anonymous.newPage();
+
+      const screens: {
+        page: Page;
+        name: string;
+        open: () => Promise<unknown>;
+        marker: () => Locator;
+      }[] = [
+        {
+          page: anonymousPage,
+          name: 'login',
+          open: () => anonymousPage.goto('/login'),
+          marker: () => anonymousPage.getByRole('button', { name: 'Entrar' }),
+        },
+        {
+          page: anonymousPage,
+          name: 'admin login',
+          open: () => anonymousPage.goto('/admin/login'),
+          marker: () => anonymousPage.getByRole('heading', { name: 'Administração' }),
+        },
+        {
+          page: anonymousPage,
+          name: 'login expired',
+          open: () => anonymousPage.goto('/login?redirect=%2F&reason=expired'),
+          marker: () => anonymousPage.getByText(EXPIRED_NOTICE),
+        },
+        {
+          page: anonymousPage,
+          name: 'invite',
+          open: () => anonymousPage.goto(new URL(pendingInvite).pathname),
+          marker: () => anonymousPage.getByRole('button', { name: 'Criar conta' }),
+        },
+        {
+          page: anonymousPage,
+          name: 'invite 410',
+          open: () => anonymousPage.goto(new URL(expiredInvite).pathname),
+          marker: () => anonymousPage.getByText(INVALID_INVITATION),
+        },
+        {
+          page: anonymousPage,
+          name: 'status',
+          open: () => anonymousPage.goto('/status'),
+          marker: () => anonymousPage.getByRole('heading', { level: 1, name: 'Status' }),
+        },
+        {
+          page: member.page,
+          name: 'member home',
+          open: () => member.page.goto('/'),
+          marker: () => member.page.getByRole('heading', { name: 'Início' }),
+        },
+        {
+          page: member.page,
+          name: 'no access',
+          open: () => member.page.goto('/admin'),
+          marker: () => member.page.getByRole('heading', { name: 'Sem acesso' }),
+        },
+        {
+          page: adminPage,
+          name: 'admin dashboard',
+          open: () => adminPage.goto('/admin'),
+          marker: () => adminPage.getByRole('heading', { name: 'Administração' }),
+        },
+        {
+          page: adminPage,
+          name: 'invitation link strip',
+          open: async () => {
+            await adminPage.goto('/admin/invitations');
+            await adminPage.getByLabel('E-mail a convidar').fill(memberEmail());
+            await adminPage.getByRole('button', { name: 'Convidar', exact: true }).click();
+          },
+          marker: () => adminPage.getByLabel('Link do convite'),
+        },
+        {
+          page: adminPage,
+          name: 'revoke confirmation',
+          open: async () => {
+            await adminPage.goto('/admin/invitations');
+            await adminPage
+              .getByRole('button', { name: /^Revogar convite de / })
+              .first()
+              .click();
+          },
+          marker: () => adminPage.getByRole('alertdialog', { name: 'Revogar convite' }),
+        },
+      ];
+      // Last, because emptying the list kills the pending invite the screens above open.
+      const empty = {
+        page: adminPage,
+        name: 'empty invitations',
+        open: async () => {
+          revokePendingInvitations();
+          await adminPage.goto('/admin/invitations');
+        },
+        marker: () => adminPage.getByText('Nenhum convite pendente.'),
+      };
+      const passes = [
+        ...(['light', 'dark'] as const).flatMap((scheme) => screens.map((screen) => ({ scheme, screen }))),
+        ...(['light', 'dark'] as const).map((scheme) => ({ scheme, screen: empty })),
+      ];
+
+      for (const { scheme, screen } of passes) {
+        {
+          const label = `${screen.name} ${scheme} 360`;
+          await screen.page.emulateMedia({ colorScheme: scheme });
+          await screen.open();
+          await expect(screen.marker(), label).toBeVisible();
+          const results = await new AxeBuilder({ page: screen.page }).analyze();
+          expect(results.violations.map((violation) => `${label}: ${violation.id} ${violation.help}`)).toEqual([]);
+          const reach = await screen.page.evaluate(() => {
+            const width = document.documentElement.clientWidth;
+            const controls = Array.from(
+              document.querySelectorAll<HTMLElement>('a[href], button, input, textarea, select'),
+            );
+            const outside = controls
+              .filter((control) => control.getClientRects().length > 0)
+              .map((control) => ({ control, box: control.getBoundingClientRect() }))
+              .filter(({ box }) => box.width > 1 && (box.left < -1 || box.right > width + 1))
+              .map(
+                ({ control }) => control.getAttribute('aria-label') ?? control.textContent?.trim() ?? control.tagName,
+              );
+            return { overflow: document.documentElement.scrollWidth - width, outside };
+          });
+          expect(reach.overflow, `${label} scrolls horizontally`).toBeLessThanOrEqual(1);
+          expect(reach.outside, `${label} controls out of reach`).toEqual([]);
+        }
+      }
+    } finally {
+      await anonymous.close();
+      await admin.close();
+      await member.context.close();
     }
   });
 });

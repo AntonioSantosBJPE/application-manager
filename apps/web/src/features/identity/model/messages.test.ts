@@ -32,7 +32,7 @@ describe('problemMessage', () => {
   });
 
   it('names an unusable invitation and an unreachable api', () => {
-    expect(problemMessage({ status: 410 })).toBe('Este convite não é mais válido. Peça um novo ao administrador.');
+    expect(problemMessage({ status: 410 })).toBe('Este convite expirou ou já foi usado. Peça um novo link a quem te convidou.');
     expect(problemMessage({ status: 503 })).toBe('Serviço indisponível. Tente novamente em instantes.');
   });
 

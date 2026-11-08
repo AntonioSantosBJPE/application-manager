@@ -58,4 +58,44 @@
 - **Date**: 2026-11-03
 - **Status**: active
 
+### AD-008 (active)
+- **Decision**: A sidebar mostra só o que existe: o member vê Início; o admin vê Painel, Convites e Status do sistema. O botão "Buscar ⌘K" e os itens das fases futuras (Candidaturas, Currículo mestre, Skills, Insights, Catálogo de skills) entram junto com a fatia que os cria.
+- **Reason**: Controle sem gesto contraria o guia do `AppShell` ("itens aparecem quando a fatia existe"). Pergunta: "O botão Buscar ⌘K e os itens de menu das fases futuras: o que a sidebar mostra hoje?"; opção escolhida: "Só o que existe".
+- **Trade-off**: As telas atuais ficam mais vazias que as cartas `PageMemberHome` e `PageAdminDashboard`.
+- **Scope**: `packages/ui` AppShell, `apps/web` rotas `_member` e `admin`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-009 (active)
+- **Decision**: A linha do convite não mostra quem convidou, e a API não muda. O horário "Verificado" do status é o instante em que o `web` leu a saúde da API.
+- **Reason**: O contrato de convites e o `/health` não carregam esses dados, e esta feature é só de UI. Pergunta: "Como tratar 'por você' e 'Verificado 14:32:07'?"; opção escolhida: "Omitir quem convidou; carimbar verificação no web".
+- **Trade-off**: A coluna "por você" da carta `PageAdminInvitations` fica de fora; em `/status`, que é cacheável, o horário é o da leitura que gerou a página.
+- **Scope**: `apps/web` features `identity` e `system-status`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-010 (active)
+- **Decision**: A home do member mostra os três passos numerados e o `EmptyState` com a dica do ⌘K, sem os botões "Começar pelo perfil" e "Nova candidatura" até as fatias existirem.
+- **Reason**: Pergunta: "O que a home mostra hoje, já que os passos levam a telas inexistentes?"; opção escolhida: "Passos sem ação".
+- **Trade-off**: Os passos 2 e 3 são texto, sem caminho para agir.
+- **Scope**: `apps/web` rota `_member/index`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-011 (active)
+- **Decision**: Dois textos das cartas mudam: a home saúda "Olá, {nome}" (sem "Bom dia/Boa tarde") e o convite diz "Você recebeu um convite para o Rumo Carreira." (sem flexão de gênero).
+- **Reason**: O horário depende do fuso do navegador e diverge entre SSR e cliente; o gênero de quem recebe não é conhecido. Perguntas: "O que a home diz?" (opção "Olá, {nome}") e "Qual texto vale para qualquer pessoa?" (opção "Você recebeu um convite…").
+- **Trade-off**: Duas frases diferem da carta.
+- **Scope**: `apps/web` home do member e tela de convite
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-012 (active)
+- **Decision**: O produto é Rumo Carreira e o design system é Prumo (referência em `docs/design/system/`). Geist e Geist Mono vêm auto-hospedadas por `@fontsource` no web e no Storybook, e os ícones são `lucide-react`; nenhuma fonte ou ícone é carregado de terceiro em runtime.
+- **Reason**: Portabilidade e privacidade: o IP do visitante não vai ao Google, e a CSP pode ser restrita. Pergunta: "Como o app serve as fontes?"; opção escolhida: "Auto-hospedadas via @fontsource".
+- **Trade-off**: Os pacotes de fonte entram no build e no peso da página.
+- **Scope**: `packages/ui`, `apps/web`, Storybook
+- **Date**: 2026-11-08
+- **Status**: active
+
 ## Handoff

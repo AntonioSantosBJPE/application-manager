@@ -1,8 +1,9 @@
 import type { MeResponse } from '@am/contracts';
-import { Alert, Button } from '@am/ui';
-import { useState } from 'react';
+import { Alert, AppShell, Button } from '@am/ui';
+import { LogOut } from 'lucide-react';
 import type { Outcome } from '../api/server-functions';
-import { problemMessage } from '../model/messages';
+import { initialsOf } from '../model/person';
+import { useSignOut } from './use-sign-out';
 
 export interface SessionMenuProps {
   user: MeResponse;
@@ -11,34 +12,26 @@ export interface SessionMenuProps {
   onSignedOut: () => void;
 }
 
-/** Who is signed in and the way out. The session ends on the api; this only asks and then hands over. */
+/**
+ * Who is signed in and the way out, at the bottom of the sidebar. The session ends on the api; this
+ * only asks and then hands over, and a failure shows above the person without leaving the page.
+ */
 export function SessionMenu({ user, signOut, onSignedOut }: SessionMenuProps) {
-  const [signingOut, setSigningOut] = useState(false);
-  const [failure, setFailure] = useState<string | undefined>();
-
-  async function leave() {
-    setSigningOut(true);
-    setFailure(undefined);
-    try {
-      const outcome = await signOut();
-      if (outcome.ok) {
-        onSignedOut();
-        return;
-      }
-      setFailure(problemMessage(outcome));
-    } catch {
-      setFailure(problemMessage({ status: 503 }));
-    }
-    setSigningOut(false);
-  }
+  const { signingOut, failure, leave } = useSignOut({ signOut, onSignedOut });
 
   return (
-    <div className="flex flex-col gap-2 md:mt-auto">
-      <span className="text-xs text-text">{user.name}</span>
+    <div className="ml-auto flex max-w-full min-w-0 flex-col gap-2 md:mt-auto md:ml-0">
       {failure === undefined ? null : <Alert intent="danger">{failure}</Alert>}
-      <Button intent="secondary" size="sm" disabled={signingOut} onClick={() => void leave()}>
-        Sair
-      </Button>
+      <AppShell.User initials={initialsOf(user.name)} name={user.name} className="md:mt-0!">
+        <Button
+          intent="ghost"
+          size="sm"
+          icon={LogOut}
+          aria-label="Sair"
+          disabled={signingOut}
+          onClick={leave}
+        />
+      </AppShell.User>
     </div>
   );
 }

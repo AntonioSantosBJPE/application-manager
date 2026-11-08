@@ -54,7 +54,7 @@ test.describe('outages', () => {
     try {
       await expect
         .poll(() => statusPage(request), { timeout: 30_000 })
-        .toEqual({ status: 200, text: expect.stringMatching(/API Operacional.*Banco de dados Indisponível/) });
+        .toEqual({ status: 200, text: expect.stringMatching(/Banco de dados Indisponível.*API Operacional/) });
     } finally {
       composeOk(['start', 'postgres']);
       await waitHealthy('postgres');
@@ -68,7 +68,7 @@ test.describe('outages', () => {
     composeOk(['stop', 'api']);
     try {
       await page.goto('/');
-      await expect(page.getByText('Serviço indisponível. Tente novamente em instantes.')).toBeVisible();
+      await expect(page.getByText('O serviço não respondeu. Seus dados estão seguros; tente de novo em instantes.')).toBeVisible();
       expect(new URL(page.url()).pathname).toBe('/');
       await expect(page.getByRole('button', { name: 'Entrar' })).toHaveCount(0);
     } finally {

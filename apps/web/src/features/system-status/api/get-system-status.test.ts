@@ -5,6 +5,8 @@ import { createLogger } from '../../../lib/logger';
 import { loadSystemStatus } from './get-system-status';
 
 const apiInternalUrl = 'http://api.test';
+const readAt = new Date('2026-11-08T17:32:07.000Z');
+const now = () => readAt;
 const server = setupServer();
 
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
@@ -23,7 +25,7 @@ async function load(incomingRequestId: string | undefined) {
     }),
   );
 
-  const status = await loadSystemStatus({ incomingRequestId, apiInternalUrl, logger });
+  const status = await loadSystemStatus({ incomingRequestId, apiInternalUrl, logger, now });
   const logged = lines.map((line) => JSON.parse(line) as Record<string, unknown>);
   return { status, logged, sent };
 }
@@ -32,7 +34,11 @@ describe('getSystemStatus', () => {
   it('logs the same requestId it sends to the api in x-request-id', async () => {
     const { status, logged, sent } = await load(undefined);
 
-    expect(status).toEqual({ api: 'operational', database: 'operational' });
+    expect(status).toEqual({
+      api: 'operational',
+      database: 'operational',
+      checkedAt: '2026-11-08T17:32:07.000Z',
+    });
     expect(sent).toHaveLength(1);
     expect(sent[0]).toMatch(/^[0-9a-f-]{36}$/);
     expect(logged).toContainEqual(
@@ -62,7 +68,56 @@ describe('getSystemStatus', () => {
     server.use(http.get(`${apiInternalUrl}/health`, () => HttpResponse.error()));
 
     await expect(
-      loadSystemStatus({ incomingRequestId: undefined, apiInternalUrl, logger }),
-    ).resolves.toEqual({ api: 'unavailable', database: 'unavailable' });
+      loadSystemStatus({ incomingRequestId: undefined, apiInternalUrl, logger, now }),
+    ).resolves.toEqual({
+      api: 'unavailable',
+      database: 'unavailable',
+      checkedAt: '2026-11-08T17:32:07.000Z',
+    });
+  });
+
+  it('PRU-06 AC21 stamps the status with the instant the web read the health, after the answer', async () => {
+    const logger = createLogger({ level: 'info', destination: { write: () => undefined } });
+    const instants: Date[] = [];
+    let answered = false;
+    server.use(
+      http.get(`${apiInternalUrl}/health`, () => {
+        answered = true;
+        return HttpResponse.json({ status: 'ok', db: 'up' });
+      }),
+    );
+
+    const status = await loadSystemStatus({
+      incomingRequestId: undefined,
+      apiInternalUrl,
+      logger,
+      now: () => {
+        expect(answered).toBe(true);
+        const instant = new Date(Date.UTC(2026, 10, 8, 17, 32, 7 + instants.length));
+        instants.push(instant);
+        return instant;
+      },
+    });
+
+    expect(instants).toHaveLength(1);
+    expect(status.checkedAt).toBe('2026-11-08T17:32:07.000Z');
+  });
+
+  it('stamps the real clock when no clock is given', async () => {
+    const logger = createLogger({ level: 'info', destination: { write: () => undefined } });
+    server.use(
+      http.get(`${apiInternalUrl}/health`, () => HttpResponse.json({ status: 'ok', db: 'up' })),
+    );
+    const before = Date.now();
+
+    const { checkedAt } = await loadSystemStatus({
+      incomingRequestId: undefined,
+      apiInternalUrl,
+      logger,
+    });
+
+    expect(Date.parse(checkedAt)).toBeGreaterThanOrEqual(before);
+    expect(Date.parse(checkedAt)).toBeLessThanOrEqual(Date.now());
+    expect(checkedAt).toBe(new Date(checkedAt).toISOString());
   });
 });

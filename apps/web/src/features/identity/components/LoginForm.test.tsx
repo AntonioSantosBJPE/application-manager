@@ -54,28 +54,35 @@ describe('LoginForm', () => {
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
-  it('shows the 401 message and keeps the email', async () => {
+  it('PRU-06 AC04 shows the 401 message above the fields and keeps what was typed', async () => {
     server.use(http.post(`${apiInternalUrl}/auth/login`, () => problem(401)));
     const { onSuccess } = renderForm();
 
     fill('ana@example.com', 'wrong password!!');
     submit();
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('E-mail ou senha incorretos.');
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('E-mail ou senha incorretos.');
+    expect(alert.compareDocumentPosition(screen.getByLabelText('E-mail'))).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
     expect(screen.getByLabelText('E-mail')).toHaveValue('ana@example.com');
+    expect(screen.getByLabelText('Senha')).toHaveValue('wrong password!!');
     expect(screen.getByRole('button', { name: 'Entrar' })).toBeEnabled();
     expect(onSuccess).not.toHaveBeenCalled();
   });
 
-  it('shows the 429 message with minutes rounded up', async () => {
+  it('PRU-06 AC05 shows the 429 message with minutes rounded up, in the same place', async () => {
     server.use(http.post(`${apiInternalUrl}/auth/login`, () => problem(429, 61)));
     renderForm();
 
     fill('ana@example.com', 'whatever password');
     submit();
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Muitas tentativas. Tente novamente em 2 min.',
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Muitas tentativas. Tente novamente em 2 min.');
+    expect(alert.compareDocumentPosition(screen.getByLabelText('E-mail'))).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(screen.getByLabelText('E-mail')).toHaveValue('ana@example.com');
   });
@@ -106,7 +113,7 @@ describe('LoginForm', () => {
     );
   });
 
-  it('disables submit while waiting and sends one request', async () => {
+  it('PRU-06 AC06 disables submit while waiting and sends one request', async () => {
     let release: () => void = () => undefined;
     const gate = new Promise<void>((resolve) => {
       release = resolve;
@@ -153,9 +160,97 @@ describe('LoginForm', () => {
     expect(requests).toBe(0);
   });
 
-  it('shows the notice above the fields', () => {
-    renderForm({ notice: 'Sua sessão expirou. Entre novamente.' });
+  it('PRU-06 AC03 shows the expired-session notice above the fields', () => {
+    renderForm({ notice: 'Sua sessão expirou. Entre de novo para continuar.' });
 
-    expect(screen.getByRole('status')).toHaveTextContent('Sua sessão expirou. Entre novamente.');
+    const notice = screen.getByRole('status');
+    expect(notice).toHaveTextContent('Sua sessão expirou. Entre de novo para continuar.');
+    expect(notice.compareDocumentPosition(screen.getByLabelText('E-mail'))).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
+  it('PRU-06 AC01 shows the login screen of the Prumo: title, line, fields, button and footer', () => {
+    renderForm();
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Entrar');
+    expect(screen.getByText('Rumo Carreira — suas candidaturas e currículos')).toBeInTheDocument();
+    expect(screen.getByLabelText('E-mail')).toHaveAttribute('type', 'email');
+    expect(screen.getByLabelText('Senha')).toHaveAttribute('type', 'password');
+    expect(screen.getByRole('button', { name: 'Entrar' })).toHaveAttribute('type', 'submit');
+    expect(
+      screen.getByText('O acesso é por convite. Esqueceu a senha? Fale com quem te convidou.'),
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole('main')).toHaveLength(1);
+  });
+
+  it('PRU-06 AC02 gives the administration the same layout under its own title', () => {
+    render(
+      <LoginForm
+        title="Administração"
+        login={(input) => loginMember(input, context)}
+        onSuccess={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Administração');
+    expect(screen.getByText('Rumo Carreira — suas candidaturas e currículos')).toBeInTheDocument();
+    expect(screen.getByLabelText('Senha')).toBeInTheDocument();
+    expect(
+      screen.getByText('O acesso é por convite. Esqueceu a senha? Fale com quem te convidou.'),
+    ).toBeInTheDocument();
+  });
+
+  it('PRU-03 AC08 offers Mostrar senha on the password, with the same label in both states', () => {
+    renderForm();
+    const password = screen.getByLabelText('Senha');
+    const toggle = screen.getByRole('button', { name: 'Mostrar senha' });
+
+    expect(password).toHaveAttribute('type', 'password');
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(toggle);
+
+    expect(password).toHaveAttribute('type', 'text');
+    expect(screen.getByRole('button', { name: 'Mostrar senha' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.queryByRole('button', { name: 'Ocultar senha' })).toBeNull();
+  });
+
+  it('PRU-03 AC09 keeps the toggle state and the typed value after a failed submit', async () => {
+    server.use(http.post(`${apiInternalUrl}/auth/login`, () => problem(401)));
+    renderForm();
+
+    fill('ana@example.com', 'wrong password!!');
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar senha' }));
+    submit();
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('E-mail ou senha incorretos.');
+    expect(screen.getByLabelText('Senha')).toHaveAttribute('type', 'text');
+    expect(screen.getByLabelText('Senha')).toHaveValue('wrong password!!');
+    expect(screen.getByRole('button', { name: 'Mostrar senha' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  it('PRU-03 AC05 never sends the toggle with the credentials', async () => {
+    const bodies: unknown[] = [];
+    server.use(
+      http.post(`${apiInternalUrl}/auth/login`, async ({ request }) => {
+        bodies.push(await request.json());
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    const { onSuccess } = renderForm();
+
+    fill('ana@example.com', 'correct horse battery');
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar senha' }));
+    submit();
+
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1));
+    expect(bodies).toEqual([{ email: 'ana@example.com', password: 'correct horse battery' }]);
   });
 });

@@ -17,6 +17,7 @@ afterAll(() => server.close());
 interface Stored {
   id: string;
   email: string;
+  expiresAt?: string;
 }
 
 const uuid = (n: number) => `0190a5b4-7c3a-7c8e-9f2a-${String(n).padStart(12, '0')}`;
@@ -38,7 +39,7 @@ function apiWith(initial: Stored[], pageSize = 20) {
       const items = pending.slice(start, start + pageSize);
       const more = start + pageSize < pending.length;
       return HttpResponse.json({
-        items: items.map((item) => ({ ...item, expiresAt: '2026-11-13T12:00:00.000Z' })),
+        items: items.map((item) => ({ expiresAt: '2026-11-13T12:00:00.000Z', ...item })),
         nextCursor: more ? items[items.length - 1]!.id : null,
         totalPending: pending.length,
       });
@@ -63,12 +64,13 @@ function apiWith(initial: Stored[], pageSize = 20) {
   return requests;
 }
 
-function renderPanel(onExpired: (outcome: unknown) => boolean = () => false) {
+function renderPanel(onExpired: (outcome: unknown) => boolean = () => false, now?: () => Date) {
   const client = new QueryClient();
   render(
     <QueryClientProvider client={client}>
       <InvitationsPanel
         onExpired={onExpired}
+        now={now}
         api={{
           list: (cursor) => loadInvitations(cursor, context),
           create: (input) => createInvitation(input, context),
@@ -100,12 +102,14 @@ describe('InvitationsPanel', () => {
 
     expect(await screen.findByLabelText('Link do convite')).toHaveValue(inviteUrl);
     expect(screen.getByRole('button', { name: 'Copiar' })).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('Este link só aparece desta vez.');
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'este link só aparece desta vez. Copie-o agora.',
+    );
     await waitFor(() =>
       expect(within(screen.getByRole('list')).getByText('novo@example.test')).toBeInTheDocument(),
     );
     expect(within(screen.getByRole('list')).getByText('antigo@example.test')).toBeInTheDocument();
-    expect(screen.getByText('2 convites pendentes')).toBeInTheDocument();
+    expect(screen.getByText('2 pendentes')).toBeInTheDocument();
     expect(screen.getByLabelText('E-mail a convidar')).toHaveValue('');
   });
 
@@ -211,7 +215,7 @@ describe('InvitationsPanel', () => {
     ]);
     renderPanel();
     await list();
-    expect(screen.getByText('2 convites pendentes')).toBeInTheDocument();
+    expect(screen.getByText('2 pendentes')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Revogar convite de a@example.test' }));
     fireEvent.click(
@@ -220,7 +224,7 @@ describe('InvitationsPanel', () => {
 
     await waitFor(() => expect(screen.queryByText('a@example.test')).toBeNull());
     expect(screen.getByText('b@example.test')).toBeInTheDocument();
-    expect(await screen.findByText('1 convite pendente')).toBeInTheDocument();
+    expect(await screen.findByText('1 pendente')).toBeInTheDocument();
     expect(requests.revoked).toEqual([uuid(1)]);
   });
 
@@ -328,5 +332,170 @@ describe('InvitationsPanel', () => {
       'Serviço indisponível. Tente novamente em instantes.',
     );
     expect(screen.getByLabelText('E-mail a convidar')).toBeInTheDocument();
+  });
+
+  describe('as the PageAdminInvitations', () => {
+    const now = new Date('2026-11-08T12:00:00.000Z');
+    const inDays = (days: number) =>
+      new Date(now.getTime() + days * 24 * 60 * 60 * 1000).toISOString();
+
+    it('PRU-06 AC16 shows the title with the count, the form in the filter row and the group Pendentes', async () => {
+      apiWith([
+        { id: uuid(1), email: 'a@exemplo.com' },
+        { id: uuid(2), email: 'b@exemplo.com' },
+      ]);
+      renderPanel(undefined, () => now);
+      const rows = within(await list()).getAllByRole('listitem');
+
+      const title = screen.getByRole('heading', { level: 1 });
+      expect(title.textContent).toBe('Convites');
+      const count = screen.getByText('2 pendentes');
+      expect(count).toHaveClass('font-mono');
+      expect(title.parentElement).toContainElement(count);
+      const filters = screen.getByRole('search', { name: 'Convidar pessoa' });
+      expect(within(filters).getByLabelText('E-mail a convidar')).toBeInTheDocument();
+      expect(within(filters).getByRole('button', { name: 'Convidar' })).toHaveAttribute(
+        'type',
+        'submit',
+      );
+      const group = screen.getByRole('heading', { level: 2 });
+      expect(group.textContent).toBe('Pendentes2');
+      expect(rows.map((row) => within(row).getByText(/@exemplo\.com$/).textContent)).toEqual([
+        'a@exemplo.com',
+        'b@exemplo.com',
+      ]);
+    });
+
+    it('PRU-06 AC16 draws send before the label of Convidar', async () => {
+      apiWith([{ id: uuid(1), email: 'a@exemplo.com' }]);
+      renderPanel(undefined, () => now);
+      await list();
+
+      const submit = within(screen.getByRole('search', { name: 'Convidar pessoa' })).getByRole(
+        'button',
+        { name: 'Convidar' },
+      );
+      expect(submit.firstElementChild).toHaveClass('lucide-send');
+      expect(submit.querySelectorAll('svg')).toHaveLength(1);
+      expect(submit.textContent).toBe('Convidar');
+    });
+
+    it('PRU-06 AC17 shows the strip with the e-mail, the note and the link above the list', async () => {
+      apiWith([{ id: uuid(1), email: 'antigo@exemplo.com' }]);
+      renderPanel(undefined, () => now);
+      await list();
+
+      invite('novo@exemplo.com');
+
+      const note = await screen.findByRole('status');
+      expect(note.textContent).toBe(
+        'Convite criado para novo@exemplo.com· este link só aparece desta vez. Copie-o agora.',
+      );
+      const strip = note.parentElement!;
+      expect(strip).toHaveClass('bg-surface-raised');
+      const link = within(strip).getByLabelText('Link do convite');
+      expect(link).toHaveValue(inviteUrl);
+      expect(within(strip).getByRole('button', { name: 'Copiar' })).toBeInTheDocument();
+      await waitFor(() =>
+        expect(within(screen.getByRole('list')).getByText('novo@exemplo.com')).toBeInTheDocument(),
+      );
+      expect(
+        strip.compareDocumentPosition(screen.getByRole('list')) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+
+    it('PRU-06 AC18 shows the days left, in warning with 2 days or fewer, and Revogar as ghost', async () => {
+      apiWith([
+        { id: uuid(1), email: 'longe@exemplo.com', expiresAt: inDays(7) },
+        { id: uuid(2), email: 'tres@exemplo.com', expiresAt: inDays(3) },
+        { id: uuid(3), email: 'dois@exemplo.com', expiresAt: inDays(2) },
+        { id: uuid(4), email: 'horas@exemplo.com', expiresAt: inDays(0.25) },
+      ]);
+      renderPanel(undefined, () => now);
+      await list();
+
+      const expiryOf = (email: string) => {
+        const row = screen.getByText(email).closest('li')!;
+        return within(row).getByText(/^expira em \d+ d$/);
+      };
+      expect(expiryOf('longe@exemplo.com').textContent).toBe('expira em 7 d');
+      expect(expiryOf('longe@exemplo.com')).not.toHaveClass('text-warning');
+      expect(expiryOf('tres@exemplo.com').textContent).toBe('expira em 3 d');
+      expect(expiryOf('tres@exemplo.com')).not.toHaveClass('text-warning');
+      expect(expiryOf('dois@exemplo.com').textContent).toBe('expira em 2 d');
+      expect(expiryOf('dois@exemplo.com')).toHaveClass('text-warning', 'font-mono');
+      expect(expiryOf('horas@exemplo.com').textContent).toBe('expira em 1 d');
+      expect(expiryOf('horas@exemplo.com')).toHaveClass('text-warning');
+      const revoke = screen.getByRole('button', { name: 'Revogar convite de dois@exemplo.com' });
+      expect(revoke.textContent).toBe('Revogar');
+      expect(revoke).toHaveClass('bg-transparent', 'h-control-sm');
+    });
+
+    it('PRU-06 AC18 opens each invitation row with the mail icon before the e-mail, as the card draws it', async () => {
+      apiWith([
+        { id: uuid(1), email: 'longe@exemplo.com', expiresAt: inDays(7) },
+        { id: uuid(2), email: 'dois@exemplo.com', expiresAt: inDays(2) },
+      ]);
+      renderPanel(undefined, () => now);
+      await list();
+
+      for (const email of ['longe@exemplo.com', 'dois@exemplo.com']) {
+        const icon = screen.getByText(email).previousElementSibling;
+        expect(icon?.tagName.toLowerCase()).toBe('svg');
+        expect(icon).toHaveClass('lucide-mail');
+        expect(icon).toHaveAttribute('aria-hidden', 'true');
+      }
+    });
+
+    it('PRU-06 AC19 opens the ConfirmDialog with the e-mail; Esc closes it without revoking and the focus returns', async () => {
+      const requests = apiWith([{ id: uuid(1), email: 'a@exemplo.com' }]);
+      renderPanel(undefined, () => now);
+      await list();
+      const trigger = screen.getByRole('button', { name: 'Revogar convite de a@exemplo.com' });
+
+      trigger.focus();
+      fireEvent.click(trigger);
+      const dialog = await screen.findByRole('alertdialog', { name: 'Revogar convite' });
+      expect(dialog).toHaveTextContent('O link enviado para a@exemplo.com deixa de funcionar.');
+      await waitFor(() => expect(dialog).toContainElement(document.activeElement as HTMLElement));
+
+      fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+
+      await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+      expect(requests.revoked).toEqual([]);
+      await waitFor(() => expect(trigger).toHaveFocus());
+
+      fireEvent.click(trigger);
+      fireEvent.click(
+        within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Revogar' }),
+      );
+      await waitFor(() => expect(requests.revoked).toEqual([uuid(1)]));
+    });
+
+    it('PRU-06 AC24 shows the EmptyState with the sentence and the action that leads to the e-mail field', async () => {
+      apiWith([]);
+      renderPanel(undefined, () => now);
+
+      const sentence = await screen.findByText('Nenhum convite pendente.');
+      const empty = sentence.parentElement!;
+      expect(empty).toHaveClass('border-dashed');
+      expect(screen.queryByRole('heading', { level: 2 })).toBeNull();
+      const action = within(empty).getByRole('button', { name: 'Convidar pessoa' });
+
+      fireEvent.click(action);
+
+      expect(screen.getByLabelText('E-mail a convidar')).toHaveFocus();
+    });
+
+    it('PRU-06 AC25 shows Alert danger when the list fails and keeps the title and the form', async () => {
+      server.use(http.get(`${apiInternalUrl}/invitations`, () => problem(503)));
+      renderPanel(undefined, () => now);
+
+      const alert = await screen.findByRole('alert');
+      expect(alert.textContent).toBe('Serviço indisponível. Tente novamente em instantes.');
+      expect(screen.getByRole('heading', { level: 1, name: 'Convites' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Convidar' })).toBeEnabled();
+      expect(screen.queryByText('Nenhum convite pendente.')).toBeNull();
+    });
   });
 });

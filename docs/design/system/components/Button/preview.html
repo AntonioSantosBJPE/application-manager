@@ -1,0 +1,24 @@
+<!-- @dsCard group="Ações" height=120 -->
+<!doctype html>
+<html lang="pt-BR">
+<head><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../bundle.css"><meta charset="utf-8"><title>Button</title>
+<style>body{padding:16px;} .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;} .col{display:flex;flex-direction:column;gap:12px;} </style>
+</head>
+<body>
+<div class="col">
+<div class="row">
+  <button class="am-btn am-btn--primary"><i data-lucide="plus" class="am-icon-sm"></i>Nova candidatura <span class="am-kbd">C</span></button>
+  <button class="am-btn am-btn--secondary">Cancelar</button>
+  <button class="am-btn am-btn--ghost"><i data-lucide="pencil" class="am-icon-sm"></i>Editar</button>
+  <button class="am-btn am-btn--danger">Revogar</button>
+  <button class="am-btn am-btn--primary" disabled>Entrando…</button>
+</div>
+<div class="row">
+  <button class="am-btn am-btn--secondary am-btn--sm">Revogar</button>
+  <button class="am-btn am-btn--ghost am-btn--sm am-btn--icon" aria-label="Mais ações"><i data-lucide="ellipsis" class="am-icon-sm"></i></button>
+  <button class="am-btn am-btn--secondary am-btn--icon" aria-label="Copiar"><i data-lucide="copy" class="am-icon-sm"></i></button>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>window.lucide && lucide.createIcons();</script>
+</body>
+</html>

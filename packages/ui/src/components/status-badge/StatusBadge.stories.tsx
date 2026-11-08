@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect } from 'storybook/test';
+import { expectContrast, settle } from '../../testing/contrast';
 import { StatusBadge } from './status-badge';
 
 const meta = {
@@ -39,7 +40,7 @@ export const TemaClaro: Story = {
 
     await expect(document.documentElement).toHaveAttribute('data-theme', 'light');
     // The light value of --color-status-operational in tokens.css.
-    await expect(getComputedStyle(badge).color).toBe(resolvedColor('oklch(0.45 0.12 150)'));
+    await expect(getComputedStyle(badge).color).toBe(resolvedColor('oklch(0.5 0.11 150)'));
   },
 };
 
@@ -53,6 +54,45 @@ export const TemaEscuro: Story = {
 
     await expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
     // The dark value of --color-status-operational in tokens.css.
-    await expect(getComputedStyle(badge).color).toBe(resolvedColor('oklch(0.78 0.14 150)'));
+    await expect(getComputedStyle(badge).color).toBe(resolvedColor('oklch(0.76 0.13 150)'));
   },
+};
+
+const bothIntents: Story['render'] = () => (
+  <div className="flex flex-col gap-3">
+    {(['bg-surface', 'bg-surface-raised'] as const).map((surface) => (
+      <div key={surface} className={`flex gap-3 p-4 ${surface}`}>
+        <StatusBadge intent="operational">Operacional</StatusBadge>
+        <StatusBadge intent="unavailable">Indisponível</StatusBadge>
+      </div>
+    ))}
+  </div>
+);
+
+/** Text at 4.5:1 and border and dot at 3:1 over surface and surface-raised (PRU-08 AC03). */
+const contrast: Story['play'] = async ({ canvas }) => {
+  const badges = [...canvas.getAllByText('Operacional'), ...canvas.getAllByText('Indisponível')];
+  await expect(badges).toHaveLength(4);
+  for (const badge of badges) {
+    await settle(badge);
+    await expectContrast(badge, 4.5);
+    await expectContrast(badge, 3, 'borderTopColor');
+    await expectContrast(badge.querySelector('circle')!, 3, 'fill');
+  }
+};
+
+export const ContrasteClaro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema claro',
+  args: { intent: 'operational' },
+  globals: { theme: 'light' },
+  render: bothIntents,
+  play: contrast,
+};
+
+export const ContrasteEscuro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema escuro',
+  args: { intent: 'operational' },
+  globals: { theme: 'dark' },
+  render: bothIntents,
+  play: contrast,
 };

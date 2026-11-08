@@ -4,9 +4,11 @@ import type { ProblemDetails } from '@am/contracts';
 export const MESSAGES = {
   invalidCredentials: 'E-mail ou senha incorretos.',
   unavailable: 'Serviço indisponível. Tente novamente em instantes.',
-  sessionExpired: 'Sua sessão expirou. Entre novamente.',
-  noAccess: 'Você não tem acesso a esta área.',
-  invitationInvalid: 'Este convite não é mais válido. Peça um novo ao administrador.',
+  /** Screen of a guard that got no answer from the api (PageAccessStates, "Indisponível"). */
+  guardUnavailable: 'O serviço não respondeu. Seus dados estão seguros; tente de novo em instantes.',
+  sessionExpired: 'Sua sessão expirou. Entre de novo para continuar.',
+  noAccess: 'Esta área é da administração. Sua conta é de uso do produto.',
+  invitationInvalid: 'Este convite expirou ou já foi usado. Peça um novo link a quem te convidou.',
 } as const;
 
 /** Minutes the `429` asks the person to wait, rounded up, so a wait of a second still says one minute (UI-04). */

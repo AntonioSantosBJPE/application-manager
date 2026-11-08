@@ -1,0 +1,21 @@
+<!-- @dsCard group="Páginas atuais" height=800 width=1280 page subtitle="/login — a mesma tela serve /admin/login com o título Administração" -->
+<!doctype html>
+<html lang="pt-BR">
+<head><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../bundle.css"><meta charset="utf-8"><title>PageLogin</title><style>body{min-height:800px;overflow:hidden;position:relative}</style></head>
+<body>
+<main class="am-auth" data-archetype="auth">
+<div class="am-auth__col">
+  <div class="am-auth__head"><svg class="am-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M16 16H23A7 7 0 1 1 16 9Z" fill="currentColor"/></svg>
+    <div class="am-stack" style="gap:4px"><h1 class="am-h-xl">Entrar</h1><p class="am-muted">Rumo Carreira — suas candidaturas e currículos</p></div></div>
+  <div class="am-alert am-alert--info" role="status"><i data-lucide="info" class="am-icon"></i><span>Sua sessão expirou. Entre de novo para continuar.</span></div>
+  <form class="am-auth__form" novalidate>
+    <div class="am-field"><label for="e">E-mail</label><input id="e" class="am-input" type="email" autocomplete="username" value="marina@exemplo.com"></div>
+    <div class="am-field"><label for="p">Senha</label><input id="p" class="am-input" type="password" autocomplete="current-password" value="••••••••••••••"></div>
+    <button class="am-btn am-btn--primary" type="button">Entrar</button>
+  </form>
+  <p class="am-auth__foot">O acesso é por convite. Esqueceu a senha? Fale com quem te convidou.</p>
+</div></main>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>window.lucide && lucide.createIcons();</script>
+</body>
+</html>

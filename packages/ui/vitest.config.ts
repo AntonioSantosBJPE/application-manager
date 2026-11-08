@@ -19,7 +19,23 @@ export default mergeConfig(
             name: 'unit',
             environment: 'jsdom',
             include: ['src/**/*.test.{ts,tsx}'],
+            exclude: ['src/**/*.browser.test.{ts,tsx}'],
             setupFiles: ['./vitest.setup.ts'],
+          },
+        },
+        {
+          // Proves what Chromium paints with tokens.css loaded: themes, focus ring, motion (PRU-01).
+          extends: true,
+          test: {
+            name: 'browser',
+            include: ['src/**/*.browser.test.{ts,tsx}'],
+            setupFiles: ['./vitest.browser.setup.ts'],
+            browser: {
+              enabled: true,
+              headless: true,
+              provider: playwright(),
+              instances: [{ browser: 'chromium' }],
+            },
           },
         },
         {

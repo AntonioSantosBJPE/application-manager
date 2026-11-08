@@ -1,0 +1,31 @@
+<!-- @dsCard group="Formulários" height=230 -->
+<!doctype html>
+<html lang="pt-BR">
+<head><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../bundle.css"><meta charset="utf-8"><title>Field</title>
+<style>body{padding:16px;} .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;} .col{display:flex;flex-direction:column;gap:12px;} </style>
+</head>
+<body>
+<div class="row" style="align-items:flex-start;max-width:640px">
+<div class="am-field" style="flex:1">
+  <label for="a">E-mail</label>
+  <input id="a" class="am-input" type="email" value="marina@exemplo.com">
+</div>
+<div class="am-field" style="flex:1">
+  <label for="b">Senha</label>
+  <input id="b" class="am-input" type="password" placeholder="••••••••••••">
+  <p class="am-field__hint">Use de 12 a 128 caracteres.</p>
+</div>
+<div class="am-field am-field--invalid" style="flex:1">
+  <label for="c">E-mail a convidar</label>
+  <input id="c" class="am-input" aria-invalid="true" value="pessoa@">
+  <p class="am-field__error"><i data-lucide="circle-alert" class="am-icon-sm"></i>Informe um e-mail válido.</p>
+</div>
+</div>
+<div class="am-field" style="max-width:640px;margin-top:12px">
+  <label for="d">Descrição da vaga</label>
+  <textarea id="d" class="am-textarea" placeholder="Cole aqui o texto da vaga"></textarea>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>window.lucide && lucide.createIcons();</script>
+</body>
+</html>

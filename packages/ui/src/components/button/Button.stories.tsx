@@ -1,6 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { ArrowRight, LogOut, RefreshCw, UserPlus } from 'lucide-react';
 import { expect, userEvent } from 'storybook/test';
-import { contrastRatio, pageBackground, settle as settled } from '../../testing/contrast';
+import {
+  contrastRatio,
+  expectContrast,
+  focusRing,
+  pageBackground,
+  settle as settled,
+} from '../../testing/contrast';
 import { Button } from './button';
 
 const meta = {
@@ -36,6 +43,16 @@ export const Secundario: Story = {
   args: { intent: 'secondary', children: 'Cancelar' },
 };
 
+export const Fantasma: Story = {
+  name: 'Fantasma',
+  args: { intent: 'ghost', children: 'Ver convites' },
+};
+
+export const Pequeno: Story = {
+  name: 'Pequeno',
+  args: { intent: 'secondary', size: 'sm', children: 'Revogar' },
+};
+
 export const Perigo: Story = {
   name: 'Perigo',
   args: { intent: 'danger', children: 'Revogar' },
@@ -57,9 +74,9 @@ export const TemaClaro: Story = {
     await expect(document.documentElement).toHaveAttribute('data-theme', 'light');
     await settle(button);
     // The light value of --color-accent in tokens.css.
-    await expect(getComputedStyle(button).backgroundColor).toBe(resolvedColor('oklch(0.52 0.17 265)'));
+    await expect(getComputedStyle(button).backgroundColor).toBe(resolvedColor('oklch(0.5 0.08 195)'));
     // The light value of --color-on-accent in tokens.css.
-    await expect(getComputedStyle(button).color).toBe(resolvedColor('oklch(0.99 0.003 260)'));
+    await expect(getComputedStyle(button).color).toBe(resolvedColor('oklch(0.99 0.002 250)'));
   },
 };
 
@@ -74,9 +91,9 @@ export const TemaEscuro: Story = {
     await expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
     await settle(button);
     // The dark value of --color-accent in tokens.css.
-    await expect(getComputedStyle(button).backgroundColor).toBe(resolvedColor('oklch(0.72 0.15 265)'));
+    await expect(getComputedStyle(button).backgroundColor).toBe(resolvedColor('oklch(0.74 0.105 195)'));
     // The dark value of --color-on-accent in tokens.css.
-    await expect(getComputedStyle(button).color).toBe(resolvedColor('oklch(0.18 0.01 260)'));
+    await expect(getComputedStyle(button).color).toBe(resolvedColor('oklch(0.165 0.005 250)'));
   },
 };
 
@@ -144,4 +161,127 @@ export const FocoTemaEscuro: Story = {
   globals: { theme: 'dark' },
   render: threeIntents,
   play: focusContrast,
+};
+
+const prumoIntents = [
+  { intent: 'primary', label: 'Entrar' },
+  { intent: 'secondary', label: 'Cancelar' },
+  { intent: 'ghost', label: 'Ver convites' },
+  { intent: 'danger', label: 'Revogar' },
+] as const;
+
+const fourIntents: Story['render'] = () => (
+  <div className="flex flex-col gap-3 bg-surface p-4">
+    <div className="flex gap-3">
+      {prumoIntents.map(({ intent, label }) => (
+        <Button key={intent} intent={intent}>
+          {label}
+        </Button>
+      ))}
+    </div>
+    <div className="flex gap-3">
+      {prumoIntents.map(({ intent, label }) => (
+        <Button key={intent} intent={intent} size="sm">
+          {`${label} sm`}
+        </Button>
+      ))}
+    </div>
+  </div>
+);
+
+/**
+ * Every intent, at both sizes: the label reaches 4.5:1 on its own fill, and the keyboard ring of each
+ * one is the focus token at 3:1 against the page (PRU-08 AC03, PRU-01 AC13).
+ */
+const prumoContrast: Story['play'] = async ({ canvas }) => {
+  for (const { label } of prumoIntents) {
+    await settled(canvas.getByRole('button', { name: label }));
+    await settled(canvas.getByRole('button', { name: `${label} sm` }));
+  }
+  for (const { label } of prumoIntents) {
+    await expectContrast(canvas.getByRole('button', { name: label }), 4.5);
+    await expectContrast(canvas.getByRole('button', { name: `${label} sm` }), 4.5);
+  }
+  for (const { intent, label } of prumoIntents) {
+    await userEvent.tab();
+    const button = canvas.getByRole('button', { name: label });
+    await expect(button, `${intent} takes the focus`).toHaveFocus();
+    await settled(button);
+    const ring = focusRing(button);
+    await expect(ring.drawn, `${intent} draws the ring`).toBe(true);
+    await expect(ring.isFocusToken, `${intent} ring is the focus token`).toBe(true);
+    await expect(ring.ratio, `${intent} ring against the page`).toBeGreaterThanOrEqual(3);
+    await expect(getComputedStyle(button).outlineWidth).toBe('2px');
+    await expect(getComputedStyle(button).outlineOffset).toBe('2px');
+  }
+};
+
+export const ContrasteClaro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema claro',
+  globals: { theme: 'light' },
+  render: fourIntents,
+  play: prumoContrast,
+};
+
+export const ContrasteEscuro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema escuro',
+  globals: { theme: 'dark' },
+  render: fourIntents,
+  play: prumoContrast,
+};
+
+const withIcons: Story['render'] = () => (
+  <div className="flex flex-wrap items-center gap-3 bg-surface p-4">
+    <Button intent="secondary" icon={RefreshCw}>
+      Tentar novamente
+    </Button>
+    <Button intent="ghost" icon={LogOut}>
+      Sair
+    </Button>
+    <Button intent="secondary" size="sm" icon={UserPlus}>
+      Convidar pessoa
+    </Button>
+    <Button intent="ghost" size="sm" iconEnd={ArrowRight}>
+      Ver convites
+    </Button>
+    <Button intent="ghost" size="sm" icon={LogOut} aria-label="Sair da conta" />
+  </div>
+);
+
+/**
+ * Icons before the label, after it ("Ver convites") and alone with an `aria-label`: the icon takes the
+ * label color at 3:1 or more, 16px or 14px with `sm`, and the icon-only button is a square (PRU-01 AC11).
+ */
+const iconsPlay: Story['play'] = async ({ canvas }) => {
+  const sizes = [
+    ['Tentar novamente', 16],
+    ['Sair', 16],
+    ['Convidar pessoa', 14],
+    ['Ver convites', 14],
+    ['Sair da conta', 14],
+  ] as const;
+  for (const [name, size] of sizes) {
+    const button = canvas.getByRole('button', { name });
+    await settled(button);
+    const icon = button.querySelector('svg')!;
+    await expect(icon.getBoundingClientRect().width, name).toBe(size);
+    await expect(icon).toHaveAttribute('aria-hidden', 'true');
+    await expectContrast(icon, 3, 'stroke');
+  }
+  const square = canvas.getByRole('button', { name: 'Sair da conta' }).getBoundingClientRect();
+  await expect(square.width).toBe(square.height);
+};
+
+export const ComIconeClaro: Story = {
+  name: 'Com ícone, tema claro',
+  globals: { theme: 'light' },
+  render: withIcons,
+  play: iconsPlay,
+};
+
+export const ComIconeEscuro: Story = {
+  name: 'Com ícone, tema escuro',
+  globals: { theme: 'dark' },
+  render: withIcons,
+  play: iconsPlay,
 };

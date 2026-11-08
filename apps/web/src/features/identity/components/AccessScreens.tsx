@@ -1,6 +1,21 @@
 import { Alert, AuthPage, Button } from '@am/ui';
+import { CloudOff, Link2Off, LogOut, RefreshCw } from 'lucide-react';
 import { MESSAGES } from '../model/messages';
-import { SessionMenu, type SessionMenuProps } from './SessionMenu';
+import type { SessionMenuProps } from './SessionMenu';
+import { useSignOut } from './use-sign-out';
+
+function SignOutAction({ signOut, onSignedOut }: Pick<SessionMenuProps, 'signOut' | 'onSignedOut'>) {
+  const { signingOut, failure, leave } = useSignOut({ signOut, onSignedOut });
+
+  return (
+    <>
+      {failure === undefined ? null : <Alert intent="danger">{failure}</Alert>}
+      <Button intent="ghost" icon={LogOut} disabled={signingOut} onClick={leave}>
+        Sair
+      </Button>
+    </>
+  );
+}
 
 /**
  * A member on an admin page: the message and the way home, and nothing the admin area holds (UI-10).
@@ -10,12 +25,17 @@ export function NoAccessScreen({ session }: { session?: SessionMenuProps }) {
   return (
     <AuthPage.Root>
       <AuthPage.Header>
-        <h1 className="text-lg font-semibold">{MESSAGES.noAccess}</h1>
+        <h1 className="text-heading-xl">Sem acesso</h1>
+        <p className="text-text-muted">{MESSAGES.noAccess}</p>
       </AuthPage.Header>
-      <Button asChild intent="secondary">
-        <a href="/">Voltar para o início</a>
-      </Button>
-      {session === undefined ? null : <SessionMenu {...session} />}
+      <div className="flex flex-col gap-2">
+        <Button asChild intent="primary">
+          <a href="/">Voltar para o início</a>
+        </Button>
+        {session === undefined ? null : (
+          <SignOutAction signOut={session.signOut} onSignedOut={session.onSignedOut} />
+        )}
+      </div>
     </AuthPage.Root>
   );
 }
@@ -32,12 +52,30 @@ export function UnavailableScreen({
   return (
     <AuthPage.Root>
       <AuthPage.Header>
-        <h1 className="text-lg font-semibold">Application Manager</h1>
+        <h1 className="text-heading-xl">Indisponível</h1>
       </AuthPage.Header>
-      <Alert intent="danger">{MESSAGES.unavailable}</Alert>
-      <Button intent="secondary" onClick={onRetry}>
-        Tentar novamente
-      </Button>
+      <Alert intent="danger" icon={CloudOff}>
+        {MESSAGES.guardUnavailable}
+      </Alert>
+      <div>
+        <Button intent="secondary" icon={RefreshCw} onClick={onRetry}>
+          Tentar novamente
+        </Button>
+      </div>
+    </AuthPage.Root>
+  );
+}
+
+/** The only thing a dead invitation link shows: the message, and no form to fill in (UI-16). */
+export function InvalidInvitationScreen() {
+  return (
+    <AuthPage.Root>
+      <AuthPage.Header>
+        <h1 className="text-heading-xl">Convite inválido</h1>
+      </AuthPage.Header>
+      <Alert intent="danger" icon={Link2Off}>
+        {MESSAGES.invitationInvalid}
+      </Alert>
     </AuthPage.Root>
   );
 }

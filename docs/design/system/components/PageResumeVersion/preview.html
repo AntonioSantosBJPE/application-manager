@@ -1,0 +1,62 @@
+<!-- @dsCard group="Páginas futuras" height=800 width=1280 page subtitle="Fase 2 · versão por candidatura: selecionar, reordenar, reescrever — nunca inventar" -->
+<!doctype html>
+<html lang="pt-BR">
+<head><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../bundle.css"><meta charset="utf-8"><title>PageResumeVersion</title><style>body{min-height:800px;overflow:hidden;position:relative}</style></head>
+<body>
+<div class="am-shell">
+<nav class="am-sidebar" aria-label="Navegação principal">
+  <div class="am-sidebar__head"><svg class="am-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M16 16H23A7 7 0 1 1 16 9Z" fill="currentColor"/></svg><span class="am-wordmark">rumo <span>carreira</span></span></div>
+  <div class="am-sidebar__search"><button class="am-btn am-btn--ghost am-btn--sm"><i data-lucide="search" class="am-icon-sm"></i>Buscar<span class="am-kbd">⌘K</span></button></div>
+  <a class="am-nav"><i data-lucide="house" class="am-icon-sm"></i>Início</a>
+  <a class="am-nav" aria-current="page"><i data-lucide="briefcase" class="am-icon-sm"></i>Candidaturas<span class="am-nav__count">24</span></a>
+  <div class="am-sidebar__section">Currículo</div>
+  <a class="am-nav"><i data-lucide="file-text" class="am-icon-sm"></i>Currículo mestre</a>
+  <a class="am-nav"><i data-lucide="tags" class="am-icon-sm"></i>Skills</a>
+  <div class="am-sidebar__section">Análise</div>
+  <a class="am-nav"><i data-lucide="chart-no-axes-column" class="am-icon-sm"></i>Insights</a>
+  <div class="am-sidebar__foot"><span class="am-avatar">MA</span><span class="am-truncate">Marina Alves</span><span class="am-spacer"></span><button class="am-btn am-btn--ghost am-btn--sm am-btn--icon" aria-label="Sair"><i data-lucide="log-out" class="am-icon-sm"></i></button></div>
+</nav>
+<main class="am-main">
+  <div class="am-topbar"><div class="am-crumbs"><span>Candidaturas</span><i data-lucide="chevron-right" class="am-icon-sm"></i><span>Acme Pagamentos</span><i data-lucide="chevron-right" class="am-icon-sm"></i><b>Currículo</b></div><span class="am-spacer"></span>
+    <button class="am-btn am-btn--ghost am-btn--sm"><i data-lucide="rotate-ccw" class="am-icon-sm"></i>Recomeçar do mestre</button><button class="am-btn am-btn--primary am-btn--sm"><i data-lucide="file-down" class="am-icon-sm"></i>Gerar PDF</button></div>
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 440px;flex:1">
+    <div class="am-detail__main" style="gap:16px">
+      <div class="am-inline"><h1 class="am-h-lg">Versão para Acme Pagamentos</h1><span class="am-spacer"></span><span class="am-caption am-muted">9 de 14 bullets · ordenados por relevância</span></div>
+      <div class="am-inline"><span class="am-label am-muted">Vaga pede</span><div class="am-skills"><span class="am-skill am-skill--match"><i data-lucide="check" class="am-icon-sm"></i>NestJS</span><span class="am-skill am-skill--match"><i data-lucide="check" class="am-icon-sm"></i>PostgreSQL</span><span class="am-skill am-skill--match"><i data-lucide="check" class="am-icon-sm"></i>TypeScript</span><span class="am-skill">Kafka</span><span class="am-skill am-skill--nice">Docker</span></div></div>
+      <hr class="am-divider">
+      <section class="am-section"><div class="am-section__head"><h2 class="am-h-sm">Desenvolvedora Full Stack · Empresa Exemplo</h2><span class="am-mono am-muted">mar 2023 — atual</span></div>
+        <ul class="am-stack" style="gap:2px">
+          <li class="am-bullet" aria-selected="true"><span class="am-check" role="checkbox" aria-checked="true"></span><div><p class="am-bullet__text">Construí a API de pagamentos recorrentes em NestJS e PostgreSQL, processando 40 mil cobranças por mês.</p><div class="am-skills"><span class="am-skill am-skill--match"><i data-lucide="check" class="am-icon-sm"></i>NestJS</span><span class="am-skill am-skill--match"><i data-lucide="check" class="am-icon-sm"></i>PostgreSQL</span><span class="am-skill am-skill--match"><i data-lucide="check" class="am-icon-sm"></i>TypeScript</span></div></div><span class="am-score am-score--hit" title="pontuação de relevância">6</span></li>
+          <li class="am-bullet" aria-selected="true"><span class="am-check" role="checkbox" aria-checked="true"></span><div><p class="am-bullet__text">Criei a esteira de deploy com Docker e GitHub Actions, com preview por PR.</p><div class="am-skills"><span class="am-skill am-skill--match"><i data-lucide="check" class="am-icon-sm"></i>Docker</span><span class="am-skill">GitHub Actions</span></div></div><span class="am-score am-score--hit" title="pontuação de relevância">1</span></li>
+          <li class="am-bullet"><span class="am-check" role="checkbox" aria-checked="false"></span><div><p class="am-bullet__text">Migrei o front-end de Create React App para Vite, reduzindo o build de 4 min para 40 s.</p><div class="am-skills"><span class="am-skill">React</span><span class="am-skill">Vite</span></div></div><span class="am-score" title="pontuação de relevância">0</span></li>
+        </ul></section>
+      <section class="am-section"><div class="am-section__head"><h2 class="am-h-sm">Desenvolvedora Back-end · Outra Empresa</h2><span class="am-mono am-muted">jan 2021 — fev 2023</span></div>
+        <ul class="am-stack" style="gap:2px">
+          <li class="am-bullet" aria-selected="true"><span class="am-check" role="checkbox" aria-checked="true"></span><div><p class="am-bullet__text">Modelei o schema de faturamento em PostgreSQL com particionamento por mês.</p><div class="am-skills"><span class="am-skill am-skill--match"><i data-lucide="check" class="am-icon-sm"></i>PostgreSQL</span></div></div><span class="am-score am-score--hit" title="pontuação de relevância">2</span></li>
+          <li class="am-bullet"><span class="am-check" role="checkbox" aria-checked="false"></span><div><p class="am-bullet__text">Mantive integrações SOAP legadas com parceiros bancários.</p><div class="am-skills"><span class="am-skill">SOAP</span></div></div><span class="am-score" title="pontuação de relevância">0</span></li>
+        </ul></section>
+    </div>
+    <aside style="border-left:1px solid var(--border);background:var(--surface-raised);padding:16px;display:flex;flex-direction:column;gap:12px">
+      <div class="am-inline"><span class="am-h-sm">Documentos</span><span class="am-spacer"></span><span class="am-caption am-muted">imutáveis</span></div>
+      <ul class="am-stack" style="gap:4px">
+        <li class="am-inline" style="padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface)"><span style="color:var(--text-muted)"><i data-lucide="loader" class="am-icon-sm"></i></span><span class="am-mono">08 nov 14:35</span><span class="am-caption am-muted">gerando…</span></li>
+        <li class="am-inline" style="padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface)"><span style="color:var(--status-accepted)"><i data-lucide="file-check" class="am-icon-sm"></i></span><span class="am-mono">07 nov 18:02</span><span class="am-badge">Enviado</span><span class="am-spacer"></span><button class="am-btn am-btn--ghost am-btn--sm am-btn--icon" aria-label="Baixar"><i data-lucide="download" class="am-icon-sm"></i></button></li>
+        <li class="am-inline" style="padding:6px 8px;border:1px solid var(--danger);border-radius:var(--radius-sm);background:var(--danger-subtle);color:var(--danger)"><i data-lucide="circle-alert" class="am-icon-sm"></i><span class="am-mono">07 nov 17:58</span><span class="am-caption">falhou: conversor indisponível</span></li>
+      </ul>
+      <div class="am-paper" aria-label="Prévia do PDF">
+        <div style="font-size:14px;line-height:18px;font-weight:600">Marina Alves</div>
+        <div>Desenvolvedora Full Stack · marina@exemplo.com · Recife, PE</div>
+        <h4>Experiência</h4>
+        <div style="font-weight:600">Desenvolvedora Full Stack — Empresa Exemplo <span style="float:right;font-weight:400">mar 2023 – atual</span></div>
+        <ul><li>Construí a API de pagamentos recorrentes em NestJS e PostgreSQL, processando 40 mil cobranças por mês.</li><li>Criei a esteira de deploy com Docker e GitHub Actions, com preview por PR.</li></ul>
+        <div style="font-weight:600;margin-top:6px">Desenvolvedora Back-end — Outra Empresa <span style="float:right;font-weight:400">jan 2021 – fev 2023</span></div>
+        <ul><li>Modelei o schema de faturamento em PostgreSQL com particionamento por mês.</li></ul>
+        <h4>Skills</h4><div>NestJS, PostgreSQL, TypeScript, Docker, React</div>
+      </div>
+    </aside>
+  </div>
+</main></div>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>window.lucide && lucide.createIcons();</script>
+</body>
+</html>

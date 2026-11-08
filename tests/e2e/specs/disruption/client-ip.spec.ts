@@ -32,7 +32,7 @@ function contextFor(browser: Browser, ip: string): Promise<BrowserContext> {
 async function attemptSignIn(page: Page, password: string): Promise<void> {
   await page.goto('/admin/login');
   await page.getByLabel('E-mail').fill(adminEmail);
-  await page.getByLabel('Senha').fill(password);
+  await page.getByLabel('Senha', { exact: true }).fill(password);
   const [answer] = await Promise.all([
     page.waitForResponse((response) => response.request().method() === 'POST' && response.url().includes('_serverFn')),
     page.getByRole('button', { name: 'Entrar' }).click(),
@@ -99,7 +99,7 @@ test.describe('client ip', () => {
       const attempt = async (password: string, forwardedFor: string): Promise<string> => {
         // Each attempt is judged by its own answer: the alert of the previous one is still on the page.
         await page.setExtraHTTPHeaders({ [ADDRESS_HEADER]: FIRST_IP, 'x-forwarded-for': forwardedFor });
-        await page.getByLabel('Senha').fill(password);
+        await page.getByLabel('Senha', { exact: true }).fill(password);
         const [answer] = await Promise.all([
           page.waitForResponse(
             (response) => response.request().method() === 'POST' && response.url().includes('_serverFn'),

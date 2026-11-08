@@ -56,4 +56,4 @@
 
 O **Storybook** de `packages/ui` é a referência viva: tokens, componentes, arquétipos e exemplos de uso. Componente novo só entra com story, nos dois temas.
 
-Valores concretos (paleta, fonte, escala) serão definidos numa etapa de design dedicada e registrados aqui.
+Os valores concretos (paleta, fonte, escala, marca) foram definidos na etapa de design de 2026-11-08 e estão em [system/](system/README.md): o design system **Prumo** do produto **Rumo Carreira**, com tokens, guia por componente, logos e o desenho das telas atuais e futuras. O Prumo está aplicado em `packages/ui`, no Storybook e nas telas atuais de `apps/web`; é a referência para toda tela nova.

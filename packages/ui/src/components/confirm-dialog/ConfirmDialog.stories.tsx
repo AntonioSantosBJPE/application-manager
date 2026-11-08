@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { page } from '@vitest/browser/context';
+import { expectContrast, focusRing } from '../../testing/contrast';
 import { Button } from '../button';
 import { ConfirmDialog } from './confirm-dialog';
 
@@ -57,7 +58,7 @@ export const TemaClaro: Story = {
     await expect(document.documentElement).toHaveAttribute('data-theme', 'light');
     await settle(action);
     // The light value of --color-danger in tokens.css.
-    await expect(getComputedStyle(action).backgroundColor).toBe(resolvedColor('oklch(0.5 0.17 27)'));
+    await expect(getComputedStyle(action).backgroundColor).toBe(resolvedColor('oklch(0.52 0.17 27)'));
   },
 };
 
@@ -73,7 +74,7 @@ export const TemaEscuro: Story = {
     await expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
     await settle(action);
     // The dark value of --color-danger in tokens.css.
-    await expect(getComputedStyle(action).backgroundColor).toBe(resolvedColor('oklch(0.75 0.14 27)'));
+    await expect(getComputedStyle(action).backgroundColor).toBe(resolvedColor('oklch(0.72 0.15 25)'));
   },
 };
 
@@ -104,4 +105,40 @@ export const DescricaoLonga: Story = {
       within(dialog).getByRole('button', { name: 'Revogar convite' }).getBoundingClientRect().right,
     ).toBeLessThanOrEqual(width);
   },
+};
+
+/**
+ * Opens the dialog and checks it the way a person reads it: title, description and both actions at
+ * 4.5:1 on surface-overlay, the cancel focused first with the focus ring at 3:1 (PRU-08 AC03).
+ */
+const contrast: Story['play'] = async ({ canvas }) => {
+  await userEvent.click(canvas.getByRole('button', { name: 'Revogar' }));
+  const dialog = within(document.body).getByRole('alertdialog', { name: 'Revogar convite' });
+  await settle(dialog);
+  const cancel = within(dialog).getByRole('button', { name: 'Cancelar' });
+  const confirm = within(dialog).getByRole('button', { name: 'Revogar convite' });
+  await settle(cancel);
+  await settle(confirm);
+
+  await expectContrast(within(dialog).getByRole('heading', { name: 'Revogar convite' }), 4.5);
+  await expectContrast(within(dialog).getByText(/não poderá mais usar este link/), 4.5);
+  await expectContrast(cancel, 4.5);
+  await expectContrast(confirm, 4.5);
+
+  await expect(cancel).toHaveFocus();
+  const ring = focusRing(cancel);
+  await expect(ring.drawn).toBe(true);
+  await expect(ring.isFocusToken).toBe(true);
+};
+
+export const ContrasteClaro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema claro',
+  globals: { theme: 'light' },
+  play: contrast,
+};
+
+export const ContrasteEscuro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema escuro',
+  globals: { theme: 'dark' },
+  play: contrast,
 };

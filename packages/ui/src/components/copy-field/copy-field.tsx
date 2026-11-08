@@ -1,4 +1,6 @@
+import { Check } from 'lucide-react';
 import type { ComponentProps } from 'react';
+import { Icon } from '../../icons/icon';
 import { Alert } from '../alert';
 import { Button } from '../button';
 
@@ -23,9 +25,10 @@ function join(...classes: (string | undefined)[]): string {
 }
 
 /**
- * A read-only value with a copy action (UI-21, UI-25). The value sits in a read-only text box, so it
- * stays focusable and selectable when the clipboard fails; the caller passes the status and
- * the messages, since the component knows no product copy.
+ * A read-only value with a copy action (UI-21, UI-25). The value sits in a read-only text box, in
+ * `font-mono` on `surface-raised`, so it stays focusable and selectable when the clipboard fails;
+ * after a copy the action shows the check icon with `copiedLabel` (PRU-02). The caller passes the
+ * status and the messages, since the component knows no product copy.
  */
 export function CopyField({
   value,
@@ -47,11 +50,18 @@ export function CopyField({
           rows={1}
           value={value}
           aria-label={valueLabel}
-          className="field-sizing-content min-h-8 min-w-0 flex-1 resize-none rounded-sm border border-border bg-surface px-2 py-1.5 text-xs break-all text-text outline-focus focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="field-sizing-content min-h-control-md min-w-0 flex-1 resize-none rounded-sm border border-border-control bg-surface-raised px-2 py-1.5 font-mono text-mono break-all text-text outline-focus focus-visible:border-focus focus-visible:outline-2 focus-visible:-outline-offset-1"
           onFocus={(event) => event.currentTarget.select()}
         />
         <Button intent="secondary" className="shrink-0" onClick={onCopy}>
-          {status === 'copied' ? copiedLabel : copyLabel}
+          {status === 'copied' ? (
+            <>
+              <Icon icon={Check} size="sm" />
+              {copiedLabel}
+            </>
+          ) : (
+            copyLabel
+          )}
         </Button>
       </div>
       {status === 'failed' ? <Alert intent="danger">{failureMessage}</Alert> : null}

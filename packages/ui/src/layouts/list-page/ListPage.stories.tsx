@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Mail } from 'lucide-react';
 import { page } from '@vitest/browser/context';
 import { expect } from 'storybook/test';
 import { Button } from '../../components/button';
+import { expectContrast } from '../../testing/contrast';
 import { ListPage } from './list-page';
 
 /** A CSS color as the browser resolves it, to compare with a computed style. */
@@ -90,7 +92,7 @@ export const TemaClaro: Story = {
     await expect(document.documentElement).toHaveAttribute('data-theme', 'light');
     await expect(main).toHaveAttribute('data-archetype', 'list');
     // The light value of --color-text in tokens.css.
-    await expect(getComputedStyle(main).color).toBe(resolvedColor('oklch(0.24 0.02 260)'));
+    await expect(getComputedStyle(main).color).toBe(resolvedColor('oklch(0.21 0.012 250)'));
   },
 };
 
@@ -105,7 +107,7 @@ export const TemaEscuro: Story = {
     await expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
     await expect(main).toHaveAttribute('data-archetype', 'list');
     // The dark value of --color-text in tokens.css.
-    await expect(getComputedStyle(main).color).toBe(resolvedColor('oklch(0.96 0.005 260)'));
+    await expect(getComputedStyle(main).color).toBe(resolvedColor('oklch(0.955 0.003 250)'));
   },
 };
 
@@ -144,8 +146,11 @@ export const LinhaEstreita: Story = {
     for (const row of rows) {
       const text = row.firstElementChild!.getBoundingClientRect();
       const action = row.querySelector('button')!.getBoundingClientRect();
+      const style = getComputedStyle(row);
+      const contentWidth =
+        row.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
       await expect(text.width, 'the text uses the whole row').toBeGreaterThanOrEqual(
-        row.clientWidth - 1,
+        contentWidth - 1,
       );
       await expect(text.left).toBeGreaterThanOrEqual(0);
       await expect(action.right, 'the action stays on screen').toBeLessThanOrEqual(width);
@@ -154,4 +159,139 @@ export const LinhaEstreita: Story = {
       width,
     );
   },
+};
+
+/** The collection as the Prumo draws it: topbar, filter row, two groups of dense rows. */
+function Candidaturas() {
+  return (
+    <ListPage.Root>
+      <ListPage.Header>
+        <h1>Candidaturas</h1>
+        <span className="font-mono text-caption font-normal text-text-muted">3</span>
+        <Button size="sm" className="ml-auto">
+          Nova
+        </Button>
+      </ListPage.Header>
+      <ListPage.Filters aria-label="Filtros de candidaturas">
+        <Button intent="secondary" size="sm">
+          Ativas
+        </Button>
+        <Button intent="ghost" size="sm">
+          Nível
+        </Button>
+      </ListPage.Filters>
+      <ListPage.Content>
+        <ListPage.Group count={2}>Em entrevistas</ListPage.Group>
+        <ul aria-label="Em entrevistas">
+          <ListPage.Row selected>
+            <ListPage.RowText>Acme Pagamentos · Backend Pleno</ListPage.RowText>
+            <ListPage.RowMeta>
+              <span className="w-20 text-right font-mono text-caption">há 2 d</span>
+            </ListPage.RowMeta>
+          </ListPage.Row>
+          <ListPage.Row>
+            <ListPage.RowText>Nimbus Saúde · Full Stack Sênior</ListPage.RowText>
+            <ListPage.RowMeta>
+              <span className="w-20 text-right font-mono text-caption">há 5 d</span>
+            </ListPage.RowMeta>
+          </ListPage.Row>
+        </ul>
+        <ListPage.Group count={1}>Enviadas</ListPage.Group>
+        <ul aria-label="Enviadas">
+          <ListPage.Row>
+            <ListPage.RowText>Orbe Logística · Desenvolvedor Node.js</ListPage.RowText>
+            <ListPage.RowMeta>
+              <span className="w-20 text-right font-mono text-caption">há 9 d</span>
+            </ListPage.RowMeta>
+          </ListPage.Row>
+        </ul>
+      </ListPage.Content>
+    </ListPage.Root>
+  );
+}
+
+export const ListaComGrupos: Story = {
+  name: 'Lista com grupos',
+  render: () => <Candidaturas />,
+  play: async ({ canvas }) => {
+    await expect(canvas.getAllByRole('heading', { level: 2 })).toHaveLength(2);
+    await expect(canvas.getAllByRole('listitem')).toHaveLength(3);
+    await expect(canvas.getByRole('search', { name: 'Filtros de candidaturas' })).toBeVisible();
+  },
+};
+
+/** At 360 px the rows wrap and the page does not scroll sideways (PRU-04 AC12). */
+export const Estreito: Story = {
+  name: 'PRU-04 AC12 Estreito, 360 px',
+  render: () => <Candidaturas />,
+  play: async () => {
+    await page.viewport(360, 800);
+    await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(360);
+    await page.viewport(1280, 800);
+  },
+};
+
+/** Title, count, group labels, row text and metadata at 4.5:1 over what is painted behind them. */
+const contrast: Story['play'] = async ({ canvas }) => {
+  await expectContrast(canvas.getByRole('heading', { name: 'Candidaturas' }), 4.5);
+  await expectContrast(canvas.getByText('3', { selector: 'span' }), 4.5);
+  for (const group of canvas.getAllByRole('heading', { level: 2 })) await expectContrast(group, 4.5);
+  for (const row of canvas.getAllByRole('listitem')) await expectContrast(row, 4.5);
+  for (const date of canvas.getAllByText(/^há \d d$/)) await expectContrast(date, 4.5);
+};
+
+/** A row whose text opens with an icon: 14px, in text-muted at 3:1 over the row (PRU-04 AC12, PRU-08 AC03). */
+function RowWithIcon() {
+  return (
+    <ListPage.Root>
+      <ListPage.Content>
+        <ul>
+          <ListPage.Row>
+            <ListPage.RowText icon={Mail}>joao@exemplo.com</ListPage.RowText>
+            <ListPage.RowMeta>
+              <span className="w-24 text-right font-mono text-caption">expira em 7 d</span>
+            </ListPage.RowMeta>
+          </ListPage.Row>
+        </ul>
+      </ListPage.Content>
+    </ListPage.Root>
+  );
+}
+
+const rowWithIcon: Story['play'] = async ({ canvas }) => {
+  const text = canvas.getByText('joao@exemplo.com');
+  const svg = text.parentElement?.querySelector('svg');
+  await expect(svg, 'the icon sits before the row text').toBeTruthy();
+  await expect(svg!.getAttribute('width')).toBe('14');
+  await expect(svg!.getAttribute('aria-hidden')).toBe('true');
+  await expectContrast(svg!, 3);
+  await expectContrast(text, 4.5);
+};
+
+export const LinhaComIconeClaro: Story = {
+  name: 'PRU-04 AC12 Linha com ícone, tema claro',
+  globals: { theme: 'light' },
+  render: () => <RowWithIcon />,
+  play: rowWithIcon,
+};
+
+export const LinhaComIconeEscuro: Story = {
+  name: 'PRU-04 AC12 Linha com ícone, tema escuro',
+  globals: { theme: 'dark' },
+  render: () => <RowWithIcon />,
+  play: rowWithIcon,
+};
+
+export const ContrasteClaro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema claro',
+  globals: { theme: 'light' },
+  render: () => <Candidaturas />,
+  play: contrast,
+};
+
+export const ContrasteEscuro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema escuro',
+  globals: { theme: 'dark' },
+  render: () => <Candidaturas />,
+  play: contrast,
 };

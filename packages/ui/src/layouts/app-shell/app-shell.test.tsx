@@ -1,5 +1,7 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { LayoutDashboard, Mail } from 'lucide-react';
 import { describe, expect, it, vi } from 'vitest';
+import { Button } from '../../components/button';
 import { DashboardPage } from '../dashboard-page';
 import { ListPage } from '../list-page';
 import { AppShell } from './app-shell';
@@ -157,5 +159,107 @@ describe('AppShell', () => {
     expect(mains).toHaveLength(1);
     expect(mains[0]).toHaveAttribute('data-archetype', 'dashboard');
     expect(mains[0]).toContainElement(screen.getByText('Widget A'));
+  });
+});
+
+function renderFullShell(onSignOut = vi.fn()) {
+  return render(
+    <AppShell.Root>
+      <AppShell.Sidebar aria-label="Navegação da administração">
+        <AppShell.Brand tag="admin" />
+        <AppShell.Section title="Administração">
+          <AppShell.NavItem asChild current icon={LayoutDashboard} count="3">
+            <a href="/admin">Painel</a>
+          </AppShell.NavItem>
+          <AppShell.NavItem href="/admin/invitations" icon={Mail}>
+            Convites
+          </AppShell.NavItem>
+        </AppShell.Section>
+        <AppShell.User initials="MA" name="Marina Alves">
+          <Button intent="ghost" size="sm" onClick={onSignOut}>
+            Sair
+          </Button>
+        </AppShell.User>
+      </AppShell.Sidebar>
+      <AppShell.Main>
+        <AppShell.Topbar>
+          <span>Painel</span>
+          <Button size="sm">Convidar pessoa</Button>
+        </AppShell.Topbar>
+      </AppShell.Main>
+    </AppShell.Root>,
+  );
+}
+
+describe('AppShell parts', () => {
+  it('PRU-04 AC02 shows the logo, then the navigation by section, then the person with the sign-out action', () => {
+    renderFullShell();
+
+    const navigation = screen.getByRole('navigation', { name: 'Navegação da administração' });
+    const wordmark = within(navigation).getByText('rumo');
+    const group = within(navigation).getByRole('group', { name: 'Administração' });
+    const person = within(navigation).getByText('Marina Alves');
+    const signOut = within(navigation).getByRole('button', { name: 'Sair' });
+    const follows = (a: Element, b: Element) =>
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+
+    expect(follows(wordmark, group)).toBe(true);
+    expect(follows(group, person)).toBe(true);
+    expect(follows(person, signOut)).toBe(true);
+    expect(within(group).getAllByRole('link')).toHaveLength(2);
+    expect(wordmark.parentElement?.textContent).toBe('rumo carreira');
+  });
+
+  it('PRU-05 AC07 shows the wordmark and the tag in the sidebar brand', () => {
+    renderFullShell();
+
+    const navigation = screen.getByRole('navigation');
+    expect(within(navigation).getByText('rumo')).toBeInTheDocument();
+    expect(within(navigation).getByText('carreira')).toBeInTheDocument();
+    expect(within(navigation).getByText('admin')).toBeInTheDocument();
+  });
+
+  it('PRU-04 AC03 draws the icon, the label and the mono count, and marks only the current item', () => {
+    renderFullShell();
+
+    const current = screen.getByRole('link', { name: /Painel/ });
+    const other = screen.getByRole('link', { name: 'Convites' });
+
+    expect(current).toHaveAttribute('aria-current', 'page');
+    expect(current).toHaveClass('bg-accent-subtle', 'text-accent-text');
+    expect(current.querySelector('svg')).not.toBeNull();
+    expect(within(current).getByText('3')).toHaveClass('font-mono');
+    expect(other).not.toHaveAttribute('aria-current');
+    expect(other).not.toHaveClass('bg-accent-subtle');
+    expect(other.querySelector('svg')).not.toBeNull();
+    expect(within(other).queryByText('3')).toBeNull();
+  });
+
+  it('PRU-04 AC04 keeps one link per item with asChild, icon and count inside the caller element', () => {
+    const { container } = renderFullShell();
+
+    const current = screen.getByRole('link', { name: /Painel/ });
+    expect(current).toHaveAttribute('href', '/admin');
+    expect(current).toHaveClass('h-7.5');
+    expect(container.querySelectorAll('a')).toHaveLength(2);
+    expect(screen.getAllByRole('main')).toHaveLength(1);
+  });
+
+  it('PRU-04 AC02 hides the initials from assistive technology and keeps the action working', () => {
+    const onSignOut = vi.fn();
+    renderFullShell(onSignOut);
+
+    expect(screen.getByText('MA')).toHaveAttribute('aria-hidden', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Sair' }));
+
+    expect(onSignOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('PRU-04 AC06 puts the title and the page actions in the topbar', () => {
+    renderFullShell();
+
+    const topbar = screen.getByText('Painel', { selector: 'span' }).parentElement!;
+    expect(topbar).toHaveClass('h-12');
+    expect(within(topbar).getByRole('button', { name: 'Convidar pessoa' })).toBeInTheDocument();
   });
 });

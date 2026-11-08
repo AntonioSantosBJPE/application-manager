@@ -1,0 +1,16 @@
+<!-- @dsCard group="Feedback" height=200 -->
+<!doctype html>
+<html lang="pt-BR">
+<head><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../bundle.css"><meta charset="utf-8"><title>Alert</title>
+<style>body{padding:16px;} .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;} .col{display:flex;flex-direction:column;gap:12px;} </style>
+</head>
+<body>
+<div class="col" style="max-width:520px">
+<div class="am-alert am-alert--info" role="status"><i data-lucide="info" class="am-icon"></i><span>Sua sessão expirou. Entre de novo para continuar.</span></div>
+<div class="am-alert am-alert--danger" role="alert"><i data-lucide="circle-alert" class="am-icon"></i><span>E-mail ou senha incorretos.</span></div>
+<div class="am-alert am-alert--warning" role="status"><i data-lucide="clock" class="am-icon"></i><span>21 dias sem atividade. Marcar como sem retorno?</span><button class="am-btn am-btn--secondary am-btn--sm am-alert__action">Marcar</button></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>window.lucide && lucide.createIcons();</script>
+</body>
+</html>

@@ -49,8 +49,11 @@ export function LoginForm({ title, login, onSuccess, notice }: LoginFormProps) {
   return (
     <AuthPage.Root>
       <AuthPage.Header>
-        <h1 className="text-lg font-semibold">{title}</h1>
+        <h1 className="text-heading-xl">{title}</h1>
+        <p className="text-text-muted">Rumo Carreira — suas candidaturas e currículos</p>
       </AuthPage.Header>
+      {notice === undefined ? null : <Alert intent="info">{notice}</Alert>}
+      {failure === undefined ? null : <Alert intent="danger">{failure}</Alert>}
       <AuthPage.Form
         noValidate
         onSubmit={(event) => {
@@ -59,8 +62,6 @@ export function LoginForm({ title, login, onSuccess, notice }: LoginFormProps) {
           void form.handleSubmit();
         }}
       >
-        {notice === undefined ? null : <Alert intent="info">{notice}</Alert>}
-        {failure === undefined ? null : <Alert intent="danger">{failure}</Alert>}
         <form.Field
           name="email"
           validators={{
@@ -92,9 +93,9 @@ export function LoginForm({ title, login, onSuccess, notice }: LoginFormProps) {
           {(field) => (
             <Field.Root invalid={field.state.meta.errors.length > 0}>
               <Field.Label htmlFor={`${id}-password`}>Senha</Field.Label>
-              <Field.Control
+              <Field.PasswordControl
                 id={`${id}-password`}
-                type="password"
+                toggleLabel="Mostrar senha"
                 autoComplete="current-password"
                 value={field.state.value}
                 onBlur={field.handleBlur}
@@ -112,6 +113,9 @@ export function LoginForm({ title, login, onSuccess, notice }: LoginFormProps) {
           )}
         </form.Subscribe>
       </AuthPage.Form>
+      <AuthPage.Footer>
+        O acesso é por convite. Esqueceu a senha? Fale com quem te convidou.
+      </AuthPage.Footer>
     </AuthPage.Root>
   );
 }

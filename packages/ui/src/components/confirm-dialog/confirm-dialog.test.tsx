@@ -86,3 +86,72 @@ describe('ConfirmDialog', () => {
     expect(dialog).toContainElement(document.activeElement as HTMLElement);
   });
 });
+
+describe('ConfirmDialog in the Prumo', () => {
+  it('PRU-02 AC16 floats on surface-overlay with border-strong, radius-lg, shadow-overlay and 440px over the backdrop', async () => {
+    const { user, trigger } = renderDialog();
+
+    await user.click(trigger);
+
+    const dialog = screen.getByRole('alertdialog');
+    expect(dialog).toHaveClass(
+      'bg-surface-overlay',
+      'border-border-strong',
+      'rounded-lg',
+      'shadow-overlay',
+      'max-w-110',
+    );
+    // The veil is the element Radix renders right before the dialog in the portal.
+    const veil = dialog.previousElementSibling;
+    expect(veil).toHaveClass('bg-backdrop', 'fixed', 'inset-0');
+  });
+
+  it('PRU-02 AC17 closes on Esc without calling onConfirm, even with the confirm action focused', async () => {
+    const { onConfirm, user, trigger } = renderDialog();
+
+    await user.click(trigger);
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Revogar convite' })).toHaveFocus();
+
+    await user.keyboard('{Escape}');
+
+    expect(onConfirm).not.toHaveBeenCalled();
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(trigger).toHaveFocus();
+  });
+
+  it('PRU-02 AC18 keeps Tab and Shift+Tab cycling between the two actions while open', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <button type="button">Antes</button>
+        <ConfirmDialog
+          trigger={<Button intent="secondary">Revogar</Button>}
+          title="Revogar convite"
+          description="ana@exemplo.com não poderá mais usar este link."
+          confirmLabel="Revogar convite"
+          cancelLabel="Cancelar"
+          onConfirm={vi.fn()}
+        />
+        <button type="button">Depois</button>
+      </>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Revogar' }));
+    const cancel = screen.getByRole('button', { name: 'Cancelar' });
+    const confirm = screen.getByRole('button', { name: 'Revogar convite' });
+    expect(cancel).toHaveFocus();
+
+    const visited: (Element | null)[] = [];
+    for (let step = 0; step < 4; step += 1) {
+      await user.tab();
+      visited.push(document.activeElement);
+    }
+    expect(visited).toEqual([confirm, cancel, confirm, cancel]);
+
+    await user.tab({ shift: true });
+    expect(confirm).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(cancel).toHaveFocus();
+  });
+});
