@@ -18,6 +18,7 @@ export { DropdownMenu } from './components/dropdown-menu';
 export { EmptyState } from './components/empty-state';
 export { Field, type FieldRootProps } from './components/field';
 export { FilterChip, type FilterChipProps } from './components/filter-chip';
+export { InlineEdit, type InlineEditProps } from './components/inline-edit';
 export { Kbd, type KbdProps } from './components/kbd';
 export { Logo, type LogoProps, type LogoTone } from './components/logo';
 export {

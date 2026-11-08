@@ -653,9 +653,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] O botão de exibição tem nome acessível vindo de quem chama; `Esc` devolve o valor anterior e o foco ao botão; gravar chama `onCommit` uma vez
-- [ ] Story e testes de navegador passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] O botão de exibição tem nome acessível vindo de quem chama; `Esc` devolve o valor anterior e o foco ao botão; gravar chama `onCommit` uma vez
+- [x] Story e testes de navegador passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
