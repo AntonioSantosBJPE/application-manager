@@ -221,10 +221,10 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `pnpm --filter @am/api seed:generate` escreve o SQL com `INSERT ... ON CONFLICT DO NOTHING` nas duas tabelas e as chaves calculadas por `normalizeSkillKey`
-- [ ] A entrada `0003_skills_seed` está no journal do Drizzle
-- [ ] Teste unitário de deriva: o SQL gerado em memória é igual ao arquivo commitado
-- [ ] Teste `SKL-02`: num banco migrado há pelo menos 200 globais, toda `normalized_key` é a normalização do `name`, e as sete categorias aparecem
+- [x] `pnpm --filter @am/api seed:generate` escreve o SQL com `INSERT ... ON CONFLICT DO NOTHING` nas duas tabelas e as chaves calculadas por `normalizeSkillKey`
+- [x] A entrada `0003_skills_seed` está no journal do Drizzle
+- [x] Teste unitário de deriva: o SQL gerado em memória é igual ao arquivo commitado
+- [x] Teste `SKL-02`: num banco migrado há pelo menos 200 globais, toda `normalized_key` é a normalização do `name`, e as sete categorias aparecem
 
 **Tests**: integration
 **Gate**: full
