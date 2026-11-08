@@ -28,6 +28,27 @@ describe('Button', () => {
     expect(button).not.toHaveClass('bg-accent');
   });
 
+  it('renders the link intent as accent text with no box and no side padding', () => {
+    render(
+      <>
+        <Button intent="link">Ver texto completo</Button>
+        <Button intent="link" size="sm">
+          Ver menos
+        </Button>
+        <Button intent="ghost" size="sm">
+          Cancelar
+        </Button>
+      </>,
+    );
+
+    for (const name of ['Ver texto completo', 'Ver menos']) {
+      const link = screen.getByRole('button', { name });
+      expect(link).toHaveClass('text-accent-text', 'bg-transparent', 'border-transparent', 'px-0');
+      expect(link).not.toHaveClass('px-2', 'px-3', 'text-text-muted', 'bg-accent');
+    }
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toHaveClass('px-2');
+  });
+
   it('runs the action when the button is clicked', () => {
     const onClick = vi.fn();
     render(<Button onClick={onClick}>Copiar</Button>);

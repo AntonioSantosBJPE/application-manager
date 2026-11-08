@@ -28,7 +28,13 @@ export {
   type PipelineStatusValue,
 } from './components/pipeline-status';
 export { SearchInput, type SearchInputProps } from './components/search-input';
-export { SkillTag, type SkillTagProps, type SkillTagVariant } from './components/skill-tag';
+export {
+  SkillTag,
+  SkillTagAdd,
+  type SkillTagAddProps,
+  type SkillTagProps,
+  type SkillTagVariant,
+} from './components/skill-tag';
 export { StatusBadge, type StatusBadgeProps } from './components/status-badge';
 export { TagField, type TagFieldProps, type TagFieldTag } from './components/tag-field';
 export { Timeline, type TimelineItemProps } from './components/timeline';

@@ -176,4 +176,32 @@ describe('InlineEdit', () => {
 
     expect(field()).toHaveAttribute('aria-invalid', 'true');
   });
+
+  it('draws the value from visibleFrom on, while the name and the edit field keep the whole value', async () => {
+    const user = userEvent.setup();
+    render(
+      <InlineEdit
+        value="https://vagas.exemplo.com/1234"
+        label="Editar link da vaga"
+        visibleFrom={(value) => value.match(/^https?:\/\//)?.[0].length ?? 0}
+        onCommit={() => {}}
+      />,
+    );
+
+    const button = screen.getByRole('button', { name: 'Editar link da vaga https://vagas.exemplo.com/1234' });
+    expect(button.textContent).toBe('Editar link da vaga https://vagas.exemplo.com/1234');
+    const cut = screen.getByText('https://');
+    expect(cut).toHaveClass('sr-only');
+    expect(cut.parentElement?.textContent).toBe('https://vagas.exemplo.com/1234');
+
+    await user.click(button);
+
+    expect(screen.getByRole('textbox', { name: 'Editar link da vaga' })).toHaveValue('https://vagas.exemplo.com/1234');
+  });
+
+  it('keeps the empty text while the value is empty, whatever visibleFrom says', () => {
+    render(<InlineEdit value="" label="Editar link da vaga" emptyText="—" visibleFrom={() => 99} onCommit={() => {}} />);
+
+    expect(screen.getByRole('button', { name: 'Editar link da vaga —' })).toBeInTheDocument();
+  });
 });

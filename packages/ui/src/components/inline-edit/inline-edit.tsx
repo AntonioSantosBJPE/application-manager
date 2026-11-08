@@ -20,6 +20,12 @@ export type InlineEditProps = Omit<
    * the text on the button (WCAG 2.5.3).
    */
   label: string;
+  /**
+   * Where the drawn text of a saved value starts: "https://" is not drawn in a link, so the button reads
+   * "vagas.exemplo.com/1" while the accessible name keeps the whole value, and so does the edit field.
+   * What comes before stays in the text for assistive technology and is cut only visually.
+   */
+  visibleFrom?: (value: string) => number;
   /** What the button shows while the value is empty, in `text-muted`; the caller owns the words. */
   emptyText?: ReactNode;
   /** Marks the field invalid while it is being edited, as a `Field.Root` does. */
@@ -38,6 +44,7 @@ export function InlineEdit({
   onCommit,
   label,
   emptyText,
+  visibleFrom,
   invalid = false,
   className,
   ...inputProps
@@ -88,6 +95,7 @@ export function InlineEdit({
 
   if (!editing) {
     const empty = value === '';
+    const from = visibleFrom === undefined ? 0 : Math.min(Math.max(visibleFrom(value), 0), value.length);
     return (
       <button
         ref={button}
@@ -102,7 +110,16 @@ export function InlineEdit({
         )}
       >
         <span className="sr-only">{label}</span>{' '}
-        <span className="min-w-0 truncate">{empty ? emptyText : value}</span>
+        <span className="min-w-0 truncate">
+          {empty ? (
+            emptyText
+          ) : (
+            <>
+              <span className="sr-only">{value.slice(0, from)}</span>
+              {value.slice(from)}
+            </>
+          )}
+        </span>
       </button>
     );
   }

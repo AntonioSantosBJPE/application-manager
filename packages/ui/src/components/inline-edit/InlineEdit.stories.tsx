@@ -45,6 +45,25 @@ export const Padrao: Story = {
   },
 };
 
+export const ValorAbreviado: Story = {
+  name: 'Valor abreviado',
+  render: () => (
+    <div className="w-60 bg-surface p-4">
+      <InlineEdit
+        value="https://vagas.exemplo.com/vento-seguros/backend-pleno"
+        label="Editar link da vaga"
+        visibleFrom={(value) => value.match(/^https?:\/\//)?.[0].length ?? 0}
+        onCommit={() => {}}
+      />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const button = canvas.getByRole('button', { name: /^Editar link da vaga https:\/\// });
+    await expect(button.querySelector('.sr-only + .sr-only, .truncate .sr-only')).toHaveTextContent('https://');
+    await expect(button).toHaveTextContent('vagas.exemplo.com/vento-seguros/backend-pleno');
+  },
+};
+
 export const Vazio: Story = {
   name: 'Sem valor',
   render: () => <Controlled initial="" />,

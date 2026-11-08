@@ -48,6 +48,22 @@ export const Fantasma: Story = {
   args: { intent: 'ghost', children: 'Ver convites' },
 };
 
+export const Link: Story = {
+  name: 'Link',
+  args: { intent: 'link', size: 'sm', children: 'Ver texto completo' },
+  render: (args) => (
+    <div className="bg-surface p-4">
+      <p className="text-caption text-text-muted">Buscamos pessoa desenvolvedora backend para atuar no time.</p>
+      <Button {...args} />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const link = canvas.getByRole('button', { name: 'Ver texto completo' });
+    await expect(link).toHaveClass('text-accent-text', 'px-0');
+    await expectContrast(link, 4.5);
+  },
+};
+
 export const Pequeno: Story = {
   name: 'Pequeno',
   args: { intent: 'secondary', size: 'sm', children: 'Revogar' },
