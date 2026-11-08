@@ -1072,10 +1072,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Aparece só com `ghostSuggested`; "Atividade" em `warning` junto
-- [ ] "Marcar sem retorno" muda o status; "Ainda não" chama o adiamento; os dois escondem o Alert
-- [ ] Testes `APP-80` a `APP-82` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Aparece só com `ghostSuggested`; "Atividade" em `warning` junto
+- [x] "Marcar sem retorno" muda o status; "Ainda não" chama o adiamento; os dois escondem o Alert
+- [x] Testes `APP-80` a `APP-82` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

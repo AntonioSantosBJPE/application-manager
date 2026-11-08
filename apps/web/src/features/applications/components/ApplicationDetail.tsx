@@ -15,6 +15,7 @@ import type { SkillsFieldApi } from '../../skills';
 import { MESSAGES, problemMessage } from '../../identity';
 import { DETAIL_MESSAGES } from '../model/messages';
 import { ApplicationTimeline } from './ApplicationTimeline';
+import { GhostAlert } from './GhostAlert';
 import { DeleteApplication } from './DeleteApplication';
 import { DetailActions } from './DetailActions';
 import { NoteComposer } from './NoteComposer';
@@ -29,6 +30,7 @@ export interface ApplicationDetailApi {
   addEvent: (id: string, body: CreateEventRequest) => Promise<Outcome<ApplicationEvent>>;
   replaceSkills: (id: string, body: ReplaceSkillsRequest) => Promise<Outcome<ApplicationRecord>>;
   remove: (id: string) => Promise<Outcome<undefined>>;
+  snooze: (id: string) => Promise<Outcome<ApplicationRecord>>;
   /** The search and the creation of the skills field, as in the registration dialog. */
   skills: SkillsFieldApi;
   changeStatus: (id: string, status: ApplicationStatus) => Promise<Outcome<ApplicationRecord>>;
@@ -235,6 +237,15 @@ export function ApplicationDetail({
       </AppShell.Topbar>
       <div className="flex min-w-0 flex-1 flex-col md:flex-row">
         <DetailPage.Main>
+          {current.ghostSuggested ? (
+            <GhostAlert
+              status={current.status}
+              lastActivityAt={current.lastActivityAt}
+              now={now}
+              onSnooze={() => void save(() => api.snooze(id))}
+              onGhost={() => void save(() => api.changeStatus(id, 'ghosted'))}
+            />
+          ) : null}
           {failure === undefined ? null : <Alert intent="danger">{failure}</Alert>}
           <div className="flex flex-col gap-1">
             <span className="text-text-muted">{current.company}</span>

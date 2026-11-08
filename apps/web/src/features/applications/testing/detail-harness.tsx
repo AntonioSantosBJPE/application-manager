@@ -1,7 +1,7 @@
 import type { ApplicationDetail } from '@am/contracts';
 import { render } from '@testing-library/react';
 import { vi } from 'vitest';
-import { loadApplication, patchJobPosting, postEvent, postStatus, putSkills, removeApplicationById } from '../api/server-functions';
+import { loadApplication, patchJobPosting, postEvent, postStatus, putSkills, removeApplicationById, postGhostSnooze } from '../api/server-functions';
 import { ApplicationDetail as Detail, type ApplicationDetailApi } from '../components/ApplicationDetail';
 import { context } from './api';
 import { fakeSkillsApi } from './skills-api';
@@ -11,6 +11,7 @@ import { NOW } from './fixtures';
 export function detailApi(): ApplicationDetailApi {
   const skills = fakeSkillsApi();
   return {
+    snooze: (id) => postGhostSnooze(id, context),
     remove: (id) => removeApplicationById(id, context),
     replaceSkills: (id, body) => putSkills(id, body, context),
     skills: { search: skills.search, create: skills.create },

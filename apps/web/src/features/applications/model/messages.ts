@@ -95,6 +95,8 @@ export const DETAIL_MESSAGES = {
   cancelAddSkill: 'Cancelar',
   skillsPlaceholder: 'Adicionar…',
   editLocation: 'Editar local',
+  ghostLater: 'Ainda não',
+  ghostMark: 'Marcar sem retorno',
   editPosting: 'Editar link da vaga',
   editJob: 'Editar vaga',
   deleteTitle: 'Excluir candidatura?',
