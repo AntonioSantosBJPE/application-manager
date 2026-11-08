@@ -1,6 +1,6 @@
 import type { Skill, SkillCategory } from '@am/contracts';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, exists, isNull, like, or, sql } from 'drizzle-orm';
+import { and, eq, exists, inArray, isNull, like, or, sql } from 'drizzle-orm';
 import { DATABASE, type Database } from '../../../infra/database/database.module.js';
 import { skillAliases, skills } from './schema.js';
 
@@ -98,5 +98,14 @@ export class SkillsRepository {
       .onConflictDoNothing()
       .returning({ id: skills.id, name: skills.name, category: skills.category, ownerUserId: skills.ownerUserId });
     return row === undefined ? undefined : toSkill(row);
+  }
+
+  /** The ids, among `ids`, that are global or private to `userId`; the caller passes only valid uuids. */
+  async visibleIds(userId: string, ids: string[]): Promise<string[]> {
+    const rows = await this.db
+      .select({ id: skills.id })
+      .from(skills)
+      .where(and(inArray(skills.id, ids), visibleTo(userId)));
+    return rows.map((row) => row.id);
   }
 }

@@ -285,9 +285,9 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `visibleIds(userId, ids)` devolve só ids globais ou privados do usuário e descarta o que não é uuid antes da consulta
-- [ ] `index.ts` exporta `SkillsModule` e `SkillsCatalog`; o `AppModule` importa pelo `index.ts`
-- [ ] Testes `SKL-58` e `SKL-59` passam
+- [x] `visibleIds(userId, ids)` devolve só ids globais ou privados do usuário e descarta o que não é uuid antes da consulta
+- [x] `index.ts` exporta `SkillsModule` e `SkillsCatalog`; o `AppModule` importa pelo `index.ts`
+- [x] Testes `SKL-58` e `SKL-59` passam
 
 **Tests**: integration
 **Gate**: full
