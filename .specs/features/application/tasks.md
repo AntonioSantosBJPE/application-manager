@@ -1007,10 +1007,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Tipos "Triagem", "RH", "Técnica", "Case", "Outra"; data padrão hoje e sem futuro; nota opcional
-- [ ] A etapa entra na posição da sua data
-- [ ] Teste `APP-72` passa
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Tipos "Triagem", "RH", "Técnica", "Case", "Outra"; data padrão hoje e sem futuro; nota opcional
+- [x] A etapa entra na posição da sua data
+- [x] Teste `APP-72` passa
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

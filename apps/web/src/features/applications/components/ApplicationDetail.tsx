@@ -16,6 +16,7 @@ import { DETAIL_MESSAGES } from '../model/messages';
 import { ApplicationTimeline } from './ApplicationTimeline';
 import { NoteComposer } from './NoteComposer';
 import { PropertiesSidebar } from './PropertiesSidebar';
+import { StageDialog } from './StageDialog';
 
 /** What the detail needs from the BFF; the route binds the server functions, a test binds the api. */
 export interface ApplicationDetailApi {
@@ -28,6 +29,8 @@ export interface ApplicationDetailApi {
 
 export interface ApplicationDetailProps {
   application: ApplicationRecord;
+  /** The instant the loader took, which "today" counts from in the stage dialog. */
+  now: Date;
   api: ApplicationDetailApi;
   /** Gets every failed outcome first; returns true when it was a `401` and the login is opening. */
   onExpired: (outcome: Outcome<unknown>) => boolean;
@@ -128,10 +131,12 @@ function Description({ text }: { text: string }) {
  * posting link in the topbar, the company and title, the skills, the timeline, and the properties at
  * the side, which go under the content when narrow. The resume section of the card is not here (AD-017).
  */
-export function ApplicationDetail({ application, api, onExpired, onChanged, listHref, onOpenList }: ApplicationDetailProps) {
+export function ApplicationDetail({ application, now, api, onExpired, onChanged, listHref, onOpenList }: ApplicationDetailProps) {
   const [current, setCurrent] = useState(application);
   const [seen, setSeen] = useState(application);
   const [failure, setFailure] = useState<string | undefined>();
+  const [staging, setStaging] = useState(false);
+  const stageButton = useRef<HTMLButtonElement>(null);
   // A new answer of the route (the loader read again) replaces what the screen holds.
   if (application !== seen) {
     setSeen(application);
@@ -216,7 +221,10 @@ export function ApplicationDetail({ application, api, onExpired, onChanged, list
               <h2 id="detail-timeline" className="text-heading-sm">
                 {DETAIL_MESSAGES.timeline}
               </h2>
-              <Button intent="ghost" size="sm" icon={Plus}>
+              <Button ref={stageButton} intent="ghost" size="sm" icon={Plus} onClick={() => {
+                  setFailure(undefined);
+                  setStaging(true);
+                }}>
                 {DETAIL_MESSAGES.addStage}
               </Button>
             </div>
@@ -240,6 +248,18 @@ export function ApplicationDetail({ application, api, onExpired, onChanged, list
           }
         />
       </div>
+      {staging ? (
+        <StageDialog
+          now={now}
+          failure={failure}
+          onSave={(body) => record(body)}
+          onClose={() => setStaging(false)}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            stageButton.current?.focus();
+          }}
+        />
+      ) : null}
     </DetailPage.Root>
   );
 }

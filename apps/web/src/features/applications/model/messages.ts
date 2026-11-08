@@ -92,3 +92,16 @@ export const DETAIL_MESSAGES = {
 
 /** The accessible name of a property menu: the name of the property and the value it shows ("Status Enviada"). */
 export const propertyLabel = (name: string, value: string) => `${name} ${value}`;
+
+/** The copy of the "+ Etapa" dialog (APP-72). */
+export const STAGE_MESSAGES = {
+  title: 'Nova etapa',
+  stage: 'Etapa',
+  day: 'Data',
+  note: 'Nota',
+  noteHint: '· opcional',
+  cancel: 'Cancelar',
+  confirm: 'Registrar etapa',
+  stageRequired: 'Escolha o tipo da etapa.',
+  dayInvalid: 'Escolha uma data até hoje.',
+} as const;

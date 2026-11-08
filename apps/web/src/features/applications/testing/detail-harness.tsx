@@ -4,6 +4,7 @@ import { vi } from 'vitest';
 import { loadApplication, patchJobPosting, postEvent, postStatus } from '../api/server-functions';
 import { ApplicationDetail as Detail, type ApplicationDetailApi } from '../components/ApplicationDetail';
 import { context } from './api';
+import { NOW } from './fixtures';
 
 /** The detail api bound to the BFF functions, so a test talks to the fake api through MSW. */
 export function detailApi(): ApplicationDetailApi {
@@ -19,6 +20,6 @@ export function detailApi(): ApplicationDetailApi {
 export function renderDetail(application: ApplicationDetail, api: ApplicationDetailApi = detailApi()) {
   const onExpired = vi.fn(() => false);
   const onChanged = vi.fn();
-  render(<Detail application={application} api={api} onExpired={onExpired} onChanged={onChanged} />);
+  render(<Detail application={application} now={NOW} api={api} onExpired={onExpired} onChanged={onChanged} />);
   return { onExpired, onChanged };
 }
