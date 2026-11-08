@@ -148,3 +148,33 @@ describe('Dialog', () => {
     expect(screen.getByText('Corrija o nome ou a categoria.')).toHaveClass('text-text-muted');
   });
 });
+
+describe('Dialog with a combobox inside', () => {
+  it('leaves Esc to a combobox whose list is open and closes on the next Esc', async () => {
+    const user = userEvent.setup();
+    render(
+      <Dialog.Root defaultOpen>
+        <Dialog.Content>
+          <Dialog.Title>Apelido</Dialog.Title>
+          <Dialog.Description>Escolha a skill.</Dialog.Description>
+          <input
+            role="combobox"
+            aria-label="Skill"
+            aria-expanded="true"
+            aria-controls="lista"
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') event.currentTarget.setAttribute('aria-expanded', 'false');
+            }}
+          />
+        </Dialog.Content>
+      </Dialog.Root>,
+    );
+    screen.getByRole('combobox', { name: 'Skill' }).focus();
+
+    await user.keyboard('{Escape}');
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});

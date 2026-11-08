@@ -1,5 +1,6 @@
 export { Alert, type AlertProps } from './components/alert';
 export { Button, type ButtonProps } from './components/button';
+export { Combobox, type ComboboxOption, type ComboboxProps } from './components/combobox';
 export { ConfirmDialog, type ConfirmDialogProps } from './components/confirm-dialog';
 export {
   CopyField,

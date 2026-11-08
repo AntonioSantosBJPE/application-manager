@@ -609,8 +609,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `query`, `options`, `onQueryChange`, `onSelect`, `selected`; `role="combobox"`, `aria-expanded`, `aria-controls`, `aria-activedescendant`
-- [ ] Story nos dois temas; teste de navegador: setas, Enter escolhe, Esc fecha, sem opção escolhida o valor não vale
+- [x] `query`, `options`, `onQueryChange`, `onSelect`, `selected`; `role="combobox"`, `aria-expanded`, `aria-controls`, `aria-activedescendant`
+- [x] Story nos dois temas; teste de navegador: setas, Enter escolhe, Esc fecha, sem opção escolhida o valor não vale
 
 **Tests**: unit
 **Gate**: quick

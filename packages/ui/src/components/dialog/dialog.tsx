@@ -20,7 +20,12 @@ const DialogClose = RadixDialog.Close;
  * moves the focus in, keeps it inside, closes on Esc and gives it back to the trigger, and names the
  * dialog after `Dialog.Title`.
  */
-function DialogContent({ className, children, ...props }: ComponentProps<typeof RadixDialog.Content>) {
+function DialogContent({
+  className,
+  children,
+  onEscapeKeyDown,
+  ...props
+}: ComponentProps<typeof RadixDialog.Content>) {
   return (
     <RadixDialog.Portal>
       <RadixDialog.Overlay className="fixed inset-0 bg-backdrop" />
@@ -29,6 +34,18 @@ function DialogContent({ className, children, ...props }: ComponentProps<typeof 
           'fixed top-1/2 left-1/2 flex max-h-screen w-full max-w-110 -translate-x-1/2 -translate-y-1/2 flex-col gap-3 overflow-y-auto rounded-lg border border-border-strong bg-surface-overlay p-4 text-text shadow-overlay',
           className,
         )}
+        onEscapeKeyDown={(event) => {
+          onEscapeKeyDown?.(event);
+          // A combobox with its list open uses Esc to close the list; the dialog stays for the next Esc.
+          const target = event.target;
+          if (
+            target instanceof HTMLElement &&
+            target.getAttribute('role') === 'combobox' &&
+            target.getAttribute('aria-expanded') === 'true'
+          ) {
+            event.preventDefault();
+          }
+        }}
         {...props}
       >
         {children}
