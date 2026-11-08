@@ -9,7 +9,9 @@ import { CATEGORY_LABELS, CATEGORY_ORDER } from '../model/categories';
 import { DEFAULT_CATALOG_FILTERS, type CatalogFilters } from '../model/filters';
 import { SKILLS_MESSAGES } from '../model/messages';
 import { AddAliasDialog } from './AddAliasDialog';
+import { AliasesDialog } from './AliasesDialog';
 import { EditSkillDialog } from './EditSkillDialog';
+import { focusWhenConfirmationClosed } from './focus';
 import { SkillRow } from './SkillRow';
 
 export const SKILLS_QUERY_KEY = ['skills', 'catalog'] as const;
@@ -20,6 +22,8 @@ export interface SkillsCatalogApi {
   promote: (id: string) => Promise<Outcome<Skill>>;
   update: (id: string, body: UpdateSkillRequest) => Promise<Outcome<Skill>>;
   addAlias: (id: string, body: AliasRequest) => Promise<Outcome<Alias>>;
+  updateAlias: (id: string, aliasId: string, body: AliasRequest) => Promise<Outcome<Alias>>;
+  removeAlias: (id: string, aliasId: string) => Promise<Outcome<undefined>>;
 }
 
 type CatalogData = InfiniteData<AdminSkillsPage, string | undefined>;
@@ -59,6 +63,7 @@ export function SkillsCatalog({
   const queryClient = useQueryClient();
   const [failure, setFailure] = useState<string | undefined>();
   const [editing, setEditing] = useState<AdminSkill | undefined>();
+  const [aliasesOf, setAliasesOf] = useState<string | undefined>();
   const listRef = useRef<HTMLUListElement>(null);
   const pendingFocusAfter = useRef<number | undefined>(undefined);
 
@@ -149,16 +154,14 @@ export function SkillsCatalog({
     }));
   }
 
-  /** The alias shows on the row of its skill, when that row is loaded. */
-  function aliasAdded(skillId: string, alias: Alias) {
+  /** Applies a change of the aliases of one skill to the rows loaded, so the row and the dialog agree. */
+  function aliasesChanged(skillId: string, change: (aliases: Alias[]) => Alias[]) {
     updateLoaded((data) => ({
       ...data,
       pages: data.pages.map((page) => ({
         ...page,
         items: page.items.map((item) =>
-          item.id === skillId && !item.aliases.some((known) => known.id === alias.id)
-            ? { ...item, aliases: [...item.aliases, alias] }
-            : item,
+          item.id === skillId ? { ...item, aliases: change(item.aliases) } : item,
         ),
       })),
     }));
@@ -166,7 +169,29 @@ export function SkillsCatalog({
 
   async function saveAlias(skillId: string, body: AliasRequest) {
     const outcome = await api.addAlias(skillId, body);
-    if (outcome.ok) aliasAdded(skillId, outcome.data);
+    if (outcome.ok) {
+      const alias = outcome.data;
+      aliasesChanged(skillId, (aliases) =>
+        aliases.some((known) => known.id === alias.id) ? aliases : [...aliases, alias],
+      );
+    }
+    return outcome;
+  }
+
+  async function changeAlias(skillId: string, aliasId: string, body: AliasRequest) {
+    const outcome = await api.updateAlias(skillId, aliasId, body);
+    if (outcome.ok) {
+      const alias = outcome.data;
+      aliasesChanged(skillId, (aliases) => aliases.map((known) => (known.id === alias.id ? alias : known)));
+    }
+    return outcome;
+  }
+
+  async function dropAlias(skillId: string, aliasId: string) {
+    const outcome = await api.removeAlias(skillId, aliasId);
+    if (outcome.ok || outcome.status === 404) {
+      aliasesChanged(skillId, (aliases) => aliases.filter((known) => known.id !== aliasId));
+    }
     return outcome;
   }
 
@@ -177,25 +202,6 @@ export function SkillsCatalog({
       .find((row) => row.dataset.skillId === id)
       ?.querySelector<HTMLElement>('[data-row-menu]')
       ?.focus();
-  }
-
-  /**
-   * Gives the focus to a row once the confirmation dialog that was open is gone: the button that opened
-   * it left the page with the promotion, and a focus set while the dialog still holds it is taken back.
-   */
-  function focusRowWhenFree(id: string) {
-    let attempts = 0;
-    const focus = () => {
-      if (document.querySelector('[role="alertdialog"]') !== null && attempts++ < 50) {
-        setTimeout(focus, 0);
-        return;
-      }
-      const rows = listRef.current?.querySelectorAll<HTMLElement>('[data-skill-id]') ?? [];
-      Array.from(rows)
-        .find((row) => row.dataset.skillId === id)
-        ?.focus();
-    };
-    setTimeout(focus, 0);
   }
 
   async function promote(skill: AdminSkill) {
@@ -209,7 +215,11 @@ export function SkillsCatalog({
     }
     if (outcome.ok) {
       promoted(outcome.data);
-      focusRowWhenFree(skill.id);
+      focusWhenConfirmationClosed(() =>
+        Array.from(listRef.current?.querySelectorAll<HTMLElement>('[data-skill-id]') ?? []).find(
+          (row) => row.dataset.skillId === skill.id,
+        ),
+      );
       return;
     }
     if (onExpired(outcome)) return;
@@ -227,6 +237,7 @@ export function SkillsCatalog({
   const pages = catalog.data?.pages ?? [];
   const items = pages.flatMap((page) => page.items);
   const counts = pages.at(-1)?.counts;
+  const aliasesSkill = items.find((item) => item.id === aliasesOf);
   const expired = catalog.error instanceof ReadFailure && catalog.error.expired;
 
   // "Carregar mais" leaves the focus on the first row it added (ListPage guide).
@@ -324,7 +335,7 @@ export function SkillsCatalog({
                 skill={skill}
                 onPromote={promote}
                 onEdit={setEditing}
-                onAliases={() => undefined}
+                onAliases={(skill) => setAliasesOf(skill.id)}
               />
             ))}
           </ul>
@@ -347,6 +358,20 @@ export function SkillsCatalog({
           <Alert intent="info">{SKILLS_MESSAGES.promoteInfo}</Alert>
         </div>
       </ListPage.Content>
+      {aliasesSkill === undefined ? null : (
+        <AliasesDialog
+          skill={aliasesSkill}
+          onAdd={(body) => saveAlias(aliasesSkill.id, body)}
+          onUpdate={(aliasId, body) => changeAlias(aliasesSkill.id, aliasId, body)}
+          onRemove={(aliasId) => dropAlias(aliasesSkill.id, aliasId)}
+          onClose={() => setAliasesOf(undefined)}
+          onExpired={onExpired}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            focusMenuOf(aliasesSkill.id);
+          }}
+        />
+      )}
       {editing === undefined ? null : (
         <EditSkillDialog
           skill={editing}

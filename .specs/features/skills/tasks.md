@@ -769,8 +769,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] Mensagem "Esta skill não tem apelidos."; editar com `409` mantém o campo aberto; remover pede `ConfirmDialog` e cancelar devolve o foco ao botão "Remover"
-- [ ] Testes `SKL-74`, `SKL-75`, `SKL-76` e `SKL-50` (remoção) passam
+- [x] Mensagem "Esta skill não tem apelidos."; editar com `409` mantém o campo aberto; remover pede `ConfirmDialog` e cancelar devolve o foco ao botão "Remover"
+- [x] Testes `SKL-74`, `SKL-75`, `SKL-76` e `SKL-50` (remoção) passam
 
 **Tests**: unit
 **Gate**: quick

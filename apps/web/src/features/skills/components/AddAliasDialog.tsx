@@ -181,10 +181,13 @@ export function AddAliasDialog({ trigger, ...form }: AddAliasDialogProps) {
       <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>
       <Dialog.Content aria-describedby={undefined}>
         <Dialog.Title>Novo apelido</Dialog.Title>
-        <AddAliasForm {...form} onBusyChange={(value) => {
+        <AddAliasForm
+          {...form}
+          onBusyChange={(value) => {
             busy.current = value;
           }}
-          onDone={() => setOpen(false)} />
+          onDone={() => setOpen(false)}
+        />
       </Dialog.Content>
     </Dialog.Root>
   );

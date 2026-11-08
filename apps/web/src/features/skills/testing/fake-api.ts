@@ -19,7 +19,7 @@ function matches(skill: AdminSkill, key: string): boolean {
  * `METHOD /path?query`. `hold(name)` keeps the answer of an endpoint until the returned function runs.
  */
 export function fakeCatalog(server: SetupServer, initial: AdminSkill[], pageSize = 50) {
-  const skills = initial.map((skill) => ({ ...skill, aliases: [...skill.aliases] }));
+  const skills = initial.map((skill) => ({ ...skill, aliases: skill.aliases.map((alias) => ({ ...alias })) }));
   const calls: string[] = [];
   const holds = new Map<string, Promise<void>>();
   let nextAlias = 900;
