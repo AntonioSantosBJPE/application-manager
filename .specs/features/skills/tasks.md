@@ -689,8 +689,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] Os filtros vão para a URL pelo `onFiltersChange`; clicar no chip de categoria pressionado remove o filtro; a busca espera 300 ms
-- [ ] Testes `SKL-41` a `SKL-43` passam com relógio simulado
+- [x] Os filtros vão para a URL pelo `onFiltersChange`; clicar no chip de categoria pressionado remove o filtro; a busca espera 300 ms
+- [x] Testes `SKL-41` a `SKL-43` passam com relógio simulado
 
 **Tests**: unit
 **Gate**: quick
