@@ -1,5 +1,6 @@
 import { SKILL_TEXT_MAX_LENGTH, type CreateSkillRequest, type Skill, type SkillCategory } from '@am/contracts';
 import { Field, TagField, type ComboboxOption } from '@am/ui';
+import { Plus } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import type { Outcome } from '../../../lib/bff';
 import { problemMessage } from '../../identity';
@@ -91,9 +92,9 @@ export function SkillsField({ label, requirement, skills, other = [], onChange, 
   } else if (settled !== null) {
     options = settled
       .filter((skill) => !ownIds.has(skill.id))
-      .map((skill) => ({ id: `${SKILL_PREFIX}${skill.id}`, label: `${skill.name} · ${CATEGORY_LABELS[skill.category]}` }));
+      .map((skill) => ({ id: `${SKILL_PREFIX}${skill.id}`, label: skill.name, hint: CATEGORY_LABELS[skill.category].toLocaleLowerCase('pt-BR') }));
     if (text !== '' && !settled.some((skill) => sameName(skill.name, text))) {
-      options.push({ id: CREATE_ID, label: createLabel(text) });
+      options.push({ id: CREATE_ID, label: createLabel(text), icon: Plus });
     }
   }
 

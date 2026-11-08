@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
@@ -146,5 +147,47 @@ describe('Combobox in the browser', () => {
     await userEvent.keyboard('{Escape}');
 
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('draws the hint muted at the right edge and the icon before the label, with no axe violation, in both themes', async () => {
+    function WithHints() {
+      const [query, setQuery] = useState('');
+      return (
+        <div className="bg-surface p-4">
+          <Field.Root>
+            <Field.Label htmlFor="skill">Skill</Field.Label>
+            <Combobox
+              id="skill"
+              wrapperClassName="w-72"
+              query={query}
+              options={[
+                { id: 'nest', label: 'NestJS', hint: 'framework' },
+                { id: 'new', label: 'Criar “nes”', icon: Plus },
+              ]}
+              selected={null}
+              onQueryChange={setQuery}
+              onSelect={() => {}}
+            />
+          </Field.Root>
+        </div>
+      );
+    }
+    render(<WithHints />);
+    box().focus();
+    await userEvent.keyboard('nes{ArrowDown}');
+    const nest = screen.getByRole('option', { name: 'NestJS framework' });
+    const create = screen.getByRole('option', { name: 'Criar “nes”' });
+
+    for (const theme of ['light', 'dark']) {
+      document.documentElement.setAttribute('data-theme', theme);
+      await settle(nest);
+      const hint = within(nest).getByText('framework');
+      expect(getComputedStyle(hint).color, theme).toBe(tokenColor('text-muted'));
+      expect(hint.getBoundingClientRect().right, theme).toBeGreaterThan(nest.getBoundingClientRect().right - 16);
+      expect(hint.getBoundingClientRect().left).toBeGreaterThan(within(nest).getByText('NestJS').getBoundingClientRect().right);
+      const icon = create.querySelector('svg')!;
+      expect(icon.getBoundingClientRect().right).toBeLessThanOrEqual(within(create).getByText('Criar “nes”').getBoundingClientRect().left);
+      expect(await axeViolations(), theme).toEqual([]);
+    }
   });
 });

@@ -1,5 +1,7 @@
 import { useContext, useId, useState } from 'react';
-import type { ComponentProps, KeyboardEvent } from 'react';
+import type { ComponentProps, KeyboardEvent, ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { Icon } from '../../icons/icon';
 import { controlClassName, FieldContext, join } from '../field/field-context';
 
 export type ComboboxOption = {
@@ -7,6 +9,10 @@ export type ComboboxOption = {
   id: string;
   /** The text the person reads and the text the field shows once the option is chosen. */
   label: string;
+  /** A secondary note drawn at the right of the option, muted ("framework"). It is part of the option's accessible name. */
+  hint?: ReactNode;
+  /** A Lucide icon drawn before the label; decorative, so it adds nothing to the accessible name. */
+  icon?: LucideIcon;
 };
 
 export type ComboboxProps = Omit<
@@ -136,9 +142,16 @@ export function Combobox({
                 // Keeps the focus in the input: a click on an option must not blur the field first.
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => choose(option)}
-                className="flex h-7.5 cursor-pointer items-center rounded-sm px-2 text-body text-text data-active:bg-surface-hover aria-selected:font-medium"
+                className="flex h-7.5 cursor-pointer items-center gap-2 rounded-sm px-2 text-body text-text data-active:bg-surface-hover aria-selected:font-medium"
               >
-                {option.label}
+                {option.icon === undefined ? null : <Icon icon={option.icon} className="shrink-0" />}
+                <span>{option.label}</span>
+                {option.hint === undefined ? null : (
+                  <>
+                    {/* Keeps a space between label and hint in the accessible name; a flex container draws none. */}{' '}
+                    <span className="ml-auto pl-3 text-caption text-text-muted">{option.hint}</span>
+                  </>
+                )}
               </li>
             ))
           : null}

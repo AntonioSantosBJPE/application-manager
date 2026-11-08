@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState, type FormEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import { Plus } from 'lucide-react';
 import { Field } from '../field';
 import { Combobox, type ComboboxOption } from './combobox';
 
@@ -230,5 +231,32 @@ describe('Combobox', () => {
 
     expect(box()).toBeInvalid();
     expect(box()).toHaveAccessibleDescription('Escolha uma skill da lista.');
+  });
+
+  it('draws a hint at the right and an icon before the label, and keeps both in the accessible name rules', async () => {
+    const user = userEvent.setup();
+    render(
+      <Combobox
+        aria-label="Skill"
+        query="x"
+        options={[
+          { id: 'nest', label: 'NestJS', hint: 'framework' },
+          { id: 'new', label: 'Criar “x”', icon: Plus },
+        ]}
+        selected={null}
+        onQueryChange={() => {}}
+        onSelect={() => {}}
+      />,
+    );
+    await user.type(box(), 'y');
+
+    const nest = screen.getByRole('option', { name: 'NestJS framework' });
+    expect(within(nest).getByText('NestJS')).toBeInTheDocument();
+    expect(within(nest).getByText('framework')).toHaveClass('ml-auto', 'text-text-muted', 'text-caption');
+    expect(nest.querySelector('svg')).toBeNull();
+    const create = screen.getByRole('option', { name: 'Criar “x”' });
+    expect(create.firstElementChild?.tagName.toLowerCase()).toBe('svg');
+    expect(create.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(within(create).queryByText('framework')).toBeNull();
   });
 });

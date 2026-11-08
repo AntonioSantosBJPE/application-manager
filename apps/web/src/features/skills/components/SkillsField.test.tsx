@@ -96,7 +96,9 @@ describe('SkillsField', () => {
 
     typeInto(required(), 'nes');
 
-    expect(await screen.findByRole('option', { name: 'NestJS · Framework' })).toBeInTheDocument();
+    const option = await screen.findByRole('option', { name: 'NestJS framework' });
+    expect(within(option).getByText('NestJS')).toBeInTheDocument();
+    expect(within(option).getByText('framework')).toHaveClass('text-text-muted', 'text-caption');
     expect(screen.getByText(SKILLS_FIELD_HINT)).toBeInTheDocument();
     expect(SKILLS_FIELD_HINT).toBe('Busque por nome ou apelido: “node”, “nodejs” e “Node.js” são a mesma skill.');
   });
@@ -106,14 +108,16 @@ describe('SkillsField', () => {
 
     typeInto(required(), 'nodejs');
 
-    expect(await screen.findByRole('option', { name: 'Node.js · Ferramenta' })).toBeInTheDocument();
+    const option = await screen.findByRole('option', { name: 'Node.js ferramenta' });
+    expect(within(option).getByText('Node.js')).toBeInTheDocument();
+    expect(within(option).getByText('ferramenta')).toBeInTheDocument();
   });
 
   it('APP-59 turns the chosen suggestion into a removable tag with the official name and empties the field', async () => {
     render(<Harness api={fakeApi().api} />);
 
     typeInto(required(), 'nodejs');
-    fireEvent.click(await screen.findByRole('option', { name: 'Node.js · Ferramenta' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Node.js ferramenta' }));
 
     expect(removeButtons()).toEqual(['Remover Node.js']);
     expect(screen.getByText('Node.js')).toBeInTheDocument();
@@ -131,11 +135,11 @@ describe('SkillsField', () => {
     typeInto(required(), 'nestjs');
     // The same text in the other field does offer it, which tells the answer has arrived.
     typeInto(nice(), 'nestjs');
-    expect(await screen.findByRole('option', { name: 'NestJS · Framework' })).toBeInTheDocument();
+    expect(await screen.findByRole('option', { name: 'NestJS framework' })).toBeInTheDocument();
     await vi.waitFor(() => expect(searched).toEqual(['nestjs', 'nestjs']));
 
     // In the field that has NestJS no option is left: not the skill, and not "Criar" either.
-    expect(optionNames()).toEqual(['NestJS · Framework']);
+    expect(optionNames()).toEqual(['NestJS framework']);
   });
 
   it('APP-60 offers to create a private skill when the text is not the official name of a suggestion', async () => {
@@ -143,8 +147,9 @@ describe('SkillsField', () => {
 
     typeInto(required(), 'nes');
 
-    expect(await screen.findByRole('option', { name: 'Criar “nes” como skill privada' })).toBeInTheDocument();
-    expect(optionNames()).toEqual(['NestJS · Framework', 'Criar “nes” como skill privada']);
+    const create = await screen.findByRole('option', { name: 'Criar “nes” como skill privada' });
+    expect(create.querySelector('svg')).not.toBeNull();
+    expect(optionNames()).toEqual(['NestJS framework', 'Criar “nes” como skill privada']);
   });
 
   it('APP-60 does not offer to create when the text is the official name of a suggestion, whatever the case', async () => {
@@ -152,7 +157,7 @@ describe('SkillsField', () => {
 
     typeInto(required(), 'nEsTjS');
 
-    expect(await screen.findByRole('option', { name: 'NestJS · Framework' })).toBeInTheDocument();
+    expect(await screen.findByRole('option', { name: 'NestJS framework' })).toBeInTheDocument();
     expect(screen.queryByRole('option', { name: /Criar/ })).not.toBeInTheDocument();
   });
 
@@ -196,7 +201,7 @@ describe('SkillsField', () => {
     expect(removeButtons()).toEqual(['Remover Node.js', 'Remover React']);
 
     typeInto(nice(), 'node');
-    fireEvent.click(await screen.findByRole('option', { name: 'Node.js · Ferramenta' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Node.js ferramenta' }));
 
     const groups = screen.getAllByRole('combobox').map((box) => box.closest('div[class*="flex-wrap"]'));
     expect(within(groups[0] as HTMLElement).queryAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual(['Remover React']);
@@ -214,7 +219,7 @@ describe('SkillsField', () => {
     render(<Harness api={withMine} initialRequired={[mine]} />);
 
     typeInto(nice(), 'alfa');
-    fireEvent.click(await screen.findByRole('option', { name: 'Skill Fictícia Alfa · Ferramenta' }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Skill Fictícia Alfa ferramenta' }));
 
     expect(removeButtons()).toEqual(['Remover Skill Fictícia Alfa']);
     const tag = screen.getByText('Skill Fictícia Alfa').closest('span');
