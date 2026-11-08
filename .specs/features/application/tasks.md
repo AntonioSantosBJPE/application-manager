@@ -632,9 +632,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] `ol` semântico; ícone decorativo; data em `font-mono`; a linha não aparece depois do último item
-- [ ] Story e testes passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `ol` semântico; ícone decorativo; data em `font-mono`; a linha não aparece depois do último item
+- [x] Story e testes passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

@@ -29,6 +29,7 @@ export { SearchInput, type SearchInputProps } from './components/search-input';
 export { SkillTag, type SkillTagProps, type SkillTagVariant } from './components/skill-tag';
 export { StatusBadge, type StatusBadgeProps } from './components/status-badge';
 export { TagField, type TagFieldProps, type TagFieldTag } from './components/tag-field';
+export { Timeline, type TimelineItemProps } from './components/timeline';
 export { AppShell } from './layouts/app-shell';
 export { AuthPage } from './layouts/auth-page';
 export { DashboardPage } from './layouts/dashboard-page';
