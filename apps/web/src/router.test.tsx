@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import type { MeResponse } from '@am/contracts';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -473,6 +473,50 @@ describe('admin dashboard', () => {
     expect(screen.getByRole('group', { name: 'Convites pendentes' })).toHaveTextContent(
       'Indisponível',
     );
+  });
+
+  it('PRU-06 AC14 opens the admin dashboard with the topbar "Painel", the h1 and the two widgets', async () => {
+    sessionIs(signedInAs(admin));
+    vi.mocked(pendingInvitations).mockResolvedValue({ ok: true, data: page });
+
+    await open('/admin');
+    const title = await screen.findByRole('heading', { level: 1, name: 'Administração' });
+
+    const main = screen.getByRole('main');
+    const topbar = main.firstElementChild!;
+    expect(topbar.textContent).toBe('Painel');
+    expect(within(topbar as HTMLElement).getByText('Painel')).toHaveClass('font-medium');
+    expect(topbar).not.toContainElement(title);
+    expect(topbar.nextElementSibling).toContainElement(title);
+    expect(main.children).toHaveLength(2);
+    expect(title).toHaveClass('text-heading-lg');
+    expect(
+      screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent),
+    ).toEqual(['Status do sistema', 'Convites pendentes']);
+    expect(screen.getByText('08 nov 2026 14:32:07')).toHaveClass('font-mono');
+    expect(within(screen.getByRole('group', { name: 'Convites pendentes' })).getByText('3')).toHaveClass(
+      'text-heading-xl',
+    );
+  });
+
+  it('PRU-06 AC20 Convidar pessoa in the widget opens /admin/invitations', async () => {
+    sessionIs(signedInAs(admin));
+    vi.mocked(pendingInvitations).mockResolvedValue({ ok: true, data: page });
+    // The invitations screen reads its list through the query client the app provides around the router.
+    const queryClient = new QueryClient();
+    const history = createMemoryHistory({ initialEntries: ['/admin'] });
+    const router = createRouter({ routeTree, history, context: { queryClient } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    );
+    await router.load();
+
+    fireEvent.click(await screen.findByRole('link', { name: 'Convidar pessoa' }));
+
+    await waitFor(() => expect(here(router)).toBe('/admin/invitations'));
+    expect(await screen.findByLabelText('E-mail a convidar')).toBeInTheDocument();
   });
 
   it('does not read admin data for a member who is shown the no-access screen', async () => {

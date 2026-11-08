@@ -713,9 +713,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Topbar "Painel" de ponta a ponta no `DashboardPage.Root` e o conteúdo em `DashboardPage.Content` (PRU-04 AC13); h1 "Administração", widget "Convites pendentes" com número em `heading-xl`, expiração do mais antigo, "Ver convites" e "Convidar pessoa" (para `/admin/invitations`), sem expiração com 0
-- [ ] Falha da API → `StatusBadge unavailable` mantido; testes
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Topbar "Painel" de ponta a ponta no `DashboardPage.Root` e o conteúdo em `DashboardPage.Content` (PRU-04 AC13); h1 "Administração", widget "Convites pendentes" com número em `heading-xl`, expiração do mais antigo, "Ver convites" e "Convidar pessoa" (para `/admin/invitations`), sem expiração com 0
+- [x] Falha da API → `StatusBadge unavailable` mantido; testes
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit (web)
 **Gate**: quick
