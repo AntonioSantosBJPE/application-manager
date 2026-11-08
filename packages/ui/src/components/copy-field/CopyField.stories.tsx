@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent } from 'storybook/test';
-import { focusRing, settle } from '../../testing/contrast';
+import { expectContrast, focusRing, settle } from '../../testing/contrast';
 import { CopyField } from './copy-field';
 
 /** A CSS color as the browser resolves it, to compare with a computed style. */
@@ -155,4 +155,44 @@ export const FocoTemaEscuro: Story = {
   name: 'Foco por teclado, tema escuro',
   globals: { theme: 'dark' },
   play: focusContrast,
+};
+
+const threeStates: Story['render'] = (args) => (
+  <div className="flex w-96 flex-col gap-4 bg-surface p-4">
+    <CopyField {...args} status="idle" />
+    <CopyField {...args} status="copied" />
+    <CopyField {...args} status="failed" />
+  </div>
+);
+
+/**
+ * The value reaches 4.5:1 on surface-raised and its border 3:1, in every state; the copied action
+ * and the failure message stay legible (PRU-08 AC03).
+ */
+const contrast: Story['play'] = async ({ canvas }) => {
+  const values = canvas.getAllByLabelText('Link do convite');
+  await expect(values).toHaveLength(3);
+  for (const value of values) {
+    await settle(value);
+    await expectContrast(value, 4.5);
+    await expectContrast(value, 3, 'borderTopColor');
+  }
+  const copied = canvas.getByRole('button', { name: 'Copiado' });
+  await expectContrast(copied, 4.5);
+  await expectContrast(copied.querySelector('svg')!, 3);
+  await expectContrast(canvas.getByText('Não foi possível copiar. Selecione o link.'), 4.5);
+};
+
+export const ContrasteClaro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema claro',
+  globals: { theme: 'light' },
+  render: threeStates,
+  play: contrast,
+};
+
+export const ContrasteEscuro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema escuro',
+  globals: { theme: 'dark' },
+  render: threeStates,
+  play: contrast,
 };

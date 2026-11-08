@@ -287,9 +287,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Valor em `font-mono` sobre `surface-raised`, seleção no foco, `Check` ao copiar, `Alert danger` na falha mantendo o valor selecionável
-- [ ] Testes e stories (padrão, copiado, falha) nos dois temas
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Valor em `font-mono` sobre `surface-raised`, seleção no foco, `Check` ao copiar, `Alert danger` na falha mantendo o valor selecionável
+- [x] Testes e stories (padrão, copiado, falha) nos dois temas
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick
