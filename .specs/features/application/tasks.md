@@ -917,11 +917,11 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] `C` fora de um campo abre o diálogo; `new=1` abre o diálogo ao carregar e sai da URL ao fechar
-- [ ] Clique na linha abre `/applications/$id`
-- [ ] Sidebar: "Candidaturas" depois de "Início", total em `mono`, `aria-current="page"` na lista e no detalhe
-- [ ] Testes `APP-43` e `APP-49` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `C` fora de um campo abre o diálogo; `new=1` abre o diálogo ao carregar e sai da URL ao fechar
+- [x] Clique na linha abre `/applications/$id`
+- [x] Sidebar: "Candidaturas" depois de "Início", total em `mono`, `aria-current="page"` na lista e no detalhe
+- [x] Testes `APP-43` e `APP-49` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

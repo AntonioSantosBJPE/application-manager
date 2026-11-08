@@ -1,6 +1,7 @@
 import { AppShell } from '@am/ui';
-import { House } from 'lucide-react';
-import { createFileRoute, Link, Outlet, redirect, useRouter } from '@tanstack/react-router';
+import { Briefcase, House } from 'lucide-react';
+import { createFileRoute, Link, Outlet, redirect, useRouter, useRouterState } from '@tanstack/react-router';
+import { countApplications } from '../features/applications';
 import {
   endSession,
   getSession,
@@ -23,20 +24,36 @@ export const Route = createFileRoute('/_member')({
     if (access.kind === 'move-to-admin') throw redirect({ to: '/admin' });
     return { access };
   },
+  // The total of the sidebar. A failed read leaves the number out; the item still opens the list.
+  loader: async ({ context }) => {
+    if (context.access.kind !== 'allowed') return { total: undefined };
+    const outcome = await countApplications();
+    return { total: outcome.ok ? outcome.data.total : undefined };
+  },
   component: MemberLayout,
 });
 
+/** The list and the detail of an application are the same area of the sidebar (APP-43). */
+const isApplicationsPath = (pathname: string) => pathname === '/applications' || pathname.startsWith('/applications/');
+
 function MemberLayout() {
   const { access } = Route.useRouteContext();
+  const { total } = Route.useLoaderData();
   const router = useRouter();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   if (access.kind !== 'allowed') return <UnavailableScreen />;
 
   return (
     <AppShell.Root>
       <AppShell.Sidebar aria-label="Navegação principal">
         <AppShell.Brand />
-        <AppShell.NavItem asChild current icon={House}>
-          <Link to="/">Início</Link>
+        <AppShell.NavItem asChild current={pathname === '/'} icon={House}>
+          <Link to="/" activeOptions={{ exact: true }}>
+            Início
+          </Link>
+        </AppShell.NavItem>
+        <AppShell.NavItem asChild current={isApplicationsPath(pathname)} icon={Briefcase} count={total}>
+          <Link to="/applications">Candidaturas</Link>
         </AppShell.NavItem>
         <SessionMenu
           user={access.user}

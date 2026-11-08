@@ -14,6 +14,7 @@ import {
   pendingInvitations,
   type SessionState,
 } from './features/identity';
+import { countApplications, listApplications } from './features/applications';
 import { listAdminSkills } from './features/skills';
 import { getSystemStatus } from './features/system-status';
 import { routeTree } from './routeTree.gen';
@@ -29,6 +30,12 @@ vi.mock('./features/identity/api/server-functions', async (importOriginal) => ({
   openInvitation: vi.fn(),
   joinWithInvitation: vi.fn(),
   pendingInvitations: vi.fn(),
+}));
+
+vi.mock('./features/applications/api/server-functions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./features/applications/api/server-functions')>()),
+  countApplications: vi.fn(),
+  listApplications: vi.fn(),
 }));
 
 vi.mock('./features/skills/api/server-functions', async (importOriginal) => ({
@@ -89,6 +96,7 @@ beforeEach(() => {
     data: { items: [], nextCursor: null, totalPending: 0 },
   });
   vi.mocked(listAdminSkills).mockResolvedValue({ ok: true, data: emptySkillsPage });
+  vi.mocked(countApplications).mockResolvedValue({ ok: true, data: { total: 0 } });
 });
 
 afterEach(() => {
@@ -135,14 +143,15 @@ describe('member area guard', () => {
     expect(within(sidebar).getByText('rumo')).toBeInTheDocument();
     expect(within(sidebar).getByText('carreira')).toBeInTheDocument();
     const links = within(sidebar).getAllByRole('link');
-    expect(links.map((link) => link.textContent)).toEqual(['Início']);
+    expect(links.map((link) => link.textContent)).toEqual(['Início', 'Candidaturas0']);
     expect(links[0]).toHaveAttribute('href', '/');
     expect(links[0]).toHaveAttribute('aria-current', 'page');
+    expect(links[1]).not.toHaveAttribute('aria-current');
     expect(within(sidebar).getByText('AS')).toHaveAttribute('aria-hidden', 'true');
     expect(within(sidebar).getByText('Ana Souza')).toBeInTheDocument();
     expect(within(sidebar).getByRole('button', { name: 'Sair' })).toBeInTheDocument();
     // Only what exists (AD-008): no search button and no destination of a later phase.
-    expect(within(sidebar).queryByText(/Buscar|Candidaturas|Currículo|Skills|Insights/)).toBeNull();
+    expect(within(sidebar).queryByText(/Buscar|Currículo|Skills|Insights/)).toBeNull();
   });
 
   it('PRU-06 AC11 says the service is unavailable on the same url without going to login', async () => {
@@ -772,6 +781,147 @@ describe('admin skills catalog', () => {
 
     expect(await screen.findByText('Esta área é da administração. Sua conta é de uso do produto.')).toBeInTheDocument();
     expect(vi.mocked(listAdminSkills)).not.toHaveBeenCalled();
+  });
+});
+
+const emptyApplicationsPage = {
+  items: [],
+  nextCursor: null,
+  counts: {
+    active: 0,
+    closed: 0,
+    byStatus: { saved: 0, applied: 0, interviewing: 0, offer: 0, accepted: 0, rejected: 0, withdrawn: 0, ghosted: 0 },
+  },
+};
+
+const appId = '0190a5b4-7c3a-7c8e-9f2a-000000000001';
+const summary = {
+  id: appId,
+  status: 'applied' as const,
+  company: 'Empresa Fictícia Alfa',
+  title: 'Vaga de Teste Pleno',
+  level: 'mid' as const,
+  workModel: 'remote' as const,
+  skills: [],
+  createdAt: '2026-11-01T12:00:00.000Z',
+  lastActivityAt: '2026-11-07T12:00:00.000Z',
+  ghostSuggested: false,
+};
+const pageWith = (items: (typeof summary)[]) => ({
+  items,
+  nextCursor: null,
+  counts: {
+    ...emptyApplicationsPage.counts,
+    active: items.length,
+    byStatus: { ...emptyApplicationsPage.counts.byStatus, applied: items.length },
+  },
+});
+
+describe('applications', () => {
+  /** The list reads through the query client the app provides around the router. */
+  async function openApplications(url: string) {
+    const queryClient = new QueryClient();
+    const history = createMemoryHistory({ initialEntries: [url] });
+    const router = createRouter({ routeTree, history, context: { queryClient } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    );
+    await router.load();
+    return router;
+  }
+
+  const memberSidebar = () => screen.findByRole('navigation', { name: 'Navegação principal' });
+
+  beforeEach(() => {
+    sessionIs(signedInAs(member));
+    vi.mocked(countApplications).mockResolvedValue({ ok: true, data: { total: 24 } });
+    vi.mocked(listApplications).mockResolvedValue({ ok: true, data: pageWith([summary]) });
+  });
+
+  it('APP-43 shows "Candidaturas" right after "Início" with the total in mono and aria-current="page" on /applications', async () => {
+    const router = await openApplications('/applications');
+
+    const links = within(await memberSidebar()).getAllByRole('link');
+    expect(links.map((link) => link.textContent)).toEqual(['Início', 'Candidaturas24']);
+    expect(links[1]).toHaveAttribute('href', '/applications');
+    expect(links[1]).toHaveAttribute('aria-current', 'page');
+    expect(within(links[1]!).getByText('24')).toHaveClass('font-mono');
+    expect(links[1]!.firstElementChild).toHaveClass('lucide-briefcase');
+    expect(links[0]).not.toHaveAttribute('aria-current');
+    expect(here(router)).toBe('/applications');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Candidaturas' })).toBeInTheDocument();
+    expect(screen.getAllByRole('main')).toHaveLength(1);
+  });
+
+  it('APP-43 keeps "Candidaturas" current on the detail of an application and "Início" not current', async () => {
+    await openApplications(`/applications/${appId}`);
+
+    const links = within(await memberSidebar()).getAllByRole('link');
+    expect(links[1]).toHaveAttribute('aria-current', 'page');
+    expect(links[0]).not.toHaveAttribute('aria-current');
+  });
+
+  it('APP-43 leaves the number out of the item when the total cannot be read, and the item still opens the list', async () => {
+    vi.mocked(countApplications).mockResolvedValue({ ok: false, status: 503 });
+
+    await openApplications('/');
+
+    const link = within(await memberSidebar()).getByRole('link', { name: 'Candidaturas' });
+    expect(link.textContent).toBe('Candidaturas');
+    fireEvent.click(link);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Candidaturas' })).toBeInTheDocument();
+  });
+
+  it('APP-49 opens /applications/$id with a click on a row', async () => {
+    const router = await openApplications('/applications');
+
+    fireEvent.click(await screen.findByText('Vaga de Teste Pleno'));
+
+    await waitFor(() => expect(here(router)).toBe(`/applications/${appId}`));
+    expect(within(await memberSidebar()).getByRole('link', { name: /^Candidaturas/ })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('APP-46 reads the filters from the address: the list is asked with them and the controls show them', async () => {
+    await openApplications('/applications?tab=closed&level=mid,senior&q=nest&sort=created');
+
+    expect(await screen.findByRole('searchbox', { name: 'Empresa, título ou skill' })).toHaveValue('nest');
+    expect(vi.mocked(listApplications)).toHaveBeenCalledWith({
+      data: { tab: 'closed', sort: 'created', level: 'mid,senior', q: 'nest' },
+    });
+    expect(screen.getByRole('button', { name: /^Encerradas/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Cadastro' })).toBeInTheDocument();
+  });
+
+  it('APP-46 writes the tab to the address with a click and reads the list again', async () => {
+    const router = await openApplications('/applications');
+    await screen.findByText('Vaga de Teste Pleno');
+
+    fireEvent.click(screen.getByRole('button', { name: /^Encerradas/ }));
+
+    await waitFor(() => expect(here(router)).toBe('/applications?tab=closed'));
+    await waitFor(() =>
+      expect(vi.mocked(listApplications)).toHaveBeenLastCalledWith({ data: { tab: 'closed', sort: 'activity' } }),
+    );
+  });
+
+  it('APP-43 sends a visitor on /applications to /login preserving the route', async () => {
+    sessionIs(anonymous);
+
+    const router = await openApplications('/applications?tab=closed');
+
+    expect(here(router)).toBe('/login?redirect=%2Fapplications%3Ftab%3Dclosed');
+    expect(vi.mocked(listApplications)).not.toHaveBeenCalled();
+  });
+
+  it('APP-43 sends an admin on /applications to /admin and asks for no total', async () => {
+    sessionIs(signedInAs(admin));
+
+    const router = await openApplications('/applications');
+
+    expect(here(router)).toBe('/admin');
+    expect(vi.mocked(countApplications)).not.toHaveBeenCalled();
   });
 });
 
