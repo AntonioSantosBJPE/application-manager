@@ -20,4 +20,5 @@ export { StatusBadge, type StatusBadgeProps } from './components/status-badge';
 export { AppShell } from './layouts/app-shell';
 export { AuthPage } from './layouts/auth-page';
 export { DashboardPage } from './layouts/dashboard-page';
+export { DetailPage } from './layouts/detail-page';
 export { ListPage } from './layouts/list-page';

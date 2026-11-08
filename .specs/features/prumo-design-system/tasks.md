@@ -509,9 +509,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] `Root` (`main`), `Main`, `Sidebar` (`aria-label` obrigatório, 280 px) e `Property` com nome `caption` e valor de 28 px com hover
-- [ ] Testes e stories nos dois temas
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `Root` (`main`), `Main`, `Sidebar` (`aria-label` obrigatório, 280 px) e `Property` com nome `caption` e valor de 28 px com hover
+- [x] Testes e stories nos dois temas
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick
