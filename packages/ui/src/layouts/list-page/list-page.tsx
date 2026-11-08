@@ -85,8 +85,8 @@ export type ListPageRowProps = ComponentProps<'li'> & {
 
 /**
  * One row of the collection (a `li`, inside a `ul` the caller owns), at least 40px tall, with the
- * `space-6` gutter drawn as a transparent side border: the fill of hover and selection still runs edge to
- * edge, and the padding box is the text line itself (UI-28). The row wraps:
+ * `space-6` gutter as padding: the fill of hover and selection still runs edge to edge (UI-28). The
+ * row wraps:
  * on a narrow screen the text takes the whole line and the metadata drops below it, so no column is
  * squeezed (PRU-04).
  */
@@ -95,7 +95,7 @@ function Row({ selected = false, className, ...props }: ListPageRowProps) {
     <li
       aria-current={selected ? 'true' : undefined}
       className={join(
-        'flex min-h-row flex-wrap items-center justify-between gap-x-3 gap-y-1 border-x-24 border-b border-border border-x-transparent py-1.5 text-body transition-colors duration-150',
+        'flex min-h-row flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-border px-6 py-1.5 text-body transition-colors duration-150',
         selected ? 'bg-accent-subtle' : 'hover:bg-surface-hover',
         className,
       )}

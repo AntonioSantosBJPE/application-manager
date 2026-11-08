@@ -111,11 +111,20 @@ describe('ListPage in the browser', () => {
       expect(getComputedStyle(other!).backgroundColor, theme).toBe(tokenColor('surface-hover'));
       await userEvent.unhover(other!);
     }
-    // The gutter is space-6 on both sides, and the fill still runs edge to edge.
-    expect(getComputedStyle(selected!).borderLeftWidth).toBe('24px');
-    expect(getComputedStyle(selected!).borderLeftColor).toBe('rgba(0, 0, 0, 0)');
+    // The gutter is space-6 padding on both sides, with no side border, and the fill still runs edge
+    // to edge: the row's own background is what the first and the last pixel of the line show.
+    const row = selected!.getBoundingClientRect();
+    const middle = row.top + row.height / 2;
+    expect(getComputedStyle(selected!).paddingLeft).toBe('24px');
+    expect(getComputedStyle(selected!).paddingRight).toBe('24px');
+    expect(getComputedStyle(selected!).borderLeftWidth).toBe('0px');
+    expect(getComputedStyle(selected!).borderRightWidth).toBe('0px');
     expect(getComputedStyle(selected!).borderBottomColor).toBe(tokenColor('border'));
-    expect(selected!.getBoundingClientRect().width).toBe(1280);
+    expect(row.width).toBe(1280);
+    expect(screen.getByText('Acme Pagamentos').getBoundingClientRect().left).toBe(24);
+    expect(getComputedStyle(selected!).backgroundClip).toBe('border-box');
+    expect(document.elementFromPoint(0, middle)).toBe(selected);
+    expect(document.elementFromPoint(1279, middle)).toBe(selected);
     // The metadata sits at the right in fixed columns: every row's cells share the same left edges.
     const cells = (row: HTMLElement) => [...row.querySelectorAll('span.font-mono')].map((c) => c.getBoundingClientRect());
     const [a, b] = [cells(selected!), cells(other!)];

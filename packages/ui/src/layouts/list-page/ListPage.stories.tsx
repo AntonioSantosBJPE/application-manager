@@ -145,8 +145,11 @@ export const LinhaEstreita: Story = {
     for (const row of rows) {
       const text = row.firstElementChild!.getBoundingClientRect();
       const action = row.querySelector('button')!.getBoundingClientRect();
+      const style = getComputedStyle(row);
+      const contentWidth =
+        row.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
       await expect(text.width, 'the text uses the whole row').toBeGreaterThanOrEqual(
-        row.clientWidth - 1,
+        contentWidth - 1,
       );
       await expect(text.left).toBeGreaterThanOrEqual(0);
       await expect(action.right, 'the action stays on screen').toBeLessThanOrEqual(width);
