@@ -368,10 +368,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] A lista enviada substitui a anterior numa transação, na ordem enviada; `last_activity_at` igual
-- [ ] Skill inválida → `422` sem alterar nada
-- [ ] Testes `APP-30` e `APP-31` (lado do `PUT`) passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] A lista enviada substitui a anterior numa transação, na ordem enviada; `last_activity_at` igual
+- [x] Skill inválida → `422` sem alterar nada
+- [x] Testes `APP-30` e `APP-31` (lado do `PUT`) passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

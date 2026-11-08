@@ -10,6 +10,7 @@ import {
   type ApplicationSummary,
   type CreateApplicationRequest,
   type ListApplicationsQuery,
+  type ReplaceSkillsRequest,
   type UpdateJobPostingRequest,
 } from '@am/contracts';
 import { Inject, Injectable } from '@nestjs/common';
@@ -32,7 +33,7 @@ import {
 /** The list shows 50 applications per page (APP-09). */
 export const LIST_PAGE_SIZE = 50;
 
-type ApplicationEventName = 'application.created' | 'application.posting_updated';
+type ApplicationEventName = 'application.created' | 'application.posting_updated' | 'application.skills_replaced';
 
 /** The application does not exist, is somebody else's or the id is not a uuid (`404`, APP-19). */
 export class ApplicationNotFoundError extends Error {
@@ -81,7 +82,7 @@ export class ApplicationsService {
    * the member cannot use refuses the whole request before anything is written (APP-05).
    */
   async create(userId: string, request: CreateApplicationRequest): Promise<ApplicationDetail> {
-    const skills = (request.skills ?? []).map((skill) => ({ ...skill, skillId: isUuid(skill.skillId) ? skill.skillId.toLowerCase() : skill.skillId }));
+    const skills = this.normalized(request.skills ?? []);
     const invalid = await this.invalidSkillIds(
       userId,
       skills.map((skill) => skill.skillId),
@@ -201,6 +202,29 @@ export class ApplicationsService {
         : searchTextOf(request.company ?? record.company, request.title ?? record.title);
     await this.repository.updatePosting(userId, record.jobPostingId, { ...request, searchText });
     this.record('application.posting_updated', record.id, userId);
+    return this.detailOf(userId, record.id);
+  }
+
+  /** The skill ids as stored: a uuid in lowercase, anything else untouched so it is refused as sent. */
+  private normalized(skills: ReplaceSkillsRequest): ReplaceSkillsRequest {
+    return skills.map((skill) => ({ ...skill, skillId: isUuid(skill.skillId) ? skill.skillId.toLowerCase() : skill.skillId }));
+  }
+
+  /**
+   * Replaces every skill of the posting with the list sent, in the order sent, in one transaction. A skill the
+   * member cannot use refuses the whole request and nothing changes; the activity does not move (APP-30, APP-31).
+   */
+  async replaceSkills(userId: string, id: string, request: ReplaceSkillsRequest): Promise<ApplicationDetail> {
+    const record = isUuid(id) ? await this.repository.findOwned(userId, id) : undefined;
+    if (record === undefined) throw new ApplicationNotFoundError();
+    const skills = this.normalized(request);
+    const invalid = await this.invalidSkillIds(
+      userId,
+      skills.map((skill) => skill.skillId),
+    );
+    if (invalid.length > 0) throw new InvalidSkillsError(invalid);
+    await this.repository.transaction((tx) => this.repository.replaceSkills(tx, record.jobPostingId, skills));
+    this.record('application.skills_replaced', record.id, userId);
     return this.detailOf(userId, record.id);
   }
 

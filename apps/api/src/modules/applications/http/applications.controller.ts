@@ -1,6 +1,7 @@
 import {
   createApplicationRequestSchema,
   listApplicationsQuerySchema,
+  replaceSkillsRequestSchema,
   updateJobPostingRequestSchema,
   type ApplicationDetail,
   type ApplicationsCount,
@@ -8,9 +9,10 @@ import {
   type CreateApplicationRequest,
   type InvalidSkillsProblem,
   type ListApplicationsQuery,
+  type ReplaceSkillsRequest,
   type UpdateJobPostingRequest,
 } from '@am/contracts';
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
 import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
@@ -76,5 +78,15 @@ export class ApplicationsController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<ApplicationDetail> {
     return answering(() => this.applications.updatePosting(user.id, id, body));
+  }
+
+  @Roles('member')
+  @Put(':id/skills')
+  replaceSkills(
+    @Param('id') id: string,
+    @Body(zodBody(replaceSkillsRequestSchema)) body: ReplaceSkillsRequest,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ApplicationDetail> {
+    return answering(() => this.applications.replaceSkills(user.id, id, body));
   }
 }

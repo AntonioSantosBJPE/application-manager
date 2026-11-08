@@ -153,6 +153,14 @@ export class ApplicationsRepository {
       .where(and(eq(jobPostings.id, postingId), eq(jobPostings.userId, userId)));
   }
 
+  /** Swaps the skills of the posting for `skills`, each with the `position` it was sent in (APP-30); run it inside a transaction. */
+  async replaceSkills(tx: DatabaseExecutor, postingId: string, skills: PostingSkillRow[]): Promise<void> {
+    await tx.delete(jobPostingSkills).where(eq(jobPostingSkills.jobPostingId, postingId));
+    if (skills.length > 0) {
+      await tx.insert(jobPostingSkills).values(skills.map((skill, position) => ({ jobPostingId: postingId, ...skill, position })));
+    }
+  }
+
   /** The skills of the postings, by posting id, each list in the order they were sent in. */
   async skillsOf(postingIds: string[], executor: DatabaseExecutor = this.db): Promise<Map<string, PostingSkillRow[]>> {
     const byPosting = new Map<string, PostingSkillRow[]>();

@@ -160,6 +160,8 @@ describe('route access', () => {
         // The admin gives a global skill an alias and makes a private skill global; catalog routes, not account administration (SKL-17, SKL-26).
         'POST /skills/:id/aliases',
         'POST /skills/:id/promote',
+        // A member replaces the skills of a posting; a product route, not account administration (APP-30).
+        'PUT /applications/:id/skills',
       ];
       const registeredWriting = routes
         .map((route) => route.route)
