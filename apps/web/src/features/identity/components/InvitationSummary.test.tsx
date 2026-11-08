@@ -134,6 +134,40 @@ describe('InvitationSummary as the widget of PageAdminDashboard', () => {
     );
   });
 
+  it('PRU-06 AC14 shows "O mais antigo expira em" only when the first page holds every pending invitation', () => {
+    const items = [
+      { id: uuid(12), email: 'l@exemplo.com', expiresAt: inDays(6) },
+      { id: uuid(11), email: 'k@exemplo.com', expiresAt: inDays(1) },
+    ];
+    const { rerender } = render(
+      <InvitationSummary
+        result={{ ok: true, data: { items, nextCursor: null, totalPending: 2 } }}
+        link={link}
+        inviteLink={inviteLink}
+        now={now}
+      />,
+    );
+    expect(screen.getByText(/^O mais antigo expira em/).textContent).toBe(
+      'O mais antigo expira em 1 d.',
+    );
+
+    // More than one page: the oldest may sit on a page the dashboard does not read, so the line goes
+    // away and the rest of the widget stays (Differences from the source, user: "Aceitar e registrar").
+    rerender(
+      <InvitationSummary
+        result={{ ok: true, data: { items, nextCursor: uuid(11), totalPending: 25 } }}
+        link={link}
+        inviteLink={inviteLink}
+        now={now}
+      />,
+    );
+    const widget = screen.getByRole('group', { name: 'Convites pendentes' });
+    expect(within(widget).queryByText(/expira/)).toBeNull();
+    expect(within(widget).getByText('25')).toHaveClass('text-heading-xl');
+    expect(within(widget).getByRole('link', { name: 'Ver convites' })).toBeInTheDocument();
+    expect(within(widget).getByRole('link', { name: 'Convidar pessoa' })).toBeInTheDocument();
+  });
+
   it('leaves the expiry out when the oldest invitation is on a later page', () => {
     render(
       <InvitationSummary
