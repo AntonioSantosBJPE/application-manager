@@ -148,8 +148,13 @@ describe('Prumo tokens', () => {
     }
 
     const quotes = (family: string) => family.replaceAll('"', "'");
-    expect(lightBlock.get('font-sans')).toBe(quotes(prumo.type.families.sans));
-    expect(lightBlock.get('font-mono')).toBe(quotes(prumo.type.families.mono));
+    // The packaged faces come first (@fontsource names them "<family> Variable"), then the Prumo stack.
+    expect(lightBlock.get('font-sans')).toBe(
+      `'Geist Variable', ${quotes(prumo.type.families.sans)}`,
+    );
+    expect(lightBlock.get('font-mono')).toBe(
+      `'Geist Mono Variable', ${quotes(prumo.type.families.mono)}`,
+    );
 
     // space-<n> is the Tailwind step <n> on a 4px grid: space-1-5 is 1.5 steps, 6px.
     expect(lightBlock.get('spacing')).toBe('4px');

@@ -125,9 +125,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Dependências adicionadas ao catalog/`packages/ui`; `tokens.css` as importa e `font-sans`/`font-mono` começam por Geist com pilha de fallback
-- [ ] `fonts.test.ts`: os pacotes resolvem, nenhum `http(s)://` aparece no CSS e a família pedida existe nos `@font-face`
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Dependências adicionadas ao catalog/`packages/ui`; `tokens.css` as importa e `font-sans`/`font-mono` começam por Geist com pilha de fallback
+- [x] `fonts.test.ts`: os pacotes resolvem, nenhum `http(s)://` aparece no CSS e a família pedida existe nos `@font-face`
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

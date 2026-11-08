@@ -94,6 +94,41 @@ describe('Prumo tokens in the browser', () => {
     }
   });
 
+  it('PRU-01 AC09 loads Geist and Geist Mono from the files bundled with the page', async () => {
+    render(
+      <div>
+        <p data-testid="sans">Texto</p>
+        <p data-testid="mono" className="font-mono">
+          0193a2f4
+        </p>
+      </div>,
+    );
+    const families = {
+      sans: getComputedStyle(screen.getByTestId('sans')).fontFamily,
+      mono: getComputedStyle(screen.getByTestId('mono')).fontFamily,
+    };
+    expect(families.sans.startsWith('"Geist Variable"')).toBe(true);
+    expect(families.mono.startsWith('"Geist Mono Variable"')).toBe(true);
+
+    const loaded = [
+      ...(await document.fonts.load('13px "Geist Variable"', 'Texto')),
+      ...(await document.fonts.load('12px "Geist Mono Variable"', '0193')),
+    ];
+    expect(loaded.map((face) => face.family).sort()).toEqual([
+      'Geist Mono Variable',
+      'Geist Variable',
+    ]);
+    expect(loaded.every((face) => face.status === 'loaded')).toBe(true);
+    // The .woff2 came from this page's own origin, not from a font host.
+    const fontRequests = performance
+      .getEntriesByType('resource')
+      .filter(({ name }) => name.includes('.woff2'));
+    expect(fontRequests.length).toBeGreaterThan(0);
+    for (const { name } of fontRequests) {
+      expect(new URL(name).origin, name).toBe(location.origin);
+    }
+  });
+
   it('PRU-01 base sets tabular figures on font-mono', () => {
     render(
       <p data-testid="mono" className="font-mono">

@@ -18,6 +18,9 @@
  *   auth-max          -> --container-auth      (max-w-auth)
  */
 @import 'tailwindcss';
+/* Geist and Geist Mono ship with the package: Vite bundles the .woff2, no third-party host (AD-012). */
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
 
 /* Scan the components of this package, wherever this file is imported from. */
 @source '../';
@@ -64,8 +67,9 @@
 
   --shadow-overlay: 0 0 0 1px rgba(20, 24, 33, 0.06), 0 8px 24px -4px rgba(20, 24, 33, 0.14);
 
-  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  /* The @fontsource faces are named "Geist Variable" and "Geist Mono Variable". */
+  --font-sans: 'Geist Variable', 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   --text-heading-xl: 24px;
   --text-heading-xl--line-height: 32px;
