@@ -1,0 +1,27 @@
+<!-- @dsCard group="Páginas atuais" height=800 width=1280 page subtitle="Convite inválido · Sem acesso · Indisponível" -->
+<!doctype html>
+<html lang="pt-BR">
+<head><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../bundle.css"><meta charset="utf-8"><title>PageAccessStates</title><style>body{min-height:800px;overflow:hidden;position:relative}</style></head>
+<body>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);height:800px">
+<main class="am-auth" style="border-right:1px solid var(--border)"><div class="am-auth__col">
+  <div class="am-auth__head"><svg class="am-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M16 16H23A7 7 0 1 1 16 9Z" fill="currentColor"/></svg><h1 class="am-h-xl">Convite inválido</h1></div>
+  <div class="am-alert am-alert--danger" role="alert"><i data-lucide="link-2-off" class="am-icon"></i><span>Este convite expirou ou já foi usado. Peça um novo link a quem te convidou.</span></div>
+  <p class="am-auth__foot">/invite/$token · 410</p>
+</div></main>
+<main class="am-auth" style="border-right:1px solid var(--border)"><div class="am-auth__col">
+  <div class="am-auth__head"><svg class="am-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M16 16H23A7 7 0 1 1 16 9Z" fill="currentColor"/></svg><h1 class="am-h-xl">Sem acesso</h1><p class="am-muted">Esta área é da administração. Sua conta é de uso do produto.</p></div>
+  <div class="am-stack"><a class="am-btn am-btn--primary">Voltar para o início</a><button class="am-btn am-btn--ghost"><i data-lucide="log-out" class="am-icon-sm"></i>Sair</button></div>
+  <p class="am-auth__foot">/admin/* com conta member</p>
+</div></main>
+<main class="am-auth"><div class="am-auth__col">
+  <div class="am-auth__head"><svg class="am-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M16 16H23A7 7 0 1 1 16 9Z" fill="currentColor"/></svg><h1 class="am-h-xl">Indisponível</h1></div>
+  <div class="am-alert am-alert--danger" role="alert"><i data-lucide="cloud-off" class="am-icon"></i><span>O serviço não respondeu. Seus dados estão seguros; tente de novo em instantes.</span></div>
+  <button class="am-btn am-btn--secondary"><i data-lucide="refresh-cw" class="am-icon-sm"></i>Tentar novamente</button>
+  <p class="am-auth__foot">Qualquer rota, API fora do ar · a URL pedida é mantida</p>
+</div></main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>window.lucide && lucide.createIcons();</script>
+</body>
+</html>

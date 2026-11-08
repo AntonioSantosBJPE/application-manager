@@ -1,0 +1,146 @@
+/* Prumo — generated from tokens.json. Reference only: the app reads packages/ui/src/styles/tokens.css. */
+:root,
+[data-theme='light'] {
+  --surface: oklch(0.99 0.002 250);
+  --surface-raised: oklch(0.973 0.003 250);
+  --surface-hover: oklch(0.948 0.004 250);
+  --surface-overlay: oklch(1 0 0);
+  --backdrop: rgba(20, 24, 33, 0.32);
+  --border: oklch(0.915 0.005 250);
+  --border-strong: oklch(0.86 0.007 250);
+  --border-control: oklch(0.64 0.01 250);
+  --text: oklch(0.21 0.012 250);
+  --text-muted: oklch(0.48 0.012 250);
+  --accent: oklch(0.5 0.08 195);
+  --accent-hover: oklch(0.45 0.075 195);
+  --accent-subtle: oklch(0.955 0.025 195);
+  --accent-text: oklch(0.44 0.074 195);
+  --on-accent: oklch(0.99 0.002 250);
+  --focus: var(--accent);
+  --danger: oklch(0.52 0.17 27);
+  --danger-hover: oklch(0.47 0.16 27);
+  --danger-subtle: oklch(0.965 0.014 27);
+  --warning: oklch(0.51 0.11 65);
+  --warning-subtle: oklch(0.965 0.03 80);
+  --info-subtle: var(--surface-raised);
+  --status-operational: oklch(0.5 0.11 150);
+  --status-unavailable: var(--danger);
+  --status-saved: oklch(0.52 0.01 250);
+  --status-applied: oklch(0.5 0.13 255);
+  --status-interviewing: oklch(0.52 0.115 62);
+  --status-offer: oklch(0.5 0.15 300);
+  --status-accepted: oklch(0.5 0.11 150);
+  --status-rejected: oklch(0.52 0.17 27);
+  --status-withdrawn: oklch(0.52 0.008 250);
+  --status-ghosted: var(--status-withdrawn);
+  --paper: #ffffff;
+  --paper-ink: #1f1f1f;
+  --paper-rule: #d4d4d4;
+  --shadow-overlay: 0 0 0 1px rgba(20, 24, 33, 0.06), 0 8px 24px -4px rgba(20, 24, 33, 0.14);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --surface: oklch(0.165 0.005 250);
+    --surface-raised: oklch(0.195 0.006 250);
+    --surface-hover: oklch(0.235 0.007 250);
+    --surface-overlay: oklch(0.215 0.007 250);
+    --backdrop: rgba(0, 0, 0, 0.56);
+    --border: oklch(0.27 0.007 250);
+    --border-strong: oklch(0.33 0.008 250);
+    --border-control: oklch(0.52 0.01 250);
+    --text: oklch(0.955 0.003 250);
+    --text-muted: oklch(0.72 0.01 250);
+    --accent: oklch(0.74 0.105 195);
+    --accent-hover: oklch(0.8 0.1 195);
+    --accent-subtle: oklch(0.26 0.04 195);
+    --accent-text: oklch(0.82 0.095 195);
+    --on-accent: oklch(0.165 0.005 250);
+    --focus: var(--accent);
+    --danger: oklch(0.72 0.15 25);
+    --danger-hover: oklch(0.78 0.11 25);
+    --danger-subtle: oklch(0.25 0.05 25);
+    --warning: oklch(0.8 0.12 75);
+    --warning-subtle: oklch(0.26 0.04 75);
+    --info-subtle: var(--surface-raised);
+    --status-operational: oklch(0.76 0.13 150);
+    --status-unavailable: var(--danger);
+    --status-saved: oklch(0.7 0.01 250);
+    --status-applied: oklch(0.74 0.12 255);
+    --status-interviewing: oklch(0.8 0.12 75);
+    --status-offer: oklch(0.75 0.13 300);
+    --status-accepted: oklch(0.76 0.13 150);
+    --status-rejected: oklch(0.72 0.15 25);
+    --status-withdrawn: oklch(0.66 0.008 250);
+    --status-ghosted: var(--status-withdrawn);
+    --paper: #ffffff;
+    --paper-ink: #1f1f1f;
+    --paper-rule: #d4d4d4;
+    --shadow-overlay: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 12px 32px -4px rgba(0, 0, 0, 0.55);
+  }
+}
+
+[data-theme='dark'] {
+  --surface: oklch(0.165 0.005 250);
+  --surface-raised: oklch(0.195 0.006 250);
+  --surface-hover: oklch(0.235 0.007 250);
+  --surface-overlay: oklch(0.215 0.007 250);
+  --backdrop: rgba(0, 0, 0, 0.56);
+  --border: oklch(0.27 0.007 250);
+  --border-strong: oklch(0.33 0.008 250);
+  --border-control: oklch(0.52 0.01 250);
+  --text: oklch(0.955 0.003 250);
+  --text-muted: oklch(0.72 0.01 250);
+  --accent: oklch(0.74 0.105 195);
+  --accent-hover: oklch(0.8 0.1 195);
+  --accent-subtle: oklch(0.26 0.04 195);
+  --accent-text: oklch(0.82 0.095 195);
+  --on-accent: oklch(0.165 0.005 250);
+  --focus: var(--accent);
+  --danger: oklch(0.72 0.15 25);
+  --danger-hover: oklch(0.78 0.11 25);
+  --danger-subtle: oklch(0.25 0.05 25);
+  --warning: oklch(0.8 0.12 75);
+  --warning-subtle: oklch(0.26 0.04 75);
+  --info-subtle: var(--surface-raised);
+  --status-operational: oklch(0.76 0.13 150);
+  --status-unavailable: var(--danger);
+  --status-saved: oklch(0.7 0.01 250);
+  --status-applied: oklch(0.74 0.12 255);
+  --status-interviewing: oklch(0.8 0.12 75);
+  --status-offer: oklch(0.75 0.13 300);
+  --status-accepted: oklch(0.76 0.13 150);
+  --status-rejected: oklch(0.72 0.15 25);
+  --status-withdrawn: oklch(0.66 0.008 250);
+  --status-ghosted: var(--status-withdrawn);
+  --paper: #ffffff;
+  --paper-ink: #1f1f1f;
+  --paper-rule: #d4d4d4;
+  --shadow-overlay: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 12px 32px -4px rgba(0, 0, 0, 0.55);
+}
+
+:root {
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+  --control-sm: 28px;
+  --control-md: 32px;
+  --row-height: 40px;
+  --sidebar-width: 232px;
+  --properties-width: 280px;
+  --content-max: 1120px;
+  --form-max: 720px;
+  --auth-max: 360px;
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}

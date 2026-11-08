@@ -1,0 +1,25 @@
+<!-- @dsCard group="Sobreposições" height=380 -->
+<!doctype html>
+<html lang="pt-BR">
+<head><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../bundle.css"><meta charset="utf-8"><title>CommandMenu</title>
+<style>body{padding:16px;} .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;} .col{display:flex;flex-direction:column;gap:12px;} body{position:relative;min-height:380px}</style>
+</head>
+<body>
+<div class="am-backdrop"></div>
+<div style="position:relative;display:flex;justify-content:center;padding-top:8px">
+<div class="am-cmdk" role="dialog" aria-label="Comandos">
+  <div class="am-cmdk__input"><i data-lucide="search" class="am-icon"></i><span>nest</span></div>
+  <div class="am-cmdk__list">
+    <div class="am-menu__group">Ações</div>
+    <div class="am-menu__item" aria-selected="true"><i data-lucide="plus" class="am-icon-sm"></i>Nova candidatura<span class="am-kbd">C</span></div>
+    <div class="am-menu__item"><i data-lucide="tags" class="am-icon-sm"></i>Criar skill “nest”</div>
+    <div class="am-menu__group">Candidaturas</div>
+    <div class="am-menu__item"><span class="am-status" data-status="interviewing"><span class="am-sicon"></span><span class="am-status__label"></span></span>Acme Pagamentos — Backend Pleno<span class="am-menu__meta am-mono am-muted">NestJS</span></div>
+    <div class="am-menu__item"><span class="am-status" data-status="applied"><span class="am-sicon"></span><span class="am-status__label"></span></span>Orbe Logística — Full Stack Sênior<span class="am-menu__meta am-mono am-muted">NestJS</span></div>
+  </div>
+  <div class="am-cmdk__foot"><span><span class="am-kbd">↑</span> <span class="am-kbd">↓</span> navegar</span><span><span class="am-kbd">↵</span> abrir</span><span><span class="am-kbd">esc</span> fechar</span></div>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>window.lucide && lucide.createIcons();</script>
+</body>
+</html>

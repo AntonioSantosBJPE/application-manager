@@ -57,9 +57,9 @@ export const TemaClaro: Story = {
     await expect(document.documentElement).toHaveAttribute('data-theme', 'light');
     await settle(button);
     // The light value of --color-accent in tokens.css.
-    await expect(getComputedStyle(button).backgroundColor).toBe(resolvedColor('oklch(0.52 0.17 265)'));
+    await expect(getComputedStyle(button).backgroundColor).toBe(resolvedColor('oklch(0.5 0.08 195)'));
     // The light value of --color-on-accent in tokens.css.
-    await expect(getComputedStyle(button).color).toBe(resolvedColor('oklch(0.99 0.003 260)'));
+    await expect(getComputedStyle(button).color).toBe(resolvedColor('oklch(0.99 0.002 250)'));
   },
 };
 
@@ -74,9 +74,9 @@ export const TemaEscuro: Story = {
     await expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
     await settle(button);
     // The dark value of --color-accent in tokens.css.
-    await expect(getComputedStyle(button).backgroundColor).toBe(resolvedColor('oklch(0.72 0.15 265)'));
+    await expect(getComputedStyle(button).backgroundColor).toBe(resolvedColor('oklch(0.74 0.105 195)'));
     // The dark value of --color-on-accent in tokens.css.
-    await expect(getComputedStyle(button).color).toBe(resolvedColor('oklch(0.18 0.01 260)'));
+    await expect(getComputedStyle(button).color).toBe(resolvedColor('oklch(0.165 0.005 250)'));
   },
 };
 

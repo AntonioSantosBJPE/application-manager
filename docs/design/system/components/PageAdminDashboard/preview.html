@@ -1,0 +1,38 @@
+<!-- @dsCard group="Páginas atuais" height=800 width=1280 page subtitle="/admin" -->
+<!doctype html>
+<html lang="pt-BR">
+<head><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../bundle.css"><meta charset="utf-8"><title>PageAdminDashboard</title><style>body{min-height:800px;overflow:hidden;position:relative}</style></head>
+<body>
+<div class="am-shell">
+<nav class="am-sidebar" aria-label="Navegação da administração">
+  <div class="am-sidebar__head"><svg class="am-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M16 16H23A7 7 0 1 1 16 9Z" fill="currentColor"/></svg><span class="am-wordmark">rumo <span>carreira</span></span><span class="am-caption am-muted">admin</span></div>
+  <a class="am-nav" aria-current="page"><i data-lucide="layout-dashboard" class="am-icon-sm"></i>Painel</a>
+  <a class="am-nav"><i data-lucide="mail" class="am-icon-sm"></i>Convites</a>
+  <a class="am-nav"><i data-lucide="tags" class="am-icon-sm"></i>Catálogo de skills</a>
+  <a class="am-nav"><i data-lucide="activity" class="am-icon-sm"></i>Status do sistema</a>
+  <div class="am-sidebar__foot"><span class="am-avatar">AD</span><span class="am-truncate">Admin</span><span class="am-spacer"></span><button class="am-btn am-btn--ghost am-btn--sm am-btn--icon" aria-label="Sair"><i data-lucide="log-out" class="am-icon-sm"></i></button></div>
+</nav>
+<main class="am-main" data-archetype="dashboard">
+  <div class="am-topbar"><div class="am-crumbs"><b>Painel</b></div></div>
+  <div class="am-dash">
+    <div class="am-page-head"><h1 class="am-h-lg">Administração</h1></div>
+    <div class="am-grid">
+      <section class="am-widget am-span-6"><div class="am-widget__head"><h2 class="am-widget__title">Status do sistema</h2><span class="am-badge am-badge--operational"><span class="am-dot"></span>Operacional</span></div>
+        <dl class="am-props" style="grid-template-columns:120px 1fr">
+          <dt>API</dt><dd><span class="am-badge am-badge--operational"><span class="am-dot"></span>Operacional</span></dd>
+          <dt>Banco de dados</dt><dd><span class="am-badge am-badge--operational"><span class="am-dot"></span>Operacional</span></dd>
+          <dt>Verificado</dt><dd><span class="am-mono am-muted">08 nov 2026 14:32:07</span></dd>
+        </dl></section>
+      <section class="am-widget am-span-6"><div class="am-widget__head"><h2 class="am-widget__title">Convites pendentes</h2><a class="am-btn am-btn--ghost am-btn--sm">Ver convites<i data-lucide="arrow-right" class="am-icon-sm"></i></a></div>
+        <div class="am-stat">3</div><p class="am-caption am-muted">O mais antigo expira em <span class="am-mono">2 d</span>.</p>
+        <div><button class="am-btn am-btn--secondary am-btn--sm"><i data-lucide="user-plus" class="am-icon-sm"></i>Convidar pessoa</button></div></section>
+      <section class="am-widget am-span-12"><div class="am-widget__head"><h2 class="am-widget__title">Skills privadas aguardando promoção</h2><a class="am-btn am-btn--ghost am-btn--sm">Abrir catálogo<i data-lucide="arrow-right" class="am-icon-sm"></i></a></div>
+        <div class="am-skills"><span class="am-skill am-skill--private">Drizzle ORM</span><span class="am-skill am-skill--private">TanStack Start</span><span class="am-skill am-skill--private">Coolify</span><span class="am-skill am-skill--private">Gotenberg</span></div>
+        <p class="am-caption am-muted">Fase 1 · aparece quando a fatia Skill existir.</p></section>
+    </div>
+  </div>
+</main></div>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>window.lucide && lucide.createIcons();</script>
+</body>
+</html>

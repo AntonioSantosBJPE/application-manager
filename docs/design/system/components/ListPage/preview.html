@@ -1,0 +1,22 @@
+<!-- @dsCard group="Arquétipos" height=330 -->
+<!doctype html>
+<html lang="pt-BR">
+<head><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../bundle.css"><meta charset="utf-8"><title>ListPage</title>
+<style>body{padding:16px;} .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;} .col{display:flex;flex-direction:column;gap:12px;} </style>
+</head>
+<body>
+<div class="am-list" style="border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden">
+<div class="am-topbar"><h1 class="am-h-md">Candidaturas</h1><span class="am-muted">24</span><span class="am-spacer"></span><button class="am-btn am-btn--primary am-btn--sm"><i data-lucide="plus" class="am-icon-sm"></i>Nova</button></div>
+<div class="am-list__filters" role="search" aria-label="Filtros"><button class="am-chip" aria-pressed="true">Ativas</button><button class="am-chip">Nível</button><button class="am-chip am-chip--add"><i data-lucide="list-filter" class="am-icon-sm"></i>Filtro</button></div>
+<div class="am-group-head" data-status="interviewing"><span class="am-sicon"></span><span style="color:var(--text)">Em entrevistas</span><span class="am-count">2</span></div>
+<ul>
+<li class="am-row"><div class="am-row__main"><span class="am-sicon" data-status="interviewing"></span><span class="am-row__title">Acme Pagamentos</span><span class="am-truncate am-muted">Backend Pleno</span></div><div class="am-row__meta"><span class="am-mono">há 2 d</span></div></li>
+<li class="am-row"><div class="am-row__main"><span class="am-sicon" data-status="interviewing"></span><span class="am-row__title">Nimbus Saúde</span><span class="am-truncate am-muted">Full Stack Sênior</span></div><div class="am-row__meta"><span class="am-mono">há 5 d</span></div></li>
+</ul>
+<div class="am-group-head" data-status="applied"><span class="am-sicon"></span><span style="color:var(--text)">Enviadas</span><span class="am-count">1</span></div>
+<ul><li class="am-row"><div class="am-row__main"><span class="am-sicon" data-status="applied"></span><span class="am-row__title">Orbe Logística</span><span class="am-truncate am-muted">Desenvolvedor Node.js</span></div><div class="am-row__meta"><span class="am-mono">há 9 d</span></div></li></ul>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>window.lucide && lucide.createIcons();</script>
+</body>
+</html>

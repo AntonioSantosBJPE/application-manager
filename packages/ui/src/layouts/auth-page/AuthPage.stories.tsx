@@ -71,7 +71,7 @@ export const TemaClaro: Story = {
     await expect(document.documentElement).toHaveAttribute('data-theme', 'light');
     await expect(main).toHaveAttribute('data-archetype', 'auth');
     // The light value of --color-text in tokens.css.
-    await expect(getComputedStyle(main).color).toBe(resolvedColor('oklch(0.24 0.02 260)'));
+    await expect(getComputedStyle(main).color).toBe(resolvedColor('oklch(0.21 0.012 250)'));
   },
 };
 
@@ -86,7 +86,7 @@ export const TemaEscuro: Story = {
     await expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
     await expect(main).toHaveAttribute('data-archetype', 'auth');
     // The dark value of --color-text in tokens.css.
-    await expect(getComputedStyle(main).color).toBe(resolvedColor('oklch(0.96 0.005 260)'));
+    await expect(getComputedStyle(main).color).toBe(resolvedColor('oklch(0.955 0.003 250)'));
   },
 };
 

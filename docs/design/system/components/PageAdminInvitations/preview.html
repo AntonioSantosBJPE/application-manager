@@ -1,0 +1,35 @@
+<!-- @dsCard group="Páginas atuais" height=800 width=1280 page subtitle="/admin/invitations — logo depois de convidar" -->
+<!doctype html>
+<html lang="pt-BR">
+<head><link rel="stylesheet" href="../../tokens.css"><link rel="stylesheet" href="../bundle.css"><meta charset="utf-8"><title>PageAdminInvitations</title><style>body{min-height:800px;overflow:hidden;position:relative}</style></head>
+<body>
+<div class="am-shell">
+<nav class="am-sidebar" aria-label="Navegação da administração">
+  <div class="am-sidebar__head"><svg class="am-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M16 16H23A7 7 0 1 1 16 9Z" fill="currentColor"/></svg><span class="am-wordmark">rumo <span>carreira</span></span><span class="am-caption am-muted">admin</span></div>
+  <a class="am-nav"><i data-lucide="layout-dashboard" class="am-icon-sm"></i>Painel</a>
+  <a class="am-nav" aria-current="page"><i data-lucide="mail" class="am-icon-sm"></i>Convites</a>
+  <a class="am-nav"><i data-lucide="tags" class="am-icon-sm"></i>Catálogo de skills</a>
+  <a class="am-nav"><i data-lucide="activity" class="am-icon-sm"></i>Status do sistema</a>
+  <div class="am-sidebar__foot"><span class="am-avatar">AD</span><span class="am-truncate">Admin</span><span class="am-spacer"></span><button class="am-btn am-btn--ghost am-btn--sm am-btn--icon" aria-label="Sair"><i data-lucide="log-out" class="am-icon-sm"></i></button></div>
+</nav>
+<main class="am-main am-list" data-archetype="list">
+  <div class="am-topbar"><h1 class="am-h-md">Convites</h1><span class="am-mono am-muted">3 pendentes</span></div>
+  <section class="am-list__filters" role="search" aria-label="Convidar pessoa" style="padding-top:12px;padding-bottom:12px;align-items:flex-end">
+    <div class="am-field" style="width:320px"><label for="e">E-mail a convidar</label><input id="e" class="am-input" placeholder="pessoa@exemplo.com"></div>
+    <button class="am-btn am-btn--primary"><i data-lucide="send" class="am-icon-sm"></i>Convidar</button>
+  </section>
+  <div style="padding:16px 24px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--border);background:var(--surface-raised)">
+    <div class="am-inline"><span class="am-status" data-status="accepted"><span class="am-sicon"></span></span><span class="am-strong">Convite criado para joao@exemplo.com</span><span class="am-caption am-muted">· este link só aparece desta vez. Copie-o agora.</span></div>
+    <div class="am-copy" style="max-width:640px"><input class="am-input" readonly aria-label="Link do convite" value="https://app.exemplo.dev/invite/7f3c9a1e2b4d5f60a1c2"><button class="am-btn am-btn--primary"><i data-lucide="check" class="am-icon-sm"></i>Copiado</button></div>
+  </div>
+  <div class="am-group-head"><span>Pendentes</span><span class="am-count">3</span></div>
+  <ul aria-label="Convites pendentes">
+    <li class="am-row"><div class="am-row__main"><i data-lucide="mail" class="am-icon-sm"></i><span class="am-row__title">joao@exemplo.com</span></div><div class="am-row__meta"><span class="am-caption">por você</span><span class="am-mono">expira em 7 d</span><button class="am-btn am-btn--ghost am-btn--sm">Revogar</button></div></li>
+    <li class="am-row"><div class="am-row__main"><i data-lucide="mail" class="am-icon-sm"></i><span class="am-row__title">carla.mendes@exemplo.com</span></div><div class="am-row__meta"><span class="am-caption">por você</span><span class="am-mono">expira em 4 d</span><button class="am-btn am-btn--ghost am-btn--sm">Revogar</button></div></li>
+    <li class="am-row"><div class="am-row__main"><i data-lucide="mail" class="am-icon-sm"></i><span class="am-row__title">pedro@exemplo.org</span></div><div class="am-row__meta"><span class="am-caption">por você</span><span class="am-mono" style="color:var(--warning)">expira em 2 d</span><button class="am-btn am-btn--ghost am-btn--sm">Revogar</button></div></li>
+  </ul>
+</main></div>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>window.lucide && lucide.createIcons();</script>
+</body>
+</html>

@@ -102,12 +102,12 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] `tokens.css` define todos os tokens do `tokens.json` nos dois temas, mantém os nomes atuais e o accent do Prumo
-- [ ] Base: `body` 13/20 em `font-sans`, anel de foco de 2 px, `prefers-reduced-motion` e `tabular-nums` em `font-mono`
-- [ ] Novo projeto `browser` no `vitest.config.ts` (arquivos `*.browser.test.tsx`, Chromium, `tokens.css` carregado) para provar o que o navegador pinta
-- [ ] `tokens.test.ts` lê `docs/design/system/tokens.json` e confere cobertura, valores, contraste (OKLCH → sRGB, texto 4.5:1, foco e bordas 3:1) e a base
-- [ ] O commit também inclui `docs/design/system/` e a mudança de `docs/design/principles.md` (hoje não commitados), porque o teste lê o `tokens.json`
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `tokens.css` define todos os tokens do `tokens.json` nos dois temas, mantém os nomes atuais e o accent do Prumo
+- [x] Base: `body` 13/20 em `font-sans`, anel de foco de 2 px, `prefers-reduced-motion` e `tabular-nums` em `font-mono`
+- [x] Novo projeto `browser` no `vitest.config.ts` (arquivos `*.browser.test.tsx`, Chromium, `tokens.css` carregado) para provar o que o navegador pinta
+- [x] `tokens.test.ts` lê `docs/design/system/tokens.json` e confere cobertura, valores, contraste (OKLCH → sRGB, texto 4.5:1, foco e bordas 3:1) e a base
+- [x] O commit também inclui `docs/design/system/` e a mudança de `docs/design/principles.md` (hoje não commitados), porque o teste lê o `tokens.json`
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser
 **Gate**: quick
@@ -1115,7 +1115,7 @@ Proof: run ui | ✓ PRU-08 AC06
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** none
-**Dispatched:** none
+**Dispatched:** lote 1a (Fase 1, T1–T4, Opus 5.5) from a537d9b - 2026-11-08 - pending
 **Walked:** none
 
 ---

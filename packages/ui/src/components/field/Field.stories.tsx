@@ -47,7 +47,7 @@ export const TemaClaro: Story = {
 
     await expect(document.documentElement).toHaveAttribute('data-theme', 'light');
     // The light value of --color-danger in tokens.css.
-    await expect(getComputedStyle(error).color).toBe(resolvedColor('oklch(0.5 0.17 27)'));
+    await expect(getComputedStyle(error).color).toBe(resolvedColor('oklch(0.52 0.17 27)'));
   },
 };
 
@@ -61,7 +61,7 @@ export const TemaEscuro: Story = {
 
     await expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
     // The dark value of --color-danger in tokens.css.
-    await expect(getComputedStyle(error).color).toBe(resolvedColor('oklch(0.75 0.14 27)'));
+    await expect(getComputedStyle(error).color).toBe(resolvedColor('oklch(0.72 0.15 25)'));
   },
 };
 

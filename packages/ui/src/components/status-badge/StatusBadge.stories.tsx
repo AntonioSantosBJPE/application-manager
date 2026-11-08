@@ -39,7 +39,7 @@ export const TemaClaro: Story = {
 
     await expect(document.documentElement).toHaveAttribute('data-theme', 'light');
     // The light value of --color-status-operational in tokens.css.
-    await expect(getComputedStyle(badge).color).toBe(resolvedColor('oklch(0.45 0.12 150)'));
+    await expect(getComputedStyle(badge).color).toBe(resolvedColor('oklch(0.5 0.11 150)'));
   },
 };
 
@@ -53,6 +53,6 @@ export const TemaEscuro: Story = {
 
     await expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
     // The dark value of --color-status-operational in tokens.css.
-    await expect(getComputedStyle(badge).color).toBe(resolvedColor('oklch(0.78 0.14 150)'));
+    await expect(getComputedStyle(badge).color).toBe(resolvedColor('oklch(0.76 0.13 150)'));
   },
 };
