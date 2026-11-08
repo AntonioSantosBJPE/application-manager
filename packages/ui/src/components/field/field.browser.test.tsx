@@ -73,6 +73,9 @@ describe('Field in the browser', () => {
 
     const notes = screen.getByLabelText('Notas');
     const company = screen.getByLabelText('Empresa');
+    // The border at rest: a pointer left over a control by an earlier test would show the hover border.
+    await userEvent.unhover(notes);
+    await userEvent.unhover(company);
     await settle(notes);
     expect(notes.getBoundingClientRect().height).toBeGreaterThanOrEqual(88);
     expect(company.getBoundingClientRect().height).toBe(32);
