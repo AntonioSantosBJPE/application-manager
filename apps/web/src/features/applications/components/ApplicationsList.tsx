@@ -125,7 +125,7 @@ export function ApplicationsList({
   }
 
   return (
-    <ListPage.Root className="w-full">
+    <ListPage.Root>
       <ListPage.Header>
         <h1>{APPLICATIONS_MESSAGES.title}</h1>
         {total === undefined ? null : (

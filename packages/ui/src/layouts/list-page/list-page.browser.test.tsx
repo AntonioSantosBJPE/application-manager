@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { Button } from '../../components/button';
+import { AppShell } from '../app-shell';
 import { settle } from '../../testing/contrast';
 import { ListPage } from './list-page';
 
@@ -145,5 +146,41 @@ describe('ListPage in the browser', () => {
     expect(text.scrollWidth).toBeGreaterThan(text.clientWidth);
     expect(screen.getByText('09 nov 2026').getBoundingClientRect().right).toBeLessThanOrEqual(360);
     await page.viewport(1280, 800);
+  });
+
+  it('PRU-04 a ListPage inside AppShell.Main asChild fills the row beside the sidebar, even when the child drops the props', async () => {
+    await page.viewport(1280, 800);
+    // A router outlet renders the page and forwards nothing, so the classes `asChild` hands down never arrive.
+    const Outlet = () => (
+      <ListPage.Root>
+        <ListPage.Header>
+          <h1>Candidaturas</h1>
+        </ListPage.Header>
+        <ListPage.Content>
+          <ul>
+            <ListPage.Row>
+              <ListPage.RowText>Acme Pagamentos</ListPage.RowText>
+            </ListPage.Row>
+          </ul>
+        </ListPage.Content>
+      </ListPage.Root>
+    );
+    const { container } = render(
+      <AppShell.Root>
+        <AppShell.Sidebar aria-label="Navegação principal">
+          <AppShell.Brand />
+        </AppShell.Sidebar>
+        <AppShell.Main asChild>
+          <Outlet />
+        </AppShell.Main>
+      </AppShell.Root>,
+    );
+
+    const sidebar = screen.getByRole('navigation', { name: 'Navegação principal' }).getBoundingClientRect();
+    const list = container.querySelector('main')!.getBoundingClientRect();
+
+    expect(sidebar.width).toBe(232);
+    expect(list.left).toBe(sidebar.right);
+    expect(list.right).toBe(1280);
   });
 });

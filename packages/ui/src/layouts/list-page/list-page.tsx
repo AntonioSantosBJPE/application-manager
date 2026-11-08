@@ -10,7 +10,7 @@ function Root({ className, ...props }: ComponentProps<'main'>) {
   return (
     <main
       data-archetype="list"
-      className={join('flex min-h-screen min-w-0 flex-col bg-surface text-text', className)}
+      className={join('flex min-h-screen min-w-0 flex-1 flex-col bg-surface text-text', className)}
       {...props}
     />
   );
