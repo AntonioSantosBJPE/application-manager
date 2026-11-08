@@ -1,4 +1,5 @@
 import { Alert, AuthPage, Button } from '@am/ui';
+import { CloudOff, Link2Off, LogOut, RefreshCw } from 'lucide-react';
 import { MESSAGES } from '../model/messages';
 import type { SessionMenuProps } from './SessionMenu';
 import { useSignOut } from './use-sign-out';
@@ -9,7 +10,7 @@ function SignOutAction({ signOut, onSignedOut }: Pick<SessionMenuProps, 'signOut
   return (
     <>
       {failure === undefined ? null : <Alert intent="danger">{failure}</Alert>}
-      <Button intent="ghost" disabled={signingOut} onClick={leave}>
+      <Button intent="ghost" icon={LogOut} disabled={signingOut} onClick={leave}>
         Sair
       </Button>
     </>
@@ -53,9 +54,11 @@ export function UnavailableScreen({
       <AuthPage.Header>
         <h1 className="text-heading-xl">Indisponível</h1>
       </AuthPage.Header>
-      <Alert intent="danger">{MESSAGES.guardUnavailable}</Alert>
+      <Alert intent="danger" icon={CloudOff}>
+        {MESSAGES.guardUnavailable}
+      </Alert>
       <div>
-        <Button intent="secondary" onClick={onRetry}>
+        <Button intent="secondary" icon={RefreshCw} onClick={onRetry}>
           Tentar novamente
         </Button>
       </div>
@@ -70,7 +73,9 @@ export function InvalidInvitationScreen() {
       <AuthPage.Header>
         <h1 className="text-heading-xl">Convite inválido</h1>
       </AuthPage.Header>
-      <Alert intent="danger">{MESSAGES.invitationInvalid}</Alert>
+      <Alert intent="danger" icon={Link2Off}>
+        {MESSAGES.invitationInvalid}
+      </Alert>
     </AuthPage.Root>
   );
 }

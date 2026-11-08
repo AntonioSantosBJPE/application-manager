@@ -1,5 +1,6 @@
 import type { InvitationsPage } from '@am/contracts';
 import { Alert, Button, DashboardPage } from '@am/ui';
+import { ArrowRight, UserPlus } from 'lucide-react';
 import { useId, type ReactElement } from 'react';
 import type { Outcome } from '../api/server-functions';
 import { daysLeft } from '../model/expiry';
@@ -48,7 +49,9 @@ export function InvitationSummary({
     <DashboardPage.Widget span={6} role="group" aria-labelledby={titleId}>
       <DashboardPage.Widget.Header>
         <DashboardPage.Widget.Title id={titleId}>Convites pendentes</DashboardPage.Widget.Title>
-        <DashboardPage.Widget.Action asChild>{link}</DashboardPage.Widget.Action>
+        <DashboardPage.Widget.Action asChild iconEnd={ArrowRight}>
+          {link}
+        </DashboardPage.Widget.Action>
       </DashboardPage.Widget.Header>
       {result.ok ? (
         <p className="font-mono text-heading-xl">{result.data.totalPending}</p>
@@ -61,7 +64,7 @@ export function InvitationSummary({
         </p>
       )}
       <div>
-        <Button asChild intent="secondary" size="sm">
+        <Button asChild intent="secondary" size="sm" icon={UserPlus}>
           {inviteLink}
         </Button>
       </div>

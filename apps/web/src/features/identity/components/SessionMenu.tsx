@@ -1,5 +1,6 @@
 import type { MeResponse } from '@am/contracts';
 import { Alert, AppShell, Button } from '@am/ui';
+import { LogOut } from 'lucide-react';
 import type { Outcome } from '../api/server-functions';
 import { initialsOf } from '../model/person';
 import { useSignOut } from './use-sign-out';
@@ -22,9 +23,14 @@ export function SessionMenu({ user, signOut, onSignedOut }: SessionMenuProps) {
     <div className="ml-auto flex max-w-full min-w-0 flex-col gap-2 md:mt-auto md:ml-0">
       {failure === undefined ? null : <Alert intent="danger">{failure}</Alert>}
       <AppShell.User initials={initialsOf(user.name)} name={user.name} className="md:mt-0!">
-        <Button intent="ghost" size="sm" disabled={signingOut} onClick={leave}>
-          Sair
-        </Button>
+        <Button
+          intent="ghost"
+          size="sm"
+          icon={LogOut}
+          aria-label="Sair"
+          disabled={signingOut}
+          onClick={leave}
+        />
       </AppShell.User>
     </div>
   );

@@ -223,7 +223,8 @@ describe('member home', () => {
     expect(screen.queryByRole('button', { name: /Começar pelo perfil|Nova candidatura/ })).toBeNull();
     expect(screen.queryByText(/⌘K/)).toBeNull();
     // The only button in the page is the way out of the shell.
-    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Sair']);
+    // "Sair" is an icon-only button named by its aria-label (PageMemberHome), so the name is compared.
+    expect(screen.getAllByRole('button')).toEqual([screen.getByRole('button', { name: 'Sair' })]);
   });
 
   it('PRU-06 AC12 greets without a name when the session has none', async () => {

@@ -89,6 +89,26 @@ describe('InvitationSummary as the widget of PageAdminDashboard', () => {
     );
   });
 
+  it('PRU-06 AC14 draws arrow-right after Ver convites and user-plus before Convidar pessoa', () => {
+    render(
+      <InvitationSummary
+        result={{ ok: true, data: { items: [], nextCursor: null, totalPending: 0 } }}
+        link={link}
+        inviteLink={inviteLink}
+        now={now}
+      />,
+    );
+
+    const view = screen.getByRole('link', { name: 'Ver convites' });
+    expect(view.lastElementChild).toHaveClass('lucide-arrow-right');
+    expect(view.querySelectorAll('svg')).toHaveLength(1);
+    expect(view.textContent).toBe('Ver convites');
+    const invite = screen.getByRole('link', { name: 'Convidar pessoa' });
+    expect(invite.firstElementChild).toHaveClass('lucide-user-plus');
+    expect(invite.querySelectorAll('svg')).toHaveLength(1);
+    expect(invite.textContent).toBe('Convidar pessoa');
+  });
+
   it('PRU-06 AC14 shows 0 and no expiry line when nothing is pending', () => {
     render(
       <InvitationSummary

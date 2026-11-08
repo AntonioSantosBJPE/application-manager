@@ -366,6 +366,20 @@ describe('InvitationsPanel', () => {
       ]);
     });
 
+    it('PRU-06 AC16 draws send before the label of Convidar', async () => {
+      apiWith([{ id: uuid(1), email: 'a@exemplo.com' }]);
+      renderPanel(undefined, () => now);
+      await list();
+
+      const submit = within(screen.getByRole('search', { name: 'Convidar pessoa' })).getByRole(
+        'button',
+        { name: 'Convidar' },
+      );
+      expect(submit.firstElementChild).toHaveClass('lucide-send');
+      expect(submit.querySelectorAll('svg')).toHaveLength(1);
+      expect(submit.textContent).toBe('Convidar');
+    });
+
     it('PRU-06 AC17 shows the strip with the e-mail, the note and the link above the list', async () => {
       apiWith([{ id: uuid(1), email: 'antigo@exemplo.com' }]);
       renderPanel(undefined, () => now);

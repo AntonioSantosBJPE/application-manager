@@ -34,6 +34,17 @@ describe('SessionMenu', () => {
     expect(screen.getByRole('button', { name: 'Sair' })).toBeEnabled();
   });
 
+  it('PRU-06 AC13 draws Sair as the log-out icon, named by its aria-label', () => {
+    renderMenu();
+
+    const leave = screen.getByRole('button', { name: 'Sair' });
+    expect(leave.textContent).toBe('');
+    expect(leave).toHaveAttribute('aria-label', 'Sair');
+    expect(leave.querySelectorAll('svg')).toHaveLength(1);
+    expect(leave.querySelector('svg')).toHaveClass('lucide-log-out');
+    expect(leave).toHaveClass('bg-transparent', 'h-control-sm', 'w-control-sm');
+  });
+
   it('draws no initials when the session has no name', () => {
     render(<SessionMenu user={{ ...user, name: '' }} signOut={() => logout(context)} onSignedOut={vi.fn()} />);
 

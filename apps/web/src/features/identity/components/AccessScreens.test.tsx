@@ -118,3 +118,35 @@ describe('InvalidInvitationScreen', () => {
     expect(screen.queryByRole('button')).toBeNull();
   });
 });
+
+describe('AccessScreens with the icons of PageAccessStates', () => {
+  it('PRU-06 AC09 leads the Convite inválido alert with link-2-off', () => {
+    render(<InvalidInvitationScreen />);
+
+    const icons = screen.getByRole('alert').querySelectorAll('svg');
+    expect(icons).toHaveLength(1);
+    expect(icons[0]).toHaveClass('lucide-link-2-off');
+    expect(icons[0]).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('PRU-06 AC10 draws log-out before the label of Sair', () => {
+    const signOut = vi.fn(() => Promise.resolve({ ok: true as const, data: undefined }));
+    render(<NoAccessScreen session={{ user, signOut, onSignedOut: vi.fn() }} />);
+
+    const leave = screen.getByRole('button', { name: 'Sair' });
+    expect(leave.firstElementChild).toHaveClass('lucide-log-out');
+    expect(leave.textContent).toBe('Sair');
+    expect(leave).toHaveClass('bg-transparent');
+  });
+
+  it('PRU-06 AC11 leads the Indisponível alert with cloud-off and Tentar novamente with refresh-cw', () => {
+    render(<UnavailableScreen />);
+
+    const icons = screen.getByRole('alert').querySelectorAll('svg');
+    expect(icons).toHaveLength(1);
+    expect(icons[0]).toHaveClass('lucide-cloud-off');
+    const retry = screen.getByRole('button', { name: 'Tentar novamente' });
+    expect(retry.firstElementChild).toHaveClass('lucide-refresh-cw');
+    expect(retry.textContent).toBe('Tentar novamente');
+  });
+});

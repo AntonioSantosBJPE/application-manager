@@ -314,6 +314,8 @@ Cada diferença entre as cartas e o produto, aprovada pelo usuário.
 | "Boa tarde, Marina" | "Olá, {nome}" | y - [AD-011] |
 | "Você foi convidada para o Rumo Carreira." | "Você recebeu um convite para o Rumo Carreira." | y - [AD-011] |
 | "O mais antigo expira em 2 d." sempre no widget "Convites pendentes" | A linha só aparece quando a primeira página de `GET /invitations` traz todos os pendentes (`nextCursor` nulo, até 20); com mais de uma página ela some, porque o mais antigo está numa página que o painel não lê | y - user: "Aceitar e registrar" (2026-11-08, achado F4) |
+| Ícones dos passos da home sem texto | Os ícones dos passos têm o rótulo acessível "Concluído" (passo feito) ou "A fazer" | y - user: "Acrescentar ícones agora" (2026-11-08, achado F8) |
+| Selo do widget "Status do sistema" só no estado "Operacional"; o ícone do veredito de `/status` sem texto | Com algum componente fora do ar, o selo do widget e o rótulo acessível do ícone do veredito de `/status` dizem "Degradado" | y - user: "Acrescentar ícones agora" (2026-11-08, achado F8) |
 
 ## Sources
 
