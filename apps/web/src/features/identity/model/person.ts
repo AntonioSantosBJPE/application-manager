@@ -1,20 +1,20 @@
 /**
  * The letters in the avatar: the first letter of the first and of the last name, in capitals
- * ("Ana Souza" → "AS"); a single name gives its first two letters ("Ana" → "AN"). A name with no
- * letters (the session carries none) draws the avatar empty.
+ * ("Ana Souza" → "AS"); a single name gives its first two letters ("Ana" → "AN"). Only letters count:
+ * punctuation, digits and emoji are skipped, and a word without a letter is not a name
+ * ("(Ana) Souza" → "AS", "👩‍💻 Ana" → "AN"). A name with no letters (the session carries none)
+ * draws the avatar empty.
  */
 export function initialsOf(name: string): string {
-  const words = name
-    .trim()
+  const names = name
+    .normalize('NFC')
     .split(/\s+/u)
-    .filter((word) => word !== '');
-  const first = words[0];
-  const last = words.at(-1);
+    .map((word) => Array.from(word).filter((character) => /\p{L}/u.test(character)))
+    .filter((letters) => letters.length > 0);
+  const first = names[0];
+  const last = names.at(-1);
   if (first === undefined || last === undefined) return '';
-  const letters =
-    words.length === 1
-      ? Array.from(first).slice(0, 2)
-      : [Array.from(first)[0], Array.from(last)[0]];
+  const letters = names.length === 1 ? first.slice(0, 2) : [first[0], last[0]];
   return letters.join('').toLocaleUpperCase('pt-BR');
 }
 

@@ -29,6 +29,31 @@ describe('initialsOf', () => {
   });
 });
 
+describe('initialsOf with characters that are not letters', () => {
+  it('PRU-06 AC13 takes the first letter of each name, skipping punctuation', () => {
+    expect(initialsOf('(Ana) Souza')).toBe('AS');
+    expect(initialsOf('Ana "Souza"')).toBe('AS');
+    expect(initialsOf("D'Ávila Souza")).toBe('DS');
+  });
+
+  it('PRU-06 AC13 skips an emoji and a word without letters', () => {
+    expect(initialsOf('👩‍💻 Ana Souza')).toBe('AS');
+    expect(initialsOf('Ana Souza 👩‍💻')).toBe('AS');
+    expect(initialsOf('👩‍💻 Ana')).toBe('AN');
+    expect(initialsOf('Ana - Souza')).toBe('AS');
+  });
+
+  it('PRU-06 AC13 takes the first two letters of a single name, skipping what is not a letter', () => {
+    expect(initialsOf('(Ana)')).toBe('AN');
+    expect(initialsOf('A.na')).toBe('AN');
+  });
+
+  it('PRU-06 AC13 draws no initials when no word has a letter', () => {
+    expect(initialsOf('👩‍💻')).toBe('');
+    expect(initialsOf('(123) -')).toBe('');
+  });
+});
+
 describe('greetingFor', () => {
   it('greets the person by name', () => {
     expect(greetingFor('Ana Souza')).toBe('Olá, Ana Souza');
