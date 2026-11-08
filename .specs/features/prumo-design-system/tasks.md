@@ -733,8 +733,8 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Função pura `daysLeft(expiresAt, now)` (teto dos dias restantes) e `isUrgent(days)` (≤ 2) com relógio injetável; `expiresAt` inválido → sem texto
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Função pura `daysLeft(expiresAt, now)` (teto dos dias restantes) e `isUrgent(days)` (≤ 2) com relógio injetável; `expiresAt` inválido → sem texto
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit (web)
 **Gate**: quick

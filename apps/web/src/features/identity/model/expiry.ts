@@ -9,3 +9,8 @@ export function daysLeft(expiresAt: string, now: Date): number | undefined {
   if (Number.isNaN(expires)) return undefined;
   return Math.max(0, Math.ceil((expires - now.getTime()) / DAY_MS));
 }
+
+/** Two days or fewer left: the screen shows the expiry in `warning` (PRU-06 AC18). */
+export function isUrgent(days: number): boolean {
+  return days <= 2;
+}
