@@ -146,11 +146,11 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Schemas do design (seção Contrato) exportados por `packages/contracts/src/index.ts`, com `ACTIVE_STATUSES`, `CLOSED_STATUSES` e `FUNNEL_ORDER`
-- [ ] Limites do spec: empresa e título 1 a 200 após aparar, local até 120, link `http`/`https` até 2048, descrição até 20 000, nota até 2 000, até 50 skills, `q` até 100; `PATCH` exige ao menos um campo e aceita `null` nos opcionais
-- [ ] `adminSkillSchema` ganha `postingCount` (inteiro ≥ 0) sem quebrar os testes de `skills.test.ts`
-- [ ] Testes unitários de cada limite aceito e recusado passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Schemas do design (seção Contrato) exportados por `packages/contracts/src/index.ts`, com `ACTIVE_STATUSES`, `CLOSED_STATUSES` e `FUNNEL_ORDER`
+- [x] Limites do spec: empresa e título 1 a 200 após aparar, local até 120, link `http`/`https` até 2048, descrição até 20 000, nota até 2 000, até 50 skills, `q` até 100; `PATCH` exige ao menos um campo e aceita `null` nos opcionais
+- [x] `adminSkillSchema` ganha `postingCount` (inteiro ≥ 0) sem quebrar os testes de `skills.test.ts`
+- [x] Testes unitários de cada limite aceito e recusado passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
@@ -1464,7 +1464,7 @@ Proof: run api-integration | ✓ APP-88
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** 2026-11-08 - user: "Executar todas as task usando sub-agenta com o sonnet 5.5 médium, vó orquestra e garante a qualidade das entregas. Só me chame em dúvidas críticas que você não consegue resolver só"
-**Dispatched:** none
+**Dispatched:** B1 (T1–T9, Sonnet 5.5 medium) at HEAD 447964d, 2026-11-08 17:26
 **Walked:** none
 
 ---

@@ -92,8 +92,14 @@ export const adminSkillsQuerySchema = z.object({
 });
 export type AdminSkillsQuery = z.infer<typeof adminSkillsQuerySchema>;
 
-/** A catalog row for the admin; it never carries the owner of a private skill (SKL-33). */
-export const adminSkillSchema = skillSchema.extend({ aliases: z.array(aliasSchema) });
+/**
+ * A catalog row for the admin; it never carries the owner of a private skill (SKL-33). `postingCount`
+ * is how many job postings of all people use the skill (APP-85); it stays optional until the API fills it.
+ */
+export const adminSkillSchema = skillSchema.extend({
+  aliases: z.array(aliasSchema),
+  postingCount: z.number().int().nonnegative().optional(),
+});
 export type AdminSkill = z.infer<typeof adminSkillSchema>;
 
 export const adminSkillsPageSchema = z.object({
