@@ -569,9 +569,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Abre no clique direito e com `Shift+F10`; submenus e itens de escolha como no T19
-- [ ] Exportado por `packages/ui/src/index.ts`; story e testes de navegador passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Abre no clique direito e com `Shift+F10`; submenus e itens de escolha como no T19
+- [x] Exportado por `packages/ui/src/index.ts`; story e testes de navegador passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
