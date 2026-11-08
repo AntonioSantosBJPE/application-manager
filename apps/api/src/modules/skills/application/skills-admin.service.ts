@@ -95,6 +95,34 @@ export class SkillsAdminService {
   }
 
   /**
+   * Changes the text and the key of an alias (SKL-67, SKL-68). The key may not be a global name or
+   * the alias of any other row; the same key in another spelling is fine. Same lock as the other writes.
+   */
+  updateAlias(skillId: string, aliasId: string, alias: string): Promise<Alias> {
+    return this.writingGlobalNames(async (tx) => {
+      const current = await this.aliasOf(skillId, aliasId, tx);
+      const key = normalizeSkillKey(alias);
+      const held = await this.repository.aliasWithKey(key, tx);
+      if ((await this.repository.globalKeyTaken(key, undefined, tx)) || (held !== undefined && held.id !== current.id)) {
+        throw new SkillConflictError('The key is already a global name or an alias');
+      }
+      return this.repository.updateAlias(current.id, { alias, normalizedAlias: key }, tx);
+    });
+  }
+
+  /** Deletes an alias; the search for it stops finding the skill (SKL-69, SKL-70). It frees a name, so it needs no lock. */
+  async removeAlias(skillId: string, aliasId: string): Promise<void> {
+    const removed = isUuid(skillId) && isUuid(aliasId) && (await this.repository.deleteAlias(skillId, aliasId));
+    if (!removed) throw new SkillNotFoundError('Alias not found');
+  }
+
+  private async aliasOf(skillId: string, aliasId: string, tx: DatabaseExecutor): Promise<Alias> {
+    const alias = isUuid(skillId) && isUuid(aliasId) ? await this.repository.findAlias(skillId, aliasId, tx) : undefined;
+    if (alias === undefined) throw new SkillNotFoundError('Alias not found');
+    return alias;
+  }
+
+  /**
    * Runs a write of a global name in a transaction that starts with the lock, so the checks and the
    * write see the same names. A unique index that still fires is the same conflict (`409`).
    */

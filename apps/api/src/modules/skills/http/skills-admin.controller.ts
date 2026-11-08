@@ -9,7 +9,7 @@ import {
   type Skill,
   type UpdateSkillRequest,
 } from '@am/contracts';
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Res } from '@nestjs/common';
 import type { ServerResponse } from 'node:http';
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
@@ -77,5 +77,22 @@ export class SkillsAdminController {
   @Patch('skills/:id')
   update(@Param('id') id: string, @Body(zodBody(updateSkillRequestSchema)) body: UpdateSkillRequest): Promise<Skill> {
     return answering(() => this.admin.update(id, body));
+  }
+
+  @Roles('admin')
+  @Patch('skills/:id/aliases/:aliasId')
+  updateAlias(
+    @Param('id') id: string,
+    @Param('aliasId') aliasId: string,
+    @Body(zodBody(aliasRequestSchema)) body: AliasRequest,
+  ): Promise<Alias> {
+    return answering(() => this.admin.updateAlias(id, aliasId, body.alias));
+  }
+
+  @Roles('admin')
+  @Delete('skills/:id/aliases/:aliasId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeAlias(@Param('id') id: string, @Param('aliasId') aliasId: string): Promise<void> {
+    await answering(() => this.admin.removeAlias(id, aliasId));
   }
 }

@@ -285,4 +285,36 @@ export class SkillsRepository {
       .returning({ id: skills.id, name: skills.name, category: skills.category, ownerUserId: skills.ownerUserId });
     return toSkill(row!);
   }
+
+  /** The alias with this id that belongs to this skill; an alias of another skill is not found. */
+  async findAlias(skillId: string, aliasId: string, executor: DatabaseExecutor = this.db): Promise<Alias | undefined> {
+    const [row] = await executor
+      .select({ id: skillAliases.id, alias: skillAliases.alias })
+      .from(skillAliases)
+      .where(and(eq(skillAliases.id, aliasId), eq(skillAliases.skillId, skillId)))
+      .limit(1);
+    return row;
+  }
+
+  async updateAlias(
+    aliasId: string,
+    values: { alias: string; normalizedAlias: string },
+    executor: DatabaseExecutor = this.db,
+  ): Promise<Alias> {
+    const [row] = await executor
+      .update(skillAliases)
+      .set(values)
+      .where(eq(skillAliases.id, aliasId))
+      .returning({ id: skillAliases.id, alias: skillAliases.alias });
+    return row!;
+  }
+
+  /** Deletes the alias of this skill, or reports that there is none. */
+  async deleteAlias(skillId: string, aliasId: string, executor: DatabaseExecutor = this.db): Promise<boolean> {
+    const deleted = await executor
+      .delete(skillAliases)
+      .where(and(eq(skillAliases.id, aliasId), eq(skillAliases.skillId, skillId)))
+      .returning({ id: skillAliases.id });
+    return deleted.length > 0;
+  }
 }

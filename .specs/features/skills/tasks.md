@@ -387,8 +387,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `updateAlias` e `removeAlias` com as respostas `200`, `204`, `409`, `400` e `404` da spec; apelido de outra skill é `404`
-- [ ] Testes `SKL-67` a `SKL-71` passam (inclui member recebendo `403` nos três métodos)
+- [x] `updateAlias` e `removeAlias` com as respostas `200`, `204`, `409`, `400` e `404` da spec; apelido de outra skill é `404`
+- [x] Testes `SKL-67` a `SKL-71` passam (inclui member recebendo `403` nos três métodos)
 
 **Tests**: integration
 **Gate**: full
