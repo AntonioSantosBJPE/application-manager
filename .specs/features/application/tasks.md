@@ -611,9 +611,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] `Backspace` com o campo vazio remove a última tag; o "×" de cada tag tem nome acessível vindo de quem chama; o foco volta ao campo
-- [ ] Story e testes de navegador passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `Backspace` com o campo vazio remove a última tag; o "×" de cada tag tem nome acessível vindo de quem chama; o foco volta ao campo
+- [x] Story e testes de navegador passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
