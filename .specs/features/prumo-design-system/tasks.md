@@ -408,10 +408,10 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] `Root` com padding 24 px e largura máx. 1120 px, `Header`, `Grid` de 12 colunas e `Widget` com `span`, `Widget.Header`, `Widget.Title`, `Widget.Action`
-- [ ] `public-api.test.ts` trava os nomes de partes e props que o web usa hoje em seis componentes e quatro arquétipos
-- [ ] Testes e stories nos dois temas
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `Root` com padding 24 px e largura máx. 1120 px, `Header`, `Grid` de 12 colunas e `Widget` com `span`, `Widget.Header`, `Widget.Title`, `Widget.Action`
+- [x] `public-api.test.ts` trava os nomes de partes e props que o web usa hoje em seis componentes e quatro arquétipos
+- [x] Testes e stories nos dois temas
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick
