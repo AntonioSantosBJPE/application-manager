@@ -24,7 +24,10 @@ describe('DeleteApplication', () => {
     fireEvent.click(sidebarButton());
 
     const box = await screen.findByRole('alertdialog', { name: 'Excluir candidatura?' });
-    expect(within(box).getByRole('button', { name: 'Excluir' })).toBeInTheDocument();
+    const confirm = within(box).getByRole('button', { name: 'Excluir' });
+    // The intent of the `Button` is the class pair that only `danger` carries.
+    expect(confirm).toHaveClass('border-danger', 'bg-danger');
+    expect(confirm).not.toHaveClass('bg-accent');
     fireEvent.click(within(box).getByRole('button', { name: 'Cancelar' }));
     await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
     expect(api.calls).toEqual([]);

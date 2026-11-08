@@ -30,6 +30,17 @@ describe('GhostAlert', () => {
     expect(activity().className).toContain('text-warning');
   });
 
+  it('APP-80 draws the alert as a warning and puts it first in the content, above the company and the title', () => {
+    renderDetail(suggested());
+
+    const alert = screen.getByRole('status');
+    expect(alert).toHaveClass('border-warning', 'bg-warning-subtle', 'text-warning');
+    expect(alert).not.toHaveClass('border-danger', 'bg-surface-raised');
+    const content = alert.parentElement!;
+    expect(content.firstElementChild).toBe(alert);
+    expect(within(content).getByRole('heading', { level: 1 })).toBeInTheDocument();
+  });
+
   it('APP-80 drops "desde o envio" for an application in entrevistas', () => {
     renderDetail(suggested({ status: 'interviewing' }));
 
