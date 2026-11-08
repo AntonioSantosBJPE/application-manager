@@ -1,5 +1,6 @@
 import {
   ACTIVE_STATUSES,
+  EVENT_FUTURE_TOLERANCE_MS,
   FUNNEL_ORDER,
   normalizeSkillKey,
   type ApplicationDetail,
@@ -10,6 +11,7 @@ import {
   type ApplicationSummary,
   type ChangeStatusRequest,
   type CreateApplicationRequest,
+  type CreateEventRequest,
   type ListApplicationsQuery,
   type ReplaceSkillsRequest,
   type UpdateJobPostingRequest,
@@ -34,12 +36,19 @@ import {
 /** The list shows 50 applications per page (APP-09). */
 export const LIST_PAGE_SIZE = 50;
 
-type ApplicationEventName = 'application.created' | 'application.posting_updated' | 'application.skills_replaced' | 'application.status_changed';
+type ApplicationEventName = 'application.created' | 'application.posting_updated' | 'application.skills_replaced' | 'application.status_changed' | 'application.event_added';
 
 /** The application does not exist, is somebody else's or the id is not a uuid (`404`, APP-19). */
 export class ApplicationNotFoundError extends Error {
   constructor() {
     super('Application not found');
+  }
+}
+
+/** An event dated more than 5 minutes ahead of the clock (`400`, APP-25). */
+export class EventInFutureError extends Error {
+  constructor() {
+    super('The event is dated in the future');
   }
 }
 
@@ -233,6 +242,31 @@ export class ApplicationsService {
     });
     if (changed) this.record('application.status_changed', id, userId);
     return this.detailOf(userId, id);
+  }
+
+  /**
+   * Appends a stage or a note dated `occurredAt` (now when absent) to the timeline. A date more than 5 minutes
+   * ahead of the clock is refused; the activity becomes the later of its value and the event date (APP-23..APP-25).
+   */
+  async addEvent(userId: string, id: string, request: CreateEventRequest): Promise<ApplicationEvent> {
+    if (!isUuid(id)) throw new ApplicationNotFoundError();
+    const now = this.clock.now();
+    const occurredAt = request.occurredAt === undefined ? now : new Date(request.occurredAt);
+    const record = await this.repository.findOwned(userId, id);
+    if (record === undefined) throw new ApplicationNotFoundError();
+    if (occurredAt.getTime() > now.getTime() + EVENT_FUTURE_TOLERANCE_MS) throw new EventInFutureError();
+    const event = await this.repository.transaction((tx) =>
+      this.repository.insertEvent(tx, {
+        applicationId: record.id,
+        kind: request.kind,
+        stage: request.kind === 'stage' ? request.stage : undefined,
+        note: request.note,
+        occurredAt,
+        createdAt: now,
+      }),
+    );
+    this.record('application.event_added', record.id, userId);
+    return toEvent(event);
   }
 
   /** The skill ids as stored: a uuid in lowercase, anything else untouched so it is refused as sent. */

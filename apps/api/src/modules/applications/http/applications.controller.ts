@@ -1,14 +1,17 @@
 import {
   changeStatusRequestSchema,
   createApplicationRequestSchema,
+  createEventRequestSchema,
   listApplicationsQuerySchema,
   replaceSkillsRequestSchema,
   updateJobPostingRequestSchema,
   type ApplicationDetail,
+  type ApplicationEvent,
   type ApplicationsCount,
   type ApplicationsPage,
   type ChangeStatusRequest,
   type CreateApplicationRequest,
+  type CreateEventRequest,
   type InvalidSkillsProblem,
   type ListApplicationsQuery,
   type ReplaceSkillsRequest,
@@ -19,7 +22,7 @@ import { ProblemDetailsException, problemFor } from '../../../infra/http/problem
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
 import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
 import { decodeCursor } from '../domain/cursor.js';
-import { ApplicationNotFoundError, ApplicationsService, InvalidSkillsError } from '../application/applications.service.js';
+import { ApplicationNotFoundError, ApplicationsService, EventInFutureError, InvalidSkillsError } from '../application/applications.service.js';
 
 /** The rule errors of the service as the Problem Details answers the spec fixes (APP-05). */
 async function answering<T>(operation: () => Promise<T>): Promise<T> {
@@ -29,6 +32,9 @@ async function answering<T>(operation: () => Promise<T>): Promise<T> {
     if (error instanceof InvalidSkillsError) {
       const problem: InvalidSkillsProblem = { ...problemFor(422, error.message), invalidSkillIds: error.invalidSkillIds };
       throw new ProblemDetailsException(problem);
+    }
+    if (error instanceof EventInFutureError) {
+      throw new ProblemDetailsException(problemFor(400, error.message, [{ path: 'occurredAt', code: 'too_far_in_future' }]));
     }
     if (error instanceof ApplicationNotFoundError) throw new ProblemDetailsException(problemFor(404, error.message));
     throw error;
@@ -102,5 +108,15 @@ export class ApplicationsController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<ApplicationDetail> {
     return answering(() => this.applications.changeStatus(user.id, id, body));
+  }
+
+  @Roles('member')
+  @Post(':id/events')
+  addEvent(
+    @Param('id') id: string,
+    @Body(zodBody(createEventRequestSchema)) body: CreateEventRequest,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ApplicationEvent> {
+    return answering(() => this.applications.addEvent(user.id, id, body));
   }
 }

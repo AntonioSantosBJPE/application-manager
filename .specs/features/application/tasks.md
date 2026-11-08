@@ -414,11 +414,11 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] `occurredAt` informado ou o relógio; mais de 5 min no futuro → `400`; `kind` `status_changed` → `400`
-- [ ] `last_activity_at = greatest(atual, occurred_at)`: uma etapa com data passada não move a atividade
-- [ ] Teste `APP-26`: nenhuma rota `PATCH` ou `DELETE` de evento existe (rota inexistente responde `404`)
-- [ ] Testes `APP-23` a `APP-26` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] `occurredAt` informado ou o relógio; mais de 5 min no futuro → `400`; `kind` `status_changed` → `400`
+- [x] `last_activity_at = greatest(atual, occurred_at)`: uma etapa com data passada não move a atividade
+- [x] Teste `APP-26`: nenhuma rota `PATCH` ou `DELETE` de evento existe (rota inexistente responde `404`)
+- [x] Testes `APP-23` a `APP-26` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
