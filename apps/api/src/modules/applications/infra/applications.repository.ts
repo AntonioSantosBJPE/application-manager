@@ -140,6 +140,19 @@ export class ApplicationsRepository {
     return row;
   }
 
+  /** Writes only the fields given; `null` clears an optional one and an absent field is left alone (APP-28, APP-29). */
+  async updatePosting(
+    userId: string,
+    postingId: string,
+    values: Partial<PostingValues> & { searchText?: string },
+    executor: DatabaseExecutor = this.db,
+  ): Promise<void> {
+    await executor
+      .update(jobPostings)
+      .set(values)
+      .where(and(eq(jobPostings.id, postingId), eq(jobPostings.userId, userId)));
+  }
+
   /** The skills of the postings, by posting id, each list in the order they were sent in. */
   async skillsOf(postingIds: string[], executor: DatabaseExecutor = this.db): Promise<Map<string, PostingSkillRow[]>> {
     const byPosting = new Map<string, PostingSkillRow[]>();

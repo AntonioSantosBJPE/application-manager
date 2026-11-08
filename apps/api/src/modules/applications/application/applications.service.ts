@@ -10,6 +10,7 @@ import {
   type ApplicationSummary,
   type CreateApplicationRequest,
   type ListApplicationsQuery,
+  type UpdateJobPostingRequest,
 } from '@am/contracts';
 import { Inject, Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
@@ -31,7 +32,7 @@ import {
 /** The list shows 50 applications per page (APP-09). */
 export const LIST_PAGE_SIZE = 50;
 
-type ApplicationEventName = 'application.created';
+type ApplicationEventName = 'application.created' | 'application.posting_updated';
 
 /** The application does not exist, is somebody else's or the id is not a uuid (`404`, APP-19). */
 export class ApplicationNotFoundError extends Error {
@@ -185,6 +186,22 @@ export class ApplicationsService {
   /** The application of this user with its posting, skills and timeline (APP-18); anything else is `404` (APP-19). */
   async get(userId: string, id: string): Promise<ApplicationDetail> {
     return this.detailOf(userId, id);
+  }
+
+  /**
+   * Changes only the posting fields sent; `null` clears an optional one. The search text follows the company
+   * and the title, and `last_activity_at` stays as it is (APP-28, APP-29).
+   */
+  async updatePosting(userId: string, id: string, request: UpdateJobPostingRequest): Promise<ApplicationDetail> {
+    const record = isUuid(id) ? await this.repository.findOwned(userId, id) : undefined;
+    if (record === undefined) throw new ApplicationNotFoundError();
+    const searchText =
+      request.company === undefined && request.title === undefined
+        ? undefined
+        : searchTextOf(request.company ?? record.company, request.title ?? record.title);
+    await this.repository.updatePosting(userId, record.jobPostingId, { ...request, searchText });
+    this.record('application.posting_updated', record.id, userId);
+    return this.detailOf(userId, record.id);
   }
 
   /** The ids, in the order sent and each once, that the member cannot use: not a uuid, repeated, unknown or somebody else's private skill. */

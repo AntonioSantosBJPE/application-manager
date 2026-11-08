@@ -346,10 +346,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Só os campos enviados mudam; `null` limpa `url`, `location`, `description` e `workModel`; `search_text` recalculado; `last_activity_at` igual
-- [ ] Corpo vazio ou inválido → `400`
-- [ ] Testes `APP-28`, `APP-29` e `APP-31` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Só os campos enviados mudam; `null` limpa `url`, `location`, `description` e `workModel`; `search_text` recalculado; `last_activity_at` igual
+- [x] Corpo vazio ou inválido → `400`
+- [x] Testes `APP-28`, `APP-29` e `APP-31` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
@@ -1464,7 +1464,7 @@ Proof: run api-integration | ✓ APP-88
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** 2026-11-08 - user: "Executar todas as task usando sub-agenta com o sonnet 5.5 médium, vó orquestra e garante a qualidade das entregas. Só me chame em dúvidas críticas que você não consegue resolver só"
-**Dispatched:** B1 (T1–T9, Sonnet 5.5 medium) at HEAD 447964d, 2026-11-08 17:26
+**Dispatched:** B1 (T1–T9, Sonnet 5.5 medium) at HEAD 447964d, 2026-11-08 17:26 - returned; accepted at 3960e63 with no fix round (gates green: contracts, api unit, api integration, web, ui, guardrails) | B2 (T10–T17, Sonnet 5.5 medium) at HEAD 3960e63, 2026-11-08 17:46
 **Walked:** none
 
 ---

@@ -143,6 +143,8 @@ describe('route access', () => {
         'DELETE /invitations/:id',
         // The admin removes an alias of a global skill; the skill itself is never deleted (SKL-69, SKL-25).
         'DELETE /skills/:id/aliases/:aliasId',
+        // A member edits the posting of an application; a product route, not account administration (APP-28).
+        'PATCH /applications/:id/job-posting',
         // The admin edits the name and category of a global skill, and the text of its aliases (SKL-62, SKL-67).
         'PATCH /skills/:id',
         'PATCH /skills/:id/aliases/:aliasId',
