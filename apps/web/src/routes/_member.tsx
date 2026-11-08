@@ -1,4 +1,5 @@
 import { AppShell } from '@am/ui';
+import { House } from 'lucide-react';
 import { createFileRoute, Link, Outlet, redirect, useRouter } from '@tanstack/react-router';
 import {
   endSession,
@@ -33,7 +34,8 @@ function MemberLayout() {
   return (
     <AppShell.Root>
       <AppShell.Sidebar aria-label="Navegação principal">
-        <AppShell.NavItem asChild current>
+        <AppShell.Brand />
+        <AppShell.NavItem asChild current icon={House}>
           <Link to="/">Início</Link>
         </AppShell.NavItem>
         <SessionMenu

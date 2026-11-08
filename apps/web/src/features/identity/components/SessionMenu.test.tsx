@@ -26,6 +26,21 @@ function renderMenu(onSignedOut = vi.fn()) {
 }
 
 describe('SessionMenu', () => {
+  it('PRU-06 AC13 shows the initials, the name and Sair at the bottom of the sidebar', () => {
+    renderMenu();
+
+    expect(screen.getByText('AN')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByText('Ana Souza')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sair' })).toBeEnabled();
+  });
+
+  it('draws no initials when the session has no name', () => {
+    render(<SessionMenu user={{ ...user, name: '' }} signOut={() => logout(context)} onSignedOut={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: 'Sair' })).toBeInTheDocument();
+    expect(screen.queryByText(/^[A-Z]{1,2}$/)).toBeNull();
+  });
+
   it('shows the name of the user and the Sair action', () => {
     renderMenu();
 

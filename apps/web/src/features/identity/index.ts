@@ -31,4 +31,5 @@ export {
   signedInHome,
   type AreaAccess,
 } from './model/access';
+export { greetingFor, initialsOf } from './model/person';
 export { areaOf, MESSAGES, minutesFromRetryAfter, problemMessage, safeRedirect, type Area, type Failure } from './model/messages';

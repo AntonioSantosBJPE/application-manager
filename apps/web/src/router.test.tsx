@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import type { MeResponse } from '@am/contracts';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient } from '@tanstack/react-query';
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -113,6 +113,25 @@ describe('member area guard', () => {
     expect(screen.getAllByRole('main')).toHaveLength(1);
   });
 
+  it('PRU-06 AC13 shows the member shell: wordmark, Início as current, initials, name and Sair', async () => {
+    sessionIs(signedInAs(member));
+
+    await open('/');
+
+    const sidebar = await screen.findByRole('navigation', { name: 'Navegação principal' });
+    expect(within(sidebar).getByText('rumo')).toBeInTheDocument();
+    expect(within(sidebar).getByText('carreira')).toBeInTheDocument();
+    const links = within(sidebar).getAllByRole('link');
+    expect(links.map((link) => link.textContent)).toEqual(['Início']);
+    expect(links[0]).toHaveAttribute('href', '/');
+    expect(links[0]).toHaveAttribute('aria-current', 'page');
+    expect(within(sidebar).getByText('AN')).toHaveAttribute('aria-hidden', 'true');
+    expect(within(sidebar).getByText('Ana Souza')).toBeInTheDocument();
+    expect(within(sidebar).getByRole('button', { name: 'Sair' })).toBeInTheDocument();
+    // Only what exists (AD-008): no search button and no destination of a later phase.
+    expect(within(sidebar).queryByText(/Buscar|Candidaturas|Currículo|Skills|Insights/)).toBeNull();
+  });
+
   it('PRU-06 AC11 says the service is unavailable on the same url without going to login', async () => {
     sessionIs({ kind: 'unavailable' });
 
@@ -158,6 +177,31 @@ describe('admin area guard', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Root Admin')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sair' })).toBeInTheDocument();
+  });
+
+  it('PRU-06 AC15 shows the admin shell: wordmark with admin, the three destinations, initials, name and Sair', async () => {
+    sessionIs(signedInAs(admin));
+
+    await open('/admin');
+
+    const sidebar = await screen.findByRole('navigation', { name: 'Navegação da administração' });
+    expect(within(sidebar).getByText('rumo')).toBeInTheDocument();
+    expect(within(sidebar).getByText('carreira')).toBeInTheDocument();
+    expect(within(sidebar).getByText('admin')).toBeInTheDocument();
+    const links = within(sidebar).getAllByRole('link');
+    expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
+      ['Painel', '/admin'],
+      ['Convites', '/admin/invitations'],
+      ['Status do sistema', '/status'],
+    ]);
+    expect(within(sidebar).getByRole('link', { name: 'Painel' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    expect(within(sidebar).getByText('RO')).toHaveAttribute('aria-hidden', 'true');
+    expect(within(sidebar).getByText('Root Admin')).toBeInTheDocument();
+    expect(within(sidebar).getByRole('button', { name: 'Sair' })).toBeInTheDocument();
+    expect(within(sidebar).queryByText(/Catálogo de skills|Buscar/)).toBeNull();
   });
 
   it('PRU-06 AC10 shows a member the no-access message with a link to / and no admin shell', async () => {

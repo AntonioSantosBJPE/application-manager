@@ -632,10 +632,10 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] `SessionMenu` vira `AppShell.User` (iniciais, nome, "Sair") com a falha em `Alert`; ausência de nome → sem iniciais
-- [ ] `_member.tsx` mostra `Brand` e Início; `_protected.tsx` mostra `Brand` com tag "admin", Painel, Convites e Status do sistema (link para `/status`)
-- [ ] Testes de rota e de `SessionMenu` atualizados
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `SessionMenu` vira `AppShell.User` (iniciais, nome, "Sair") com a falha em `Alert`; ausência de nome → sem iniciais
+- [x] `_member.tsx` mostra `Brand` e Início; `_protected.tsx` mostra `Brand` com tag "admin", Painel, Convites e Status do sistema (link para `/status`)
+- [x] Testes de rota e de `SessionMenu` atualizados
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit (web)
 **Gate**: quick
