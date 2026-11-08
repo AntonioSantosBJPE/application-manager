@@ -127,7 +127,7 @@ Use um membro fictício (seções 2 a 5). Todos os dados abaixo são inventados.
 
    Recarregue a lista: a linha ganha "sem retorno?" em âmbar. No detalhe aparece o alerta "23 dias sem atividade desde o envio. Marcar como sem retorno?" com **Ainda não** (esconde a sugestão por mais 21 dias, sem mudar o status) e **Marcar sem retorno** (muda o status para "Sem retorno"). Nada muda sozinho.
 8. Como admin, `/admin/skills` mostra em cada linha "0 vagas", "1 vaga" ou "{N} vagas": o número de vagas de todas as pessoas que têm a skill, sem dizer de quem. Cadastrar ou excluir uma candidatura muda o número ao recarregar.
-9. Só com o teclado: `C` abre o diálogo, `Tab` anda pelos campos, as setas escolhem nível e modelo, as setas do campo de skills escolhem a sugestão e `Enter` a aplica; no menu "⋯" a seta para a direita abre o submenu de "Status".
+9. Só com o teclado: `C` abre o diálogo, `Tab` anda pelos campos, as setas escolhem nível e modelo, no campo de skills a primeira sugestão já vem ativa: `Enter` a aplica e as setas escolhem outra; no menu "⋯" a seta para a direita abre o submenu de "Status".
 
 ## 10. Tema, largura e teclado
 
@@ -146,6 +146,8 @@ Use um membro fictício (seções 2 a 5). Todos os dados abaixo são inventados.
 | `pnpm test:repo-rules` | ~1 min | regras do repositório com violações plantadas |
 
 No CI de cada PR rodam lint, tipos, `pnpm test`, integração, `test:repo-rules` e o scan de segredos.
+
+O E2E de candidaturas grava as três imagens das telas (`PageApplications`, `PageNewApplication` e `PageApplicationDetail`, 1280 × 800) na pasta de saída do Playwright (`tests/e2e/test-results`, ignorada pelo git), então um `pnpm test:e2e` comum deixa a árvore limpa. Para renovar as imagens versionadas em `.specs/features/application/captures/*.running.png`, rode `CAPTURE=1 pnpm test:e2e`.
 
 ## 12. Encerrar
 
