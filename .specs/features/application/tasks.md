@@ -481,11 +481,11 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Cada rota de `/applications`: sem sessão `401`, admin `403`, outro member `404` sem alterar nada
-- [ ] O teste de arquitetura de AD-006 passa com as rotas novas
-- [ ] Cada escrita registra `{ event, applicationId, actorId }`; um teste com texto marcador em empresa, título, link, local, descrição e nota não acha o marcador nos logs
-- [ ] Testes `APP-19` e `APP-38` a `APP-41` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Cada rota de `/applications`: sem sessão `401`, admin `403`, outro member `404` sem alterar nada
+- [x] O teste de arquitetura de AD-006 passa com as rotas novas
+- [x] Cada escrita registra `{ event, applicationId, actorId }`; um teste com texto marcador em empresa, título, link, local, descrição e nota não acha o marcador nos logs
+- [x] Testes `APP-19` e `APP-38` a `APP-41` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
