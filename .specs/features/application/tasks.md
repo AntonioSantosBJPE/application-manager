@@ -805,10 +805,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Duas obrigatórias na ordem recebida ou, sem elas, duas desejáveis; modelo ausente "—"
-- [ ] Abaixo de `md` só status, empresa, título e atividade
-- [ ] Teste `APP-44` passa
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Duas obrigatórias na ordem recebida ou, sem elas, duas desejáveis; modelo ausente "—"
+- [x] Abaixo de `md` só status, empresa, título e atividade
+- [x] Teste `APP-44` passa
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
@@ -1464,7 +1464,7 @@ Proof: run api-integration | ✓ APP-88
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** 2026-11-08 - user: "Executar todas as task usando sub-agenta com o sonnet 5.5 médium, vó orquestra e garante a qualidade das entregas. Só me chame em dúvidas críticas que você não consegue resolver só"
-**Dispatched:** B1 (T1–T9, Sonnet 5.5 medium) at HEAD 447964d, 2026-11-08 17:26 - returned; accepted at 3960e63 with no fix round (gates green: contracts, api unit, api integration, web, ui, guardrails) | B2 (T10–T17, Sonnet 5.5 medium) at HEAD 3960e63, 2026-11-08 17:46 - returned; accepted at f8720fe with no fix round (gates green; api integration 270) | B3 (T18–T25, Sonnet 5.5 medium) at HEAD f8720fe, 2026-11-08 18:09 - returned; accepted at f377d51 with no fix round (quick gates green; ui 579) | B4 (T26–T30, Sonnet 5.5 medium) at HEAD f377d51, 2026-11-08 18:27
+**Dispatched:** B1 (T1–T9, Sonnet 5.5 medium) at HEAD 447964d, 2026-11-08 17:26 - returned; accepted at 3960e63 with no fix round (gates green: contracts, api unit, api integration, web, ui, guardrails) | B2 (T10–T17, Sonnet 5.5 medium) at HEAD 3960e63, 2026-11-08 17:46 - returned; accepted at f8720fe with no fix round (gates green; api integration 270) | B3 (T18–T25, Sonnet 5.5 medium) at HEAD f8720fe, 2026-11-08 18:09 - returned; accepted at f377d51 with no fix round (quick gates green; ui 579) | B4 (T26–T30, Sonnet 5.5 medium) at HEAD f377d51, 2026-11-08 18:27 - returned; accepted at 9b02366 after 1 fix round (combobox option hint and icon per the PageNewApplication capture; controlled combobox open instead of a synthetic ArrowDown: 6d09c6c, 9b02366) | B5 (T31–T36, Sonnet 5.5 medium) at HEAD 9b02366, 2026-11-08 18:40
 **Orchestrator decisions:** 2026-11-08 B2/T17: `postingCount` became required, so two existing assertions changed by adding the field, not by loosening: `skills-admin-list.int.test.ts` SKL-33 still checks the exact keys, now including `postingCount`; `applications.test.ts` turned "accepts a row without the count" (a T1 stopgap) into "refuses a row without the count". The T17 `Done when` item "sem edição de asserção" holds in intent only for these two; accepted.
 **Walked:** none
 
