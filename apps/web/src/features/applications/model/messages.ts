@@ -81,4 +81,9 @@ export const DETAIL_MESSAGES = {
   notFound: 'Candidatura não encontrada.',
   backToList: 'Voltar para Candidaturas',
   empty: '—',
+  editLocation: 'Editar local',
+  editPosting: 'Editar link da vaga',
 } as const;
+
+/** The accessible name of a property menu: the name of the property and the value it shows ("Status Enviada"). */
+export const propertyLabel = (name: string, value: string) => `${name} ${value}`;

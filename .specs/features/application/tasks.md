@@ -963,10 +963,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Cada escolha chama a server function certa; Modelo oferece "—"; `Enter`/sair grava e `Esc` cancela
-- [ ] Falha mantém o valor e mostra o `Alert` `danger`
-- [ ] Testes `APP-68` e `APP-78` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Cada escolha chama a server function certa; Modelo oferece "—"; `Enter`/sair grava e `Esc` cancela
+- [x] Falha mantém o valor e mostra o `Alert` `danger`
+- [x] Testes `APP-68` e `APP-78` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
