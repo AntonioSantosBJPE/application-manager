@@ -985,10 +985,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] "Status {de} → {para}", "Status → {para}", "Etapa {tipo}" e "· {nota}", "Nota · {nota}" e "Vaga cadastrada" por último
-- [ ] "Adicionar nota" aparece com texto; `⌘↵`/`Ctrl+↵` grava, limpa e põe a nota no topo
-- [ ] Testes `APP-69` a `APP-71` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] "Status {de} → {para}", "Status → {para}", "Etapa {tipo}" e "· {nota}", "Nota · {nota}" e "Vaga cadastrada" por último
+- [x] "Adicionar nota" aparece com texto; `⌘↵`/`Ctrl+↵` grava, limpa e põe a nota no topo
+- [x] Testes `APP-69` a `APP-71` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

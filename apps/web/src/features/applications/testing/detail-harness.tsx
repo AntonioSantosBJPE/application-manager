@@ -1,13 +1,15 @@
 import type { ApplicationDetail } from '@am/contracts';
 import { render } from '@testing-library/react';
 import { vi } from 'vitest';
-import { patchJobPosting, postStatus } from '../api/server-functions';
+import { loadApplication, patchJobPosting, postEvent, postStatus } from '../api/server-functions';
 import { ApplicationDetail as Detail, type ApplicationDetailApi } from '../components/ApplicationDetail';
 import { context } from './api';
 
 /** The detail api bound to the BFF functions, so a test talks to the fake api through MSW. */
 export function detailApi(): ApplicationDetailApi {
   return {
+    load: (id) => loadApplication(id, context),
+    addEvent: (id, body) => postEvent(id, body, context),
     changeStatus: (id, status) => postStatus(id, { status }, context),
     updatePosting: (id, body) => patchJobPosting(id, body, context),
   };

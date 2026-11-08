@@ -1,20 +1,27 @@
 import type {
   ApplicationDetail as ApplicationRecord,
+  ApplicationEvent,
   ApplicationStatus,
+  CreateEventRequest,
   PostingSkill,
   UpdateJobPostingRequest,
 } from '@am/contracts';
-import { Alert, AppShell, Button, DetailPage, Field, Icon, SkillTag } from '@am/ui';
+import { Alert, AppShell, Button, DetailPage, Icon, SkillTag } from '@am/ui';
 import { ChevronRight, ExternalLink, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { MouseEvent } from 'react';
 import type { Outcome } from '../../../lib/bff';
 import { MESSAGES, problemMessage } from '../../identity';
 import { DETAIL_MESSAGES } from '../model/messages';
+import { ApplicationTimeline } from './ApplicationTimeline';
+import { NoteComposer } from './NoteComposer';
 import { PropertiesSidebar } from './PropertiesSidebar';
 
 /** What the detail needs from the BFF; the route binds the server functions, a test binds the api. */
 export interface ApplicationDetailApi {
+  /** Reads the detail again: the events come back in their order, with the activity the api computed. */
+  load: (id: string) => Promise<Outcome<ApplicationRecord>>;
+  addEvent: (id: string, body: CreateEventRequest) => Promise<Outcome<ApplicationEvent>>;
   changeStatus: (id: string, status: ApplicationStatus) => Promise<Outcome<ApplicationRecord>>;
   updatePosting: (id: string, body: UpdateJobPostingRequest) => Promise<Outcome<ApplicationRecord>>;
 }
@@ -131,23 +138,39 @@ export function ApplicationDetail({ application, api, onExpired, onChanged, list
     setCurrent(application);
   }
 
-  /** Runs a write that answers the application; on failure the screen keeps its value and says why (APP-78). */
-  async function save(action: () => Promise<Outcome<ApplicationRecord>>) {
+  /**
+   * Runs a call of the api. A failure leaves the screen as it was and says why (APP-78); a `401` is the
+   * login opening, so it says nothing. Answers the data, or undefined when the call did not work.
+   */
+  async function run<T>(action: () => Promise<Outcome<T>>): Promise<T | undefined> {
     setFailure(undefined);
-    let outcome: Outcome<ApplicationRecord>;
+    let outcome: Outcome<T>;
     try {
       outcome = await action();
     } catch {
       setFailure(MESSAGES.unavailable);
-      return;
+      return undefined;
     }
-    if (outcome.ok) {
-      setCurrent(outcome.data);
-      onChanged?.();
-      return;
-    }
-    if (onExpired(outcome)) return;
-    setFailure(problemMessage(outcome));
+    if (outcome.ok) return outcome.data;
+    if (!onExpired(outcome)) setFailure(problemMessage(outcome));
+    return undefined;
+  }
+
+  /** A write that answers the application: the screen shows what the api answered. */
+  async function save(action: () => Promise<Outcome<ApplicationRecord>>) {
+    const saved = await run(action);
+    if (saved === undefined) return;
+    setCurrent(saved);
+    onChanged?.();
+  }
+
+  /** A write that answers the event: the detail is read again so the timeline shows it where it belongs (APP-71). */
+  async function record(body: CreateEventRequest): Promise<boolean> {
+    if ((await run(() => api.addEvent(current.id, body))) === undefined) return false;
+    onChanged?.();
+    const reloaded = await run(() => api.load(current.id));
+    if (reloaded !== undefined) setCurrent(reloaded);
+    return true;
   }
 
   const required = current.skills.filter((skill) => skill.requirement === 'required');
@@ -197,13 +220,8 @@ export function ApplicationDetail({ application, api, onExpired, onChanged, list
                 {DETAIL_MESSAGES.addStage}
               </Button>
             </div>
-            <Field.Root>
-              <Field.Textarea
-                aria-label={DETAIL_MESSAGES.notePlaceholder}
-                placeholder={DETAIL_MESSAGES.notePlaceholder}
-                rows={2}
-              />
-            </Field.Root>
+            <ApplicationTimeline events={current.events} createdAt={current.createdAt} />
+            <NoteComposer onAdd={(note) => record({ kind: 'note', note })} />
           </section>
         </DetailPage.Main>
         <PropertiesSidebar
