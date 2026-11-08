@@ -1,4 +1,6 @@
+import type { LucideIcon } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
+import { Icon } from '../../icons/icon';
 
 function join(...classes: (string | false | undefined)[]): string {
   return classes.filter(Boolean).join(' ');
@@ -104,13 +106,34 @@ function Row({ selected = false, className, ...props }: ListPageRowProps) {
   );
 }
 
-/** The text of a row: the full line when narrow, the space the metadata leaves when wide; a long one is cut. */
-function RowText({ className, ...props }: ComponentProps<'span'>) {
+export type ListPageRowTextProps = ComponentProps<'span'> & {
+  /** A Lucide icon before the text, 14px in `text-muted`, hidden from assistive technology. */
+  icon?: LucideIcon;
+};
+
+/**
+ * The text of a row: the full line when narrow, the space the metadata leaves when wide; a long one
+ * is cut. An optional icon sits before it and never shrinks.
+ */
+function RowText({ icon, className, children, ...props }: ListPageRowTextProps) {
+  if (icon === undefined) {
+    return (
+      <span
+        className={join('min-w-0 basis-full truncate sm:flex-1 sm:basis-0', className)}
+        {...props}
+      >
+        {children}
+      </span>
+    );
+  }
   return (
     <span
-      className={join('min-w-0 basis-full truncate sm:flex-1 sm:basis-0', className)}
+      className={join('flex min-w-0 basis-full items-center gap-2 sm:flex-1 sm:basis-0', className)}
       {...props}
-    />
+    >
+      <Icon icon={icon} size="sm" className="shrink-0 text-text-muted" />
+      <span className="min-w-0 truncate">{children}</span>
+    </span>
   );
 }
 

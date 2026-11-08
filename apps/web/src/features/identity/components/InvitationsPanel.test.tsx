@@ -431,6 +431,22 @@ describe('InvitationsPanel', () => {
       expect(revoke).toHaveClass('bg-transparent', 'h-control-sm');
     });
 
+    it('PRU-06 AC18 opens each invitation row with the mail icon before the e-mail, as the card draws it', async () => {
+      apiWith([
+        { id: uuid(1), email: 'longe@exemplo.com', expiresAt: inDays(7) },
+        { id: uuid(2), email: 'dois@exemplo.com', expiresAt: inDays(2) },
+      ]);
+      renderPanel(undefined, () => now);
+      await list();
+
+      for (const email of ['longe@exemplo.com', 'dois@exemplo.com']) {
+        const icon = screen.getByText(email).previousElementSibling;
+        expect(icon?.tagName.toLowerCase()).toBe('svg');
+        expect(icon).toHaveClass('lucide-mail');
+        expect(icon).toHaveAttribute('aria-hidden', 'true');
+      }
+    });
+
     it('PRU-06 AC19 opens the ConfirmDialog with the e-mail; Esc closes it without revoking and the focus returns', async () => {
       const requests = apiWith([{ id: uuid(1), email: 'a@exemplo.com' }]);
       renderPanel(undefined, () => now);

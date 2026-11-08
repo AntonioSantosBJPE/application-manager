@@ -17,7 +17,7 @@ import {
   type CopyFieldStatus,
 } from '@am/ui';
 import { useForm } from '@tanstack/react-form';
-import { Send } from 'lucide-react';
+import { Mail, Send } from 'lucide-react';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useRef, useState } from 'react';
 import type { Outcome } from '../api/server-functions';
@@ -72,7 +72,7 @@ function Row({
 
   return (
     <ListPage.Row data-invitation-id={invitation.id} tabIndex={-1} className="outline-none">
-      <ListPage.RowText>{invitation.email}</ListPage.RowText>
+      <ListPage.RowText icon={Mail}>{invitation.email}</ListPage.RowText>
       <ListPage.RowMeta>
         {days === undefined ? null : (
           <span

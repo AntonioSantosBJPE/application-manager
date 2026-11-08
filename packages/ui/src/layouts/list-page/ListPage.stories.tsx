@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Mail } from 'lucide-react';
 import { page } from '@vitest/browser/context';
 import { expect } from 'storybook/test';
 import { Button } from '../../components/button';
@@ -237,6 +238,48 @@ const contrast: Story['play'] = async ({ canvas }) => {
   for (const group of canvas.getAllByRole('heading', { level: 2 })) await expectContrast(group, 4.5);
   for (const row of canvas.getAllByRole('listitem')) await expectContrast(row, 4.5);
   for (const date of canvas.getAllByText(/^há \d d$/)) await expectContrast(date, 4.5);
+};
+
+/** A row whose text opens with an icon: 14px, in text-muted at 3:1 over the row (PRU-04 AC12, PRU-08 AC03). */
+function RowWithIcon() {
+  return (
+    <ListPage.Root>
+      <ListPage.Content>
+        <ul>
+          <ListPage.Row>
+            <ListPage.RowText icon={Mail}>joao@exemplo.com</ListPage.RowText>
+            <ListPage.RowMeta>
+              <span className="w-24 text-right font-mono text-caption">expira em 7 d</span>
+            </ListPage.RowMeta>
+          </ListPage.Row>
+        </ul>
+      </ListPage.Content>
+    </ListPage.Root>
+  );
+}
+
+const rowWithIcon: Story['play'] = async ({ canvas }) => {
+  const text = canvas.getByText('joao@exemplo.com');
+  const svg = text.parentElement?.querySelector('svg');
+  await expect(svg, 'the icon sits before the row text').toBeTruthy();
+  await expect(svg!.getAttribute('width')).toBe('14');
+  await expect(svg!.getAttribute('aria-hidden')).toBe('true');
+  await expectContrast(svg!, 3);
+  await expectContrast(text, 4.5);
+};
+
+export const LinhaComIconeClaro: Story = {
+  name: 'PRU-04 AC12 Linha com ícone, tema claro',
+  globals: { theme: 'light' },
+  render: () => <RowWithIcon />,
+  play: rowWithIcon,
+};
+
+export const LinhaComIconeEscuro: Story = {
+  name: 'PRU-04 AC12 Linha com ícone, tema escuro',
+  globals: { theme: 'dark' },
+  render: () => <RowWithIcon />,
+  play: rowWithIcon,
 };
 
 export const ContrasteClaro: Story = {

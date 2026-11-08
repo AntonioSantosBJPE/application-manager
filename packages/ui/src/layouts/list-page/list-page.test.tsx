@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
+import { Mail } from 'lucide-react';
 import { describe, expect, it, vi } from 'vitest';
 import { ListPage } from './list-page';
 
@@ -77,6 +78,40 @@ describe('ListPage', () => {
     const item = screen.getByRole('listitem');
     expect(item).toHaveClass('flex-wrap');
     expect(screen.getByText('ana@example.com')).toHaveClass('basis-full');
+  });
+});
+
+describe('ListPage.RowText icon', () => {
+  it('PRU-04 AC12 draws an optional 14px icon in text-muted before the row text, hidden from assistive technology', () => {
+    render(
+      <ul>
+        <ListPage.Row>
+          <ListPage.RowText icon={Mail}>joao@exemplo.com</ListPage.RowText>
+        </ListPage.Row>
+      </ul>,
+    );
+
+    const text = screen.getByText('joao@exemplo.com');
+    const svg = text.previousElementSibling;
+    expect(svg?.tagName.toLowerCase()).toBe('svg');
+    expect(svg).toHaveClass('lucide-mail', 'shrink-0', 'text-text-muted');
+    expect(svg).toHaveAttribute('width', '14');
+    expect(svg).toHaveAttribute('stroke-width', '1.75');
+    expect(svg).toHaveAttribute('aria-hidden', 'true');
+    expect(text).toHaveClass('truncate');
+    expect(screen.getByRole('listitem').textContent).toBe('joao@exemplo.com');
+  });
+
+  it('PRU-04 AC12 renders no icon when none is given', () => {
+    render(
+      <ul>
+        <ListPage.Row>
+          <ListPage.RowText>joao@exemplo.com</ListPage.RowText>
+        </ListPage.Row>
+      </ul>,
+    );
+
+    expect(screen.getByRole('listitem').querySelector('svg')).toBeNull();
   });
 });
 
