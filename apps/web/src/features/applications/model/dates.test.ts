@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dayOf, relativeDays, shortDate } from './dates';
+import { dayOf, longDate, relativeDays, shortDate } from './dates';
 
 const now = new Date('2026-11-08T15:00:00.000Z');
 const hoursAgo = (hours: number) => new Date(now.getTime() - hours * 60 * 60 * 1000).toISOString();
@@ -53,5 +53,15 @@ describe('dayOf', () => {
   it('APP-72 gives the calendar day in São Paulo', () => {
     expect(dayOf(new Date('2026-11-09T01:00:00.000Z'))).toBe('2026-11-08');
     expect(dayOf(new Date('2026-11-09T03:00:00.000Z'))).toBe('2026-11-09');
+  });
+});
+
+describe('longDate', () => {
+  it('APP-66 gives "14 out 2026" for the registration date', () => {
+    expect(longDate('2026-10-14T15:00:00.000Z')).toBe('14 out 2026');
+  });
+
+  it('APP-66 reads the day in São Paulo, not in UTC', () => {
+    expect(longDate('2026-10-15T02:30:00.000Z')).toBe('14 out 2026');
   });
 });

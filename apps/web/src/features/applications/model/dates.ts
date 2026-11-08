@@ -45,3 +45,17 @@ export function dayOf(at: string | Date): string {
   const part = (type: string) => parts.find((item) => item.type === type)?.value ?? '';
   return `${part('year')}-${part('month')}-${part('day')}`;
 }
+
+const longDateParts = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+  timeZone: TIME_ZONE,
+});
+
+/** "14 out 2026": the day, the month abbreviated in lower case without the period, and the year (APP-66). */
+export function longDate(at: string | Date): string {
+  const parts = longDateParts.formatToParts(new Date(at));
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? '';
+  return `${part('day')} ${part('month').replace('.', '').toLowerCase()} ${part('year')}`;
+}

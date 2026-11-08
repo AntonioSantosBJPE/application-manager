@@ -54,3 +54,31 @@ export const FORM_MESSAGES = {
   linkInvalid: 'O link precisa começar com http:// ou https://.',
   tooLong: (max: number) => `Use até ${max} caracteres.`,
 } as const;
+
+/** The copy of the detail of an application (PageApplicationDetail, APP-66..APP-82). */
+export const DETAIL_MESSAGES = {
+  list: 'Candidaturas',
+  breadcrumb: 'Caminho',
+  openPosting: 'Abrir vaga',
+  moreActions: 'Mais ações',
+  skills: 'Skills da vaga',
+  required: 'Obrigatórias',
+  nice: 'Desejáveis',
+  timeline: 'Linha do tempo',
+  addStage: 'Etapa',
+  notePlaceholder: 'Adicionar nota…',
+  properties: 'Propriedades',
+  status: 'Status',
+  level: 'Nível',
+  workModel: 'Modelo',
+  location: 'Local',
+  posting: 'Vaga',
+  createdAt: 'Cadastrada',
+  activity: 'Atividade',
+  description: 'Descrição da vaga',
+  showAll: 'Ver texto completo',
+  delete: 'Excluir candidatura',
+  notFound: 'Candidatura não encontrada.',
+  backToList: 'Voltar para Candidaturas',
+  empty: '—',
+} as const;
