@@ -251,3 +251,58 @@ export const SenhaEscuro: Story = {
   render: passwordField,
   play: showAndHide,
 };
+
+const disabledFields: Story['render'] = () => (
+  <div className="flex w-80 flex-col gap-4 bg-surface p-4">
+    <Field.Root>
+      <Field.Label htmlFor="field-disabled-email">E-mail</Field.Label>
+      <Field.Control id="field-disabled-email" type="email" disabled defaultValue="ana@exemplo.com" />
+    </Field.Root>
+    <Field.Root>
+      <Field.Label htmlFor="field-disabled-password">Senha</Field.Label>
+      <Field.PasswordControl
+        id="field-disabled-password"
+        autoComplete="current-password"
+        toggleLabel="Mostrar senha"
+        disabled
+        defaultValue="correct-horse-battery"
+      />
+    </Field.Root>
+  </div>
+);
+
+/**
+ * A disabled control and a disabled password field: neither takes typing nor focus, and the toggle is
+ * disabled with the field, so the value stays hidden (PRU-08 AC04, PRU-03 AC07).
+ */
+const disabledPlay: Story['play'] = async ({ canvas }) => {
+  const email = canvas.getByLabelText<HTMLInputElement>('E-mail');
+  const password = canvas.getByLabelText<HTMLInputElement>('Senha');
+  const toggle = canvas.getByRole('button', { name: 'Mostrar senha' });
+
+  await expect(email).toBeDisabled();
+  await expect(password).toBeDisabled();
+  await expect(toggle).toBeDisabled();
+  await userEvent.type(email, 'x');
+  await expect(email).toHaveValue('ana@exemplo.com');
+  await userEvent.click(toggle);
+  await expect(password).toHaveAttribute('type', 'password');
+  await userEvent.tab();
+  await expect(document.activeElement).not.toBe(email);
+  await expect(document.activeElement).not.toBe(password);
+  await expect(document.activeElement).not.toBe(toggle);
+};
+
+export const DesabilitadoClaro: Story = {
+  name: 'Desabilitado, tema claro',
+  globals: { theme: 'light' },
+  render: disabledFields,
+  play: disabledPlay,
+};
+
+export const DesabilitadoEscuro: Story = {
+  name: 'Desabilitado, tema escuro',
+  globals: { theme: 'dark' },
+  render: disabledFields,
+  play: disabledPlay,
+};
