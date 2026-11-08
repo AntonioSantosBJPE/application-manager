@@ -112,3 +112,83 @@ describe('Button', () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('Button in the Prumo', () => {
+  it('PRU-02 AC01 accepts primary, secondary, ghost and danger, with primary by default', () => {
+    render(
+      <>
+        <Button>Padrão</Button>
+        <Button intent="primary">Primário</Button>
+        <Button intent="secondary">Secundário</Button>
+        <Button intent="ghost">Fantasma</Button>
+        <Button intent="danger">Perigo</Button>
+      </>,
+    );
+
+    const byName = (name: string) => screen.getByRole('button', { name });
+    expect(byName('Padrão').className).toBe(byName('Primário').className);
+    expect(byName('Primário')).toHaveClass('bg-accent', 'text-on-accent');
+    expect(byName('Secundário')).toHaveClass('bg-surface-raised', 'text-text');
+    expect(byName('Fantasma')).toHaveClass('bg-transparent', 'border-transparent', 'text-text-muted');
+    expect(byName('Fantasma')).not.toHaveClass('bg-accent', 'bg-surface-raised', 'bg-danger');
+    expect(byName('Perigo')).toHaveClass('bg-danger', 'text-on-accent');
+  });
+
+  it('PRU-02 AC02 uses the control-md height by default and control-sm with size sm', () => {
+    render(
+      <>
+        <Button>Entrar</Button>
+        <Button size="sm">Revogar</Button>
+      </>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Entrar' })).toHaveClass('h-control-md');
+    expect(screen.getByRole('button', { name: 'Revogar' })).toHaveClass('h-control-sm');
+  });
+
+  it('PRU-02 AC03 fades a disabled button to 50% and ignores the click', () => {
+    const onClick = vi.fn();
+    render(
+      <Button intent="ghost" onClick={onClick} disabled>
+        Revogar
+      </Button>,
+    );
+
+    const button = screen.getByRole('button', { name: 'Revogar' });
+    fireEvent.click(button);
+
+    expect(button).toHaveClass('disabled:opacity-50');
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it('PRU-02 AC04 writes the label in on-accent for primary and danger only', () => {
+    render(
+      <>
+        <Button intent="primary">Entrar</Button>
+        <Button intent="danger">Revogar</Button>
+        <Button intent="secondary">Cancelar</Button>
+        <Button intent="ghost">Ver convites</Button>
+      </>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Entrar' })).toHaveClass('text-on-accent');
+    expect(screen.getByRole('button', { name: 'Revogar' })).toHaveClass('text-on-accent');
+    expect(screen.getByRole('button', { name: 'Cancelar' })).not.toHaveClass('text-on-accent');
+    expect(screen.getByRole('button', { name: 'Ver convites' })).not.toHaveClass('text-on-accent');
+  });
+
+  it('PRU-02 AC05 renders the child with the button classes and attributes when asChild is set', () => {
+    const { container } = render(
+      <Button asChild intent="ghost" size="sm" aria-describedby="nota" data-row="1">
+        <a href="/admin/invitations">Ver convites</a>
+      </Button>,
+    );
+
+    const link = screen.getByRole('link', { name: 'Ver convites' });
+    expect(link).toHaveAttribute('href', '/admin/invitations');
+    expect(link).toHaveAttribute('aria-describedby', 'nota');
+    expect(link).toHaveAttribute('data-row', '1');
+    expect(link).toHaveClass('h-control-sm', 'bg-transparent', 'text-text-muted', 'rounded-sm');
+    expect(container.querySelector('button')).toBeNull();
+  });
+});

@@ -186,9 +186,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Intents `primary`, `secondary`, `ghost`, `danger`; `h-control-md` / `h-control-sm`; desabilitado a 50 %; texto `on-accent` em `primary` e `danger`; `asChild` mantido
-- [ ] Testes `button.test.tsx` e `button.browser.test.tsx` (alturas medidas no navegador); stories claro/escuro com contraste e foco
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Intents `primary`, `secondary`, `ghost`, `danger`; `h-control-md` / `h-control-sm`; desabilitado a 50 %; texto `on-accent` em `primary` e `danger`; `asChild` mantido
+- [x] Testes `button.test.tsx` e `button.browser.test.tsx` (alturas medidas no navegador); stories claro/escuro com contraste e foco
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick
@@ -1114,8 +1114,8 @@ Proof: run ui | ✓ PRU-08 AC06
 
 The feature's live state, written as it happens - a compaction gives no warning.
 
-**Settled mid-build:** none
-**Dispatched:** lote 1a (Fase 1, T1–T4, Opus 5.5) from a537d9b - 2026-11-08 - pending
+**Settled mid-build:** 2026-11-08 - user: "se vocer conseguir baixar as fontes, use local as fpntes" - na T34, `docs/design/system/prumo.md` (linha 54) passa a dizer que Geist e Geist Mono são auto-hospedadas via `@fontsource` (AD-012), não Google Fonts.
+**Dispatched:** lote 1a (Fase 1, T1–T4, Opus 5.5) from a537d9b - returned 8dc02aa; lote 1b (Fase 2, T5–T12, Opus 5.5) from 8dc02aa - 2026-11-08 - pending
 **Walked:** none
 
 ---

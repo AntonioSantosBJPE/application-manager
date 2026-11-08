@@ -1,6 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent } from 'storybook/test';
-import { contrastRatio, pageBackground, settle as settled } from '../../testing/contrast';
+import {
+  contrastRatio,
+  expectContrast,
+  focusRing,
+  pageBackground,
+  settle as settled,
+} from '../../testing/contrast';
 import { Button } from './button';
 
 const meta = {
@@ -34,6 +40,16 @@ export const Primario: Story = {
 export const Secundario: Story = {
   name: 'Secundário',
   args: { intent: 'secondary', children: 'Cancelar' },
+};
+
+export const Fantasma: Story = {
+  name: 'Fantasma',
+  args: { intent: 'ghost', children: 'Ver convites' },
+};
+
+export const Pequeno: Story = {
+  name: 'Pequeno',
+  args: { intent: 'secondary', size: 'sm', children: 'Revogar' },
 };
 
 export const Perigo: Story = {
@@ -144,4 +160,71 @@ export const FocoTemaEscuro: Story = {
   globals: { theme: 'dark' },
   render: threeIntents,
   play: focusContrast,
+};
+
+const prumoIntents = [
+  { intent: 'primary', label: 'Entrar' },
+  { intent: 'secondary', label: 'Cancelar' },
+  { intent: 'ghost', label: 'Ver convites' },
+  { intent: 'danger', label: 'Revogar' },
+] as const;
+
+const fourIntents: Story['render'] = () => (
+  <div className="flex flex-col gap-3 bg-surface p-4">
+    <div className="flex gap-3">
+      {prumoIntents.map(({ intent, label }) => (
+        <Button key={intent} intent={intent}>
+          {label}
+        </Button>
+      ))}
+    </div>
+    <div className="flex gap-3">
+      {prumoIntents.map(({ intent, label }) => (
+        <Button key={intent} intent={intent} size="sm">
+          {`${label} sm`}
+        </Button>
+      ))}
+    </div>
+  </div>
+);
+
+/**
+ * Every intent, at both sizes: the label reaches 4.5:1 on its own fill, and the keyboard ring of each
+ * one is the focus token at 3:1 against the page (PRU-08 AC03, PRU-01 AC13).
+ */
+const prumoContrast: Story['play'] = async ({ canvas }) => {
+  for (const { label } of prumoIntents) {
+    await settled(canvas.getByRole('button', { name: label }));
+    await settled(canvas.getByRole('button', { name: `${label} sm` }));
+  }
+  for (const { label } of prumoIntents) {
+    await expectContrast(canvas.getByRole('button', { name: label }), 4.5);
+    await expectContrast(canvas.getByRole('button', { name: `${label} sm` }), 4.5);
+  }
+  for (const { intent, label } of prumoIntents) {
+    await userEvent.tab();
+    const button = canvas.getByRole('button', { name: label });
+    await expect(button, `${intent} takes the focus`).toHaveFocus();
+    await settled(button);
+    const ring = focusRing(button);
+    await expect(ring.drawn, `${intent} draws the ring`).toBe(true);
+    await expect(ring.isFocusToken, `${intent} ring is the focus token`).toBe(true);
+    await expect(ring.ratio, `${intent} ring against the page`).toBeGreaterThanOrEqual(3);
+    await expect(getComputedStyle(button).outlineWidth).toBe('2px');
+    await expect(getComputedStyle(button).outlineOffset).toBe('2px');
+  }
+};
+
+export const ContrasteClaro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema claro',
+  globals: { theme: 'light' },
+  render: fourIntents,
+  play: prumoContrast,
+};
+
+export const ContrasteEscuro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema escuro',
+  globals: { theme: 'dark' },
+  render: fourIntents,
+  play: prumoContrast,
 };

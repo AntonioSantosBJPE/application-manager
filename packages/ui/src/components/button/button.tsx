@@ -4,7 +4,7 @@ import type { ComponentProps } from 'react';
 
 const buttonVariants = cva(
   [
-    'inline-flex items-center justify-center gap-2 rounded-sm border text-xs font-medium',
+    'inline-flex items-center justify-center gap-1.5 rounded-sm border font-medium whitespace-nowrap',
     'transition-colors duration-150',
     // The ring color is set at all times: only the width appears on focus. Were the color set on focus
     // alone, `transition-colors` would fade it in from the label color (UI-24).
@@ -14,13 +14,18 @@ const buttonVariants = cva(
   {
     variants: {
       intent: {
-        primary: 'border-accent bg-accent text-on-accent hover:opacity-90',
-        secondary: 'border-border bg-surface-raised text-text hover:bg-surface',
-        danger: 'border-danger bg-danger text-on-accent hover:opacity-90',
+        primary:
+          'border-accent bg-accent text-on-accent hover:border-accent-hover hover:bg-accent-hover',
+        // The Prumo preview draws this border in border-strong; border-border stays because the
+        // contract test of the secondary intent asserts it (PRU-02 AC19 keeps what the web uses).
+        secondary: 'border-border bg-surface-raised text-text hover:bg-surface-hover',
+        ghost: 'border-transparent bg-transparent text-text-muted hover:bg-surface-hover hover:text-text',
+        danger:
+          'border-danger bg-danger text-on-accent hover:border-danger-hover hover:bg-danger-hover',
       },
       size: {
-        default: 'h-8 px-3',
-        sm: 'h-7 px-2',
+        default: 'h-control-md px-3 text-body',
+        sm: 'h-control-sm px-2 text-caption',
       },
     },
     defaultVariants: { intent: 'primary', size: 'default' },
