@@ -164,17 +164,22 @@ function ShellWithDashboard() {
       </AppShell.Sidebar>
       <AppShell.Main asChild>
         <DashboardPage.Root>
-          <DashboardPage.Header>
-            <h1 className="text-lg font-medium">Status do sistema</h1>
-          </DashboardPage.Header>
-          <DashboardPage.Grid>
-            <div className="rounded-md border border-border bg-surface-raised p-4 text-xs">
-              API operacional
-            </div>
-            <div className="rounded-md border border-border bg-surface-raised p-4 text-xs">
-              Banco de dados operacional
-            </div>
-          </DashboardPage.Grid>
+          <AppShell.Topbar>
+            <b className="text-body font-medium">Status do sistema</b>
+          </AppShell.Topbar>
+          <DashboardPage.Content>
+            <DashboardPage.Header>
+              <h1 className="text-lg font-medium">Status do sistema</h1>
+            </DashboardPage.Header>
+            <DashboardPage.Grid>
+              <div className="rounded-md border border-border bg-surface-raised p-4 text-xs">
+                API operacional
+              </div>
+              <div className="rounded-md border border-border bg-surface-raised p-4 text-xs">
+                Banco de dados operacional
+              </div>
+            </DashboardPage.Grid>
+          </DashboardPage.Content>
         </DashboardPage.Root>
       </AppShell.Main>
     </AppShell.Root>

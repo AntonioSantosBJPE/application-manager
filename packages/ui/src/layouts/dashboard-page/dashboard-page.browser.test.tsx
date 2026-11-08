@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { settle } from '../../testing/contrast';
+import { AppShell } from '../app-shell';
 import { DashboardPage } from './dashboard-page';
 
 /** A token color as the browser resolves it, to compare with a computed style. */
@@ -17,36 +18,41 @@ function tokenColor(token: string): string {
 function renderDashboard() {
   return render(
     <DashboardPage.Root>
-      <DashboardPage.Header>
-        <h1 className="text-heading-lg">Administração</h1>
-        <p className="text-text-muted">Estado do produto.</p>
-      </DashboardPage.Header>
-      <DashboardPage.Grid>
-        <DashboardPage.Widget span={6} data-testid="a">
-          <DashboardPage.Widget.Header>
-            <DashboardPage.Widget.Title>Status do sistema</DashboardPage.Widget.Title>
-          </DashboardPage.Widget.Header>
-          <p>API operacional</p>
-        </DashboardPage.Widget>
-        <DashboardPage.Widget span={6} data-testid="b">
-          <DashboardPage.Widget.Header>
-            <DashboardPage.Widget.Title>Convites pendentes</DashboardPage.Widget.Title>
-            <DashboardPage.Widget.Action asChild>
-              <a href="/admin/invitations">Ver convites</a>
-            </DashboardPage.Widget.Action>
-          </DashboardPage.Widget.Header>
-          <p>3</p>
-        </DashboardPage.Widget>
-        <DashboardPage.Widget span={4} data-testid="c">
-          <p>Um terço</p>
-        </DashboardPage.Widget>
-        <DashboardPage.Widget span={8} data-testid="d">
-          <p>Dois terços</p>
-        </DashboardPage.Widget>
-        <DashboardPage.Widget span={12} data-testid="e">
-          <p>Largura inteira</p>
-        </DashboardPage.Widget>
-      </DashboardPage.Grid>
+      <AppShell.Topbar data-testid="topbar">
+        <b className="text-body font-medium">Painel</b>
+      </AppShell.Topbar>
+      <DashboardPage.Content data-testid="content">
+        <DashboardPage.Header>
+          <h1 className="text-heading-lg">Administração</h1>
+          <p className="text-text-muted">Estado do produto.</p>
+        </DashboardPage.Header>
+        <DashboardPage.Grid>
+          <DashboardPage.Widget span={6} data-testid="a">
+            <DashboardPage.Widget.Header>
+              <DashboardPage.Widget.Title>Status do sistema</DashboardPage.Widget.Title>
+            </DashboardPage.Widget.Header>
+            <p>API operacional</p>
+          </DashboardPage.Widget>
+          <DashboardPage.Widget span={6} data-testid="b">
+            <DashboardPage.Widget.Header>
+              <DashboardPage.Widget.Title>Convites pendentes</DashboardPage.Widget.Title>
+              <DashboardPage.Widget.Action asChild>
+                <a href="/admin/invitations">Ver convites</a>
+              </DashboardPage.Widget.Action>
+            </DashboardPage.Widget.Header>
+            <p>3</p>
+          </DashboardPage.Widget>
+          <DashboardPage.Widget span={4} data-testid="c">
+            <p>Um terço</p>
+          </DashboardPage.Widget>
+          <DashboardPage.Widget span={8} data-testid="d">
+            <p>Dois terços</p>
+          </DashboardPage.Widget>
+          <DashboardPage.Widget span={12} data-testid="e">
+            <p>Largura inteira</p>
+          </DashboardPage.Widget>
+        </DashboardPage.Grid>
+      </DashboardPage.Content>
     </DashboardPage.Root>,
   );
 }
@@ -56,21 +62,41 @@ afterEach(() => {
 });
 
 describe('DashboardPage in the browser', () => {
-  it('PRU-04 AC13 paints a main with 24px of padding at most 1120px wide, an h1 in heading-lg and a 12-column grid 16px apart', async () => {
+  it('PRU-04 AC13 paints a main without padding opened by the 48px topbar edge to edge, the content with 24px of padding at most 1120px wide, an h1 in heading-lg and a 12-column grid 16px apart', async () => {
     await page.viewport(1440, 900);
     const { container } = renderDashboard();
     const main = screen.getByRole('main');
+    const topbar = screen.getByTestId('topbar');
+    const content = screen.getByTestId('content');
     const title = screen.getByRole('heading', { level: 1 });
-    const grid = container.querySelector('main > div')!;
+    const grid = content.querySelector(':scope > div')!;
 
-    const style = getComputedStyle(main);
+    const mainStyle = getComputedStyle(main);
+    expect([
+      mainStyle.paddingTop,
+      mainStyle.paddingRight,
+      mainStyle.paddingBottom,
+      mainStyle.paddingLeft,
+    ]).toEqual(['0px', '0px', '0px', '0px']);
+    expect(main.firstElementChild).toBe(topbar);
+    const mainBox = main.getBoundingClientRect();
+    const topbarBox = topbar.getBoundingClientRect();
+    expect(topbarBox.height).toBe(48);
+    expect(topbarBox.top).toBe(mainBox.top);
+    expect(topbarBox.left).toBe(mainBox.left);
+    expect(topbarBox.width).toBe(mainBox.width);
+    expect(mainBox.width).toBeGreaterThan(1120);
+
+    const style = getComputedStyle(content);
     expect([style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft]).toEqual([
       '24px',
       '24px',
       '24px',
       '24px',
     ]);
-    expect(main.getBoundingClientRect().width).toBe(1120);
+    expect(content.getBoundingClientRect().width).toBe(1120);
+    expect(content.getBoundingClientRect().top).toBe(topbarBox.bottom);
+    expect(container.querySelectorAll('main > div')).toHaveLength(2);
     expect(getComputedStyle(title).fontSize).toBe('18px');
     expect(getComputedStyle(title).fontWeight).toBe('600');
     expect(getComputedStyle(screen.getByText('Estado do produto.')).color).toBe(tokenColor('text-muted'));

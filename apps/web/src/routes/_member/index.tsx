@@ -1,4 +1,4 @@
-import { DashboardPage, EmptyState, PipelineStatus } from '@am/ui';
+import { AppShell, DashboardPage, EmptyState, PipelineStatus } from '@am/ui';
 import { createFileRoute } from '@tanstack/react-router';
 import { greetingFor } from '../../features/identity';
 
@@ -24,7 +24,10 @@ const STEPS = [
   },
 ] as const;
 
-/** Home of the member area: the way to the first application, until the next slices fill it. */
+/**
+ * Home of the member area: the topbar "Início" edge to edge, then the way to the first application,
+ * until the next slices fill it.
+ */
 export const Route = createFileRoute('/_member/')({
   component: MemberHome,
 });
@@ -34,37 +37,42 @@ function MemberHome() {
 
   return (
     <DashboardPage.Root>
-      <DashboardPage.Header>
-        <h1 className="text-heading-lg">Início</h1>
-        <p className="text-body-lg">
-          {greetingFor(access.kind === 'allowed' ? access.user.name : '')}
-        </p>
-        <p className="text-text-muted">
-          Três passos para a primeira candidatura com currículo adaptado.
-        </p>
-      </DashboardPage.Header>
-      <DashboardPage.Grid>
-        {STEPS.map((step) => (
-          <DashboardPage.Widget key={step.number} span={4}>
-            <DashboardPage.Widget.Header>
-              <span className="font-mono text-text-muted">{step.number}</span>
-              <PipelineStatus
-                status={step.done ? 'accepted' : 'saved'}
-                label={step.done ? 'Concluído' : 'A fazer'}
-                iconOnly
-              />
-            </DashboardPage.Widget.Header>
-            <DashboardPage.Widget.Title>{step.title}</DashboardPage.Widget.Title>
-            <p className="text-text-muted">{step.text}</p>
-          </DashboardPage.Widget>
-        ))}
-      </DashboardPage.Grid>
-      <EmptyState.Root>
-        <p>
-          Quando houver candidaturas, aqui aparecem o pipeline, o que precisa de atenção e a
-          atividade recente.
-        </p>
-      </EmptyState.Root>
+      <AppShell.Topbar>
+        <b className="text-body font-medium">Início</b>
+      </AppShell.Topbar>
+      <DashboardPage.Content>
+        <DashboardPage.Header>
+          <h1 className="text-heading-lg">Início</h1>
+          <p className="text-body-lg">
+            {greetingFor(access.kind === 'allowed' ? access.user.name : '')}
+          </p>
+          <p className="text-text-muted">
+            Três passos para a primeira candidatura com currículo adaptado.
+          </p>
+        </DashboardPage.Header>
+        <DashboardPage.Grid>
+          {STEPS.map((step) => (
+            <DashboardPage.Widget key={step.number} span={4}>
+              <DashboardPage.Widget.Header>
+                <span className="font-mono text-text-muted">{step.number}</span>
+                <PipelineStatus
+                  status={step.done ? 'accepted' : 'saved'}
+                  label={step.done ? 'Concluído' : 'A fazer'}
+                  iconOnly
+                />
+              </DashboardPage.Widget.Header>
+              <DashboardPage.Widget.Title>{step.title}</DashboardPage.Widget.Title>
+              <p className="text-text-muted">{step.text}</p>
+            </DashboardPage.Widget>
+          ))}
+        </DashboardPage.Grid>
+        <EmptyState.Root>
+          <p>
+            Quando houver candidaturas, aqui aparecem o pipeline, o que precisa de atenção e a
+            atividade recente.
+          </p>
+        </EmptyState.Root>
+      </DashboardPage.Content>
     </DashboardPage.Root>
   );
 }

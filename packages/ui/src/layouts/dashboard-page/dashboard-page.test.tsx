@@ -1,17 +1,20 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { AppShell } from '../app-shell';
 import { DashboardPage } from './dashboard-page';
 
 function renderPage() {
   return render(
     <DashboardPage.Root>
-      <DashboardPage.Header>
-        <h1>Status</h1>
-      </DashboardPage.Header>
-      <DashboardPage.Grid>
-        <p>Widget A</p>
-        <p>Widget B</p>
-      </DashboardPage.Grid>
+      <DashboardPage.Content>
+        <DashboardPage.Header>
+          <h1>Status</h1>
+        </DashboardPage.Header>
+        <DashboardPage.Grid>
+          <p>Widget A</p>
+          <p>Widget B</p>
+        </DashboardPage.Grid>
+      </DashboardPage.Content>
     </DashboardPage.Root>,
   );
 }
@@ -53,18 +56,28 @@ describe('DashboardPage', () => {
 });
 
 describe('DashboardPage parts', () => {
-  it('PRU-04 AC13 gives the header an h1 and a context line written by the caller', () => {
+  it('PRU-04 AC13 opens the main without padding with the topbar, then the content with the header the caller writes', () => {
     const { container } = render(
       <DashboardPage.Root>
-        <DashboardPage.Header>
-          <h1 className="text-heading-lg">Administração</h1>
-          <p className="text-text-muted">Estado do produto.</p>
-        </DashboardPage.Header>
+        <AppShell.Topbar data-testid="topbar">
+          <b>Painel</b>
+        </AppShell.Topbar>
+        <DashboardPage.Content data-testid="content">
+          <DashboardPage.Header>
+            <h1 className="text-heading-lg">Administração</h1>
+            <p className="text-text-muted">Estado do produto.</p>
+          </DashboardPage.Header>
+        </DashboardPage.Content>
       </DashboardPage.Root>,
     );
 
+    const main = screen.getByRole('main');
     const header = container.querySelector('header')!;
-    expect(screen.getByRole('main')).toHaveClass('p-6', 'max-w-content');
+    for (const name of main.classList) expect(name).not.toMatch(/^(p|px|py|pt|pr|pb|pl)-/);
+    expect(main.firstElementChild).toBe(screen.getByTestId('topbar'));
+    const content = screen.getByTestId('content');
+    expect(content).toHaveClass('p-6', 'max-w-content', 'flex-col', 'gap-6');
+    expect(content).toContainElement(header);
     expect(within(header).getByRole('heading', { level: 1, name: 'Administração' })).toHaveClass(
       'text-heading-lg',
     );

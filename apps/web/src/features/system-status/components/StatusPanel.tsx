@@ -36,12 +36,14 @@ export function StatusWidgets({ status }: { status: SystemStatus }) {
 export function StatusPanel({ status }: { status: SystemStatus }) {
   return (
     <DashboardPage.Root>
-      <DashboardPage.Header>
-        <h1 className="text-lg font-semibold">Status do sistema</h1>
-      </DashboardPage.Header>
-      <DashboardPage.Grid>
-        <StatusWidgets status={status} />
-      </DashboardPage.Grid>
+      <DashboardPage.Content>
+        <DashboardPage.Header>
+          <h1 className="text-lg font-semibold">Status do sistema</h1>
+        </DashboardPage.Header>
+        <DashboardPage.Grid>
+          <StatusWidgets status={status} />
+        </DashboardPage.Grid>
+      </DashboardPage.Content>
     </DashboardPage.Root>
   );
 }

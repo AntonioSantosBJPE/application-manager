@@ -193,6 +193,22 @@ describe('member home', () => {
     ).toBeInTheDocument();
   });
 
+  it('PRU-06 AC12 opens the home with the topbar "Início" before the content', async () => {
+    sessionIs(signedInAs(member));
+
+    await open('/');
+    const title = await screen.findByRole('heading', { level: 1, name: 'Início' });
+
+    const main = screen.getByRole('main');
+    const topbar = main.firstElementChild!;
+    expect(topbar.textContent).toBe('Início');
+    expect(within(topbar as HTMLElement).getByText('Início')).toHaveClass('font-medium');
+    expect(topbar).not.toContainElement(title);
+    const content = topbar.nextElementSibling!;
+    expect(content).toContainElement(title);
+    expect(main.children).toHaveLength(2);
+  });
+
   it('PRU-06 AC12 promises nothing that does not exist yet: no step buttons, no ⌘K tip', async () => {
     sessionIs(signedInAs(member));
 

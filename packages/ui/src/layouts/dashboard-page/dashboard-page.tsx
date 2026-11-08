@@ -6,17 +6,24 @@ function join(...classes: (string | undefined)[]): string {
   return classes.filter(Boolean).join(' ');
 }
 
-/** The page: a `main` with `space-6` of padding, as wide as 1120px. */
+/**
+ * The page: a `main` without padding. It opens with the `AppShell.Topbar` edge to edge and holds
+ * the `Content` under it.
+ */
 function Root({ className, ...props }: ComponentProps<'main'>) {
   return (
     <main
       data-archetype="dashboard"
-      className={join(
-        'flex w-full max-w-content flex-col gap-6 bg-surface p-6 text-text',
-        className,
-      )}
+      className={join('flex w-full min-w-0 flex-col bg-surface text-text', className)}
       {...props}
     />
+  );
+}
+
+/** The body of the page under the topbar: `space-6` of padding, as wide as 1120px, a column. */
+function Content({ className, ...props }: ComponentProps<'div'>) {
+  return (
+    <div className={join('flex w-full max-w-content flex-col gap-6 p-6', className)} {...props} />
   );
 }
 
@@ -85,5 +92,8 @@ const Widget = Object.assign(WidgetRoot, {
   Action: WidgetAction,
 });
 
-/** Archetype for insight pages (PRU-04): a header and a 12-column grid of widgets in the main landmark. */
-export const DashboardPage = { Root, Header, Grid, Widget };
+/**
+ * Archetype for insight pages (PRU-04): the topbar edge to edge, then the content with a header and
+ * a 12-column grid of widgets, in the main landmark.
+ */
+export const DashboardPage = { Root, Content, Header, Grid, Widget };

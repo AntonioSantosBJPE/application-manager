@@ -26,16 +26,18 @@ function AdminHome() {
 
   return (
     <DashboardPage.Root>
-      <DashboardPage.Header>
-        <h1 className="text-lg font-semibold">Administração</h1>
-      </DashboardPage.Header>
-      <DashboardPage.Grid>
-        <StatusWidgets status={data.status} />
-        <InvitationSummary
-          result={data.invitations}
-          link={<Link to="/admin/invitations">Ver convites</Link>}
-        />
-      </DashboardPage.Grid>
+      <DashboardPage.Content>
+        <DashboardPage.Header>
+          <h1 className="text-lg font-semibold">Administração</h1>
+        </DashboardPage.Header>
+        <DashboardPage.Grid>
+          <StatusWidgets status={data.status} />
+          <InvitationSummary
+            result={data.invitations}
+            link={<Link to="/admin/invitations">Ver convites</Link>}
+          />
+        </DashboardPage.Grid>
+      </DashboardPage.Content>
     </DashboardPage.Root>
   );
 }

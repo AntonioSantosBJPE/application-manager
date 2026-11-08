@@ -46,7 +46,7 @@
 | Rótulos das cartas que anotam a tela ("/invite/$token · 410", "Qualquer rota, API fora do ar", "Fase 1 · aparece quando…", "Quando algo cai") | São anotações do design, não texto de produto; não vão para a tela | Mostram o contexto da carta | n |
 | Textos do produto | Os textos das cartas valem como estão, em pt-BR e com as diferenças da tabela abaixo. Onde a carta e `MESSAGES` dizem o mesmo com outras palavras (sessão expirada, convite inválido, sem acesso), vale a carta e os testes que assertam essas frases mudam só a frase; os textos sem carta (inclusive `MESSAGES.unavailable` nos alertas em linha) continuam | A carta é a fonte binding; mudar só a frase preserva o comportamento | n |
 | Papel do `main` | O arquétipo continua sendo o único `main` da página; `AppShell.Main` o recebe com `asChild` | Guia do `AppShell` e regra existente | y |
-| Iniciais do avatar | Duas primeiras letras do nome da sessão (maiúsculas), `aria-hidden`, ao lado do nome | Carta mostra "MA Marina Alves"; o nome vem da sessão | n |
+| Iniciais do avatar | Primeira letra do primeiro e do último nome da sessão, em maiúsculas ("Ana Souza" → "AS"); com um nome só, as duas primeiras letras dele; `aria-hidden`, ao lado do nome | Carta mostra "MA Marina Alves"; o nome vem da sessão. Pergunta: "Iniciais do avatar … Qual vale?"; opção escolhida: "Nome e sobrenome" (2026-11-08) | y |
 | Mobile | Abaixo de `md` a sidebar vira barra no topo com o mesmo markup (guia do `AppShell`); demais telas funcionam a 360px de largura sem rolagem horizontal | Guia do `AppShell`; as cartas são a 1280px | n |
 | Movimento | Transições de 100–200 ms só em cor e opacidade, desligadas com `prefers-reduced-motion` | Princípio 5 do Prumo | y |
 
@@ -157,7 +157,7 @@
 10. The `ListPage.Filters` SHALL be a `role="search"` with a required `aria-label`.  <!-- ubiquitous -->
 11. The `ListPage` SHALL offer a group header of 36px on `surface-raised` with label in `heading-sm` and the count.  <!-- ubiquitous -->
 12. The `ListPage.Row` SHALL be at least 40px tall, with `surface-hover` on hover, `accent-subtle` when selected, text at the left and metadata in fixed columns at the right (dates in `font-mono`).  <!-- ubiquitous -->
-13. The `DashboardPage.Root` SHALL be a `main` with padding `space-6` and maximum width 1120px, the `Header` an `h1` in `heading-lg` with a `text-muted` context line, and the `Grid` 12 columns with gap `space-4`.  <!-- ubiquitous -->
+13. The `DashboardPage.Root` SHALL be a `main` without padding that opens with the `AppShell.Topbar` edge to edge, followed by `DashboardPage.Content` with padding `space-6` and maximum width 1120px, the `Header` an `h1` in `heading-lg` with a `text-muted` context line, and the `Grid` 12 columns with gap `space-4`.  <!-- ubiquitous --> <!-- changed 2026-11-08 - user: "Topbar como na carta" -->
 14. The `DashboardPage` SHALL offer a `Widget` on `surface` with `border`, `radius-md` and padding `space-4`, whose title is `heading-sm`, with an optional `ghost` action in its header and the span 3, 4, 5, 6, 7, 8 or 12.  <!-- ubiquitous -->
 15. The system SHALL keep the prop names and parts these four archetypes expose today that `apps/web` uses, so that its tests pass without changing what they assert.  <!-- ubiquitous -->
 

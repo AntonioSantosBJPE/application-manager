@@ -102,7 +102,7 @@ Todos em `packages/ui/src/components/<nome>/` ou `layouts/<nome>/` (arquivo, tes
 - **AppShell**: `Root`, `Sidebar` (`aria-label` obrigatório; `w-sidebar`, `bg-surface-raised`, borda direita) e as partes novas `AppShell.Brand` (logo + tag opcional), `AppShell.Section` (título `caption` + itens), `AppShell.NavItem` (`current`, `asChild`, `icon`, `count`), `AppShell.User` (iniciais, nome, ação como filho), `AppShell.Main` (`asChild`) e `AppShell.Topbar` (48 px, título à esquerda, ações à direita). Abaixo de `md` a sidebar vira barra superior com a mesma marcação.
 - **AuthPage**: `Root` (`main`, coluna `max-w-auth` acima do centro), `Header` (`Logo mark` 20 px, `h1` via filho; props `title`/`lead` não existem: o chamador compõe), `Form`, `Footer`.
 - **ListPage**: `Root`, `Header` (topbar: título, contagem `font-mono`, ação), `Filters`, `Content`, `Group` (cabeçalho de 36 px com `heading-sm` e contagem), `Row` (≥ `h-row`, hover, `selected`), `RowText`, `RowMeta` (coluna fixa à direita).
-- **DashboardPage**: `Root`, `Header`, `Grid` (12 colunas), `Widget` (`span: 3|4|5|6|7|8|12`, `Widget.Header`, `Widget.Title`, `Widget.Action`).
+- **DashboardPage**: `Root` (`main` sem padding; a `AppShell.Topbar` entra como primeiro filho, de ponta a ponta), `Content` (padding `space-6`, `max-w-content`; decidido em 2026-11-08, user: "Topbar como na carta"), `Header`, `Grid` (12 colunas), `Widget` (`span: 3|4|5|6|7|8|12`, `Widget.Header`, `Widget.Title`, `Widget.Action`).
 - **Reuses**: os arquivos atuais; `Root`, `Header`, `Filters`, `Content`, `Row`, `RowText`, `Grid`, `NavItem` e `Main` mantêm nome e props.
 
 ### Componentes e arquétipos das fases futuras
