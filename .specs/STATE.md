@@ -170,6 +170,14 @@
 - **Date**: 2026-11-08
 - **Status**: active
 
+### AD-022 (active)
+- **Decision**: No detalhe da candidatura, "+ Skill" aparece nas linhas "Obrigatórias" e "Desejáveis"; a carta `PageApplicationDetail` o desenha só em "Desejáveis".
+- **Reason**: Sem o botão em "Obrigatórias" não há como acrescentar uma skill obrigatória pelo detalhe (APP-73). Decidido pelo orquestrador durante a execução, com a delegação do usuário: "Só me chame em dúvidas críticas que você não consegue resolver só".
+- **Trade-off**: Um controle a mais que a carta.
+- **Scope**: `apps/web` feature `applications`
+- **Date**: 2026-11-08
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: `skills` - closed on branch `feat/skills`, 2026-11-08.
