@@ -851,9 +851,9 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] A seção Skill lista as rotas acrescentadas e passa a "done"; `docs/guia-teste-manual.md` ensina a criar uma privada pela API e a curar no catálogo
-- [ ] `docs/design/principles.md` move `PageSkills` para as páginas atuais e o README do painel deixa de dizer que o terceiro widget está pendente
-- [ ] Gate check passes: `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
+- [x] A seção Skill lista as rotas acrescentadas e passa a "done"; `docs/guia-teste-manual.md` ensina a criar uma privada pela API e a curar no catálogo
+- [x] `docs/design/principles.md` move `PageSkills` para as páginas atuais e o README do painel deixa de dizer que o terceiro widget está pendente
+- [x] Gate check passes: `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
 
 **Tests**: none
 **Gate**: build
