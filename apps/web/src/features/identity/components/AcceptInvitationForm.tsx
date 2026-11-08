@@ -11,6 +11,7 @@ import { Alert, AuthPage, Button, Field } from '@am/ui';
 import { useForm } from '@tanstack/react-form';
 import { useId, useState } from 'react';
 import type { Outcome } from '../api/server-functions';
+import { formatDate } from '../model/dates';
 import { MESSAGES, problemMessage } from '../model/messages';
 import { InvalidInvitationScreen, UnavailableScreen } from './AccessScreens';
 
@@ -62,10 +63,13 @@ export function AcceptInvitationForm({ invitation, accept, onSuccess }: AcceptIn
   }
   if (expired) return <InvalidInvitationScreen />;
 
+  const expiresOn = formatDate(invitation.data.expiresAt);
+
   return (
     <AuthPage.Root>
       <AuthPage.Header>
-        <h1 className="text-lg font-semibold">Criar conta</h1>
+        <h1 className="text-heading-xl">Criar conta</h1>
+        <p className="text-text-muted">Você recebeu um convite para o Rumo Carreira.</p>
       </AuthPage.Header>
       <AuthPage.Form
         noValidate
@@ -115,9 +119,9 @@ export function AcceptInvitationForm({ invitation, accept, onSuccess }: AcceptIn
           {(field) => (
             <Field.Root invalid={field.state.meta.errors.length > 0}>
               <Field.Label htmlFor={`${id}-password`}>Senha</Field.Label>
-              <Field.Control
+              <Field.PasswordControl
                 id={`${id}-password`}
-                type="password"
+                toggleLabel="Mostrar senha"
                 autoComplete="new-password"
                 value={field.state.value}
                 onBlur={field.handleBlur}
@@ -136,6 +140,11 @@ export function AcceptInvitationForm({ invitation, accept, onSuccess }: AcceptIn
           )}
         </form.Subscribe>
       </AuthPage.Form>
+      {expiresOn === undefined ? null : (
+        <AuthPage.Footer>
+          O convite vale até <span className="font-mono">{expiresOn}</span>.
+        </AuthPage.Footer>
+      )}
     </AuthPage.Root>
   );
 }

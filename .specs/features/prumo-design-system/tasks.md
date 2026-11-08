@@ -611,10 +611,10 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Layout de `PageInvite`: "Criar conta", "Você recebeu um convite para o Rumo Carreira.", e-mail somente leitura, dica da senha antes do erro, rodapé "O convite vale até {data}."
-- [ ] `model/dates.ts` com a formatação pt-BR em `America/Sao_Paulo` (função pura e testada)
-- [ ] Senha com mostrar/ocultar; testes atualizados
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Layout de `PageInvite`: "Criar conta", "Você recebeu um convite para o Rumo Carreira.", e-mail somente leitura, dica da senha antes do erro, rodapé "O convite vale até {data}."
+- [x] `model/dates.ts` com a formatação pt-BR em `America/Sao_Paulo` (função pura e testada)
+- [x] Senha com mostrar/ocultar; testes atualizados
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit (web)
 **Gate**: quick
