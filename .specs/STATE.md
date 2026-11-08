@@ -74,13 +74,13 @@
 - **Date**: 2026-11-08
 - **Status**: active
 
-### AD-010 (active)
+### AD-010 (superseded by AD-021)
 - **Decision**: A home do member mostra os três passos numerados e o `EmptyState` com a dica do ⌘K, sem os botões "Começar pelo perfil" e "Nova candidatura" até as fatias existirem.
 - **Reason**: Pergunta: "O que a home mostra hoje, já que os passos levam a telas inexistentes?"; opção escolhida: "Passos sem ação".
 - **Trade-off**: Os passos 2 e 3 são texto, sem caminho para agir.
 - **Scope**: `apps/web` rota `_member/index`
 - **Date**: 2026-11-08
-- **Status**: active
+- **Status**: superseded by AD-021
 
 ### AD-011 (active)
 - **Decision**: Dois textos das cartas mudam: a home saúda "Olá, {nome}" (sem "Bom dia/Boa tarde") e o convite diz "Você recebeu um convite para o Rumo Carreira." (sem flexão de gênero).
@@ -98,13 +98,13 @@
 - **Date**: 2026-11-08
 - **Status**: active
 
-### AD-013 (active)
+### AD-013 (superseded by AD-019)
 - **Decision**: O catálogo de skills do admin não mostra quantas vagas usam cada skill nem o grupo "Mais usadas"; as linhas ficam em ordem alfabética pelo nome oficial.
 - **Reason**: As vagas só existem na fatia Application, e um módulo não lê o schema do outro. Pergunta: "Como tratar 'N vagas' e o grupo 'Mais usadas'?"; opção escolhida: "Omitir agora".
 - **Trade-off**: A tela fica sem o sinal de quais privadas valem a promoção, até Application existir.
 - **Scope**: `apps/web` feature `skills`, `GET /admin/skills`
 - **Date**: 2026-11-08
-- **Status**: active
+- **Status**: superseded by AD-019
 
 ### AD-014 (active)
 - **Decision**: Apelido só existe em skill global; para dar apelido a uma privada, o admin a promove antes. A linha de uma privada não mostra apelidos.
@@ -127,6 +127,46 @@
 - **Reason**: Uma feature não importa o interior de outra, e copiar os helpers criaria dois pontos de verdade para cookie e IP do cliente. Pergunta: "Aprova o design com a abordagem A?"; resposta do usuário: "Sim".
 - **Trade-off**: A feature `identity` perde a posse dos helpers e passa a importá-los de `lib`.
 - **Scope**: `apps/web`, todas as features
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-017 (active)
+- **Decision**: A feature Application não mostra nada que dependa do currículo: sem a cobertura "4/6" na lista, sem a frase "seu currículo cobre" e a tag `match` no detalhe, sem a seção "Currículo" e sem o documento no evento de status. `POST /applications/:id/status` não aceita `submittedDocumentId` até ResumeDocument existir.
+- **Reason**: MasterResume, ResumeVersion e ResumeDocument ainda não existem. Pergunta: "O que a feature Application faz com elas?"; opção escolhida: "Omitir até existirem".
+- **Trade-off**: As telas ficam mais vazias que as cartas `PageApplications` e `PageApplicationDetail`; cada fatia de currículo acrescenta a sua parte.
+- **Scope**: módulo `applications`, `apps/web` feature `applications`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-018 (active)
+- **Decision**: A etapa na linha do tempo mostra "Etapa {tipo}" e a nota, sem resultado ("concluída").
+- **Reason**: O evento `stage` do `.design` não tem resultado. Pergunta: "O que a linha mostra?"; opção escolhida: "'Etapa RH' + nota".
+- **Trade-off**: Para dizer que a etapa foi concluída, o usuário escreve na nota.
+- **Scope**: `apps/web` feature `applications`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-019 (active)
+- **Decision**: O catálogo de skills do admin mostra, em cada linha, quantas vagas de todas as pessoas usam a skill ("0 vagas", "1 vaga", "N vagas"). A ordem continua alfabética e paginada no SQL, e o grupo "Mais usadas" fica de fora. A contagem vem só para as skills da página, por uma porta (`SKILL_USAGE.countFor(ids)`) que o módulo `skills` declara e o `applications` implementa, sem um ler o schema do outro. Substitui AD-013.
+- **Reason**: A fatia Application existe agora. Pergunta: "Quais entram agora?"; opção escolhida: "Os dois". Ordenar por uso exigiria carregar o catálogo inteiro, o que o usuário recusou ("não é aceitável a página do admin carregar todas as skill"); pergunta seguinte: "Uma listagem simples, sem carregar primeiro as mais usadas resolve o problema?"; confirmação: "Sim".
+- **Trade-off**: Sem o sinal de "mais usadas" no topo; ele pode voltar como um grupo separado das 10 mais usadas sem mexer na paginação. É uma leitura agregada entre usuários; só o número sai do módulo, nunca a vaga ou o dono.
+- **Scope**: módulos `skills` e `applications`, `GET /admin/skills`, `apps/web` feature `skills`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-020 (active)
+- **Decision**: "Ainda não" no Alert de sem retorno grava `applications.ghost_snoozed_until` (agora + 21 dias) por `POST /applications/:id/ghost-snooze`; a sugestão some até essa data, sem evento e sem contar como atividade.
+- **Reason**: Pergunta: "O que 'Ainda não' faz?"; opção escolhida: "Adia 21 dias, salvo". Acrescenta uma coluna e uma rota ao `.design`.
+- **Trade-off**: Um estado a mais na candidatura que não aparece na linha do tempo.
+- **Scope**: módulo `applications`, `apps/web` feature `applications`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-021 (active)
+- **Decision**: O passo 03 da home do member ganha o botão "Nova candidatura", que abre `/applications` com o diálogo aberto. Substitui AD-010 no que toca ao passo 03; o passo 02 segue sem ação até MasterResume.
+- **Reason**: Pergunta: "Quais entram agora?"; opção escolhida: "Os dois".
+- **Trade-off**: Nenhum.
+- **Scope**: `apps/web` rota `_member/index`
 - **Date**: 2026-11-08
 - **Status**: active
 
