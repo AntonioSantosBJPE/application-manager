@@ -729,8 +729,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] Campos preenchidos, validação do contrato, `409` no campo "Nome" e `400` no campo inválido sem fechar
-- [ ] Testes `SKL-72`, `SKL-73` e `SKL-50` (edição) passam
+- [x] Campos preenchidos, validação do contrato, `409` no campo "Nome" e `400` no campo inválido sem fechar
+- [x] Testes `SKL-72`, `SKL-73` e `SKL-50` (edição) passam
 
 **Tests**: unit
 **Gate**: quick

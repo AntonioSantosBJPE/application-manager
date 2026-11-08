@@ -1,101 +1,17 @@
 // @vitest-environment jsdom
-import type { AdminSkill } from '@am/contracts';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { http } from 'msw';
 import { setupServer } from 'msw/node';
-import { useState } from 'react';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { loadAdminSkills, promoteSkillById } from '../api/server-functions';
-import { DEFAULT_CATALOG_FILTERS, type CatalogFilters } from '../model/filters';
-import { apiInternalUrl, context, problem } from '../testing/api';
+import { apiInternalUrl, problem } from '../testing/api';
+import { alfa, beta, drizzle, global_, renderCatalog, rowOf, rows } from '../testing/catalog-harness';
 import { fakeCatalog, uuid } from '../testing/fake-api';
-import { SkillsCatalog } from './SkillsCatalog';
 
 const server = setupServer();
 
 beforeAll(() => server.listen({ onUnhandledFrame: 'error' }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
-
-const alfa: AdminSkill = {
-  id: uuid(1),
-  name: 'Skill Fictícia Alfa',
-  category: 'language',
-  scope: 'global',
-  aliases: [{ id: uuid(11), alias: 'alfa' }],
-};
-const beta: AdminSkill = {
-  id: uuid(2),
-  name: 'Skill Fictícia Beta',
-  category: 'database',
-  scope: 'global',
-  aliases: [],
-};
-const drizzle: AdminSkill = {
-  id: uuid(3),
-  name: 'Drizzle ORM de Teste',
-  category: 'tool',
-  scope: 'private',
-  aliases: [],
-};
-
-/** The catalog the way the route holds it: the filters live outside it and come back through `onFiltersChange`. */
-function Harness({
-  initial,
-  onChange,
-  onExpired,
-}: {
-  initial: CatalogFilters;
-  onChange: (filters: CatalogFilters) => void;
-  onExpired: (outcome: unknown) => boolean;
-}) {
-  const [filters, setFilters] = useState(initial);
-  return (
-    <SkillsCatalog
-      filters={filters}
-      onFiltersChange={(next) => {
-        onChange(next);
-        setFilters(next);
-      }}
-      onExpired={onExpired}
-      api={{
-        list: (current, cursor) =>
-          loadAdminSkills(
-            {
-              scope: current.scope,
-              category: current.category,
-              q: current.q === '' ? undefined : current.q,
-              cursor,
-            },
-            context,
-          ),
-        promote: (id) => promoteSkillById(id, context),
-      }}
-    />
-  );
-}
-
-function renderCatalog(options: {
-  filters?: CatalogFilters;
-  onExpired?: (outcome: unknown) => boolean;
-} = {}) {
-  const client = new QueryClient();
-  const onExpired = vi.fn(options.onExpired ?? (() => false));
-  const onFiltersChange = vi.fn();
-  render(
-    <QueryClientProvider client={client}>
-      <Harness
-        initial={options.filters ?? DEFAULT_CATALOG_FILTERS}
-        onChange={onFiltersChange}
-        onExpired={onExpired}
-      />
-    </QueryClientProvider>,
-  );
-  return { onExpired, onFiltersChange };
-}
-
-const rows = async () => within(await screen.findByRole('list', { name: 'Skills' })).getAllByRole('listitem');
 
 describe('SkillsCatalog', () => {
   it('SKL-38 shows the title with the total of the catalog in mono, the Apelido button with the plus icon and the info note', async () => {
@@ -189,14 +105,6 @@ describe('SkillsCatalog', () => {
     expect(screen.queryByRole('alert')).toBeNull();
     expect(screen.queryByRole('listitem')).toBeNull();
   });
-});
-
-const global_ = (n: number, name: string, category: AdminSkill['category']): AdminSkill => ({
-  id: uuid(n),
-  name,
-  category,
-  scope: 'global',
-  aliases: [],
 });
 
 describe('SkillsCatalog filters', () => {
@@ -391,7 +299,6 @@ describe('SkillsCatalog filters', () => {
   });
 });
 
-const rowOf = (name: string) => screen.getByText(name).closest('li')!;
 const confirmPromotion = async (name: string) => {
   fireEvent.click(within(rowOf(name)).getByRole('button', { name: 'Promover' }));
   return within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Promover' });

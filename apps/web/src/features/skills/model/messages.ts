@@ -21,6 +21,10 @@ export const SKILLS_MESSAGES = {
   nameConflict: 'Já existe uma skill ou apelido com esse nome.',
   noAliasesInDialog: 'Esta skill não tem apelidos.',
   editTitle: 'Editar skill',
+  /** A name or an alias the contract rejects (SKL-49, SKL-73): empty, past 60 characters or with no letter or digit. */
+  invalidText: 'Use de 1 a 60 caracteres, com ao menos uma letra ou número.',
+  save: 'Salvar',
+  cancel: 'Cancelar',
 } as const;
 
 /** The accessible name of the "⋯" button of a global row (SKL-40). */

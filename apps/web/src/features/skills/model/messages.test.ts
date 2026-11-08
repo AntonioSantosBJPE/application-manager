@@ -65,3 +65,9 @@ describe('message builders', () => {
     expect(REMOVE_ALIAS_DESCRIPTION).toContain('A busca por esse apelido deixa de achar a skill');
   });
 });
+
+describe('SKILLS_MESSAGES text of a rejected name', () => {
+  it('SKL-73 says what the contract asks of a name or alias', () => {
+    expect(SKILLS_MESSAGES.invalidText).toBe('Use de 1 a 60 caracteres, com ao menos uma letra ou número.');
+  });
+});

@@ -1,4 +1,4 @@
-import type { AdminSkill, AdminSkillsPage, Skill } from '@am/contracts';
+import type { AdminSkill, AdminSkillsPage, Skill, UpdateSkillRequest } from '@am/contracts';
 import { Alert, Button, EmptyState, FilterChip, ListPage, SearchInput } from '@am/ui';
 import { useInfiniteQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
@@ -8,6 +8,7 @@ import type { Outcome } from '../../../lib/bff';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '../model/categories';
 import { DEFAULT_CATALOG_FILTERS, type CatalogFilters } from '../model/filters';
 import { SKILLS_MESSAGES } from '../model/messages';
+import { EditSkillDialog } from './EditSkillDialog';
 import { SkillRow } from './SkillRow';
 
 export const SKILLS_QUERY_KEY = ['skills', 'catalog'] as const;
@@ -16,6 +17,7 @@ export const SKILLS_QUERY_KEY = ['skills', 'catalog'] as const;
 export interface SkillsCatalogApi {
   list: (filters: CatalogFilters, cursor: string | undefined) => Promise<Outcome<AdminSkillsPage>>;
   promote: (id: string) => Promise<Outcome<Skill>>;
+  update: (id: string, body: UpdateSkillRequest) => Promise<Outcome<Skill>>;
 }
 
 type CatalogData = InfiniteData<AdminSkillsPage, string | undefined>;
@@ -54,6 +56,7 @@ export function SkillsCatalog({
 }: SkillsCatalogProps) {
   const queryClient = useQueryClient();
   const [failure, setFailure] = useState<string | undefined>();
+  const [editing, setEditing] = useState<AdminSkill | undefined>();
   const listRef = useRef<HTMLUListElement>(null);
   const pendingFocusAfter = useRef<number | undefined>(undefined);
 
@@ -133,6 +136,26 @@ export function SkillsCatalog({
     });
   }
 
+  /** The new name and category show on the row; the totals stay as they are (SKL-72). */
+  function renamed(skill: Skill) {
+    updateLoaded((data) => ({
+      ...data,
+      pages: data.pages.map((page) => ({
+        ...page,
+        items: page.items.map((item) => (item.id === skill.id ? { ...item, ...skill } : item)),
+      })),
+    }));
+  }
+
+  /** The row menu is where the focus returns to when a dialog opened from it closes. */
+  function focusMenuOf(id: string) {
+    const rows = listRef.current?.querySelectorAll<HTMLElement>('[data-skill-id]') ?? [];
+    Array.from(rows)
+      .find((row) => row.dataset.skillId === id)
+      ?.querySelector<HTMLElement>('[data-row-menu]')
+      ?.focus();
+  }
+
   /**
    * Gives the focus to a row once the confirmation dialog that was open is gone: the button that opened
    * it left the page with the promotion, and a focus set while the dialog still holds it is taken back.
@@ -170,6 +193,12 @@ export function SkillsCatalog({
     if (outcome.status === 409) setFailure(SKILLS_MESSAGES.promoteConflict);
     else if (outcome.status === 404) await refresh();
     else setFailure(MESSAGES.unavailable);
+  }
+
+  async function saveEdit(skill: AdminSkill, body: UpdateSkillRequest) {
+    const outcome = await api.update(skill.id, body);
+    if (outcome.ok) renamed(outcome.data);
+    return outcome;
   }
 
   const pages = catalog.data?.pages ?? [];
@@ -264,7 +293,7 @@ export function SkillsCatalog({
                 key={skill.id}
                 skill={skill}
                 onPromote={promote}
-                onEdit={() => undefined}
+                onEdit={setEditing}
                 onAliases={() => undefined}
               />
             ))}
@@ -288,6 +317,18 @@ export function SkillsCatalog({
           <Alert intent="info">{SKILLS_MESSAGES.promoteInfo}</Alert>
         </div>
       </ListPage.Content>
+      {editing === undefined ? null : (
+        <EditSkillDialog
+          skill={editing}
+          onSave={(body) => saveEdit(editing, body)}
+          onClose={() => setEditing(undefined)}
+          onExpired={onExpired}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            focusMenuOf(editing.id);
+          }}
+        />
+      )}
     </ListPage.Root>
   );
 }
