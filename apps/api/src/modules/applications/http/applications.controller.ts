@@ -119,4 +119,12 @@ export class ApplicationsController {
   ): Promise<ApplicationEvent> {
     return answering(() => this.applications.addEvent(user.id, id, body));
   }
+
+  /** "Ainda não" on the suggestion of "sem retorno" (APP-35). */
+  @Roles('member')
+  @HttpCode(200)
+  @Post(':id/ghost-snooze')
+  snoozeGhost(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<ApplicationDetail> {
+    return answering(() => this.applications.snoozeGhost(user.id, id));
+  }
 }

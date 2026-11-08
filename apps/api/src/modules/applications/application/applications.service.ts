@@ -22,7 +22,7 @@ import { CLOCK, type Clock } from '../../../infra/clock/clock.js';
 import { SkillsCatalog } from '../../skills/index.js';
 import { decodeCursor, encodeCursor } from '../domain/cursor.js';
 import { funnelRank, statusesOf } from '../domain/funnel.js';
-import { isGhostSuggested } from '../domain/ghost.js';
+import { GHOST_SNOOZE_MS, isGhostSuggested } from '../domain/ghost.js';
 import { isUuid } from '../domain/ids.js';
 import { searchPatternOf, searchTextOf } from '../domain/search-text.js';
 import {
@@ -36,7 +36,7 @@ import {
 /** The list shows 50 applications per page (APP-09). */
 export const LIST_PAGE_SIZE = 50;
 
-type ApplicationEventName = 'application.created' | 'application.posting_updated' | 'application.skills_replaced' | 'application.status_changed' | 'application.event_added';
+type ApplicationEventName = 'application.created' | 'application.posting_updated' | 'application.skills_replaced' | 'application.status_changed' | 'application.event_added' | 'application.ghost_snoozed';
 
 /** The application does not exist, is somebody else's or the id is not a uuid (`404`, APP-19). */
 export class ApplicationNotFoundError extends Error {
@@ -267,6 +267,18 @@ export class ApplicationsService {
     );
     this.record('application.event_added', record.id, userId);
     return toEvent(event);
+  }
+
+  /**
+   * "Ainda não" on the ghost suggestion: hides it for 21 days from now. It writes no event and the activity
+   * stays as it was, so the suggestion comes back by itself when the snooze ends (APP-35, AD-020).
+   */
+  async snoozeGhost(userId: string, id: string): Promise<ApplicationDetail> {
+    const record = isUuid(id) ? await this.repository.findOwned(userId, id) : undefined;
+    if (record === undefined) throw new ApplicationNotFoundError();
+    await this.repository.snooze(userId, record.id, new Date(this.clock.now().getTime() + GHOST_SNOOZE_MS));
+    this.record('application.ghost_snoozed', record.id, userId);
+    return this.detailOf(userId, record.id);
   }
 
   /** The skill ids as stored: a uuid in lowercase, anything else untouched so it is refused as sent. */

@@ -150,8 +150,9 @@ describe('route access', () => {
         'PATCH /skills/:id/aliases/:aliasId',
         // A member registers a job posting and its application; a product route, not account administration (APP-01).
         'POST /applications',
-        // A member changes the status of an application and adds stages and notes; product routes, not account administration (APP-20, APP-23).
+        // A member changes the status of an application, adds stages and notes and snoozes the ghost suggestion; product routes, not account administration (APP-20, APP-23, APP-35).
         'POST /applications/:id/events',
+        'POST /applications/:id/ghost-snooze',
         'POST /applications/:id/status',
         'POST /auth/admin/login',
         'POST /auth/login',

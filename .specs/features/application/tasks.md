@@ -437,11 +437,11 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Com o relógio movido: 504 h − 1 min dá `false`, 504 h dá `true`, outro status dá `false`
-- [ ] Adiar grava `ghost_snoozed_until = agora + 21 dias` sem evento e sem mexer na atividade; a sugestão volta quando o adiamento vence
-- [ ] Teste `APP-34`: avançar o relógio 60 dias e ler não muda o status
-- [ ] Testes `APP-32` a `APP-35` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Com o relógio movido: 504 h − 1 min dá `false`, 504 h dá `true`, outro status dá `false`
+- [x] Adiar grava `ghost_snoozed_until = agora + 21 dias` sem evento e sem mexer na atividade; a sugestão volta quando o adiamento vence
+- [x] Teste `APP-34`: avançar o relógio 60 dias e ler não muda o status
+- [x] Testes `APP-32` a `APP-35` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

@@ -159,6 +159,14 @@ export class ApplicationsRepository {
     return row;
   }
 
+  /** Hides the ghost suggestion until `until`; nothing else of the application changes (APP-35, AD-020). */
+  async snooze(userId: string, applicationId: string, until: Date): Promise<void> {
+    await this.db
+      .update(applications)
+      .set({ ghostSnoozedUntil: until })
+      .where(and(eq(applications.id, applicationId), eq(applications.userId, userId)));
+  }
+
   /** Sets the status of the application; the activity moves with the event that is written next (`insertEvent`). */
   async setStatus(tx: DatabaseExecutor, applicationId: string, status: ApplicationStatus): Promise<void> {
     await tx.update(applications).set({ status }).where(eq(applications.id, applicationId));
