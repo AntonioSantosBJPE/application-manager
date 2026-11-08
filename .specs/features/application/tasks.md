@@ -894,11 +894,11 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Campos e textos da carta `PageNewApplication`; "Entra como {status}." conforme o "+" usado
-- [ ] `⌘↵`/`Ctrl+↵` cria; botão desabilitado durante a requisição; erros locais abaixo do campo; falha da API mantém o que foi digitado
-- [ ] "Cancelar", `Esc` e "esc" fecham sem gravar
-- [ ] Testes `APP-57` (composição), `APP-58` e `APP-62` a `APP-65` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Campos e textos da carta `PageNewApplication`; "Entra como {status}." conforme o "+" usado
+- [x] `⌘↵`/`Ctrl+↵` cria; botão desabilitado durante a requisição; erros locais abaixo do campo; falha da API mantém o que foi digitado
+- [x] "Cancelar", `Esc` e "esc" fecham sem gravar
+- [x] Testes `APP-57` (composição), `APP-58` e `APP-62` a `APP-65` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

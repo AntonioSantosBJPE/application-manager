@@ -27,3 +27,30 @@ export const newInStatusLabel = (status: ApplicationStatus) => `Nova candidatura
 
 /** The accessible name of the "⋯" button of a row (APP-50). */
 export const rowActionsLabel = (company: string) => `Ações de ${company}`;
+
+/** The copy of the new application dialog (APP-57..APP-65). */
+export const FORM_MESSAGES = {
+  createTitle: 'Nova candidatura',
+  company: 'Empresa',
+  jobTitle: 'Título',
+  link: 'Link da vaga',
+  linkHint: '· opcional',
+  linkPlaceholder: 'https://',
+  level: 'Nível',
+  workModel: 'Modelo',
+  requiredSkills: 'Skills obrigatórias',
+  niceSkills: 'Skills desejáveis',
+  skillsPlaceholder: 'Adicionar…',
+  description: 'Descrição',
+  descriptionHint: '· opcional, cole o texto da vaga',
+  enters: 'Entra como',
+  toCreate: 'para criar',
+  close: 'esc',
+  cancel: 'Cancelar',
+  create: 'Criar candidatura',
+  companyRequired: 'Informe a empresa.',
+  titleRequired: 'Informe o título.',
+  levelRequired: 'Escolha o nível.',
+  linkInvalid: 'O link precisa começar com http:// ou https://.',
+  tooLong: (max: number) => `Use até ${max} caracteres.`,
+} as const;
