@@ -42,7 +42,7 @@ afterEach(() => {
 });
 
 describe('stories coverage', () => {
-  it('every component and archetype has a story', () => {
+  it('PRU-08 AC01 every component and archetype has a story', () => {
     const directories = [...directoriesWithoutStory(srcDir)];
 
     expect(directories).toEqual([]);
