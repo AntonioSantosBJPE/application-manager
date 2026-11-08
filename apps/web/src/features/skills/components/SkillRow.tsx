@@ -1,5 +1,5 @@
 import type { AdminSkill } from '@am/contracts';
-import { Button, ConfirmDialog, DropdownMenu, ListPage } from '@am/ui';
+import { Button, ConfirmDialog, DropdownMenu, ListPage, StatusBadge } from '@am/ui';
 import { Ellipsis } from 'lucide-react';
 import { CATEGORY_LABELS } from '../model/categories';
 import { PROMOTE_DESCRIPTION, promoteTitle, rowMenuLabel, SKILLS_MESSAGES } from '../model/messages';
@@ -26,9 +26,7 @@ export function SkillRow({ skill, onPromote, onEdit, onAliases }: SkillRowProps)
       <ListPage.RowText className="flex items-center gap-2">
         <span className="font-medium whitespace-nowrap">{skill.name}</span>
         {isPrivate ? (
-          <span className="inline-flex h-5 items-center rounded-sm border border-border-strong px-1.5 text-caption font-medium whitespace-nowrap text-text">
-            {SKILLS_MESSAGES.privateBadge}
-          </span>
+          <StatusBadge>{SKILLS_MESSAGES.privateBadge}</StatusBadge>
         ) : null}
         <span className="min-w-0 truncate text-caption text-text-muted">{aliases}</span>
       </ListPage.RowText>
