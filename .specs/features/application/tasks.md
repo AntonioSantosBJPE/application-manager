@@ -1115,9 +1115,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] O botão abre `/applications?new=1`
-- [ ] Testes `APP-83` e `APP-84` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] O botão abre `/applications?new=1`
+- [x] Testes `APP-83` e `APP-84` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

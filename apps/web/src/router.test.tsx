@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import type { MeResponse } from '@am/contracts';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -15,7 +15,7 @@ import {
   type SessionState,
 } from './features/identity';
 import { countApplications, getApplication, listApplications } from './features/applications';
-import { listAdminSkills } from './features/skills';
+import { listAdminSkills, searchSkills } from './features/skills';
 import { getSystemStatus } from './features/system-status';
 import { detail } from './features/applications/testing/fixtures';
 import { routeTree } from './routeTree.gen';
@@ -43,6 +43,7 @@ vi.mock('./features/applications/api/server-functions', async (importOriginal) =
 vi.mock('./features/skills/api/server-functions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./features/skills/api/server-functions')>()),
   listAdminSkills: vi.fn(),
+  searchSkills: vi.fn(),
 }));
 
 vi.mock('./features/system-status/api/get-system-status', async (importOriginal) => ({
@@ -235,17 +236,37 @@ describe('member home', () => {
     expect(main.children).toHaveLength(2);
   });
 
-  it('PRU-06 AC12 promises nothing that does not exist yet: no step buttons, no ⌘K tip', async () => {
+  it('PRU-06 AC12 promises nothing that does not exist yet: no profile step button, no ⌘K tip', async () => {
     sessionIs(signedInAs(member));
 
     await open('/');
     await screen.findByRole('heading', { level: 1, name: 'Início' });
 
-    expect(screen.queryByRole('button', { name: /Começar pelo perfil|Nova candidatura/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Começar pelo perfil/ })).toBeNull();
     expect(screen.queryByText(/⌘K/)).toBeNull();
-    // The only button in the page is the way out of the shell.
+    // The only button in the page is the way out of the shell; step 03 gained its way in as a link (APP-83).
     // "Sair" is an icon-only button named by its aria-label (PageMemberHome), so the name is compared.
     expect(screen.getAllByRole('button')).toEqual([screen.getByRole('button', { name: 'Sair' })]);
+  });
+
+  const stepStatus = (title: string) =>
+    within(
+      screen.getByRole('heading', { level: 2, name: title }).closest('section') as HTMLElement,
+    );
+
+  it('APP-84 shows step 03 as "A fazer" without applications and as "Concluído" with at least one', async () => {
+    sessionIs(signedInAs(member));
+    await open('/');
+    await screen.findByRole('heading', { level: 1, name: 'Início' });
+    expect(stepStatus('Cadastre uma vaga').getByLabelText('A fazer')).toBeInTheDocument();
+    expect(stepStatus('Cadastre uma vaga').queryByLabelText('Concluído')).toBeNull();
+    cleanup();
+
+    vi.mocked(countApplications).mockResolvedValue({ ok: true, data: { total: 1 } });
+    await open('/');
+    await screen.findByRole('heading', { level: 1, name: 'Início' });
+    expect(stepStatus('Cadastre uma vaga').getByLabelText('Concluído')).toBeInTheDocument();
+    expect(stepStatus('Preencha o currículo mestre').getByLabelText('A fazer')).toBeInTheDocument();
   });
 
   it('PRU-06 AC12 greets without a name when the session has none', async () => {
@@ -317,7 +338,9 @@ describe('admin area guard', () => {
     const router = await open('/admin');
 
     expect(here(router)).toBe('/admin');
-    expect(await screen.findByText('Esta área é da administração. Sua conta é de uso do produto.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Esta área é da administração. Sua conta é de uso do produto.'),
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Voltar para o início' })).toHaveAttribute('href', '/');
     expect(screen.queryByRole('navigation')).toBeNull();
     // The way out is the screen's own (UI-27), not a shell menu: there is no navigation around it.
@@ -520,9 +543,9 @@ describe('admin dashboard', () => {
       screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent),
     ).toEqual(['Status do sistema', 'Convites pendentes', 'Skills privadas aguardando promoção']);
     expect(screen.getByText('08 nov 2026 14:32:07')).toHaveClass('font-mono');
-    expect(within(screen.getByRole('group', { name: 'Convites pendentes' })).getByText('3')).toHaveClass(
-      'text-heading-xl',
-    );
+    expect(
+      within(screen.getByRole('group', { name: 'Convites pendentes' })).getByText('3'),
+    ).toHaveClass('text-heading-xl');
   });
 
   it('PRU-06 AC20 Convidar pessoa in the widget opens /admin/invitations', async () => {
@@ -550,7 +573,9 @@ describe('admin dashboard', () => {
 
     await open('/admin');
 
-    expect(await screen.findByText('Esta área é da administração. Sua conta é de uso do produto.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Esta área é da administração. Sua conta é de uso do produto.'),
+    ).toBeInTheDocument();
     expect(vi.mocked(pendingInvitations)).not.toHaveBeenCalled();
     expect(vi.mocked(getSystemStatus)).not.toHaveBeenCalled();
     expect(vi.mocked(listAdminSkills)).not.toHaveBeenCalled();
@@ -580,7 +605,9 @@ describe('admin dashboard private skills widget', () => {
 
     await open('/admin');
 
-    const widget = await screen.findByRole('group', { name: 'Skills privadas aguardando promoção' });
+    const widget = await screen.findByRole('group', {
+      name: 'Skills privadas aguardando promoção',
+    });
     expect(vi.mocked(listAdminSkills)).toHaveBeenCalledWith({ data: { scope: 'private' } });
     expect(within(widget).getByText('Drizzle ORM de Teste')).toBeInTheDocument();
     expect(within(widget).getByText('Skill Fictícia Alfa')).toBeInTheDocument();
@@ -605,7 +632,10 @@ describe('admin dashboard private skills widget', () => {
     fireEvent.click(await screen.findByRole('link', { name: 'Abrir catálogo' }));
 
     await waitFor(() => expect(here(router)).toBe('/admin/skills?scope=private'));
-    expect(await screen.findByRole('button', { name: /^Privadas/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(await screen.findByRole('button', { name: /^Privadas/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 
   it('SKL-56 says nothing waits for promotion when there are no private skills, keeping the link', async () => {
@@ -613,8 +643,12 @@ describe('admin dashboard private skills widget', () => {
 
     await open('/admin');
 
-    const widget = await screen.findByRole('group', { name: 'Skills privadas aguardando promoção' });
-    expect(within(widget).getByText('Nenhuma skill privada aguardando promoção.')).toBeInTheDocument();
+    const widget = await screen.findByRole('group', {
+      name: 'Skills privadas aguardando promoção',
+    });
+    expect(
+      within(widget).getByText('Nenhuma skill privada aguardando promoção.'),
+    ).toBeInTheDocument();
     expect(within(widget).getByRole('link', { name: 'Abrir catálogo' })).toBeInTheDocument();
   });
 
@@ -628,11 +662,17 @@ describe('admin dashboard private skills widget', () => {
 
     await open('/admin');
 
-    const widget = await screen.findByRole('group', { name: 'Skills privadas aguardando promoção' });
-    expect(within(widget).getByRole('alert')).toHaveTextContent('Serviço indisponível. Tente novamente em instantes.');
+    const widget = await screen.findByRole('group', {
+      name: 'Skills privadas aguardando promoção',
+    });
+    expect(within(widget).getByRole('alert')).toHaveTextContent(
+      'Serviço indisponível. Tente novamente em instantes.',
+    );
     expect(screen.getByRole('group', { name: 'API' })).toHaveTextContent('Operacional');
     expect(screen.getByRole('group', { name: 'Banco de dados' })).toHaveTextContent('Operacional');
-    expect(within(screen.getByRole('group', { name: 'Convites pendentes' })).getByText('3')).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('group', { name: 'Convites pendentes' })).getByText('3'),
+    ).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Administração' })).toBeInTheDocument();
   });
 });
@@ -669,9 +709,12 @@ describe('admin skills catalog', () => {
     expect(links[2]).toHaveAttribute('href', '/admin/skills');
     expect(links[2]).toHaveAttribute('aria-current', 'page');
     expect(links[2]!.firstElementChild).toHaveClass('lucide-tags');
-    for (const other of [links[0], links[1], links[3]]) expect(other).not.toHaveAttribute('aria-current');
+    for (const other of [links[0], links[1], links[3]])
+      expect(other).not.toHaveAttribute('aria-current');
     expect(here(router)).toBe('/admin/skills');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Catálogo de skills' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Catálogo de skills' }),
+    ).toBeInTheDocument();
     expect(screen.getAllByRole('main')).toHaveLength(1);
   });
 
@@ -689,12 +732,20 @@ describe('admin skills catalog', () => {
 
     await openCatalog('/admin/skills?scope=private&category=tool&q=drizzle');
 
-    expect(await screen.findByRole('searchbox', { name: 'Nome ou apelido' })).toHaveValue('drizzle');
+    expect(await screen.findByRole('searchbox', { name: 'Nome ou apelido' })).toHaveValue(
+      'drizzle',
+    );
     expect(vi.mocked(listAdminSkills)).toHaveBeenCalledWith({
       data: { scope: 'private', category: 'tool', q: 'drizzle', cursor: undefined },
     });
-    expect(screen.getByRole('button', { name: /^Privadas/ })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: 'Ferramenta' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /^Privadas/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('button', { name: 'Ferramenta' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     expect(screen.getByRole('button', { name: 'Todas' })).toHaveAttribute('aria-pressed', 'false');
   });
 
@@ -765,7 +816,10 @@ describe('admin skills catalog', () => {
     const router = await openCatalog('/admin/skills?scope=private');
 
     await waitFor(() => expect(router.state.location.pathname).toBe('/admin/login'));
-    expect(router.state.location.search).toMatchObject({ redirect: '/admin/skills?scope=private', reason: 'expired' });
+    expect(router.state.location.search).toMatchObject({
+      redirect: '/admin/skills?scope=private',
+      reason: 'expired',
+    });
   });
 
   it('SKL-51 shows the unavailable alert with no rows when the catalog cannot be read', async () => {
@@ -774,7 +828,9 @@ describe('admin skills catalog', () => {
 
     await openCatalog('/admin/skills');
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Serviço indisponível. Tente novamente em instantes.');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Serviço indisponível. Tente novamente em instantes.',
+    );
     expect(screen.queryByRole('listitem')).toBeNull();
   });
 
@@ -783,7 +839,9 @@ describe('admin skills catalog', () => {
 
     await openCatalog('/admin/skills');
 
-    expect(await screen.findByText('Esta área é da administração. Sua conta é de uso do produto.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Esta área é da administração. Sua conta é de uso do produto.'),
+    ).toBeInTheDocument();
     expect(vi.mocked(listAdminSkills)).not.toHaveBeenCalled();
   });
 });
@@ -794,7 +852,16 @@ const emptyApplicationsPage = {
   counts: {
     active: 0,
     closed: 0,
-    byStatus: { saved: 0, applied: 0, interviewing: 0, offer: 0, accepted: 0, rejected: 0, withdrawn: 0, ghosted: 0 },
+    byStatus: {
+      saved: 0,
+      applied: 0,
+      interviewing: 0,
+      offer: 0,
+      accepted: 0,
+      rejected: 0,
+      withdrawn: 0,
+      ghosted: 0,
+    },
   },
 };
 
@@ -849,14 +916,18 @@ describe('applications', () => {
 
     const links = within(await memberSidebar()).getAllByRole('link');
     expect(links.map((link) => link.textContent)).toEqual(['Início', 'Candidaturas 24']);
-    expect(within(await memberSidebar()).getByRole('link', { name: 'Candidaturas 24' })).toBeInTheDocument();
+    expect(
+      within(await memberSidebar()).getByRole('link', { name: 'Candidaturas 24' }),
+    ).toBeInTheDocument();
     expect(links[1]).toHaveAttribute('href', '/applications');
     expect(links[1]).toHaveAttribute('aria-current', 'page');
     expect(within(links[1]!).getByText('24')).toHaveClass('font-mono');
     expect(links[1]!.firstElementChild).toHaveClass('lucide-briefcase');
     expect(links[0]).not.toHaveAttribute('aria-current');
     expect(here(router)).toBe('/applications');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Candidaturas' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Candidaturas' }),
+    ).toBeInTheDocument();
     expect(screen.getAllByRole('main')).toHaveLength(1);
   });
 
@@ -876,7 +947,9 @@ describe('applications', () => {
     const link = within(await memberSidebar()).getByRole('link', { name: 'Candidaturas' });
     expect(link.textContent).toBe('Candidaturas');
     fireEvent.click(link);
-    expect(await screen.findByRole('heading', { level: 1, name: 'Candidaturas' })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Candidaturas' }),
+    ).toBeInTheDocument();
   });
 
   it('APP-49 opens /applications/$id with a click on a row', async () => {
@@ -885,17 +958,24 @@ describe('applications', () => {
     fireEvent.click(await screen.findByText('Vaga de Teste Pleno'));
 
     await waitFor(() => expect(here(router)).toBe(`/applications/${appId}`));
-    expect(within(await memberSidebar()).getByRole('link', { name: /^Candidaturas/ })).toHaveAttribute('aria-current', 'page');
+    expect(
+      within(await memberSidebar()).getByRole('link', { name: /^Candidaturas/ }),
+    ).toHaveAttribute('aria-current', 'page');
   });
 
   it('APP-46 reads the filters from the address: the list is asked with them and the controls show them', async () => {
     await openApplications('/applications?tab=closed&level=mid,senior&q=nest&sort=created');
 
-    expect(await screen.findByRole('searchbox', { name: 'Empresa, título ou skill' })).toHaveValue('nest');
+    expect(await screen.findByRole('searchbox', { name: 'Empresa, título ou skill' })).toHaveValue(
+      'nest',
+    );
     expect(vi.mocked(listApplications)).toHaveBeenCalledWith({
       data: { tab: 'closed', sort: 'created', level: 'mid,senior', q: 'nest' },
     });
-    expect(screen.getByRole('button', { name: /^Encerradas/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /^Encerradas/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     expect(screen.getByRole('button', { name: 'Cadastro' })).toBeInTheDocument();
   });
 
@@ -907,7 +987,9 @@ describe('applications', () => {
 
     await waitFor(() => expect(here(router)).toBe('/applications?tab=closed'));
     await waitFor(() =>
-      expect(vi.mocked(listApplications)).toHaveBeenLastCalledWith({ data: { tab: 'closed', sort: 'activity' } }),
+      expect(vi.mocked(listApplications)).toHaveBeenLastCalledWith({
+        data: { tab: 'closed', sort: 'activity' },
+      }),
     );
   });
 
@@ -927,6 +1009,25 @@ describe('applications', () => {
 
     expect(here(router)).toBe('/admin');
     expect(vi.mocked(countApplications)).not.toHaveBeenCalled();
+  });
+
+  it('APP-83 opens /applications with the new application dialog from "Nova candidatura" in step 03', async () => {
+    vi.mocked(searchSkills).mockResolvedValue({ ok: true, data: [] });
+    const router = await openApplications('/');
+    await screen.findByRole('heading', { level: 1, name: 'Início' });
+
+    fireEvent.click(
+      within(
+        screen
+          .getByRole('heading', { level: 2, name: 'Cadastre uma vaga' })
+          .closest('section') as HTMLElement,
+      ).getByRole('link', { name: 'Nova candidatura' }),
+    );
+
+    expect(await screen.findByRole('dialog', { name: 'Nova candidatura' })).toBeInTheDocument();
+    expect(here(router)).toContain('/applications');
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 });
 
