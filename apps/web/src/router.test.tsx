@@ -14,6 +14,7 @@ import {
   pendingInvitations,
   type SessionState,
 } from './features/identity';
+import { listAdminSkills } from './features/skills';
 import { getSystemStatus } from './features/system-status';
 import { routeTree } from './routeTree.gen';
 
@@ -28,6 +29,11 @@ vi.mock('./features/identity/api/server-functions', async (importOriginal) => ({
   openInvitation: vi.fn(),
   joinWithInvitation: vi.fn(),
   pendingInvitations: vi.fn(),
+}));
+
+vi.mock('./features/skills/api/server-functions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./features/skills/api/server-functions')>()),
+  listAdminSkills: vi.fn(),
 }));
 
 vi.mock('./features/system-status/api/get-system-status', async (importOriginal) => ({
@@ -47,6 +53,7 @@ const admin: MeResponse = {
   name: 'Root Admin',
   role: 'admin',
 };
+const emptySkillsPage = { items: [], nextCursor: null, counts: { total: 0, private: 0 } };
 const signedInAs = (user: MeResponse): SessionState => ({ kind: 'authenticated', user });
 const anonymous: SessionState = { kind: 'anonymous' };
 const operationalStatus = {
@@ -81,6 +88,7 @@ beforeEach(() => {
     ok: true,
     data: { items: [], nextCursor: null, totalPending: 0 },
   });
+  vi.mocked(listAdminSkills).mockResolvedValue({ ok: true, data: emptySkillsPage });
 });
 
 afterEach(() => {
@@ -261,7 +269,7 @@ describe('admin area guard', () => {
     expect(screen.getByRole('button', { name: 'Sair' })).toBeInTheDocument();
   });
 
-  it('PRU-06 AC15 shows the admin shell: wordmark with admin, the three destinations, initials, name and Sair', async () => {
+  it('PRU-06 AC15 shows the admin shell: wordmark with admin, the destinations, initials, name and Sair', async () => {
     sessionIs(signedInAs(admin));
 
     await open('/admin');
@@ -274,6 +282,7 @@ describe('admin area guard', () => {
     expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
       ['Painel', '/admin'],
       ['Convites', '/admin/invitations'],
+      ['Catálogo de skills', '/admin/skills'],
       ['Status do sistema', '/status'],
     ]);
     expect(within(sidebar).getByRole('link', { name: 'Painel' })).toHaveAttribute(
@@ -283,7 +292,10 @@ describe('admin area guard', () => {
     expect(within(sidebar).getByText('RA')).toHaveAttribute('aria-hidden', 'true');
     expect(within(sidebar).getByText('Root Admin')).toBeInTheDocument();
     expect(within(sidebar).getByRole('button', { name: 'Sair' })).toBeInTheDocument();
-    expect(within(sidebar).queryByText(/Catálogo de skills|Buscar/)).toBeNull();
+    expect(within(sidebar).queryByText(/Buscar/)).toBeNull();
+    expect(within(sidebar).getByRole('link', { name: 'Catálogo de skills' })).not.toHaveAttribute(
+      'aria-current',
+    );
   });
 
   it('PRU-06 AC10 shows a member the no-access message with a link to / and no admin shell', async () => {
@@ -528,6 +540,157 @@ describe('admin dashboard', () => {
     expect(await screen.findByText('Esta área é da administração. Sua conta é de uso do produto.')).toBeInTheDocument();
     expect(vi.mocked(pendingInvitations)).not.toHaveBeenCalled();
     expect(vi.mocked(getSystemStatus)).not.toHaveBeenCalled();
+  });
+});
+
+describe('admin skills catalog', () => {
+  /** The catalog reads its list through the query client the app provides around the router. */
+  async function openCatalog(url: string) {
+    const queryClient = new QueryClient();
+    const history = createMemoryHistory({ initialEntries: [url] });
+    const router = createRouter({ routeTree, history, context: { queryClient } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    );
+    await router.load();
+    return router;
+  }
+
+  const sidebar = () => screen.findByRole('navigation', { name: 'Navegação da administração' });
+
+  it('SKL-39 shows "Catálogo de skills" between Convites and Status do sistema, with aria-current="page" on /admin/skills', async () => {
+    sessionIs(signedInAs(admin));
+
+    const router = await openCatalog('/admin/skills');
+
+    const links = within(await sidebar()).getAllByRole('link');
+    expect(links.map((link) => link.textContent)).toEqual([
+      'Painel',
+      'Convites',
+      'Catálogo de skills',
+      'Status do sistema',
+    ]);
+    expect(links[2]).toHaveAttribute('href', '/admin/skills');
+    expect(links[2]).toHaveAttribute('aria-current', 'page');
+    expect(links[2]!.firstElementChild).toHaveClass('lucide-tags');
+    for (const other of [links[0], links[1], links[3]]) expect(other).not.toHaveAttribute('aria-current');
+    expect(here(router)).toBe('/admin/skills');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Catálogo de skills' })).toBeInTheDocument();
+    expect(screen.getAllByRole('main')).toHaveLength(1);
+  });
+
+  it('SKL-39 leaves the item without aria-current on the other admin pages', async () => {
+    sessionIs(signedInAs(admin));
+
+    await openCatalog('/admin');
+
+    const link = within(await sidebar()).getByRole('link', { name: 'Catálogo de skills' });
+    expect(link).not.toHaveAttribute('aria-current');
+  });
+
+  it('SKL-41 reads the filters from the address: the list is asked with them, the chips are pressed and the search is filled', async () => {
+    sessionIs(signedInAs(admin));
+
+    await openCatalog('/admin/skills?scope=private&category=tool&q=drizzle');
+
+    expect(await screen.findByRole('searchbox', { name: 'Nome ou apelido' })).toHaveValue('drizzle');
+    expect(vi.mocked(listAdminSkills)).toHaveBeenCalledWith({
+      data: { scope: 'private', category: 'tool', q: 'drizzle', cursor: undefined },
+    });
+    expect(screen.getByRole('button', { name: /^Privadas/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Ferramenta' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Todas' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('SKL-41 asks for the unfiltered catalog on /admin/skills and ignores values it does not know', async () => {
+    sessionIs(signedInAs(admin));
+
+    await openCatalog('/admin/skills?scope=nope&category=nada');
+
+    await screen.findByRole('searchbox', { name: 'Nome ou apelido' });
+    expect(vi.mocked(listAdminSkills)).toHaveBeenCalledWith({
+      data: { scope: 'all', category: undefined, q: undefined, cursor: undefined },
+    });
+  });
+
+  it('SKL-41 puts the chosen chips in the address and takes them out when they are cleared', async () => {
+    sessionIs(signedInAs(admin));
+    const router = await openCatalog('/admin/skills');
+    await screen.findByRole('searchbox', { name: 'Nome ou apelido' });
+
+    fireEvent.click(screen.getByRole('button', { name: /^Privadas/ }));
+    await waitFor(() => expect(here(router)).toBe('/admin/skills?scope=private'));
+    fireEvent.click(screen.getByRole('button', { name: 'Banco de dados' }));
+    await waitFor(() => expect(here(router)).toBe('/admin/skills?scope=private&category=database'));
+    fireEvent.click(screen.getByRole('button', { name: 'Todas' }));
+    await waitFor(() => expect(here(router)).toBe('/admin/skills?category=database'));
+    // SKL-42: the pressed category chip, used again, leaves the address.
+    fireEvent.click(screen.getByRole('button', { name: 'Banco de dados' }));
+    await waitFor(() => expect(here(router)).toBe('/admin/skills'));
+    expect(vi.mocked(listAdminSkills)).toHaveBeenLastCalledWith({
+      data: { scope: 'all', category: undefined, q: undefined, cursor: undefined },
+    });
+  });
+
+  it('SKL-41 puts the search in the address once the typing settles', async () => {
+    sessionIs(signedInAs(admin));
+    const router = await openCatalog('/admin/skills');
+    const field = await screen.findByRole('searchbox', { name: 'Nome ou apelido' });
+
+    fireEvent.change(field, { target: { value: 'postgres' } });
+    expect(here(router)).toBe('/admin/skills');
+
+    await waitFor(() => expect(here(router)).toBe('/admin/skills?q=postgres'), { timeout: 2000 });
+    await waitFor(() =>
+      expect(vi.mocked(listAdminSkills)).toHaveBeenLastCalledWith({
+        data: { scope: 'all', category: undefined, q: 'postgres', cursor: undefined },
+      }),
+    );
+  });
+
+  it('SKL-43 Limpar filtros takes scope, category and q out of the address', async () => {
+    sessionIs(signedInAs(admin));
+    const router = await openCatalog('/admin/skills?scope=private&category=tool&q=zzz');
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Limpar filtros' }));
+
+    await waitFor(() => expect(here(router)).toBe('/admin/skills'));
+    expect(screen.getByRole('searchbox', { name: 'Nome ou apelido' })).toHaveValue('');
+  });
+
+  it('SKL-51 sends the admin to the login with the expired notice when the catalog answers 401', async () => {
+    sessionIs(signedInAs(admin));
+    // The session ended while the page was open: the login stays open when the redirect lands on it.
+    vi.mocked(listAdminSkills).mockImplementation(() => {
+      sessionIs(anonymous);
+      return Promise.resolve({ ok: false, status: 401 });
+    });
+
+    const router = await openCatalog('/admin/skills?scope=private');
+
+    await waitFor(() => expect(router.state.location.pathname).toBe('/admin/login'));
+    expect(router.state.location.search).toMatchObject({ redirect: '/admin/skills?scope=private', reason: 'expired' });
+  });
+
+  it('SKL-51 shows the unavailable alert with no rows when the catalog cannot be read', async () => {
+    sessionIs(signedInAs(admin));
+    vi.mocked(listAdminSkills).mockResolvedValue({ ok: false, status: 503 });
+
+    await openCatalog('/admin/skills');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Serviço indisponível. Tente novamente em instantes.');
+    expect(screen.queryByRole('listitem')).toBeNull();
+  });
+
+  it('SKL-39 shows a member the no-access screen on /admin/skills and reads no catalog', async () => {
+    sessionIs(signedInAs(member));
+
+    await openCatalog('/admin/skills');
+
+    expect(await screen.findByText('Esta área é da administração. Sua conta é de uso do produto.')).toBeInTheDocument();
+    expect(vi.mocked(listAdminSkills)).not.toHaveBeenCalled();
   });
 });
 

@@ -18,6 +18,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as AdminProtectedIndexRouteImport } from './routes/admin/_protected/index'
 import { Route as AdminProtectedInvitationsRouteImport } from './routes/admin/_protected/invitations'
+import { Route as AdminProtectedSkillsRouteImport } from './routes/admin/_protected/skills'
 
 const MemberRoute = MemberRouteImport.update({
   id: '/_member',
@@ -64,6 +65,11 @@ const AdminProtectedInvitationsRoute =
     path: '/invitations',
     getParentRoute: () => AdminProtectedRoute,
   } as any)
+const AdminProtectedSkillsRoute = AdminProtectedSkillsRouteImport.update({
+  id: '/skills',
+  path: '/skills',
+  getParentRoute: () => AdminProtectedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof MemberIndexRoute
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/invite/$token': typeof InviteTokenRoute
   '/admin/invitations': typeof AdminProtectedInvitationsRoute
+  '/admin/skills': typeof AdminProtectedSkillsRoute
   '/admin/': typeof AdminProtectedIndexRoute
 }
 export interface FileRoutesByTo {
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/invite/$token': typeof InviteTokenRoute
   '/': typeof MemberIndexRoute
   '/admin/invitations': typeof AdminProtectedInvitationsRoute
+  '/admin/skills': typeof AdminProtectedSkillsRoute
   '/admin': typeof AdminProtectedIndexRoute
 }
 export interface FileRoutesById {
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/invite/$token': typeof InviteTokenRoute
   '/_member/': typeof MemberIndexRoute
   '/admin/_protected/invitations': typeof AdminProtectedInvitationsRoute
+  '/admin/_protected/skills': typeof AdminProtectedSkillsRoute
   '/admin/_protected/': typeof AdminProtectedIndexRoute
 }
 export interface FileRouteTypes {
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/invite/$token'
     | '/admin/invitations'
+    | '/admin/skills'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/'
     | '/admin/invitations'
+    | '/admin/skills'
     | '/admin'
   id:
     | '__root__'
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/_member/'
     | '/admin/_protected/invitations'
+    | '/admin/_protected/skills'
     | '/admin/_protected/'
   fileRoutesById: FileRoutesById
 }
@@ -203,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProtectedInvitationsRouteImport
       parentRoute: typeof AdminProtectedRoute
     }
+    '/admin/_protected/skills': {
+      id: '/admin/_protected/skills'
+      path: '/skills'
+      fullPath: '/admin/skills'
+      preLoaderRoute: typeof AdminProtectedSkillsRouteImport
+      parentRoute: typeof AdminProtectedRoute
+    }
   }
 }
 
@@ -219,11 +238,13 @@ const MemberRouteWithChildren =
 
 interface AdminProtectedRouteChildren {
   AdminProtectedInvitationsRoute: typeof AdminProtectedInvitationsRoute
+  AdminProtectedSkillsRoute: typeof AdminProtectedSkillsRoute
   AdminProtectedIndexRoute: typeof AdminProtectedIndexRoute
 }
 
 const AdminProtectedRouteChildren: AdminProtectedRouteChildren = {
   AdminProtectedInvitationsRoute: AdminProtectedInvitationsRoute,
+  AdminProtectedSkillsRoute: AdminProtectedSkillsRoute,
   AdminProtectedIndexRoute: AdminProtectedIndexRoute,
 }
 

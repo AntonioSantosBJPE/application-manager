@@ -789,8 +789,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `validateSearch` usa `parseCatalogSearch`; o item "Catálogo de skills" (ícone `Tags`) fica entre "Convites" e "Status do sistema", com `aria-current="page"` na rota
-- [ ] Teste `SKL-39` passa; `routeTree.gen.ts` regenerada
+- [x] `validateSearch` usa `parseCatalogSearch`; o item "Catálogo de skills" (ícone `Tags`) fica entre "Convites" e "Status do sistema", com `aria-current="page"` na rota
+- [x] Teste `SKL-39` passa; `routeTree.gen.ts` regenerada
 
 **Tests**: unit
 **Gate**: quick
