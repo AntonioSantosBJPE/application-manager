@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { ArrowRight, LogOut, RefreshCw, UserPlus } from 'lucide-react';
 import { expect, userEvent } from 'storybook/test';
 import {
   contrastRatio,
@@ -227,4 +228,60 @@ export const ContrasteEscuro: Story = {
   globals: { theme: 'dark' },
   render: fourIntents,
   play: prumoContrast,
+};
+
+const withIcons: Story['render'] = () => (
+  <div className="flex flex-wrap items-center gap-3 bg-surface p-4">
+    <Button intent="secondary" icon={RefreshCw}>
+      Tentar novamente
+    </Button>
+    <Button intent="ghost" icon={LogOut}>
+      Sair
+    </Button>
+    <Button intent="secondary" size="sm" icon={UserPlus}>
+      Convidar pessoa
+    </Button>
+    <Button intent="ghost" size="sm" iconEnd={ArrowRight}>
+      Ver convites
+    </Button>
+    <Button intent="ghost" size="sm" icon={LogOut} aria-label="Sair da conta" />
+  </div>
+);
+
+/**
+ * Icons before the label, after it ("Ver convites") and alone with an `aria-label`: the icon takes the
+ * label color at 3:1 or more, 16px or 14px with `sm`, and the icon-only button is a square (PRU-01 AC11).
+ */
+const iconsPlay: Story['play'] = async ({ canvas }) => {
+  const sizes = [
+    ['Tentar novamente', 16],
+    ['Sair', 16],
+    ['Convidar pessoa', 14],
+    ['Ver convites', 14],
+    ['Sair da conta', 14],
+  ] as const;
+  for (const [name, size] of sizes) {
+    const button = canvas.getByRole('button', { name });
+    await settled(button);
+    const icon = button.querySelector('svg')!;
+    await expect(icon.getBoundingClientRect().width, name).toBe(size);
+    await expect(icon).toHaveAttribute('aria-hidden', 'true');
+    await expectContrast(icon, 3, 'stroke');
+  }
+  const square = canvas.getByRole('button', { name: 'Sair da conta' }).getBoundingClientRect();
+  await expect(square.width).toBe(square.height);
+};
+
+export const ComIconeClaro: Story = {
+  name: 'Com ícone, tema claro',
+  globals: { theme: 'light' },
+  render: withIcons,
+  play: iconsPlay,
+};
+
+export const ComIconeEscuro: Story = {
+  name: 'Com ícone, tema escuro',
+  globals: { theme: 'dark' },
+  render: withIcons,
+  play: iconsPlay,
 };

@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { CloudOff, Link2Off } from 'lucide-react';
 import { describe, expect, it, vi } from 'vitest';
 import { Button } from '../button';
 import { Alert } from './alert';
@@ -101,5 +102,27 @@ describe('Alert in the Prumo', () => {
 
     expect(screen.getByRole('status').children).toHaveLength(2);
     expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('PRU-02 AC06 swaps the icon of the intent for the one the caller passes, keeping the intent', () => {
+    render(
+      <>
+        <Alert intent="danger" icon={Link2Off}>
+          Este convite expirou ou já foi usado.
+        </Alert>
+        <Alert intent="info" icon={CloudOff}>
+          O serviço não respondeu.
+        </Alert>
+      </>,
+    );
+
+    const danger = screen.getByRole('alert');
+    const info = screen.getByRole('status');
+    expect(danger.querySelectorAll('svg')).toHaveLength(1);
+    expect(danger.querySelector('svg')).toHaveClass('lucide-link-2-off');
+    expect(danger.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(danger.querySelector('svg')).toHaveAttribute('width', '16');
+    expect(danger).toHaveClass('bg-danger-subtle', 'text-danger');
+    expect(info.querySelector('svg')).toHaveClass('lucide-cloud-off', 'text-text-muted');
   });
 });

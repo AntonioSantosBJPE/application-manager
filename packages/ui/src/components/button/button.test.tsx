@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { ArrowRight, LogOut, UserPlus } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { Button } from './button';
@@ -190,5 +191,86 @@ describe('Button in the Prumo', () => {
     expect(link).toHaveAttribute('data-row', '1');
     expect(link).toHaveClass('h-control-sm', 'bg-transparent', 'text-text-muted', 'rounded-sm');
     expect(container.querySelector('button')).toBeNull();
+  });
+});
+
+describe('Button with an icon', () => {
+  it('PRU-01 AC11 draws the icon before the label, 16px by default and 14px with sm, stroke 1.75 and hidden', () => {
+    render(
+      <>
+        <Button intent="ghost" icon={LogOut}>
+          Sair
+        </Button>
+        <Button intent="secondary" size="sm" icon={UserPlus}>
+          Convidar pessoa
+        </Button>
+      </>,
+    );
+
+    for (const [name, size, glyph] of [
+      ['Sair', '16', 'lucide-log-out'],
+      ['Convidar pessoa', '14', 'lucide-user-plus'],
+    ] as const) {
+      const button = screen.getByRole('button', { name });
+      const icon = button.firstElementChild!;
+      expect(icon.tagName.toLowerCase(), name).toBe('svg');
+      expect(icon, name).toHaveClass(glyph);
+      expect(icon, name).toHaveAttribute('width', size);
+      expect(icon, name).toHaveAttribute('stroke-width', '1.75');
+      expect(icon, name).toHaveAttribute('aria-hidden', 'true');
+      expect(button.querySelectorAll('svg'), name).toHaveLength(1);
+      expect(button.textContent, name).toBe(name);
+    }
+  });
+
+  it('PRU-01 AC11 draws iconEnd after the label', () => {
+    render(
+      <Button intent="ghost" size="sm" iconEnd={ArrowRight}>
+        Ver convites
+      </Button>,
+    );
+
+    const button = screen.getByRole('button', { name: 'Ver convites' });
+    expect(button.lastElementChild).toHaveClass('lucide-arrow-right');
+    expect(button.lastElementChild).toHaveAttribute('width', '14');
+    expect(button.firstChild?.textContent).toBe('Ver convites');
+  });
+
+  it('PRU-02 AC05 keeps the icon around the child when asChild is set', () => {
+    const { container } = render(
+      <Button asChild intent="secondary" size="sm" icon={UserPlus}>
+        <a href="/admin/invitations">Convidar pessoa</a>
+      </Button>,
+    );
+
+    const link = screen.getByRole('link', { name: 'Convidar pessoa' });
+    expect(link).toHaveClass('bg-surface-raised', 'h-control-sm', 'px-2');
+    expect(link.firstElementChild).toHaveClass('lucide-user-plus');
+    expect(link.textContent).toBe('Convidar pessoa');
+    expect(container.querySelector('button')).toBeNull();
+  });
+
+  it('PRU-01 AC11 names a button with only an icon by its aria-label and draws it square', () => {
+    render(<Button intent="ghost" size="sm" icon={LogOut} aria-label="Sair" />);
+
+    const button = screen.getByRole('button', { name: 'Sair' });
+    expect(button.textContent).toBe('');
+    expect(button).toHaveClass('w-control-sm', 'h-control-sm');
+    expect(button).not.toHaveClass('px-2');
+    expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('PRU-01 AC11 refuses a button with only an icon and no aria-label', () => {
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(() => render(<Button intent="ghost" icon={LogOut} />)).toThrow(/aria-label/);
+    quiet.mockRestore();
+  });
+
+  it('draws no icon when none is passed', () => {
+    render(<Button>Entrar</Button>);
+
+    const button = screen.getByRole('button', { name: 'Entrar' });
+    expect(button.querySelector('svg')).toBeNull();
+    expect(button).toHaveClass('px-3');
   });
 });

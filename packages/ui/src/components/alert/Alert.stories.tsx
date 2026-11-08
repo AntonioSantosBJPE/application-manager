@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { CloudOff, Link2Off } from 'lucide-react';
 import { expect, fn, userEvent } from 'storybook/test';
 import { expectContrast, settle } from '../../testing/contrast';
 import { Button } from '../button';
@@ -128,4 +129,44 @@ export const ContrasteEscuro: Story = {
   globals: { theme: 'dark' },
   render: threeIntents,
   play: contrast,
+};
+
+const ownIcons: Story['render'] = () => (
+  <div className="flex w-96 flex-col gap-3 bg-surface p-4">
+    <Alert intent="danger" icon={Link2Off}>
+      Este convite expirou ou já foi usado.
+    </Alert>
+    <Alert intent="danger" icon={CloudOff}>
+      O serviço não respondeu.
+    </Alert>
+  </div>
+);
+
+/** An icon of the caller's in place of the intent's own; it keeps the intent's color at 3:1. */
+const ownIconsPlay: Story['play'] = async ({ canvasElement }) => {
+  const alerts = [...canvasElement.querySelectorAll('[role="alert"]')];
+  await expect(alerts).toHaveLength(2);
+  await expect(alerts[0]!.querySelector('svg')).toHaveClass('lucide-link-2-off');
+  await expect(alerts[1]!.querySelector('svg')).toHaveClass('lucide-cloud-off');
+  for (const alert of alerts) {
+    await settle(alert);
+    await expectContrast(alert.children[1]!, 4.5);
+    await expectContrast(alert.querySelector('svg')!, 3);
+  }
+};
+
+export const IconeProprioClaro: Story = {
+  name: 'Ícone próprio, tema claro',
+  args: { intent: 'danger' },
+  globals: { theme: 'light' },
+  render: ownIcons,
+  play: ownIconsPlay,
+};
+
+export const IconeProprioEscuro: Story = {
+  name: 'Ícone próprio, tema escuro',
+  args: { intent: 'danger' },
+  globals: { theme: 'dark' },
+  render: ownIcons,
+  play: ownIconsPlay,
 };

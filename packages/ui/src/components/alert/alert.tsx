@@ -27,14 +27,17 @@ export type AlertProps = Omit<ComponentProps<'div'>, 'role'> & {
     intent: AlertIntent;
     /** A control at the right end of the alert, such as a `Button` `sm`; its text comes from the caller. */
     action?: ReactNode;
+    /** A Lucide icon in place of the intent's own, when the screen names the failure ("link-2-off"). */
+    icon?: LucideIcon;
   };
 
 /**
  * Inline message. `danger` is an error and interrupts the screen reader with `role="alert"`;
  * `info` is a calm note and `warning` a suggestion that asks for a decision, and both announce
- * themselves politely with `role="status"`. Each intent leads with its own icon.
+ * themselves politely with `role="status"`. Each intent leads with its own icon, which the caller
+ * may swap for one that names the failure.
  */
-export function Alert({ intent, action, className, children, ...props }: AlertProps) {
+export function Alert({ intent, action, icon, className, children, ...props }: AlertProps) {
   return (
     <div
       role={intent === 'danger' ? 'alert' : 'status'}
@@ -42,7 +45,7 @@ export function Alert({ intent, action, className, children, ...props }: AlertPr
       {...props}
     >
       <Icon
-        icon={icons[intent]}
+        icon={icon ?? icons[intent]}
         className={intent === 'info' ? 'mt-0.5 shrink-0 text-text-muted' : 'mt-0.5 shrink-0'}
       />
       <div className="min-w-0 flex-1">{children}</div>
