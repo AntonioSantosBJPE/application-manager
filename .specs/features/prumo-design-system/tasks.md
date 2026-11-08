@@ -388,9 +388,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] `Header` (título, contagem `font-mono`, ação), `Filters` (`role=search`), `Group` de 36 px, `Row` ≥ 40 px com hover e `selected`, `RowMeta` em coluna fixa; partes atuais mantidas
-- [ ] Testes e stories (lista, grupos, estreito) nos dois temas
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `Header` (título, contagem `font-mono`, ação), `Filters` (`role=search`), `Group` de 36 px, `Row` ≥ 40 px com hover e `selected`, `RowMeta` em coluna fixa; partes atuais mantidas
+- [x] Testes e stories (lista, grupos, estreito) nos dois temas
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick
