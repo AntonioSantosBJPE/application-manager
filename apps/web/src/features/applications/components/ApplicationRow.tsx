@@ -24,7 +24,7 @@ export const applicationPath = (id: string) => `/applications/${id}`;
  * One application of the list (APP-44): the status icon named after the status, the company and the
  * title, "sem retorno?" in `warning` when the api suggests it, two skills, the level, the work model or
  * "—" and the last activity. Below `md` only the status, the company, the title and the activity stay
- * (APP-56). There is no resume coverage column (AD-017).
+ * (APP-56): the "⋯" goes too, and the right click and the detail still change the status. There is no resume coverage column (AD-017).
  */
 export function ApplicationRow({ application, now, onOpen, actions, className, ...rest }: ApplicationRowProps) {
   const skills = rowSkills(application.skills);
@@ -79,7 +79,7 @@ export function ApplicationRow({ application, now, onOpen, actions, className, .
           {application.workModel === null ? NO_WORK_MODEL_LABEL : WORK_MODEL_LABELS[application.workModel]}
         </span>
         <span className="w-16 text-right font-mono text-caption">{relativeDays(application.lastActivityAt, now)}</span>
-        {actions}
+        {actions === undefined ? null : <span className="hidden md:inline-flex">{actions}</span>}
       </ListPage.RowMeta>
     </ListPage.Row>
   );

@@ -172,6 +172,17 @@ describe('RowActions', () => {
     expect(contextStatus).toEqual(buttonStatus);
   });
 
+  it('APP-56 hides the "⋯" button below md, where the row keeps only the status, the company, the title and the activity', async () => {
+    fakeApplications(server, portfolio());
+    renderList();
+    await rows();
+
+    const button = within(rowOf('Empresa Fictícia Alfa')).getByRole('button', { name: 'Ações de Empresa Fictícia Alfa' });
+    const cell = button.closest('.hidden');
+    expect(cell).not.toBeNull();
+    expect(cell!.className).toMatch(/md:inline-flex/);
+  });
+
   it('APP-50 writes nothing when the value already on the row is chosen', async () => {
     const api = fakeApplications(server, portfolio());
     renderList();
