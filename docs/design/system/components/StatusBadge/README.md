@@ -3,7 +3,7 @@ Selo de saúde do sistema: operacional ou indisponível.
 Fonte: `packages/ui/src/components/status-badge/status-badge.tsx` (prévia estática com os tokens novos).
 
 ## Props
-- `intent`: `operational` | `unavailable`. Obrigatória.
+- `intent`: `operational` | `unavailable`. Opcional: sem ela o selo é neutro (sem ponto, borda `border-strong`, texto `text`).
 - `asChild`, demais props de `<span>`. O texto vem de quem chama.
 
 ## Regras
