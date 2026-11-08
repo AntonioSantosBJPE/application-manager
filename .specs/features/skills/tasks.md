@@ -829,10 +829,10 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] A jornada do Success Criteria passa: o member cria a privada por `127.0.0.1:3333`, o admin a promove em `/admin/skills` e outro member a acha na busca com o mesmo id
-- [ ] Teste `SKL-52`: axe nos estados lista, vazio, menu aberto, confirmações, diálogos de apelido e edição e `Alert` de erro, nos dois temas
-- [ ] Teste `SKL-53`: teclado completo, foco preso e Esc nos diálogos, sem rolagem horizontal a 375 px e 1280 px
-- [ ] Gate check passes: `pnpm test:e2e`
+- [x] A jornada do Success Criteria passa: o member cria a privada por `127.0.0.1:3333`, o admin a promove em `/admin/skills` e outro member a acha na busca com o mesmo id
+- [x] Teste `SKL-52`: axe nos estados lista, vazio, menu aberto, confirmações, diálogos de apelido e edição e `Alert` de erro, nos dois temas
+- [x] Teste `SKL-53`: teclado completo, foco preso e Esc nos diálogos, sem rolagem horizontal a 375 px e 1280 px
+- [x] Gate check passes: `pnpm test:e2e`
 
 **Tests**: e2e
 **Gate**: e2e
@@ -1099,7 +1099,8 @@ Proof: run web | ✓ SKL-76
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** 2026-11-08 - user: "Pode executar as task até o final, só pare se precisar de uma decisão importante minha"
-**Dispatched:** B1 (T1–T8, Sonnet 5.5) at HEAD 373a398, 2026-11-08 13:05 - returned; accepted at 21ec8ce after 1 fix round (console.log in the seed generator) | B2 (T9–T15, Sonnet 5.5) at HEAD 21ec8ce, 2026-11-08 13:22 - returned; accepted at 9b03ec7 with no fix round | B3 (T16–T25, Sonnet 5.5) at HEAD 9b03ec7, 2026-11-08 13:41 - returned; accepted at 8367a02 with no fix round | B4 (T26–T34, Sonnet 5.5) at HEAD 8367a02, 2026-11-08 14:02
+**Dispatched:** B1 (T1–T8, Sonnet 5.5) at HEAD 373a398, 2026-11-08 13:05 - returned; accepted at 21ec8ce after 1 fix round (console.log in the seed generator) | B2 (T9–T15, Sonnet 5.5) at HEAD 21ec8ce, 2026-11-08 13:22 - returned; accepted at 9b03ec7 with no fix round | B3 (T16–T25, Sonnet 5.5) at HEAD 9b03ec7, 2026-11-08 13:41 - returned; accepted at 8367a02 with no fix round | B4 (T26–T34, Sonnet 5.5) at HEAD 8367a02, 2026-11-08 14:02 - returned; accepted at 48fee4c after 2 fix rounds (neutral StatusBadge for "Privada"; vitest attachments out of git) | B5 (T35–T36, Sonnet 5.5) at HEAD 48fee4c, 2026-11-08 14:31
+**Orchestrator decisions:** 2026-11-08 B5 blocked on SKL-52 (axe `aria-hidden-focus` with the row menu open: Radix `DropdownMenu` is modal by default and hides the AppShell, trigger included). Decided: the `packages/ui` `DropdownMenu.Root` wrapper defaults to `modal={false}` (still overridable), proven by a ui test; no axe rule disabled.
 **Walked:** none
 
 ---
