@@ -1,6 +1,6 @@
-import type { ApplicationStatus, JobLevel, SkillRequirement, Stage, WorkModel } from '@am/contracts';
+import { FUNNEL_ORDER, type ApplicationStatus, type JobLevel, type SkillRequirement, type Stage, type WorkModel } from '@am/contracts';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, desc, eq, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, exists, inArray, like, or, sql, type SQL } from 'drizzle-orm';
 import { DATABASE, type Database } from '../../../infra/database/database.module.js';
 import { applicationEvents, applications, jobPostings, jobPostingSkills } from './schema.js';
 
@@ -48,6 +48,21 @@ export interface NewApplication {
   status: ApplicationStatus;
   now: Date;
 }
+
+/**
+ * What narrows the list: each list is an OR inside and the parameters are ANDed (APP-12). `search` is the
+ * `LIKE` pattern of the text and the ids of the skills whose name or alias holds the key (APP-13).
+ */
+export interface ListFilters {
+  /** The statuses of the tab; left out when the count ignores the tab (APP-16). */
+  statuses?: ApplicationStatus[];
+  level?: JobLevel[];
+  workModel?: WorkModel[];
+  search?: { pattern: string; skillIds: string[] };
+}
+
+/** The position of the status in the funnel as a SQL number, so the order and the cursor run in the database (APP-14). */
+const funnelRank = sql<number>`(case ${applications.status} ${sql.raw(FUNNEL_ORDER.map((status, rank) => `when '${status}' then ${rank}`).join(' '))} end)`;
 
 /**
  * SQL for `applications.*`. Whether a request is allowed is decided by the service; this class only
@@ -154,5 +169,62 @@ export class ApplicationsRepository {
       .from(applicationEvents)
       .where(eq(applicationEvents.applicationId, applicationId))
       .orderBy(desc(applicationEvents.occurredAt), desc(applicationEvents.createdAt), desc(applicationEvents.id));
+  }
+
+  /** The conditions of the owner and of the filters, over `applications` joined with `job_postings`. */
+  private where(userId: string, filters: ListFilters): SQL | undefined {
+    const { statuses, level, workModel, search } = filters;
+    const matchesSkill =
+      search === undefined || search.skillIds.length === 0
+        ? undefined
+        : exists(
+            this.db
+              .select({ one: sql`1` })
+              .from(jobPostingSkills)
+              .where(and(eq(jobPostingSkills.jobPostingId, jobPostings.id), inArray(jobPostingSkills.skillId, search.skillIds))),
+          );
+    return and(
+      eq(applications.userId, userId),
+      statuses === undefined ? undefined : inArray(applications.status, statuses),
+      level === undefined ? undefined : inArray(jobPostings.level, level),
+      workModel === undefined ? undefined : inArray(jobPostings.workModel, workModel),
+      search === undefined ? undefined : or(like(jobPostings.searchText, search.pattern), matchesSkill),
+    );
+  }
+
+  /** One page of the member's applications, by status group in funnel order and then the most recent activity first. */
+  async page(userId: string, filters: ListFilters, limit: number): Promise<ApplicationRecord[]> {
+    return this.db
+      .select({
+        id: applications.id,
+        status: applications.status,
+        createdAt: applications.createdAt,
+        lastActivityAt: applications.lastActivityAt,
+        ghostSnoozedUntil: applications.ghostSnoozedUntil,
+        jobPostingId: applications.jobPostingId,
+        company: jobPostings.company,
+        title: jobPostings.title,
+        url: jobPostings.url,
+        description: jobPostings.description,
+        level: jobPostings.level,
+        location: jobPostings.location,
+        workModel: jobPostings.workModel,
+      })
+      .from(applications)
+      .innerJoin(jobPostings, eq(applications.jobPostingId, jobPostings.id))
+      .where(this.where(userId, filters))
+      .orderBy(asc(funnelRank), desc(applications.lastActivityAt), desc(applications.id))
+      .limit(limit);
+  }
+
+  /** How many applications of the member each status holds under the filters; a status with none is absent (APP-16). */
+  async countByStatus(userId: string, filters: ListFilters): Promise<Map<ApplicationStatus, number>> {
+    const rows = await this.db
+      .select({ status: applications.status, total: sql<string>`count(*)` })
+      .from(applications)
+      .innerJoin(jobPostings, eq(applications.jobPostingId, jobPostings.id))
+      .where(this.where(userId, filters))
+      .groupBy(applications.status);
+    return new Map(rows.map((row) => [row.status, Number(row.total)]));
   }
 }

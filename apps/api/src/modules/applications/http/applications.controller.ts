@@ -1,13 +1,17 @@
 import {
   createApplicationRequestSchema,
+  listApplicationsQuerySchema,
   type ApplicationDetail,
+  type ApplicationsPage,
   type CreateApplicationRequest,
   type InvalidSkillsProblem,
+  type ListApplicationsQuery,
 } from '@am/contracts';
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
 import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
+import { decodeCursor } from '../domain/cursor.js';
 import { ApplicationNotFoundError, ApplicationsService, InvalidSkillsError } from '../application/applications.service.js';
 
 /** The rule errors of the service as the Problem Details answers the spec fixes (APP-05). */
@@ -36,6 +40,16 @@ export class ApplicationsController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<ApplicationDetail> {
     return answering(() => this.applications.create(user.id, body));
+  }
+
+  @Roles('member')
+  @Get()
+  list(@Query(zodBody(listApplicationsQuerySchema)) query: ListApplicationsQuery, @CurrentUser() user: AuthenticatedUser): Promise<ApplicationsPage> {
+    // A cursor that is not one of ours is a request the client got wrong (APP-17).
+    if (query.cursor !== undefined && decodeCursor(query.cursor) === undefined) {
+      throw new ProblemDetailsException(problemFor(400, 'Invalid cursor', [{ path: 'cursor', code: 'invalid_cursor' }]));
+    }
+    return this.applications.list(user.id, query);
   }
 
   @Roles('member')

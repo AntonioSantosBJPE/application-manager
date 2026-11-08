@@ -301,10 +301,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Só as candidaturas da sessão; 50 por página; item com os campos de APP-10
-- [ ] Filtros combinados com E entre parâmetros e OU dentro de cada lista; `q` casa empresa, título ou skill (inclusive por apelido), sem acento e caixa
-- [ ] Testes `APP-09` a `APP-13` e `APP-17` passam com duas contas e dados variados
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Só as candidaturas da sessão; 50 por página; item com os campos de APP-10
+- [x] Filtros combinados com E entre parâmetros e OU dentro de cada lista; `q` casa empresa, título ou skill (inclusive por apelido), sem acento e caixa
+- [x] Testes `APP-09` a `APP-13` e `APP-17` passam com duas contas e dados variados
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

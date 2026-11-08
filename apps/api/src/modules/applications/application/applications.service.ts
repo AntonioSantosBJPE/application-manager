@@ -1,21 +1,33 @@
-import type {
-  ApplicationDetail,
-  ApplicationEvent,
-  CreateApplicationRequest,
+import {
+  ACTIVE_STATUSES,
+  FUNNEL_ORDER,
+  normalizeSkillKey,
+  type ApplicationDetail,
+  type ApplicationEvent,
+  type ApplicationStatus,
+  type ApplicationsPage,
+  type ApplicationSummary,
+  type CreateApplicationRequest,
+  type ListApplicationsQuery,
 } from '@am/contracts';
 import { Inject, Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { CLOCK, type Clock } from '../../../infra/clock/clock.js';
 import { SkillsCatalog } from '../../skills/index.js';
+import { statusesOf } from '../domain/funnel.js';
 import { isGhostSuggested } from '../domain/ghost.js';
 import { isUuid } from '../domain/ids.js';
-import { searchTextOf } from '../domain/search-text.js';
+import { searchPatternOf, searchTextOf } from '../domain/search-text.js';
 import {
   ApplicationsRepository,
   type ApplicationRecord,
   type EventRecord,
+  type ListFilters,
   type PostingSkillRow,
 } from '../infra/applications.repository.js';
+
+/** The list shows 50 applications per page (APP-09). */
+export const LIST_PAGE_SIZE = 50;
 
 type ApplicationEventName = 'application.created';
 
@@ -94,6 +106,63 @@ export class ApplicationsService {
     );
     this.record('application.created', id, userId);
     return this.detailOf(userId, id);
+  }
+
+  /**
+   * One page of the member's applications with the counters of the tabs and of each status (APP-09..APP-13,
+   * APP-16). A search matches the company and the title, or a skill whose name or alias holds the key of `q`.
+   */
+  async list(userId: string, query: ListApplicationsQuery): Promise<ApplicationsPage> {
+    const search = await this.searchOf(userId, query.q);
+    const { level, workModel } = query;
+    const filters: ListFilters = {
+      statuses: query.status === undefined ? statusesOf(query.tab) : statusesOf(query.tab).filter((status) => query.status!.includes(status)),
+      level,
+      workModel,
+      search,
+    };
+    const [records, counted] = await Promise.all([
+      this.repository.page(userId, filters, LIST_PAGE_SIZE),
+      this.repository.countByStatus(userId, { level, workModel, search }),
+    ]);
+    const byStatus = Object.fromEntries(FUNNEL_ORDER.map((status) => [status, counted.get(status) ?? 0])) as Record<ApplicationStatus, number>;
+    const active = ACTIVE_STATUSES.reduce((sum, status) => sum + byStatus[status], 0);
+    const closed = FUNNEL_ORDER.reduce((sum, status) => sum + byStatus[status], 0) - active;
+    return { items: await this.summaries(userId, records), nextCursor: null, counts: { active, closed, byStatus } };
+  }
+
+  /** The text pattern and the skills of `q`; a `q` with nothing to compare filters nothing. */
+  private async searchOf(userId: string, q: string | undefined): Promise<ListFilters['search']> {
+    if (q === undefined) return undefined;
+    const pattern = searchPatternOf(q);
+    if (pattern === '%%') return undefined;
+    const key = normalizeSkillKey(q);
+    return { pattern, skillIds: key === '' ? [] : await this.skills.matchingIds(userId, key) };
+  }
+
+  /** The list items: the skills of every posting of the page are described by the catalog in one call. */
+  private async summaries(userId: string, records: ApplicationRecord[]): Promise<ApplicationSummary[]> {
+    const skillRows = await this.repository.skillsOf(records.map((record) => record.jobPostingId));
+    const described = await this.skills.describe(
+      userId,
+      [...skillRows.values()].flatMap((rows) => rows.map((row) => row.skillId)),
+    );
+    const now = this.clock.now();
+    return records.map((record) => ({
+      id: record.id,
+      status: record.status,
+      company: record.company,
+      title: record.title,
+      level: record.level,
+      workModel: record.workModel,
+      skills: (skillRows.get(record.jobPostingId) ?? []).flatMap((row) => {
+        const skill = described.get(row.skillId);
+        return skill === undefined ? [] : [{ id: skill.id, name: skill.name, scope: skill.scope, requirement: row.requirement }];
+      }),
+      createdAt: record.createdAt.toISOString(),
+      lastActivityAt: record.lastActivityAt.toISOString(),
+      ghostSuggested: isGhostSuggested(record, now),
+    }));
   }
 
   /** The application of this user with its posting, skills and timeline (APP-18); anything else is `404` (APP-19). */
