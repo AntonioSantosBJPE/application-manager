@@ -7,6 +7,7 @@ export {
   type CopyFieldStatus,
 } from './components/copy-field';
 export { Field, type FieldRootProps } from './components/field';
+export { Kbd, type KbdProps } from './components/kbd';
 export { Logo, type LogoProps, type LogoTone } from './components/logo';
 export { StatusBadge, type StatusBadgeProps } from './components/status-badge';
 export { AppShell } from './layouts/app-shell';

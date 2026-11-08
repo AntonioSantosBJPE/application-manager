@@ -429,9 +429,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] `<kbd>` mono 11 px, 18 px de altura, borda `border-strong` sobre `surface-raised`; dentro de `Button primary` herda `on-accent`
-- [ ] Testes e stories nos dois temas
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `<kbd>` mono 11 px, 18 px de altura, borda `border-strong` sobre `surface-raised`; dentro de `Button primary` herda `on-accent`
+- [x] Testes e stories nos dois temas
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick
