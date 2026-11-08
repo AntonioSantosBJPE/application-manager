@@ -674,9 +674,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Com `action`, o cabeçalho é um `div` com o `h2` e a ação à direita; o nome do `h2` não inclui a ação; sem `action`, o HTML é o de hoje
-- [ ] Story e testes passam sem edição dos existentes
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Com `action`, o cabeçalho é um `div` com o `h2` e a ação à direita; o nome do `h2` não inclui a ação; sem `action`, o HTML é o de hoje
+- [x] Story e testes passam sem edição dos existentes
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

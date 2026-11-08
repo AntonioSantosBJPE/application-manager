@@ -60,23 +60,45 @@ function Content({ className, ...props }: ComponentProps<'div'>) {
 export type ListPageGroupProps = ComponentProps<'h2'> & {
   /** How many rows the group holds, shown after the label in `font-mono`. */
   count?: ReactNode;
+  /**
+   * An action for the group, drawn at the right of the header (a ghost icon `Button` with its own
+   * `aria-label`, such as the "+"). It sits beside the `h2`, never inside it, so it stays out of the
+   * heading's name.
+   */
+  action?: ReactNode;
 };
 
-/** The header of a group of rows (36px on `surface-raised`): the label in `heading-sm` and the count. */
-function Group({ count, className, children, ...props }: ListPageGroupProps) {
-  return (
-    <h2
-      className={join(
-        'flex h-9 items-center gap-2 border-b border-border bg-surface-raised px-6 text-heading-sm',
-        className,
-      )}
-      {...props}
-    >
+const groupHeaderClassName =
+  'flex h-9 items-center gap-2 border-b border-border bg-surface-raised px-6 text-heading-sm';
+
+/**
+ * The header of a group of rows (36px on `surface-raised`): the label in `heading-sm` and the count.
+ * With `action` the header becomes a `div` holding the `h2` and the action pushed to the right; the
+ * `className` then goes on that `div`, and the other props stay on the `h2`.
+ */
+function Group({ count, action, className, children, ...props }: ListPageGroupProps) {
+  const label = (
+    <>
       {children}
       {count === undefined ? null : (
         <span className="font-mono text-caption font-normal text-text-muted">{count}</span>
       )}
-    </h2>
+    </>
+  );
+  if (action === undefined) {
+    return (
+      <h2 className={join(groupHeaderClassName, className)} {...props}>
+        {label}
+      </h2>
+    );
+  }
+  return (
+    <div className={join(groupHeaderClassName, className)}>
+      <h2 className="flex min-w-0 items-center gap-2 text-heading-sm" {...props}>
+        {label}
+      </h2>
+      <div className="ml-auto flex shrink-0 items-center">{action}</div>
+    </div>
   );
 }
 

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Mail } from 'lucide-react';
+import { Mail, Plus } from 'lucide-react';
 import { page } from '@vitest/browser/context';
 import { expect } from 'storybook/test';
 import { Button } from '../../components/button';
@@ -294,4 +294,55 @@ export const ContrasteEscuro: Story = {
   globals: { theme: 'dark' },
   render: () => <Candidaturas />,
   play: contrast,
+};
+
+function GruposComAcao() {
+  return (
+    <ListPage.Root>
+      <ListPage.Header>
+        <h1 className="text-heading-md">Candidaturas</h1>
+      </ListPage.Header>
+      <ListPage.Content>
+        <ListPage.Group
+          count={1}
+          action={<Button intent="ghost" size="sm" icon={Plus} aria-label="Nova em Em entrevistas" />}
+        >
+          Em entrevistas
+        </ListPage.Group>
+        <ul aria-label="Em entrevistas">
+          <ListPage.Row>
+            <ListPage.RowText>Empresa Fictícia Alfa · Vaga de Teste Pleno</ListPage.RowText>
+          </ListPage.Row>
+        </ul>
+        <ListPage.Group
+          count={0}
+          action={<Button intent="ghost" size="sm" icon={Plus} aria-label="Nova em Enviadas" />}
+        >
+          Enviadas
+        </ListPage.Group>
+      </ListPage.Content>
+    </ListPage.Root>
+  );
+}
+
+/** The action stays out of the heading name and keeps 4.5:1 and the focus ring on the raised header. */
+const groupAction: Story['play'] = async ({ canvas }) => {
+  await expect(canvas.getByRole('heading', { level: 2, name: /^Em entrevistas\s*1$/ })).toBeVisible();
+  const action = canvas.getByRole('button', { name: 'Nova em Em entrevistas' });
+  await expectContrast(canvas.getByRole('heading', { level: 2, name: /^Em entrevistas\s*1$/ }), 4.5);
+  await expectContrast(action, 4.5);
+};
+
+export const GrupoComAcaoClaro: Story = {
+  name: 'Grupo com ação, tema claro',
+  globals: { theme: 'light' },
+  render: () => <GruposComAcao />,
+  play: groupAction,
+};
+
+export const GrupoComAcaoEscuro: Story = {
+  name: 'Grupo com ação, tema escuro',
+  globals: { theme: 'dark' },
+  render: () => <GruposComAcao />,
+  play: groupAction,
 };
