@@ -199,10 +199,10 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] Pelo menos 200 skills, cada uma com uma das sete categorias; nomes e apelidos só de tecnologias e competências, sem dado pessoal
-- [ ] Teste `SKL-03`: nenhuma chave repetida, nenhum apelido igual a uma chave do seed ou a outro apelido
-- [ ] Teste confere que os nomes de fixture dos testes de skills (`Skill Fictícia Alfa`, `Skill Fictícia Beta`, `Drizzle ORM de Teste`) não estão no seed
-- [ ] O autor revisa a lista no PR antes do merge (registrado na spec)
+- [x] Pelo menos 200 skills, cada uma com uma das sete categorias; nomes e apelidos só de tecnologias e competências, sem dado pessoal
+- [x] Teste `SKL-03`: nenhuma chave repetida, nenhum apelido igual a uma chave do seed ou a outro apelido
+- [x] Teste confere que os nomes de fixture dos testes de skills (`Skill Fictícia Alfa`, `Skill Fictícia Beta`, `Drizzle ORM de Teste`) não estão no seed
+- [x] O autor revisa a lista no PR antes do merge (registrado na spec)
 
 **Tests**: unit
 **Gate**: quick
