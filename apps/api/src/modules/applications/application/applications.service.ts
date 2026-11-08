@@ -19,6 +19,13 @@ import {
 
 type ApplicationEventName = 'application.created';
 
+/** The application does not exist, is somebody else's or the id is not a uuid (`404`, APP-19). */
+export class ApplicationNotFoundError extends Error {
+  constructor() {
+    super('Application not found');
+  }
+}
+
 /** One or more skills cannot be used: they do not exist, are private to someone else, repeat or are not uuids (`422`). */
 export class InvalidSkillsError extends Error {
   constructor(readonly invalidSkillIds: string[]) {
@@ -89,6 +96,11 @@ export class ApplicationsService {
     return this.detailOf(userId, id);
   }
 
+  /** The application of this user with its posting, skills and timeline (APP-18); anything else is `404` (APP-19). */
+  async get(userId: string, id: string): Promise<ApplicationDetail> {
+    return this.detailOf(userId, id);
+  }
+
   /** The ids, in the order sent and each once, that the member cannot use: not a uuid, repeated, unknown or somebody else's private skill. */
   private async invalidSkillIds(userId: string, ids: string[]): Promise<string[]> {
     const invalid = new Set<string>();
@@ -104,8 +116,8 @@ export class ApplicationsService {
 
   /** The whole application as the API shows it: the posting, the skills described by the catalog, the events and the ghost suggestion. */
   private async detailOf(userId: string, id: string): Promise<ApplicationDetail> {
-    const record = await this.repository.findOwned(userId, id);
-    if (record === undefined) throw new Error('The application vanished right after it was written');
+    const record = isUuid(id) ? await this.repository.findOwned(userId, id) : undefined;
+    if (record === undefined) throw new ApplicationNotFoundError();
     return this.describe(userId, record);
   }
 

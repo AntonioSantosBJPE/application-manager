@@ -278,11 +278,11 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Eventos do mais recente ao mais antigo por `occurred_at`, empate por `created_at`
-- [ ] `404` para id que não é uuid, inexistente ou de outra conta
-- [ ] Teste `APP-88`: depois que o admin promove a privada usada na vaga, o detalhe mostra a mesma skill, mesmo id, com `scope: "global"`
-- [ ] Testes `APP-18` e `APP-88` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Eventos do mais recente ao mais antigo por `occurred_at`, empate por `created_at`
+- [x] `404` para id que não é uuid, inexistente ou de outra conta
+- [x] Teste `APP-88`: depois que o admin promove a privada usada na vaga, o detalhe mostra a mesma skill, mesmo id, com `scope: "global"`
+- [x] Testes `APP-18` e `APP-88` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

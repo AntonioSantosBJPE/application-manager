@@ -4,11 +4,11 @@ import {
   type CreateApplicationRequest,
   type InvalidSkillsProblem,
 } from '@am/contracts';
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
 import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
-import { ApplicationsService, InvalidSkillsError } from '../application/applications.service.js';
+import { ApplicationNotFoundError, ApplicationsService, InvalidSkillsError } from '../application/applications.service.js';
 
 /** The rule errors of the service as the Problem Details answers the spec fixes (APP-05). */
 async function answering<T>(operation: () => Promise<T>): Promise<T> {
@@ -19,6 +19,7 @@ async function answering<T>(operation: () => Promise<T>): Promise<T> {
       const problem: InvalidSkillsProblem = { ...problemFor(422, error.message), invalidSkillIds: error.invalidSkillIds };
       throw new ProblemDetailsException(problem);
     }
+    if (error instanceof ApplicationNotFoundError) throw new ProblemDetailsException(problemFor(404, error.message));
     throw error;
   }
 }
@@ -35,5 +36,11 @@ export class ApplicationsController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<ApplicationDetail> {
     return answering(() => this.applications.create(user.id, body));
+  }
+
+  @Roles('member')
+  @Get(':id')
+  get(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<ApplicationDetail> {
+    return answering(() => this.applications.get(user.id, id));
   }
 }
