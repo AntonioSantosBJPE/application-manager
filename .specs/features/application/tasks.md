@@ -548,9 +548,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Submenu abre com seta para a direita e fecha com seta para a esquerda; o item escolhido aparece marcado
-- [ ] Story e testes de navegador (teclado e foco) passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Submenu abre com seta para a direita e fecha com seta para a esquerda; o item escolhido aparece marcado
+- [x] Story e testes de navegador (teclado e foco) passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
