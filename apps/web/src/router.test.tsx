@@ -471,7 +471,7 @@ describe('admin dashboard', () => {
     expect(await screen.findByRole('group', { name: 'API' })).toHaveTextContent('Indisponível');
     expect(screen.getByRole('group', { name: 'Banco de dados' })).toHaveTextContent('Indisponível');
     expect(screen.getByRole('group', { name: 'Convites pendentes' })).toHaveTextContent(
-      'Indisponível',
+      'Serviço indisponível. Tente novamente em instantes.',
     );
   });
 

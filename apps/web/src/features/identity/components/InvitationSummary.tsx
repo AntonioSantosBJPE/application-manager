@@ -1,8 +1,9 @@
 import type { InvitationsPage } from '@am/contracts';
-import { Button, DashboardPage, StatusBadge } from '@am/ui';
+import { Alert, Button, DashboardPage } from '@am/ui';
 import { useId, type ReactElement } from 'react';
 import type { Outcome } from '../api/server-functions';
 import { daysLeft } from '../model/expiry';
+import { MESSAGES } from '../model/messages';
 
 export interface InvitationSummaryProps {
   /** The first page of `GET /invitations`: the api decides the total and which invitations are pending (ADM-14). */
@@ -30,7 +31,8 @@ function oldestDaysLeft(page: InvitationsPage, now: Date): number | undefined {
 /**
  * The invitations widget of the admin dashboard (PRU-06 AC14): the pending total in `heading-xl`, how
  * long until the oldest one expires, the ghost action to the list and the action to invite. A total
- * that could not be read shows as unavailable, keeping both ways to the list.
+ * that could not be read shows a `danger` alert with the unavailable message, keeping both ways to the
+ * list (PRU-06 AC25).
  */
 export function InvitationSummary({
   result,
@@ -51,9 +53,7 @@ export function InvitationSummary({
       {result.ok ? (
         <p className="font-mono text-heading-xl">{result.data.totalPending}</p>
       ) : (
-        <div>
-          <StatusBadge intent="unavailable">Indisponível</StatusBadge>
-        </div>
+        <Alert intent="danger">{MESSAGES.unavailable}</Alert>
       )}
       {oldest === undefined ? null : (
         <p className="text-caption text-text-muted">

@@ -2,6 +2,7 @@
 import type { InvitationsPage } from '@am/contracts';
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { MESSAGES } from '../model/messages';
 import { InvitationSummary } from './InvitationSummary';
 
 const page: InvitationsPage = { items: [], nextCursor: null, totalPending: 3 };
@@ -42,7 +43,7 @@ describe('InvitationSummary', () => {
     );
 
     const widget = screen.getByRole('group', { name: 'Convites pendentes' });
-    expect(within(widget).getByText('Indisponível')).toBeInTheDocument();
+    expect(within(widget).getByRole('alert')).toHaveTextContent(MESSAGES.unavailable);
     expect(within(widget).getByRole('link', { name: 'Ver convites' })).toBeInTheDocument();
   });
 });
@@ -102,6 +103,35 @@ describe('InvitationSummary as the widget of PageAdminDashboard', () => {
     expect(within(widget).getByText('0')).toHaveClass('text-heading-xl');
     expect(within(widget).queryByText(/expira/)).toBeNull();
     expect(within(widget).getByRole('link', { name: 'Convidar pessoa' })).toBeInTheDocument();
+  });
+
+  it('PRU-06 AC25 shows a danger Alert with the unavailable message when the invitations fail, keeping the rest of the widget', () => {
+    render(
+      <InvitationSummary
+        result={{ ok: false, status: 503 }}
+        link={link}
+        inviteLink={inviteLink}
+        now={now}
+      />,
+    );
+
+    const widget = screen.getByRole('group', { name: 'Convites pendentes' });
+    const alert = within(widget).getByRole('alert');
+    expect(alert.textContent).toBe('Serviço indisponível. Tente novamente em instantes.');
+    expect(alert).toHaveClass('bg-danger-subtle', 'text-danger');
+    expect(within(widget).queryByText('Indisponível')).toBeNull();
+    expect(within(widget).queryByText(/expira/)).toBeNull();
+    expect(
+      within(widget).getByRole('heading', { level: 2, name: 'Convites pendentes' }),
+    ).toBeInTheDocument();
+    expect(within(widget).getByRole('link', { name: 'Ver convites' })).toHaveAttribute(
+      'href',
+      '/admin/invitations',
+    );
+    expect(within(widget).getByRole('link', { name: 'Convidar pessoa' })).toHaveAttribute(
+      'href',
+      '/admin/invitations',
+    );
   });
 
   it('leaves the expiry out when the oldest invitation is on a later page', () => {
