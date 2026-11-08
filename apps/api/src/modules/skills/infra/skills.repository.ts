@@ -133,6 +133,31 @@ export class SkillsRepository {
     return rows.map((row) => row.id);
   }
 
+  /** The skills among `ids` that are global or private to `userId`, with name, category and scope; the caller passes only valid uuids. */
+  async describe(userId: string, ids: string[]): Promise<Skill[]> {
+    const rows = await this.db
+      .select({ id: skills.id, name: skills.name, category: skills.category, ownerUserId: skills.ownerUserId })
+      .from(skills)
+      .where(and(inArray(skills.id, ids), visibleTo(userId)));
+    return rows.map(toSkill);
+  }
+
+  /** The ids of the skills a member sees whose name key, or the key of an alias, contains `key` (a normalized, non-empty key). */
+  async matchingIds(userId: string, key: string): Promise<string[]> {
+    const pattern = `%${key}%`;
+    const aliasMatches = exists(
+      this.db
+        .select({ one: sql`1` })
+        .from(skillAliases)
+        .where(and(eq(skillAliases.skillId, skills.id), like(skillAliases.normalizedAlias, pattern))),
+    );
+    const rows = await this.db
+      .select({ id: skills.id })
+      .from(skills)
+      .where(and(visibleTo(userId), or(like(skills.normalizedKey, pattern), aliasMatches)));
+    return rows.map((row) => row.id);
+  }
+
   /**
    * One page of the admin catalog: the globals and the privates of every person, filtered, by key and
    * id after the cursor. `limit` is the page size plus one, so the caller can tell whether another page

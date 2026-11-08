@@ -233,10 +233,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] `describe(userId, ids)` devolve nome oficial, categoria e escopo das globais e das privadas do usuário, e omite as privadas alheias e os ids inexistentes
-- [ ] `matchingIds(userId, key)` devolve as visíveis cuja chave do nome ou de um apelido contém `key` (ex.: `nodejs` acha "Node.js" pelo apelido)
-- [ ] Testes de integração dos dois métodos com duas contas member passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] `describe(userId, ids)` devolve nome oficial, categoria e escopo das globais e das privadas do usuário, e omite as privadas alheias e os ids inexistentes
+- [x] `matchingIds(userId, key)` devolve as visíveis cuja chave do nome ou de um apelido contém `key` (ex.: `nodejs` acha "Node.js" pelo apelido)
+- [x] Testes de integração dos dois métodos com duas contas member passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
