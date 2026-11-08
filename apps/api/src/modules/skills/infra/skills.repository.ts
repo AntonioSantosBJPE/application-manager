@@ -57,4 +57,46 @@ export class SkillsRepository {
       .limit(limit);
     return rows.map(toSkill);
   }
+
+  /**
+   * The skill a new name would duplicate for this member: a global with the same key, a global with
+   * that key as an alias, or the member's own private with the same key. A global wins over a private
+   * (SKL-11, SKL-12).
+   */
+  async findVisibleMatch(userId: string, key: string): Promise<Skill | undefined> {
+    const aliasOfGlobal = exists(
+      this.db
+        .select({ one: sql`1` })
+        .from(skillAliases)
+        .where(and(eq(skillAliases.skillId, skills.id), eq(skillAliases.normalizedAlias, key))),
+    );
+    const [row] = await this.db
+      .select({ id: skills.id, name: skills.name, category: skills.category, ownerUserId: skills.ownerUserId })
+      .from(skills)
+      .where(
+        or(
+          and(isNull(skills.ownerUserId), or(eq(skills.normalizedKey, key), aliasOfGlobal)),
+          and(eq(skills.ownerUserId, userId), eq(skills.normalizedKey, key)),
+        ),
+      )
+      .orderBy(sql`${skills.ownerUserId} is not null`, skills.id)
+      .limit(1);
+    return row === undefined ? undefined : toSkill(row);
+  }
+
+  /**
+   * Writes the member's private skill, or answers `undefined` when the member already has one with
+   * the key: the unique index decides, so two requests racing for the same key leave one row (SKL-13).
+   */
+  async insertPrivate(
+    userId: string,
+    values: { name: string; normalizedKey: string; category: SkillCategory },
+  ): Promise<Skill | undefined> {
+    const [row] = await this.db
+      .insert(skills)
+      .values({ ...values, ownerUserId: userId })
+      .onConflictDoNothing()
+      .returning({ id: skills.id, name: skills.name, category: skills.category, ownerUserId: skills.ownerUserId });
+    return row === undefined ? undefined : toSkill(row);
+  }
 }

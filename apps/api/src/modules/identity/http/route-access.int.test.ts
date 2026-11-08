@@ -146,6 +146,8 @@ describe('route access', () => {
         'POST /auth/logout',
         'POST /invitations',
         'POST /invitations/:token/accept',
+        // A member creates a private skill; it is a product route, not account administration (SKL-11).
+        'POST /skills',
       ];
       const registeredWriting = routes
         .map((route) => route.route)

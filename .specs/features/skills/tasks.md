@@ -264,9 +264,9 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `create` confere o nome contra globais, apelidos de globais e privadas do próprio usuário; `201` ou `200` conforme o caso; a corrida é resolvida por `ON CONFLICT` e releitura
-- [ ] Testes `SKL-11` a `SKL-16` e `SKL-23` passam (duas criações simultâneas, dono só da sessão, admin recebe `403` em `GET` e `POST /skills`)
-- [ ] Os testes usam só nomes fictícios fora do seed
+- [x] `create` confere o nome contra globais, apelidos de globais e privadas do próprio usuário; `201` ou `200` conforme o caso; a corrida é resolvida por `ON CONFLICT` e releitura
+- [x] Testes `SKL-11` a `SKL-16` e `SKL-23` passam (duas criações simultâneas, dono só da sessão, admin recebe `403` em `GET` e `POST /skills`)
+- [x] Os testes usam só nomes fictícios fora do seed
 
 **Tests**: integration
 **Gate**: full
