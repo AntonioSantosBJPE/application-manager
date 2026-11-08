@@ -242,9 +242,12 @@ export class SkillsRepository {
   }
 
   /** The alias that has the key, whichever skill it belongs to. */
-  async aliasWithKey(key: string, executor: DatabaseExecutor = this.db): Promise<{ id: string; skillId: string } | undefined> {
+  async aliasWithKey(
+    key: string,
+    executor: DatabaseExecutor = this.db,
+  ): Promise<{ id: string; skillId: string; alias: string } | undefined> {
     const [row] = await executor
-      .select({ id: skillAliases.id, skillId: skillAliases.skillId })
+      .select({ id: skillAliases.id, skillId: skillAliases.skillId, alias: skillAliases.alias })
       .from(skillAliases)
       .where(eq(skillAliases.normalizedAlias, key))
       .limit(1);
@@ -259,5 +262,13 @@ export class SkillsRepository {
       .where(eq(skills.id, id))
       .returning({ id: skills.id, name: skills.name, category: skills.category, ownerUserId: skills.ownerUserId });
     return toSkill(row!);
+  }
+
+  async insertAlias(
+    values: { skillId: string; alias: string; normalizedAlias: string },
+    executor: DatabaseExecutor = this.db,
+  ): Promise<Alias> {
+    const [row] = await executor.insert(skillAliases).values(values).returning({ id: skillAliases.id, alias: skillAliases.alias });
+    return row!;
   }
 }

@@ -347,8 +347,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `addAlias` responde `201` com `{ id, alias }`, `200` para o apelido repetido da mesma skill, `409` para chave de global ou apelido de outra, `422` para privada, `404` e `400` conforme a spec
-- [ ] Testes `SKL-22` (member recebe `403` em promover, apelidos e `GET /admin/skills`), `SKL-26` a `SKL-31` passam
+- [x] `addAlias` responde `201` com `{ id, alias }`, `200` para o apelido repetido da mesma skill, `409` para chave de global ou apelido de outra, `422` para privada, `404` e `400` conforme a spec
+- [x] Testes `SKL-22` (member recebe `403` em promover, apelidos e `GET /admin/skills`), `SKL-26` a `SKL-31` passam
 
 **Tests**: integration
 **Gate**: full

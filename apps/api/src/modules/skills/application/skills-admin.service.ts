@@ -1,4 +1,4 @@
-import { normalizeSkillKey, type AdminSkillsPage, type AdminSkillsQuery, type Skill } from '@am/contracts';
+import { normalizeSkillKey, type AdminSkillsPage, type AdminSkillsQuery, type Alias, type Skill } from '@am/contracts';
 import { Injectable } from '@nestjs/common';
 import { encodeCursor, type SkillCursor } from '../domain/cursor.js';
 import { isUuid } from '../domain/ids.js';
@@ -58,6 +58,24 @@ export class SkillsAdminService {
       if (skill.ownerUserId === null) return { id: skill.id, name: skill.name, category: skill.category, scope: 'global' };
       await this.ensureKeyFree(skill.normalizedKey, undefined, tx);
       return this.repository.makeGlobal(skill.id, tx);
+    });
+  }
+
+  /**
+   * Gives a global skill an alias, keeping the text as typed (SKL-26..SKL-31). The alias already on
+   * this skill is answered as it is; a key that is a global name (the skill's own included) or the
+   * alias of another skill is refused. Same lock as the promotion.
+   */
+  addAlias(skillId: string, alias: string): Promise<{ alias: Alias; created: boolean }> {
+    return this.writingGlobalNames(async (tx) => {
+      const skill = await this.existing(skillId, tx);
+      if (skill.ownerUserId !== null) throw new SkillNotGlobalError('Aliases belong to global skills');
+      const key = normalizeSkillKey(alias);
+      const held = await this.repository.aliasWithKey(key, tx);
+      if (held?.skillId === skill.id) return { alias: { id: held.id, alias: held.alias }, created: false };
+      await this.ensureKeyFree(key, undefined, tx);
+      const inserted = await this.repository.insertAlias({ skillId: skill.id, alias, normalizedAlias: key }, tx);
+      return { alias: inserted, created: true };
     });
   }
 

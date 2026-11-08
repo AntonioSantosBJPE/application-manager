@@ -1,5 +1,14 @@
-import { adminSkillsQuerySchema, type AdminSkillsPage, type AdminSkillsQuery, type Skill } from '@am/contracts';
-import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import {
+  adminSkillsQuerySchema,
+  aliasRequestSchema,
+  type AdminSkillsPage,
+  type AdminSkillsQuery,
+  type Alias,
+  type AliasRequest,
+  type Skill,
+} from '@am/contracts';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
+import type { ServerResponse } from 'node:http';
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
 import { Roles } from '../../identity/index.js';
@@ -46,5 +55,18 @@ export class SkillsAdminController {
   @HttpCode(HttpStatus.OK)
   promote(@Param('id') id: string): Promise<Skill> {
     return answering(() => this.admin.promote(id));
+  }
+
+  /** `201` for a new alias and `200` for the one the skill already had (SKL-26..SKL-31). */
+  @Roles('admin')
+  @Post('skills/:id/aliases')
+  async addAlias(
+    @Param('id') id: string,
+    @Body(zodBody(aliasRequestSchema)) body: AliasRequest,
+    @Res({ passthrough: true }) response: ServerResponse,
+  ): Promise<Alias> {
+    const { alias, created } = await answering(() => this.admin.addAlias(id, body.alias));
+    response.statusCode = created ? 201 : 200;
+    return alias;
   }
 }
