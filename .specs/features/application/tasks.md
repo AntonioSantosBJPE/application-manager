@@ -211,10 +211,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] `job_postings` (com `search_text`), `job_posting_skills` (com `position`), `applications` (com `ghost_snoozed_until`), `application_events`, os índices e os checks por `kind` do design
-- [ ] `apps/api/drizzle/0004_*.sql` gerado e aplicado pelo teste de migrações
-- [ ] Teste `APP-07`: nenhuma FK do schema `applications` aponta para outro schema
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] `job_postings` (com `search_text`), `job_posting_skills` (com `position`), `applications` (com `ghost_snoozed_until`), `application_events`, os índices e os checks por `kind` do design
+- [x] `apps/api/drizzle/0004_*.sql` gerado e aplicado pelo teste de migrações
+- [x] Teste `APP-07`: nenhuma FK do schema `applications` aponta para outro schema
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

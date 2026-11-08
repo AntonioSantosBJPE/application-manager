@@ -29,6 +29,13 @@
       "when": 1794154291012,
       "tag": "0003_skills_seed",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794169846042,
+      "tag": "0004_applications_schema",
+      "breakpoints": true
     }
   ]
 }
