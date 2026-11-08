@@ -1094,9 +1094,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Loader busca o detalhe e o `now`; `404` renderiza "Candidatura não encontrada."
-- [ ] Teste de rota passa
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Loader busca o detalhe e o `now`; `404` renderiza "Candidatura não encontrada."
+- [x] Teste de rota passa
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

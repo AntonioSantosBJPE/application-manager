@@ -14,9 +14,10 @@ import {
   pendingInvitations,
   type SessionState,
 } from './features/identity';
-import { countApplications, listApplications } from './features/applications';
+import { countApplications, getApplication, listApplications } from './features/applications';
 import { listAdminSkills } from './features/skills';
 import { getSystemStatus } from './features/system-status';
+import { detail } from './features/applications/testing/fixtures';
 import { routeTree } from './routeTree.gen';
 
 // The session read is the BFF boundary: the guards ask a server function, and the unit test answers for it.
@@ -36,6 +37,7 @@ vi.mock('./features/applications/api/server-functions', async (importOriginal) =
   ...(await importOriginal<typeof import('./features/applications/api/server-functions')>()),
   countApplications: vi.fn(),
   listApplications: vi.fn(),
+  getApplication: vi.fn(),
 }));
 
 vi.mock('./features/skills/api/server-functions', async (importOriginal) => ({
@@ -97,6 +99,7 @@ beforeEach(() => {
   });
   vi.mocked(listAdminSkills).mockResolvedValue({ ok: true, data: emptySkillsPage });
   vi.mocked(countApplications).mockResolvedValue({ ok: true, data: { total: 0 } });
+  vi.mocked(getApplication).mockResolvedValue({ ok: true, data: detail(1, { id: appId }) });
 });
 
 afterEach(() => {
