@@ -259,4 +259,28 @@ describe('Combobox', () => {
     expect(create.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
     expect(within(create).queryByText('framework')).toBeNull();
   });
+
+  it('stays open on its own as long as the caller says so, and reports every change it would make', async () => {
+    const onOpenChange = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <Combobox
+        aria-label="Skill"
+        query=""
+        options={catalog}
+        selected={null}
+        onQueryChange={() => {}}
+        onSelect={() => {}}
+        open
+        onOpenChange={onOpenChange}
+      />,
+    );
+    expect(box()).toHaveAttribute('aria-expanded', 'true');
+
+    box().focus();
+    await user.keyboard('{Escape}');
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(box()).toHaveAttribute('aria-expanded', 'true');
+  });
 });

@@ -190,4 +190,58 @@ describe('Combobox in the browser', () => {
       expect(await axeViolations(), theme).toEqual([]);
     }
   });
+
+  it('can be controlled: opens, reports Esc as onOpenChange(false), and the arrows and Enter still work', async () => {
+    const changes: boolean[] = [];
+    function Controlled() {
+      const [query, setQuery] = useState('');
+      const [selected, setSelected] = useState<ComboboxOption | null>(null);
+      const [open, setOpen] = useState(false);
+      return (
+        <div className="bg-surface p-4">
+          <Field.Root>
+            <Field.Label htmlFor="skill">Skill</Field.Label>
+            <Combobox
+              id="skill"
+              wrapperClassName="w-72"
+              query={query}
+              options={catalog}
+              selected={selected}
+              onQueryChange={setQuery}
+              onSelect={setSelected}
+              open={open}
+              onOpenChange={(next) => {
+                changes.push(next);
+                setOpen(next);
+              }}
+            />
+          </Field.Root>
+          <button type="button" onClick={() => setOpen(true)}>
+            Abrir
+          </button>
+          <output aria-label="Escolhida">{selected === null ? 'nenhuma' : selected.id}</output>
+        </div>
+      );
+    }
+    render(<Controlled />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir' }));
+    expect(box().getAttribute('aria-expanded')).toBe('true');
+    expect(screen.getAllByRole('option')).toHaveLength(3);
+
+    box().focus();
+    await userEvent.keyboard('{Escape}');
+    expect(changes.at(-1)).toBe(false);
+    expect(box().getAttribute('aria-expanded')).toBe('false');
+
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}');
+    expect(changes.at(-1)).toBe(true);
+    const [, beta] = screen.getAllByRole('option');
+    expect(box().getAttribute('aria-activedescendant')).toBe(beta!.id);
+
+    await userEvent.keyboard('{Enter}');
+    expect(screen.getByLabelText('Escolhida').textContent).toBe('beta');
+    expect(changes.at(-1)).toBe(false);
+    expect(box().getAttribute('aria-expanded')).toBe('false');
+  });
 });

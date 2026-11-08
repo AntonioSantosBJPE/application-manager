@@ -161,4 +161,29 @@ describe('TagField', () => {
     expect(within(field().closest('div')!.parentElement!).getAllByRole('button')).toHaveLength(2);
     expect(field().closest('div')!.parentElement).toHaveClass('border-danger');
   });
+
+  it('passes the controlled open state of the combobox through', async () => {
+    const onOpenChange = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <TagField
+        aria-label="Skills"
+        tags={[]}
+        onRemove={() => {}}
+        query=""
+        options={catalog}
+        onQueryChange={() => {}}
+        onSelect={() => {}}
+        open
+        onOpenChange={onOpenChange}
+      />,
+    );
+    const field = screen.getByRole('combobox', { name: 'Skills' });
+    expect(field).toHaveAttribute('aria-expanded', 'true');
+
+    field.focus();
+    await user.keyboard('{Escape}');
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
 });

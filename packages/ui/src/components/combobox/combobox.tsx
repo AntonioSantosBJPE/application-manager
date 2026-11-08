@@ -30,6 +30,10 @@ export type ComboboxProps = Omit<
   onSelect: (option: ComboboxOption | null) => void;
   /** Classes of the wrapper that holds the input and the list, to set its width. */
   wrapperClassName?: string;
+  /** Whether the list is open, when the caller wants to control it. Without it the combobox opens and closes by itself. */
+  open?: boolean;
+  /** Called with the next state whenever the combobox would open or close the list; pair it with `open`. */
+  onOpenChange?: (open: boolean) => void;
 };
 
 /**
@@ -47,6 +51,8 @@ export function Combobox({
   selected,
   onSelect,
   wrapperClassName,
+  open: openProp,
+  onOpenChange,
   className,
   onKeyDown,
   onBlur,
@@ -55,7 +61,12 @@ export function Combobox({
 }: ComboboxProps) {
   const field = useContext(FieldContext);
   const listId = useId();
-  const [open, setOpen] = useState(false);
+  const [ownOpen, setOwnOpen] = useState(false);
+  const open = openProp ?? ownOpen;
+  function setOpen(next: boolean) {
+    if (openProp === undefined) setOwnOpen(next);
+    if (next !== open) onOpenChange?.(next);
+  }
   const [active, setActive] = useState(-1);
 
   const expanded = open && options.length > 0;

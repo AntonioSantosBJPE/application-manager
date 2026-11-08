@@ -53,7 +53,6 @@ const sameName = (a: string, b: string) => a.toLocaleLowerCase('pt-BR') === b.to
  */
 export function SkillsField({ label, requirement, skills, other = [], onChange, api, placeholder, className }: SkillsFieldProps) {
   const id = useId();
-  const input = useRef<HTMLInputElement | null>(null);
   const [query, setQuery] = useState('');
   // The skills found for `for`; the create option waits for the answer of the text on screen.
   const [found, setFound] = useState<{ for: string; skills: Skill[] } | null>(null);
@@ -63,6 +62,9 @@ export function SkillsField({ label, requirement, skills, other = [], onChange, 
   // Choosing "Criar …" makes the tag field empty the text, as it does after any choice; the name must stay.
   const keepText = useRef(false);
   const creating = useRef(false);
+  // The menu is controlled: choosing "Criar …" closes it, as any choice does, and it has to stay open with the categories.
+  const [open, setOpen] = useState(false);
+  const keepOpen = useRef(false);
 
   useEffect(() => {
     // With no text there is nothing to look for; the answer kept from before no longer matches `query`.
@@ -75,12 +77,6 @@ export function SkillsField({ label, requirement, skills, other = [], onChange, 
       stale = true;
     };
   }, [api, query, pending]);
-
-  // The menu closes when an option is chosen. After "Criar …" it has to stay, now with the categories,
-  // so the field is asked to open it the way the keyboard does.
-  useEffect(() => {
-    if (pending !== null) input.current?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
-  }, [pending]);
 
   const ownIds = new Set(skills.map((skill) => skill.id));
   const settled = found !== null && found.for === query ? found.skills : null;
@@ -103,6 +99,7 @@ export function SkillsField({ label, requirement, skills, other = [], onChange, 
     onChange([...without(skills), { id: skill.id, name: skill.name, scope: skill.scope }], without(other));
     setQuery('');
     setPending(null);
+    setOpen(false);
   }
 
   async function createPrivate(name: string, category: SkillCategory) {
@@ -114,19 +111,30 @@ export function SkillsField({ label, requirement, skills, other = [], onChange, 
     else {
       setFailure(problemMessage(outcome));
       setPending(null);
+      setOpen(false);
     }
   }
 
   function handleSelect(option: ComboboxOption) {
     if (option.id === CREATE_ID) {
       keepText.current = true;
+      keepOpen.current = true;
       setPending(text);
+      setOpen(true);
     } else if (option.id.startsWith(CATEGORY_PREFIX) && pending !== null) {
       void createPrivate(pending, option.id.slice(CATEGORY_PREFIX.length) as SkillCategory);
     } else {
       const skill = settled?.find((item) => `${SKILL_PREFIX}${item.id}` === option.id);
       if (skill !== undefined) add(skill);
     }
+  }
+
+  function handleOpenChange(next: boolean) {
+    if (!next && keepOpen.current) {
+      keepOpen.current = false;
+      return;
+    }
+    setOpen(next);
   }
 
   function handleQueryChange(next: string) {
@@ -144,7 +152,6 @@ export function SkillsField({ label, requirement, skills, other = [], onChange, 
       <Field.Label htmlFor={id}>{label}</Field.Label>
       <TagField
         id={id}
-        ref={input}
         tags={skills.map((skill) => ({
           id: skill.id,
           label: skill.name,
@@ -156,6 +163,8 @@ export function SkillsField({ label, requirement, skills, other = [], onChange, 
         onQueryChange={handleQueryChange}
         options={options}
         onSelect={handleSelect}
+        open={open}
+        onOpenChange={handleOpenChange}
         placeholder={placeholder}
         maxLength={SKILL_TEXT_MAX_LENGTH}
       />

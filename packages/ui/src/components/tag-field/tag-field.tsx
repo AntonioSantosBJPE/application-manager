@@ -33,7 +33,7 @@ export type TagFieldProps = Omit<ComboboxProps, 'wrapperClassName' | 'selected' 
  * suggests more, all in one box that looks and behaves as a single control. A click anywhere in the box
  * focuses the field; `Backspace` in the empty field removes the last tag; after a tag is removed the
  * focus is back in the field. The caller owns the tags, the query and the options, and every word,
- * including the name of each "×". The props of the `Combobox` (query, options and the accessible name) go on the field. Inside a `Field.Root` it takes the invalid state and the
+ * including the name of each "×". The props of the `Combobox` (query, options, `open`/`onOpenChange` and the accessible name) go on the field. Inside a `Field.Root` it takes the invalid state and the
  * description from it.
  */
 export function TagField({
