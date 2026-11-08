@@ -165,10 +165,10 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Story "Tokens" mostra cores, escala de tipo, espaço, raios, sombra e tamanhos nos dois temas
-- [ ] Helper `expectContrast` em `testing/` para os plays das stories
-- [ ] `preview.ts` segue carregando `tokens.css` (com as fontes) e alternando `data-theme`; um teste de story confere a fonte aplicada e o atributo
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Story "Tokens" mostra cores, escala de tipo, espaço, raios, sombra e tamanhos nos dois temas
+- [x] Helper `expectContrast` em `testing/` para os plays das stories
+- [x] `preview.ts` segue carregando `tokens.css` (com as fontes) e alternando `data-theme`; um teste de story confere a fonte aplicada e o atributo
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: storybook
 **Gate**: quick

@@ -64,6 +64,8 @@ const darkBlocks = {
   "data-theme='dark'": declarations(blockAfter(":root[data-theme='dark']")),
 };
 const baseLayer = blockAfter('@layer base');
+/** The light values that live outside @theme, on :root. */
+const rootBlock = declarations(blockAfter(':root {'));
 
 /** A `{token}` reference of tokens.json is a `var(--color-token)` in tokens.css. */
 function expectedColor(value: string): string {
@@ -168,7 +170,7 @@ describe('Prumo tokens', () => {
     }
 
     for (const { name, value } of prumo.shadow.tokens) {
-      expect(lightBlock.get(name), `light ${name}`).toBe(value.light);
+      expect(rootBlock.get(name), `light ${name}`).toBe(value.light);
       for (const block of Object.values(darkBlocks)) {
         expect(block.get(name), `dark ${name}`).toBe(value.dark);
       }

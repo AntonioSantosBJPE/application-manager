@@ -1,3 +1,5 @@
+import { expect } from 'storybook/test';
+
 /**
  * Helpers for stories that judge a color the way a person sees it (UI-24). They run in the browser
  * of the Storybook tests, where the engine resolves any CSS color, `oklch()` included.
@@ -66,4 +68,45 @@ export function focusRing(element: Element): FocusRing {
     ratio: contrastRatio(style.outlineColor, pageBackground()),
     isTextColor: style.outlineColor === style.color,
   };
+}
+
+/** True when a CSS color paints nothing (alpha 0), like the default `transparent` background. */
+function isTransparent(color: string): boolean {
+  const context = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+  if (context === null) throw new Error('no 2d canvas to resolve a color');
+  context.clearRect(0, 0, 1, 1);
+  context.fillStyle = color;
+  context.fillRect(0, 0, 1, 1);
+  return context.getImageData(0, 0, 1, 1).data[3] === 0;
+}
+
+/** The color painted behind an element: the first background up the tree, else the page. */
+export function backgroundBehind(element: Element): string {
+  for (let node: Element | null = element; node !== null; node = node.parentElement) {
+    const background = getComputedStyle(node).backgroundColor;
+    if (!isTransparent(background)) return background;
+  }
+  return pageBackground();
+}
+
+/** The color of an element that a person reads against its background. */
+export type ContrastProperty = 'color' | 'borderTopColor' | 'outlineColor' | 'stroke' | 'fill';
+
+/**
+ * Asserts, in a story's play, that a color of the element reaches `minimum` against what is painted
+ * behind it (PRU-08): 4.5 for text, 3 for focus rings, control borders and status icons. Transitions
+ * are settled first, so the ratio is the one a person sees once the screen is still.
+ */
+export async function expectContrast(
+  element: Element,
+  minimum: number,
+  property: ContrastProperty = 'color',
+  background?: string,
+): Promise<void> {
+  await settle(element);
+  const foreground = getComputedStyle(element)[property];
+  const behind = background ?? backgroundBehind(element);
+  const ratio = contrastRatio(foreground, behind);
+  const label = `${property} ${foreground} on ${behind}`;
+  await expect(ratio, label).toBeGreaterThanOrEqual(minimum);
 }

@@ -65,8 +65,6 @@
   --color-paper-ink: #1f1f1f;
   --color-paper-rule: #d4d4d4;
 
-  --shadow-overlay: 0 0 0 1px rgba(20, 24, 33, 0.06), 0 8px 24px -4px rgba(20, 24, 33, 0.14);
-
   /* The @fontsource faces are named "Geist Variable" and "Geist Mono Variable". */
   --font-sans: 'Geist Variable', 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -125,6 +123,18 @@
   --container-auth: 360px;
   --container-form: 720px;
   --container-content: 1120px;
+}
+
+/*
+ * The overlay shadow switches with the theme, so it lives outside @theme: Tailwind inlines a theme
+ * shadow into its utility, and the dark value would never reach the shadow-overlay class.
+ */
+:root {
+  --shadow-overlay: 0 0 0 1px rgba(20, 24, 33, 0.06), 0 8px 24px -4px rgba(20, 24, 33, 0.14);
+}
+
+@utility shadow-overlay {
+  box-shadow: var(--shadow-overlay);
 }
 
 @media (prefers-color-scheme: dark) {
