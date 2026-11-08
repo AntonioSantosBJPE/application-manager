@@ -368,9 +368,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Coluna de 360 px um pouco acima do centro, sem card; `Header` com símbolo de 20 px, `Form` com gap 16 px, `Footer` com filete; alertas entre header e primeiro campo
-- [ ] Testes e stories (entrar, convite, acesso) nos dois temas
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Coluna de 360 px um pouco acima do centro, sem card; `Header` com símbolo de 20 px, `Form` com gap 16 px, `Footer` com filete; alertas entre header e primeiro campo
+- [x] Testes e stories (entrar, convite, acesso) nos dois temas
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick

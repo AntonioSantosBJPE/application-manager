@@ -81,3 +81,67 @@ describe('AuthPage', () => {
     }
   });
 });
+
+describe('AuthPage parts', () => {
+  it('PRU-04 AC07 is a main with the column inside it, and no card around the content', () => {
+    const { container } = renderPage();
+
+    const main = screen.getByRole('main');
+    expect(main).toHaveClass('bg-surface');
+    expect(main.firstElementChild).toHaveClass('max-w-auth');
+    expect(main.firstElementChild).toContainElement(container.querySelector('form'));
+    for (const element of [main, ...main.querySelectorAll('*')]) {
+      expect(element).not.toHaveClass('shadow-overlay', 'bg-surface-raised', 'bg-surface-overlay');
+    }
+  });
+
+  it('PRU-04 AC08 opens the header with the mark and keeps the title and the line the caller wrote', () => {
+    const { container } = renderPage();
+
+    const header = container.querySelector('header')!;
+    const mark = header.querySelector('svg')!;
+    expect(mark).toHaveAttribute('width', '20');
+    expect(mark).toHaveAttribute('height', '20');
+    expect(header.firstElementChild).toContainElement(mark);
+    expect(header).toContainElement(screen.getByRole('heading', { name: 'Entrar' }));
+    expect(header).toHaveTextContent('Use o e-mail do convite.');
+  });
+
+  it('PRU-05 AC07 shows the mark, not the wordmark, in the header', () => {
+    const { container } = renderPage();
+
+    const header = container.querySelector('header')!;
+    expect(header.querySelector('svg')).not.toBeNull();
+    expect(header).not.toHaveTextContent('rumo');
+    expect(header).not.toHaveTextContent('carreira');
+  });
+
+  it('PRU-04 AC08 keeps an alert between the header and the first field', () => {
+    render(
+      <AuthPage.Root>
+        <AuthPage.Header>
+          <h1>Entrar</h1>
+        </AuthPage.Header>
+        <div role="alert">E-mail ou senha incorretos.</div>
+        <AuthPage.Form>
+          <label htmlFor="email">E-mail</label>
+          <input id="email" />
+        </AuthPage.Form>
+      </AuthPage.Root>,
+    );
+
+    const follows = (a: Element, b: Element) =>
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    const alert = screen.getByRole('alert');
+    expect(follows(screen.getByRole('heading', { name: 'Entrar' }), alert)).toBe(true);
+    expect(follows(alert, screen.getByLabelText('E-mail'))).toBe(true);
+  });
+
+  it('PRU-04 AC08 sets the form gap to space-4 and the footer note in caption, text-muted, under a rule', () => {
+    const { container } = renderPage();
+
+    expect(container.querySelector('form')).toHaveClass('gap-4');
+    const footer = container.querySelector('footer')!;
+    expect(footer).toHaveClass('border-t', 'border-border', 'text-caption', 'text-text-muted');
+  });
+});
