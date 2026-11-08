@@ -5,8 +5,15 @@ function join(...classes: (string | undefined)[]): string {
   return classes.filter(Boolean).join(' ');
 }
 
-/** Owns the open state: uncontrolled, or controlled with `open` and `onOpenChange`. */
-const DropdownMenuRoot = RadixMenu.Root;
+/**
+ * Owns the open state: uncontrolled, or controlled with `open` and `onOpenChange`. Non-modal by default:
+ * a modal Radix menu puts `aria-hidden` on every ancestor of the trigger, which stays focusable, and axe
+ * rejects that (`aria-hidden-focus`). Esc, a click outside and the return of the focus still work; pass
+ * `modal` to opt back in.
+ */
+function DropdownMenuRoot({ modal = false, ...props }: ComponentProps<typeof RadixMenu.Root>) {
+  return <RadixMenu.Root modal={modal} {...props} />;
+}
 
 /** The control that opens the menu; with `asChild` it is the caller's own button. */
 const DropdownMenuTrigger = RadixMenu.Trigger;
