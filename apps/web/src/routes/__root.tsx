@@ -12,10 +12,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     // The theme follows prefers-color-scheme in tokens.css only; the app never sets data-theme.
     // The favicon swaps its own color with prefers-color-scheme; both icons are served from public/ (PRU-05).
+    // The app icon is a 180x180 PNG of rumo-app-icon.svg, the size and format iOS reads for apple-touch-icon.
     links: [
       { rel: 'stylesheet', href: tokensCss },
       { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
-      { rel: 'apple-touch-icon', href: '/app-icon.svg' },
+      { rel: 'apple-touch-icon', type: 'image/png', sizes: '180x180', href: '/app-icon.png' },
     ],
   }),
   component: RootComponent,
