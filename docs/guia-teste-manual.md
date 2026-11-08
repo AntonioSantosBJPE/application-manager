@@ -4,8 +4,8 @@ Roteiro curto para ver o estado atual do projeto funcionando: a página de statu
 
 ## Estado atual
 
-- **Pronto:** esqueleto (web + api + banco + status) e `identity`: CLI de admin, login por e-mail e senha, sessão por cookie, convites (criar, copiar, revogar, aceitar), áreas de admin e de membro, bloqueio por tentativas.
-- **Ainda não existe:** vagas, currículos, análise de skills (próximas fases do [roadmap](roadmap.md)). A home do membro (`/`) é só o título "Início".
+- **Pronto:** esqueleto (web + api + banco + status), `identity` (CLI de admin, login por e-mail e senha, sessão por cookie, convites — criar, copiar, revogar, aceitar —, áreas de admin e de membro, bloqueio por tentativas) e a identidade visual Rumo Carreira (marca, ícones, telas no padrão do design system).
+- **Ainda não existe:** vagas, currículos, análise de skills (próximas fases do [roadmap](roadmap.md)). A home do membro (`/`) mostra só o título "Início", a saudação e os três passos até a primeira candidatura; ainda não há dados de candidaturas.
 
 ## 1. Subir a stack
 
@@ -19,7 +19,9 @@ docker compose up --build -d
 docker compose ps        # postgres, api e web "healthy"/"running"; migrate "exited (0)"
 ```
 
-Abra `http://localhost:3000/status`: devem aparecer **API** e **Banco de dados** como "Operacional".
+Abra `http://localhost:3000/status`: a aba mostra "Rumo Carreira" e a página traz a marca, o título "Status", o veredito "Todos os sistemas operacionais", a linha "Verificado às {hora} de {data}." e as linhas **API** e **Banco de dados** com o selo "Operacional".
+
+Os ícones vêm de `apps/web/public`: `http://localhost:3000/favicon.svg` (o favicon, que acompanha o tema do sistema) e `http://localhost:3000/app-icon.png` (o ícone de app, um PNG de 180×180).
 
 ## 2. Criar o administrador (CLI)
 
@@ -41,27 +43,29 @@ Redefinir a senha (e derrubar as sessões abertas): `node dist/cli.js reset-pass
 
 Em todas as telas, espere a página terminar de carregar antes de digitar: o formulário só reage depois da hidratação (~1 s).
 
-1. Sem sessão, abra `http://localhost:3000/` → vai para `/login` (a rota pedida fica guardada).
-2. Abra `http://localhost:3000/admin/invitations` → vai para `/admin/login`.
-3. Em `/admin/login`, entre com `admin@example.com` e senha errada → "E-mail ou senha incorretos." (o e-mail continua no campo).
-4. Entre com a senha certa → abre `/admin`, com API e Banco "Operacional" e "Convites pendentes".
-5. Com o admin logado, `/` redireciona para `/admin`.
+1. Sem sessão, abra `http://localhost:3000/` → vai para `/login` (a rota pedida fica guardada). A tela mostra a marca, o título "Entrar", a linha "Rumo Carreira — suas candidaturas e currículos", os campos "E-mail" e "Senha", o botão "Entrar" e o rodapé "O acesso é por convite. Esqueceu a senha? Fale com quem te convidou.".
+2. Abra `http://localhost:3000/admin/invitations` → vai para `/admin/login`, com a mesma tela e o título "Administração".
+3. No campo "Senha", digite algo e use o botão **Mostrar senha** (ícone de olho, à direita do campo): o texto aparece e o botão passa a `aria-pressed="true"`; usar de novo volta aos pontos. O rótulo do botão é sempre "Mostrar senha", nos dois estados, e o que foi digitado continua no campo.
+4. Em `/admin/login`, entre com `admin@example.com` e senha errada → alerta "E-mail ou senha incorretos." acima dos campos (o e-mail continua no campo).
+5. Entre com a senha certa → abre `/admin`, que começa com a topbar "Painel" e o título "Administração", com o widget "Status do sistema" (selo "Operacional", linhas "API" e "Banco de dados" e a hora da checagem) e o widget "Convites pendentes" (a contagem, "Ver convites" e "Convidar pessoa"). A barra lateral mostra a marca com a tag "admin", os itens "Painel", "Convites" e "Status do sistema", e embaixo as iniciais "AA" (primeira letra do primeiro e do último nome de "Ana Admin"), o nome e o botão **Sair**.
+6. Com o admin logado, `/` redireciona para `/admin`.
 
 ## 4. Convites
 
-1. Em `/admin/invitations`, convide `maria@example.com` → aparece o aviso "Este link só aparece desta vez" e o link. **Copiar** muda para "Copiado".
+1. Em `/admin/invitations` (cabeçalho "Convites" com a contagem "{n} pendentes"), preencha "E-mail a convidar" com `maria@example.com` e clique em **Convidar** → aparece a faixa "Convite criado para maria@example.com", com a nota "este link só aparece desta vez. Copie-o agora." e o link do convite. **Copiar** muda para "Copiado".
 2. Convide o mesmo e-mail de novo ou o do admin → "Este e-mail já tem uma conta." (conta existente).
-3. Crie uma segunda invitation e clique em **Revogar** → abre a confirmação com o e-mail; `Esc` cancela, confirmar remove a linha e baixa o total. O foco do teclado não se perde.
-4. Teste a lista longa e o "Carregar mais" (opcional): crie mais de 20 convites pela interface.
+3. Crie uma segunda invitation e clique em **Revogar** na linha (grupo "Pendentes", com o e-mail e "expira em {n} d") → abre a confirmação "Revogar convite" com "O link enviado para {e-mail} deixa de funcionar."; `Esc` ou **Cancelar** fecha, **Revogar** remove a linha e baixa o total. O foco do teclado não se perde.
+4. Sem convites pendentes, a lista mostra "Nenhum convite pendente." e o botão "Convidar pessoa", que leva o foco ao campo de e-mail.
+5. Teste a lista longa e o "Carregar mais" (opcional): crie mais de 20 convites pela interface.
 
 ## 5. Aceitar o convite (outro perfil)
 
 Use uma janela anônima (cookies separados) e cole o link copiado.
 
-1. `/invite/<token>` mostra o e-mail só leitura, nome e senha. Senha curta → "Use de 12 a 128 caracteres."; nome com mais de 128 caracteres → erro no campo.
-2. "Criar conta" → abre `/` como membro: "Maria Membro" e **Sair**.
-3. Reabra o mesmo link → "Este convite não é mais válido. Peça um novo ao administrador." (sem formulário).
-4. Como membro, abra `/admin` → "Você não tem acesso a esta área.", com "Voltar para o início" e **Sair**.
+1. `/invite/<token>` mostra a marca, o título "Criar conta", a linha "Você recebeu um convite para o Rumo Carreira.", o e-mail só leitura, "Nome" e "Senha" (com o botão **Mostrar senha**), a dica "Use de 12 a 128 caracteres." e o rodapé "O convite vale até {data}.". Senha curta → ao enviar, "A senha precisa ter de 12 a 128 caracteres." sob o campo (a dica continua); nome com mais de 120 caracteres → "Informe seu nome, com até 120 caracteres.".
+2. "Criar conta" → abre `/` como membro, que começa com a topbar "Início", com o título "Início", a saudação "Olá, Maria Membro", a linha "Três passos para a primeira candidatura com currículo adaptado." e três cartões: "01 Conta criada" (concluído), "02 Preencha o currículo mestre" e "03 Cadastre uma vaga" (a fazer), seguidos de "Quando houver candidaturas, aqui aparecem o pipeline, o que precisa de atenção e a atividade recente.". A barra lateral mostra a marca, o item "Início" como atual, e embaixo as iniciais "MM" (de "Maria Membro"), o nome e o botão **Sair**. Um nome do meio não entra nas iniciais ("Maria Souza Membro" também dá "MM") e um nome só usa as duas primeiras letras ("Maria" dá "MA").
+3. Reabra o mesmo link → tela "Convite inválido": "Este convite expirou ou já foi usado. Peça um novo link a quem te convidou." (sem formulário).
+4. Como membro, abra `/admin` → tela "Sem acesso": "Esta área é da administração. Sua conta é de uso do produto.", com o botão "Voltar para o início" e **Sair**.
 5. **Sair** encerra a sessão e volta ao login.
 
 ## 6. Sessão expirada e bloqueio
@@ -73,7 +77,7 @@ Use uma janela anônima (cookies separados) e cole o link copiado.
     -c "update identity.sessions set expires_at = now() - interval '1 second';"
   ```
 
-  Volte à página aberta, digite um e-mail e clique em "Convidar" → em cerca de 1 s abre `/admin/login?...&reason=expired` com "Sua sessão expirou. Entre novamente."; depois de entrar, volta para `/admin/invitations`.
+  Volte à página aberta, digite um e-mail e clique em "Convidar" → em cerca de 1 s abre `/admin/login?...&reason=expired` com o aviso "Sua sessão expirou. Entre de novo para continuar."; depois de entrar, volta para `/admin/invitations`.
 - **Bloqueio:** em `/login`, erre a senha do mesmo e-mail 6 vezes → na sexta aparece "Muitas tentativas. Tente novamente em 15 min.".
   Para tirar o bloqueio no teste: `docker compose exec postgres psql -U app -d app -c "truncate identity.login_attempts;"`.
 
@@ -83,17 +87,17 @@ Use uma janela anônima (cookies separados) e cole o link copiado.
 docker compose stop api
 ```
 
-- `/login` mostra "Serviço indisponível. Tente novamente em instantes." sem redirecionar.
-- `/status` continua abrindo, com API e Banco "Indisponível".
-- Telas protegidas mostram o aviso com **Tentar novamente**.
+- `/login` abre o formulário; ao enviar, mostra "Serviço indisponível. Tente novamente em instantes." sem redirecionar.
+- `/status` continua abrindo, com o veredito "Serviço degradado" e API e Banco de dados "Indisponível" (os componentes afetados vão para o topo, em vermelho).
+- `/` e `/admin` mostram a tela "Indisponível": "O serviço não respondeu. Seus dados estão seguros; tente de novo em instantes.", com o botão **Tentar novamente**, e a URL pedida continua a mesma.
 
 `docker compose start api` volta ao normal.
 
 ## 8. Tema, largura e teclado
 
-- Alterne o tema do sistema (claro/escuro): as telas acompanham.
-- Estreite a janela para 375 px: nada rola na horizontal; e-mails e links longos quebram dentro da página.
-- Navegue só com `Tab`: o botão em foco tem um anel visível.
+- Alterne o tema do sistema (claro/escuro): as telas e o favicon acompanham.
+- Estreite a janela para 375 px: nada rola na horizontal; e-mails e links longos quebram dentro da página, e a barra lateral vira uma barra no topo.
+- Navegue só com `Tab`: o botão em foco tem um anel visível. Em `/login`, o botão **Mostrar senha** é o próximo foco depois do campo "Senha" e funciona com `Enter` e `Espaço`.
 
 ## 9. Rodar os testes
 
