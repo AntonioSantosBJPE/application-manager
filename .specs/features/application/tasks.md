@@ -169,9 +169,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] `isGhostSuggested` verdadeiro só em `applied` e `interviewing`, com 504 h ou mais desde a atividade e adiamento nulo ou vencido; testes nas bordas 504 h − 1 min e 504 h, e no instante exato do fim do adiamento
-- [ ] `funnel.ts` dá a ordem `offer`, `interviewing`, `applied`, `saved`, `accepted`, `rejected`, `withdrawn`, `ghosted` e a aba de cada status
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `isGhostSuggested` verdadeiro só em `applied` e `interviewing`, com 504 h ou mais desde a atividade e adiamento nulo ou vencido; testes nas bordas 504 h − 1 min e 504 h, e no instante exato do fim do adiamento
+- [x] `funnel.ts` dá a ordem `offer`, `interviewing`, `applied`, `saved`, `accepted`, `rejected`, `withdrawn`, `ghosted` e a aba de cada status
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
