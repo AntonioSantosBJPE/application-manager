@@ -7,6 +7,8 @@ import {
   type ApplicationStatus,
   type CreateApplicationRequest,
   type JobLevel,
+  type ReplaceSkillsRequest,
+  type UpdateJobPostingRequest,
   type WorkModel,
 } from '@am/contracts';
 import { Alert, Button, ChoiceChips, Dialog, Field, Kbd } from '@am/ui';
@@ -48,15 +50,32 @@ export interface ApplicationFormApi {
   skills: SkillsFieldApi;
 }
 
-export interface ApplicationFormDialogProps {
-  /** Only the creation exists for now; the edit mode of the detail comes with its own task (APP-74). */
-  mode?: 'create';
+/** What an edit changed: only the posting fields that differ, and the whole skills list when it differs (APP-74). */
+export interface ApplicationChanges {
+  posting?: UpdateJobPostingRequest;
+  skills?: ReplaceSkillsRequest;
+}
+
+/** What the two modes need from the BFF: the creation sends a new application, the edit sends the changes. */
+type ModeProps =
+  | {
+      mode?: 'create';
+      api: ApplicationFormApi;
+    }
+  | {
+      /** The dialog of the detail: filled with the posting, titled "Editar vaga", saving with "Salvar" (APP-74). */
+      mode: 'edit';
+      api: Pick<ApplicationFormApi, 'skills'>;
+      /** Saves what changed; it is not called when nothing did. */
+      update: (changes: ApplicationChanges) => Promise<Outcome<ApplicationDetail>>;
+    };
+
+export type ApplicationFormDialogProps = ModeProps & {
   /** The status the application enters with: "Salva", or the one of the "+" that opened the dialog (APP-58). */
   status?: ApplicationStatus;
   /** Values to start from, for a form that opens filled. */
   initial?: Partial<ApplicationFormValues>;
-  api: ApplicationFormApi;
-  /** The application was created; the list reads again to show it in its group (APP-62). */
+  /** The application was created or saved; the list reads again to show it in its group (APP-62). */
   onSaved: (application: ApplicationDetail) => void;
   /** The dialog is done: created, cancelled, Esc or the "esc" of the header (APP-65). */
   onClose: () => void;
@@ -64,7 +83,7 @@ export interface ApplicationFormDialogProps {
   onExpired: (outcome: Outcome<unknown>) => boolean;
   /** Where the focus goes once the dialog closes. */
   onCloseAutoFocus?: (event: Event) => void;
-}
+};
 
 const isLink = (text: string) => /^https?:\/\/\S+$/i.test(text);
 
@@ -108,6 +127,37 @@ function requestOf(values: ApplicationFormValues, level: JobLevel, status: Appli
   };
 }
 
+const skillKeys = (values: ApplicationFormValues) =>
+  [...values.required.map((skill) => `required:${skill.id}`), ...values.nice.map((skill) => `nice_to_have:${skill.id}`)];
+
+/** What an edit changes: the posting fields that differ (an emptied optional one becomes `null`) and the skills when they differ. */
+function changesOf(values: ApplicationFormValues, start: ApplicationFormValues): ApplicationChanges {
+  const posting: UpdateJobPostingRequest = {};
+  const company = values.company.trim();
+  const title = values.title.trim();
+  const url = values.url.trim();
+  if (company !== start.company) posting.company = company;
+  if (title !== start.title) posting.title = title;
+  if (url !== start.url) posting.url = url === '' ? null : url;
+  if (values.level !== null && values.level !== start.level) posting.level = values.level;
+  if (values.workModel !== start.workModel) posting.workModel = values.workModel;
+  if (values.description !== start.description) {
+    posting.description = values.description.trim() === '' ? null : values.description;
+  }
+  const skillsChanged = skillKeys(values).join(',') !== skillKeys(start).join(',');
+  return {
+    ...(Object.keys(posting).length === 0 ? {} : { posting }),
+    ...(skillsChanged
+      ? {
+          skills: [
+            ...values.required.map((skill) => ({ skillId: skill.id, requirement: 'required' as const })),
+            ...values.nice.map((skill) => ({ skillId: skill.id, requirement: 'nice_to_have' as const })),
+          ],
+        }
+      : {}),
+  };
+}
+
 /**
  * "Nova candidatura" (PageNewApplication, APP-57..APP-65): the quick registration of a posting in a
  * dialog. Company, title and level are required and the link must be http or https; those errors show
@@ -115,26 +165,31 @@ function requestOf(values: ApplicationFormValues, level: JobLevel, status: Appli
  * request runs the button is disabled, so a double click sends one application. A refusal of the api
  * keeps the dialog open with what was typed and a danger `Alert`.
  */
-export function ApplicationFormDialog({
-  status = 'saved',
-  initial,
-  api,
-  onSaved,
-  onClose,
-  onExpired,
-  onCloseAutoFocus,
-}: ApplicationFormDialogProps) {
+export function ApplicationFormDialog(props: ApplicationFormDialogProps) {
+  const { status = 'saved', initial, api, onSaved, onClose, onExpired, onCloseAutoFocus } = props;
+  const editing = props.mode === 'edit';
   const id = useId();
   const [unavailable, setUnavailable] = useState<string | undefined>();
+  // What the form opened with: an edit sends only what differs from it.
+  const [start] = useState<ApplicationFormValues>(() => ({ ...EMPTY_VALUES, ...initial }));
 
   const form = useForm({
-    defaultValues: { ...EMPTY_VALUES, ...initial },
+    defaultValues: start,
     onSubmit: async ({ value }) => {
       setUnavailable(undefined);
       if (value.level === null) return;
       let outcome: Outcome<ApplicationDetail>;
       try {
-        outcome = await api.create(requestOf(value, value.level, status));
+        if (props.mode === 'edit') {
+          const changes = changesOf(value, start);
+          if (changes.posting === undefined && changes.skills === undefined) {
+            onClose();
+            return;
+          }
+          outcome = await props.update(changes);
+        } else {
+          outcome = await props.api.create(requestOf(value, value.level, status));
+        }
       } catch {
         setUnavailable(MESSAGES.unavailable);
         return;
@@ -171,7 +226,7 @@ export function ApplicationFormDialog({
     >
       <Dialog.Content size="lg" aria-describedby={undefined} onCloseAutoFocus={onCloseAutoFocus}>
         <div className="flex items-center gap-2">
-          <Dialog.Title>{FORM_MESSAGES.createTitle}</Dialog.Title>
+          <Dialog.Title>{editing ? FORM_MESSAGES.editTitle : FORM_MESSAGES.createTitle}</Dialog.Title>
           <Dialog.Close className="ml-auto cursor-pointer rounded-sm outline-focus focus-visible:outline-2 focus-visible:outline-offset-2">
             <Kbd>{FORM_MESSAGES.close}</Kbd>
           </Dialog.Close>
@@ -331,12 +386,14 @@ export function ApplicationFormDialog({
           {unavailable === undefined ? null : <Alert intent="danger">{unavailable}</Alert>}
           <Dialog.Footer className="items-center">
             <span className="mr-auto flex items-center gap-1 text-caption text-text-muted">
-              <span>
-                {FORM_MESSAGES.enters} <b className="font-semibold text-text">{STATUS_LABELS[status]}</b>.
-              </span>
+              {editing ? null : (
+                <span>
+                  {FORM_MESSAGES.enters} <b className="font-semibold text-text">{STATUS_LABELS[status]}</b>.
+                </span>
+              )}
               <Kbd>⌘</Kbd>
               <Kbd>↵</Kbd>
-              <span>{FORM_MESSAGES.toCreate}</span>
+              <span>{editing ? FORM_MESSAGES.toSave : FORM_MESSAGES.toCreate}</span>
             </span>
             <form.Subscribe selector={(state) => state.isSubmitting}>
               {(isSubmitting) => (
@@ -352,7 +409,7 @@ export function ApplicationFormDialog({
                     disabled={isSubmitting}
                     aria-busy={isSubmitting ? true : undefined}
                   >
-                    {FORM_MESSAGES.create}
+                    {editing ? FORM_MESSAGES.save : FORM_MESSAGES.create}
                   </Button>
                 </>
               )}

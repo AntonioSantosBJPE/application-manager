@@ -1050,10 +1050,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] "Editar vaga" abre o diálogo preenchido, título "Editar vaga", sem "Entra como", botão "Salvar"; grava pelo `PATCH` e pelo `PUT`
-- [ ] "Excluir candidatura?" com "Excluir" em `danger`; confirmar exclui e abre `/applications`
-- [ ] Testes `APP-74` e `APP-75` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] "Editar vaga" abre o diálogo preenchido, título "Editar vaga", sem "Entra como", botão "Salvar"; grava pelo `PATCH` e pelo `PUT`
+- [x] "Excluir candidatura?" com "Excluir" em `danger`; confirmar exclui e abre `/applications`
+- [x] Testes `APP-74` e `APP-75` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

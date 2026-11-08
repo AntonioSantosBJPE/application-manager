@@ -31,6 +31,7 @@ export const rowActionsLabel = (company: string) => `Ações de ${company}`;
 /** The copy of the new application dialog (APP-57..APP-65). */
 export const FORM_MESSAGES = {
   createTitle: 'Nova candidatura',
+  editTitle: 'Editar vaga',
   company: 'Empresa',
   jobTitle: 'Título',
   link: 'Link da vaga',
@@ -45,9 +46,11 @@ export const FORM_MESSAGES = {
   descriptionHint: '· opcional, cole o texto da vaga',
   enters: 'Entra como',
   toCreate: 'para criar',
+  toSave: 'para salvar',
   close: 'esc',
   cancel: 'Cancelar',
   create: 'Criar candidatura',
+  save: 'Salvar',
   companyRequired: 'Informe a empresa.',
   titleRequired: 'Informe o título.',
   levelRequired: 'Escolha o nível.',
@@ -93,6 +96,12 @@ export const DETAIL_MESSAGES = {
   skillsPlaceholder: 'Adicionar…',
   editLocation: 'Editar local',
   editPosting: 'Editar link da vaga',
+  editJob: 'Editar vaga',
+  deleteTitle: 'Excluir candidatura?',
+  deleteDescription: (company: string) =>
+    `A vaga de ${company}, as skills e a linha do tempo serão apagadas. Não dá para desfazer.`,
+  deleteConfirm: 'Excluir',
+  deleteCancel: 'Cancelar',
 } as const;
 
 /** The accessible name of a property menu: the name of the property and the value it shows ("Status Enviada"). */

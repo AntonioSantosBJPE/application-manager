@@ -7,7 +7,7 @@ import type {
   UpdateJobPostingRequest,
 } from '@am/contracts';
 import { Alert, AppShell, Button, DetailPage, Icon } from '@am/ui';
-import { ChevronRight, ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { ChevronRight, ExternalLink, Plus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { MouseEvent } from 'react';
 import type { Outcome } from '../../../lib/bff';
@@ -15,6 +15,8 @@ import type { SkillsFieldApi } from '../../skills';
 import { MESSAGES, problemMessage } from '../../identity';
 import { DETAIL_MESSAGES } from '../model/messages';
 import { ApplicationTimeline } from './ApplicationTimeline';
+import { DeleteApplication } from './DeleteApplication';
+import { DetailActions } from './DetailActions';
 import { NoteComposer } from './NoteComposer';
 import { PropertiesSidebar } from './PropertiesSidebar';
 import { SkillsSection } from './SkillsSection';
@@ -26,6 +28,7 @@ export interface ApplicationDetailApi {
   load: (id: string) => Promise<Outcome<ApplicationRecord>>;
   addEvent: (id: string, body: CreateEventRequest) => Promise<Outcome<ApplicationEvent>>;
   replaceSkills: (id: string, body: ReplaceSkillsRequest) => Promise<Outcome<ApplicationRecord>>;
+  remove: (id: string) => Promise<Outcome<undefined>>;
   /** The search and the creation of the skills field, as in the registration dialog. */
   skills: SkillsFieldApi;
   changeStatus: (id: string, status: ApplicationStatus) => Promise<Outcome<ApplicationRecord>>;
@@ -41,6 +44,8 @@ export interface ApplicationDetailProps {
   onExpired: (outcome: Outcome<unknown>) => boolean;
   /** An application was written, so the rest of the app (the list) reads again. */
   onChanged?: () => void;
+  /** The application was deleted: the route opens the list (APP-75). */
+  onDeleted: () => void;
   /** Where the "Candidaturas" of the breadcrumb leads. */
   listHref?: string;
   /** Opens the list without a page load; a click with a modifier key keeps its own meaning. */
@@ -121,12 +126,22 @@ function Description({ text }: { text: string }) {
  * posting link in the topbar, the company and title, the skills, the timeline, and the properties at
  * the side, which go under the content when narrow. The resume section of the card is not here (AD-017).
  */
-export function ApplicationDetail({ application, now, api, onExpired, onChanged, listHref, onOpenList }: ApplicationDetailProps) {
+export function ApplicationDetail({
+  application,
+  now,
+  api,
+  onExpired,
+  onChanged,
+  onDeleted,
+  listHref,
+  onOpenList,
+}: ApplicationDetailProps) {
   const [current, setCurrent] = useState(application);
   const [seen, setSeen] = useState(application);
   const [failure, setFailure] = useState<string | undefined>();
   const [staging, setStaging] = useState(false);
   const stageButton = useRef<HTMLButtonElement>(null);
+  const deleteButton = useRef<HTMLButtonElement>(null);
   // A new answer of the route (the loader read again) replaces what the screen holds.
   if (application !== seen) {
     setSeen(application);
@@ -170,6 +185,24 @@ export function ApplicationDetail({ application, now, api, onExpired, onChanged,
 
   const id = current.id;
 
+  /** Deletes for good and leaves the page; a refusal keeps the page and says why (APP-75, APP-78). */
+  async function remove() {
+    setFailure(undefined);
+    let outcome: Outcome<undefined>;
+    try {
+      outcome = await api.remove(id);
+    } catch {
+      setFailure(MESSAGES.unavailable);
+      return;
+    }
+    if (outcome.ok) {
+      onChanged?.();
+      onDeleted();
+      return;
+    }
+    if (!onExpired(outcome)) setFailure(problemMessage(outcome));
+  }
+
   return (
     <DetailPage.Root className="md:flex-col!">
       <AppShell.Topbar>
@@ -180,13 +213,25 @@ export function ApplicationDetail({ application, now, api, onExpired, onChanged,
           <Icon icon={ChevronRight} size="sm" />
           <b className="truncate font-medium text-text">{current.company}</b>
         </nav>
-        {current.url === null ? null : (
-          <Button asChild intent="ghost" size="sm" className="w-control-sm justify-center px-0!" aria-label={DETAIL_MESSAGES.openPosting}>
-            <a href={current.url} target="_blank" rel="noopener noreferrer">
-              <Icon icon={ExternalLink} size="sm" />
-            </a>
-          </Button>
-        )}
+        <div className="flex items-center gap-1">
+          {current.url === null ? null : (
+            <Button asChild intent="ghost" size="sm" className="w-control-sm justify-center px-0!" aria-label={DETAIL_MESSAGES.openPosting}>
+              <a href={current.url} target="_blank" rel="noopener noreferrer">
+                <Icon icon={ExternalLink} size="sm" />
+              </a>
+            </Button>
+          )}
+          <DetailActions
+            application={current}
+            api={api}
+            onUpdated={(updated) => {
+              setCurrent(updated);
+              onChanged?.();
+            }}
+            onDelete={() => deleteButton.current?.click()}
+            onExpired={onExpired}
+          />
+        </div>
       </AppShell.Topbar>
       <div className="flex min-w-0 flex-1 flex-col md:flex-row">
         <DetailPage.Main>
@@ -225,11 +270,7 @@ export function ApplicationDetail({ application, now, api, onExpired, onChanged,
               <Description text={current.description} />
             )
           }
-          footer={
-            <Button intent="ghost" size="sm" icon={Trash2} className="justify-start text-danger">
-              {DETAIL_MESSAGES.delete}
-            </Button>
-          }
+          footer={<DeleteApplication company={current.company} buttonRef={deleteButton} onConfirm={remove} />}
         />
       </div>
       {staging ? (

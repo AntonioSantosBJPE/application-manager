@@ -1,7 +1,7 @@
 import type { ApplicationDetail } from '@am/contracts';
 import { render } from '@testing-library/react';
 import { vi } from 'vitest';
-import { loadApplication, patchJobPosting, postEvent, postStatus, putSkills } from '../api/server-functions';
+import { loadApplication, patchJobPosting, postEvent, postStatus, putSkills, removeApplicationById } from '../api/server-functions';
 import { ApplicationDetail as Detail, type ApplicationDetailApi } from '../components/ApplicationDetail';
 import { context } from './api';
 import { fakeSkillsApi } from './skills-api';
@@ -11,6 +11,7 @@ import { NOW } from './fixtures';
 export function detailApi(): ApplicationDetailApi {
   const skills = fakeSkillsApi();
   return {
+    remove: (id) => removeApplicationById(id, context),
     replaceSkills: (id, body) => putSkills(id, body, context),
     skills: { search: skills.search, create: skills.create },
     load: (id) => loadApplication(id, context),
@@ -24,6 +25,7 @@ export function detailApi(): ApplicationDetailApi {
 export function renderDetail(application: ApplicationDetail, api: ApplicationDetailApi = detailApi()) {
   const onExpired = vi.fn(() => false);
   const onChanged = vi.fn();
-  render(<Detail application={application} now={NOW} api={api} onExpired={onExpired} onChanged={onChanged} />);
-  return { onExpired, onChanged };
+  const onDeleted = vi.fn();
+  render(<Detail application={application} now={NOW} api={api} onExpired={onExpired} onChanged={onChanged} onDeleted={onDeleted} />);
+  return { onExpired, onChanged, onDeleted };
 }
