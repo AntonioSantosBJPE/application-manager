@@ -33,7 +33,8 @@ export type TagFieldProps = Omit<ComboboxProps, 'wrapperClassName' | 'selected' 
  * suggests more, all in one box that looks and behaves as a single control. A click anywhere in the box
  * focuses the field; `Backspace` in the empty field removes the last tag; after a tag is removed the
  * focus is back in the field. The caller owns the tags, the query and the options, and every word,
- * including the name of each "×". The props of the `Combobox` (query, options, `open`/`onOpenChange` and the accessible name) go on the field. Inside a `Field.Root` it takes the invalid state and the
+ * including the name of each "×". The suggestions open in a narrow popover (`w-60`) under the text being
+ * typed, not as wide as the box, so the hint and the field below stay visible. The props of the `Combobox` (query, options, `open`/`onOpenChange` and the accessible name) go on the field. Inside a `Field.Root` it takes the invalid state and the
  * description from it.
  */
 export function TagField({
@@ -43,6 +44,7 @@ export function TagField({
   boxClassName,
   onKeyDown,
   ref,
+  listClassName = 'w-60',
   ...combobox
 }: TagFieldProps) {
   const field = useContext(FieldContext);
@@ -94,6 +96,7 @@ export function TagField({
       ))}
       <Combobox
         {...combobox}
+        listClassName={listClassName}
         selected={null}
         onSelect={(option) => {
           if (option === null) return;
@@ -113,7 +116,7 @@ export function TagField({
           if (typeof ref === 'function') ref(element);
           else if (ref) ref.current = element;
         }}
-        wrapperClassName="static! min-w-24 flex-1"
+        wrapperClassName="min-w-24 flex-1"
         className={join(
           'h-6! border-0! bg-transparent! px-1! outline-0! focus-visible:outline-0!',
           combobox.className,

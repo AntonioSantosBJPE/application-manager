@@ -34,6 +34,13 @@ export type ComboboxProps = Omit<
   open?: boolean;
   /** Called with the next state whenever the combobox would open or close the list; pair it with `open`. */
   onOpenChange?: (open: boolean) => void;
+  /** Classes of the list, to set its width: it is as wide as the wrapper unless the caller says otherwise (`w-60`). */
+  listClassName?: string;
+  /**
+   * Makes the first option the active one while the person types, so Enter chooses it and it is drawn
+   * highlighted (`aria-activedescendant`). Without it no option is active until an arrow key moves there.
+   */
+  activateFirst?: boolean;
 };
 
 /**
@@ -53,6 +60,8 @@ export function Combobox({
   wrapperClassName,
   open: openProp,
   onOpenChange,
+  listClassName = 'w-full',
+  activateFirst = false,
   className,
   onKeyDown,
   onBlur,
@@ -119,7 +128,7 @@ export function Combobox({
           onQueryChange(event.target.value);
           if (selected !== null) onSelect(null);
           setOpen(true);
-          setActive(-1);
+          setActive(activateFirst ? 0 : -1);
         }}
         onKeyDown={handleKeyDown}
         onFocus={onFocus}
@@ -138,7 +147,10 @@ export function Combobox({
         aria-labelledby={props['aria-labelledby']}
         className={
           expanded
-            ? 'absolute top-full left-0 z-10 mt-1 flex max-h-60 w-full flex-col overflow-y-auto rounded-md border border-border-strong bg-surface-overlay p-1 text-text shadow-overlay'
+            ? join(
+                'absolute top-full left-0 z-10 mt-1 flex max-h-60 flex-col overflow-y-auto rounded-md border border-border-strong bg-surface-overlay p-1 text-text shadow-overlay',
+                listClassName,
+              )
             : undefined
         }
       >

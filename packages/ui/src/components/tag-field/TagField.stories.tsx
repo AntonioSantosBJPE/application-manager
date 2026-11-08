@@ -13,7 +13,15 @@ const catalog: ComboboxOption[] = [
   { id: 'delta', label: 'Skill Fictícia Delta' },
 ];
 
-function Controlled({ initial, invalid = false }: { initial: string[]; invalid?: boolean }) {
+function Controlled({
+  initial,
+  invalid = false,
+  activateFirst = false,
+}: {
+  initial: string[];
+  invalid?: boolean;
+  activateFirst?: boolean;
+}) {
   const [ids, setIds] = useState(initial);
   const [query, setQuery] = useState('');
   const tags: TagFieldTag[] = ids.map((id) => {
@@ -37,6 +45,7 @@ function Controlled({ initial, invalid = false }: { initial: string[]; invalid?:
             <TagField
               id={`skills-${surface}`}
               tags={tags}
+              activateFirst={activateFirst}
               onRemove={(id) => setIds((current) => current.filter((item) => item !== id))}
               query={query}
               options={options}
@@ -77,6 +86,20 @@ export const Padrao: Story = {
     // Both surfaces share the same tags, so the tag is gone from each of them.
     await expect(canvas.queryAllByRole('button', { name: 'Remover Skill Fictícia Alfa' })).toHaveLength(0);
     await expect(canvas.getAllByRole('button', { name: 'Remover Skill Fictícia Beta' })).toHaveLength(2);
+  },
+};
+
+/** The suggestions are a narrow popover under the typed text, with the first option active. */
+export const Sugestoes: Story = {
+  name: 'Sugestões em popover estreito',
+  render: () => <Controlled initial={['alfa']} activateFirst />,
+  play: async ({ canvas }) => {
+    const [input] = canvas.getAllByRole('combobox');
+    await userEvent.type(input!, 'fic');
+    const [list] = Array.from(document.querySelectorAll('[role="listbox"]:not([hidden])'));
+    await expect(list!.getBoundingClientRect().width).toBe(240);
+    const [first] = list!.querySelectorAll('[role="option"]');
+    await expect(input).toHaveAttribute('aria-activedescendant', first!.id);
   },
 };
 

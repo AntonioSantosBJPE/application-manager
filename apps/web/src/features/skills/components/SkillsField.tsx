@@ -164,6 +164,7 @@ export function SkillsField({
       <Field.Label htmlFor={id}>{label}</Field.Label>
       <TagField
         id={id}
+        activateFirst
         tags={skills.map((skill) => ({
           id: skill.id,
           label: skill.name,

@@ -16,9 +16,13 @@ const catalog: ComboboxOption[] = [
 function Harness({
   onSelect = () => {},
   onQueryChange = () => {},
+  activateFirst,
+  listClassName,
 }: {
   onSelect?: (option: ComboboxOption | null) => void;
   onQueryChange?: (query: string) => void;
+  activateFirst?: boolean;
+  listClassName?: string;
 }) {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<ComboboxOption | null>(null);
@@ -27,6 +31,8 @@ function Harness({
     <div>
       <Combobox
         aria-label="Skill"
+        activateFirst={activateFirst}
+        listClassName={listClassName}
         query={query}
         options={options}
         selected={selected}
@@ -56,6 +62,56 @@ describe('Combobox', () => {
     expect(screen.queryByRole('option')).toBeNull();
     const list = document.getElementById(box().getAttribute('aria-controls')!);
     expect(list).toHaveAttribute('role', 'listbox');
+  });
+
+  it('leaves no option active while typing, until an arrow key moves there', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    await user.type(box(), 'fic');
+
+    expect(box()).not.toHaveAttribute('aria-activedescendant');
+    expect(screen.getAllByRole('option').some((option) => option.hasAttribute('data-active'))).toBe(false);
+  });
+
+  it('with activateFirst the first option is active as soon as the menu opens with typed text, and Enter chooses it', async () => {
+    const onSelect = vi.fn();
+    const user = userEvent.setup();
+    render(<Harness activateFirst onSelect={onSelect} />);
+
+    await user.type(box(), 'fic');
+
+    const [first, second] = screen.getAllByRole('option');
+    expect(box()).toHaveAttribute('aria-activedescendant', first!.id);
+    expect(first).toHaveAttribute('data-active');
+    expect(second).not.toHaveAttribute('data-active');
+    await user.keyboard('{Enter}');
+    expect(onSelect).toHaveBeenCalledWith(catalog[0]);
+  });
+
+  it('with activateFirst the active option follows the first option of the new matches', async () => {
+    const user = userEvent.setup();
+    render(<Harness activateFirst />);
+
+    await user.type(box(), 'fic');
+    await user.keyboard('{ArrowDown}');
+    expect(box()).toHaveAttribute('aria-activedescendant', screen.getAllByRole('option')[1]!.id);
+    await user.type(box(), 'tícia beta');
+
+    expect(screen.getAllByRole('option')).toHaveLength(1);
+    expect(box()).toHaveAttribute('aria-activedescendant', screen.getByRole('option').id);
+  });
+
+  it('sizes the list as wide as the wrapper unless listClassName says otherwise', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<Harness />);
+    await user.type(box(), 'fic');
+    expect(screen.getByRole('listbox')).toHaveClass('w-full');
+
+    rerender(<Harness listClassName="w-60" />);
+
+    expect(screen.getByRole('listbox')).toHaveClass('w-60');
+    expect(screen.getByRole('listbox')).not.toHaveClass('w-full');
   });
 
   it('reports the typed text and opens a listbox of the options with aria-controls pointing at it', async () => {

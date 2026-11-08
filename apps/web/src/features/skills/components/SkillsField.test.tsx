@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { normalizeSkillKey, type CreateSkillRequest, type Skill } from '@am/contracts';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Outcome } from '../../../lib/bff';
@@ -105,6 +105,19 @@ describe('SkillsField', () => {
     expect(within(option).getByText('framework')).toHaveClass('text-text-muted', 'text-caption');
     expect(screen.getByText(SKILLS_FIELD_HINT)).toBeInTheDocument();
     expect(SKILLS_FIELD_HINT).toBe('Busque por nome ou apelido: “node”, “nodejs” e “Node.js” são a mesma skill.');
+  });
+
+  it('APP-59 leaves the first suggestion active as the matches arrive, and Enter chooses it', async () => {
+    const onChange = vi.fn();
+    render(<Harness api={fakeApi().api} onChange={onChange} />);
+
+    typeInto(required(), 'nest');
+
+    const first = await screen.findByRole('option', { name: /^NestJS/ });
+    await waitFor(() => expect(required()).toHaveAttribute('aria-activedescendant', first.id));
+    expect(first).toHaveAttribute('data-active');
+    fireEvent.keyDown(required(), { key: 'Enter' });
+    expect(onChange).toHaveBeenLastCalledWith([expect.objectContaining({ name: 'NestJS' })], []);
   });
 
   it('APP-59 finds a skill by an alias and offers its official name', async () => {

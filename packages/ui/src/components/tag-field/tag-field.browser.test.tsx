@@ -18,7 +18,7 @@ const catalog: ComboboxOption[] = [
   { id: 'gama', label: 'Skill Fictícia Gama' },
 ];
 
-function Harness({ invalid = false }: { invalid?: boolean }) {
+function Harness({ invalid = false, activateFirst = false }: { invalid?: boolean; activateFirst?: boolean }) {
   const [ids, setIds] = useState(['alfa', 'beta']);
   const [query, setQuery] = useState('');
   const tags: TagFieldTag[] = ids.map((id) => {
@@ -33,6 +33,7 @@ function Harness({ invalid = false }: { invalid?: boolean }) {
         <TagField
           id="skills"
           tags={tags}
+          activateFirst={activateFirst}
           onRemove={(id) => setIds((current) => current.filter((item) => item !== id))}
           query={query}
           options={options}
@@ -64,6 +65,28 @@ describe('TagField in the browser', () => {
     await userEvent.keyboard('{Backspace}');
     expect(screen.queryAllByRole('button')).toHaveLength(0);
     expect(document.activeElement).toBe(field());
+  });
+
+  it('APP-59 opens the suggestions as a 240 px popover under the typed text, not as wide as the box', async () => {
+    await page.viewport(1280, 800);
+    render(<Harness activateFirst />);
+    field().focus();
+
+    await userEvent.keyboard('fic');
+
+    const list = screen.getByRole('listbox');
+    const box = field().closest('div')!.parentElement!.getBoundingClientRect();
+    const typed = field().getBoundingClientRect();
+    const popover = list.getBoundingClientRect();
+    expect(popover.width).toBe(240);
+    expect(popover.width).toBeLessThan(box.width);
+    expect(popover.left).toBe(typed.left);
+    expect(popover.top).toBeGreaterThan(typed.bottom);
+    expect(popover.top).toBeLessThan(typed.bottom + 8);
+    // The first option is the active one, drawn highlighted.
+    const [first] = screen.getAllByRole('option');
+    expect(field().getAttribute('aria-activedescendant')).toBe(first!.id);
+    expect(getComputedStyle(first!).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
   });
 
   it('APP-59 returns the focus to the field after a click on a "×"', async () => {
