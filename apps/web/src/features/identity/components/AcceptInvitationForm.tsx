@@ -12,7 +12,7 @@ import { useForm } from '@tanstack/react-form';
 import { useId, useState } from 'react';
 import type { Outcome } from '../api/server-functions';
 import { MESSAGES, problemMessage } from '../model/messages';
-import { UnavailableScreen } from './AccessScreens';
+import { InvalidInvitationScreen, UnavailableScreen } from './AccessScreens';
 
 export interface AcceptInvitationFormProps {
   /** What `GET /invitations/:token` answered when the page opened. */
@@ -20,18 +20,6 @@ export interface AcceptInvitationFormProps {
   accept: (input: AcceptInvitationRequest) => Promise<Outcome<undefined>>;
   /** Runs once the account exists and the session started, so the route opens the home (UI-15). */
   onSuccess: () => void;
-}
-
-/** The only thing a dead link shows: the message, and no form to fill in (UI-16). */
-function InvalidInvitation() {
-  return (
-    <AuthPage.Root>
-      <AuthPage.Header>
-        <h1 className="text-lg font-semibold">Convite</h1>
-      </AuthPage.Header>
-      <Alert intent="danger">{MESSAGES.invitationInvalid}</Alert>
-    </AuthPage.Root>
-  );
 }
 
 /**
@@ -70,9 +58,9 @@ export function AcceptInvitationForm({ invitation, accept, onSuccess }: AcceptIn
   });
 
   if (!invitation.ok) {
-    return invitation.status === 410 ? <InvalidInvitation /> : <UnavailableScreen />;
+    return invitation.status === 410 ? <InvalidInvitationScreen /> : <UnavailableScreen />;
   }
-  if (expired) return <InvalidInvitation />;
+  if (expired) return <InvalidInvitationScreen />;
 
   return (
     <AuthPage.Root>

@@ -113,14 +113,14 @@ describe('member area guard', () => {
     expect(screen.getAllByRole('main')).toHaveLength(1);
   });
 
-  it('says the service is unavailable on the same url without going to login', async () => {
+  it('PRU-06 AC11 says the service is unavailable on the same url without going to login', async () => {
     sessionIs({ kind: 'unavailable' });
 
     const router = await open('/');
 
     expect(here(router)).toBe('/');
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Serviço indisponível. Tente novamente em instantes.',
+      'O serviço não respondeu. Seus dados estão seguros; tente de novo em instantes.',
     );
   });
 
@@ -160,13 +160,13 @@ describe('admin area guard', () => {
     expect(screen.getByRole('button', { name: 'Sair' })).toBeInTheDocument();
   });
 
-  it('shows a member the no-access message with a link to / and no admin shell', async () => {
+  it('PRU-06 AC10 shows a member the no-access message with a link to / and no admin shell', async () => {
     sessionIs(signedInAs(member));
 
     const router = await open('/admin');
 
     expect(here(router)).toBe('/admin');
-    expect(await screen.findByText('Você não tem acesso a esta área.')).toBeInTheDocument();
+    expect(await screen.findByText('Esta área é da administração. Sua conta é de uso do produto.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Voltar para o início' })).toHaveAttribute('href', '/');
     expect(screen.queryByRole('navigation')).toBeNull();
     // The way out is the screen's own (UI-27), not a shell menu: there is no navigation around it.
@@ -180,7 +180,7 @@ describe('admin area guard', () => {
 
     expect(here(router)).toBe('/admin');
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Serviço indisponível. Tente novamente em instantes.',
+      'O serviço não respondeu. Seus dados estão seguros; tente de novo em instantes.',
     );
   });
 
@@ -228,7 +228,7 @@ describe('login doors', () => {
     await open('/admin/login?redirect=%2Fadmin%2Finvitations&reason=expired');
 
     expect(await screen.findByRole('status')).toHaveTextContent(
-      'Sua sessão expirou. Entre novamente.',
+      'Sua sessão expirou. Entre de novo para continuar.',
     );
   });
 
@@ -305,7 +305,7 @@ describe('invitation screen', () => {
     await open('/invite/dead-token');
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Este convite não é mais válido. Peça um novo ao administrador.',
+      'Este convite expirou ou já foi usado. Peça um novo link a quem te convidou.',
     );
     expect(screen.queryByRole('button', { name: 'Criar conta' })).toBeNull();
   });
@@ -351,7 +351,7 @@ describe('admin dashboard', () => {
 
     await open('/admin');
 
-    expect(await screen.findByText('Você não tem acesso a esta área.')).toBeInTheDocument();
+    expect(await screen.findByText('Esta área é da administração. Sua conta é de uso do produto.')).toBeInTheDocument();
     expect(vi.mocked(pendingInvitations)).not.toHaveBeenCalled();
     expect(vi.mocked(getSystemStatus)).not.toHaveBeenCalled();
   });

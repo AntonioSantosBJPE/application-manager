@@ -570,9 +570,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] `MESSAGES` troca só as frases que as cartas redizem (sessão expirada, convite inválido, sem acesso, indisponível); os testes de identity mudam só essas frases
-- [ ] Telas "Sem acesso" (título, mensagem, "Voltar para o início", "Sair") e "Indisponível" (mensagem, "Tentar novamente") e "Convite inválido" sem formulário em `AuthPage`
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `MESSAGES` troca só as frases que as cartas redizem (sessão expirada, convite inválido, sem acesso, indisponível); os testes de identity mudam só essas frases
+- [x] Telas "Sem acesso" (título, mensagem, "Voltar para o início", "Sair") e "Indisponível" (mensagem, "Tentar novamente") e "Convite inválido" sem formulário em `AuthPage`
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit (web)
 **Gate**: quick

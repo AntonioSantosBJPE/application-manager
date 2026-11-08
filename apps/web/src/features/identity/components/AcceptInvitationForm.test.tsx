@@ -19,7 +19,7 @@ const details: InvitationDetails = {
   email: 'novo@example.test',
   expiresAt: '2026-11-13T12:00:00.000Z',
 };
-const invalidMessage = 'Este convite não é mais válido. Peça um novo ao administrador.';
+const invalidMessage = 'Este convite expirou ou já foi usado. Peça um novo link a quem te convidou.';
 
 /** Opens the page the way the route does: the loader asks the api, then the form gets the answer. */
 async function open(onSuccess = vi.fn()) {
@@ -77,6 +77,16 @@ describe('AcceptInvitationForm', () => {
     expect(bodies).toEqual([{ name: 'Novo Membro', password: 'a long enough password' }]);
   });
 
+  it('PRU-06 AC09 opens the Convite inválido screen for an expired, used, revoked or unknown link', async () => {
+    server.use(http.get(`${apiInternalUrl}/invitations/${token}`, () => problem(410)));
+    await open();
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Convite inválido');
+    expect(screen.getByRole('alert')).toHaveTextContent(invalidMessage);
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
   it('shows the invalid message without a form on 410 at open and at submit', async () => {
     server.use(http.get(`${apiInternalUrl}/invitations/${token}`, () => problem(410)));
     await open();
@@ -103,7 +113,7 @@ describe('AcceptInvitationForm', () => {
     await open();
 
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Serviço indisponível. Tente novamente em instantes.',
+      'O serviço não respondeu. Seus dados estão seguros; tente de novo em instantes.',
     );
     expect(screen.queryByRole('button', { name: 'Criar conta' })).toBeNull();
   });
