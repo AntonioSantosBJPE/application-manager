@@ -177,10 +177,10 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] O schema é reexportado em `apps/api/src/infra/database/schema.ts` e `0002_skills_schema.sql` foi gerada pelo `drizzle-kit`
-- [ ] Índices: chave única entre globais, `(owner_user_id, normalized_key)` único entre privadas, `normalized_alias` único, índice em `owner_user_id`
-- [ ] Teste `SKL-04`: nenhuma chave estrangeira do schema `skills` aponta para outro schema; testes de índice recusam duas globais com a mesma chave e aceitam a mesma chave em donos diferentes
-- [ ] Os testes de migração existentes continuam passando sem edição
+- [x] O schema é reexportado em `apps/api/src/infra/database/schema.ts` e `0002_skills_schema.sql` foi gerada pelo `drizzle-kit`
+- [x] Índices: chave única entre globais, `(owner_user_id, normalized_key)` único entre privadas, `normalized_alias` único, índice em `owner_user_id`
+- [x] Teste `SKL-04`: nenhuma chave estrangeira do schema `skills` aponta para outro schema; testes de índice recusam duas globais com a mesma chave e aceitam a mesma chave em donos diferentes
+- [x] Os testes de migração existentes continuam passando sem edição
 
 **Tests**: integration
 **Gate**: full
