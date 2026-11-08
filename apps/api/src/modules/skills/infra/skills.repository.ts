@@ -1,7 +1,8 @@
-import type { Skill, SkillCategory } from '@am/contracts';
+import type { Alias, Skill, SkillCategory, SkillScopeFilter } from '@am/contracts';
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, exists, inArray, isNull, like, or, sql } from 'drizzle-orm';
+import { and, asc, eq, exists, inArray, isNotNull, isNull, like, or, sql } from 'drizzle-orm';
 import { DATABASE, type Database } from '../../../infra/database/database.module.js';
+import type { SkillCursor } from '../domain/cursor.js';
 import { skillAliases, skills } from './schema.js';
 
 /** The visibility rule of the member: the globals and the member's own privates (Key decision 1). */
@@ -107,5 +108,73 @@ export class SkillsRepository {
       .from(skills)
       .where(and(inArray(skills.id, ids), visibleTo(userId)));
     return rows.map((row) => row.id);
+  }
+
+  /**
+   * One page of the admin catalog: the globals and the privates of every person, filtered, by key and
+   * id after the cursor. `limit` is the page size plus one, so the caller can tell whether another page
+   * exists. The owner of a private skill is read only to tell the scope and is never returned (SKL-33..SKL-35).
+   */
+  async listAdmin(input: {
+    scope: SkillScopeFilter;
+    category?: SkillCategory;
+    key: string;
+    cursor?: SkillCursor;
+    limit: number;
+  }): Promise<Array<Skill & { key: string }>> {
+    const pattern = `%${input.key}%`;
+    const aliasMatches = exists(
+      this.db
+        .select({ one: sql`1` })
+        .from(skillAliases)
+        .where(and(eq(skillAliases.skillId, skills.id), like(skillAliases.normalizedAlias, pattern))),
+    );
+    const rows = await this.db
+      .select({
+        id: skills.id,
+        name: skills.name,
+        category: skills.category,
+        ownerUserId: skills.ownerUserId,
+        key: skills.normalizedKey,
+      })
+      .from(skills)
+      .where(
+        and(
+          input.scope === 'global' ? isNull(skills.ownerUserId) : undefined,
+          input.scope === 'private' ? isNotNull(skills.ownerUserId) : undefined,
+          input.category === undefined ? undefined : eq(skills.category, input.category),
+          input.key === '' ? undefined : or(like(skills.normalizedKey, pattern), aliasMatches),
+          input.cursor === undefined
+            ? undefined
+            : sql`(${skills.normalizedKey} collate "C", ${skills.id}) > (${input.cursor.key}::text, ${input.cursor.id}::uuid)`,
+        ),
+      )
+      .orderBy(sql`${skills.normalizedKey} collate "C"`, skills.id)
+      .limit(input.limit);
+    return rows.map((row) => ({ ...toSkill(row), key: row.key }));
+  }
+
+  /** The aliases of the given skills, by skill id, each list in order of the alias key. */
+  async aliasesOf(skillIds: string[]): Promise<Map<string, Alias[]>> {
+    const bySkill = new Map<string, Alias[]>();
+    if (skillIds.length === 0) return bySkill;
+    const rows = await this.db
+      .select({ id: skillAliases.id, skillId: skillAliases.skillId, alias: skillAliases.alias })
+      .from(skillAliases)
+      .where(inArray(skillAliases.skillId, skillIds))
+      .orderBy(sql`${skillAliases.normalizedAlias} collate "C"`, asc(skillAliases.id));
+    for (const row of rows) bySkill.set(row.skillId, [...(bySkill.get(row.skillId) ?? []), { id: row.id, alias: row.alias }]);
+    return bySkill;
+  }
+
+  /** How many skills the whole catalog holds and how many of them are private, whatever the filters (SKL-36). */
+  async counts(): Promise<{ total: number; private: number }> {
+    const [row] = await this.db
+      .select({
+        total: sql<string>`count(*)`,
+        private: sql<string>`count(*) filter (where ${skills.ownerUserId} is not null)`,
+      })
+      .from(skills);
+    return { total: Number(row?.total ?? 0), private: Number(row?.private ?? 0) };
   }
 }

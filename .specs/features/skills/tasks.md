@@ -306,9 +306,9 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `domain/cursor.ts` codifica e decodifica o cursor e recusa texto inválido (teste unitário)
-- [ ] Resposta `{ items, nextCursor, counts }`, 50 por página, sem campo que identifique o dono; filtros de `scope`, `category` e `q` combinados; `counts` ignora os filtros
-- [ ] Testes `SKL-33` a `SKL-37` passam, incluindo seguir `nextCursor` até o fim
+- [x] `domain/cursor.ts` codifica e decodifica o cursor e recusa texto inválido (teste unitário)
+- [x] Resposta `{ items, nextCursor, counts }`, 50 por página, sem campo que identifique o dono; filtros de `scope`, `category` e `q` combinados; `counts` ignora os filtros
+- [x] Testes `SKL-33` a `SKL-37` passam, incluindo seguir `nextCursor` até o fim
 
 **Tests**: integration
 **Gate**: full
@@ -1099,7 +1099,7 @@ Proof: run web | ✓ SKL-76
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** 2026-11-08 - user: "Pode executar as task até o final, só pare se precisar de uma decisão importante minha"
-**Dispatched:** B1 (T1–T8, Sonnet 5.5) at HEAD 373a398, 2026-11-08 13:05
+**Dispatched:** B1 (T1–T8, Sonnet 5.5) at HEAD 373a398, 2026-11-08 13:05 - returned; accepted at 21ec8ce after 1 fix round (console.log in the seed generator) | B2 (T9–T15, Sonnet 5.5) at HEAD 21ec8ce, 2026-11-08 13:22
 **Walked:** none
 
 ---
