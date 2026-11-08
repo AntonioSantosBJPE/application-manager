@@ -209,11 +209,11 @@ describe('ApplicationsFilters', () => {
 
   describe('search', () => {
     async function typing() {
-      fakeApplications(server, portfolio());
+      const api = fakeApplications(server, portfolio());
       const rendered = renderList();
       await rows();
       vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-      return { ...rendered, field: screen.getByRole('searchbox', { name: 'Empresa, título ou skill' }) };
+      return { ...rendered, api, field: screen.getByRole('searchbox', { name: 'Empresa, título ou skill' }) };
     }
     const type = (field: HTMLElement, value: string) => fireEvent.change(field, { target: { value } });
 
@@ -246,19 +246,26 @@ describe('ApplicationsFilters', () => {
       expect(onFiltersChange).toHaveBeenCalledExactlyOnceWith({ ...DEFAULT_APPLICATIONS_FILTERS, q: 'nes' });
     });
 
-    it('APP-46 lists what matches by skill and by company, ignoring case and accents, once the search settles', async () => {
-      const { field } = await typing();
+    it('APP-46 asks the api for q, as typed, 300 ms after the last key and not before', async () => {
+      const { api, field } = await typing();
+      // Only the queries of this test: a request a previous test left in flight may still land on this api.
+      const asked = (q: string) => api.callsTo('GET', '/applications?').filter((call) => call.includes(`q=${q}`));
 
       type(field, 'NESTJS');
-      act(() => vi.advanceTimersByTime(300));
+      act(() => vi.advanceTimersByTime(299));
+      // `setImmediate` is not faked: it lets a request that was wrongly sent reach the api.
+      for (let turn = 0; turn < 30; turn += 1) await new Promise((resolve) => setImmediate(resolve));
+      expect(asked('NESTJS')).toEqual([]);
+
+      act(() => vi.advanceTimersByTime(1));
       vi.useRealTimers();
-      await waitFor(() => expect(companiesShown()).toEqual(['Empresa Fictícia Alfa']));
+      await waitFor(() => expect(asked('NESTJS')).toEqual(['GET /applications?tab=active&q=NESTJS&sort=activity']));
 
       vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
       type(field, 'ficticia gama');
       act(() => vi.advanceTimersByTime(300));
       vi.useRealTimers();
-      await waitFor(() => expect(companiesShown()).toEqual(['Empresa Fictícia Gama']));
+      await waitFor(() => expect(asked('ficticia')).toEqual(['GET /applications?tab=active&q=ficticia+gama&sort=activity']));
     });
 
     it('APP-46 changes q to the empty text when the field is emptied', async () => {
