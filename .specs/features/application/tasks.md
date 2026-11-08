@@ -1180,9 +1180,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Seção Application lista as rotas e colunas acrescentadas (`ghost-snooze`, `count`, `position`, `search_text`, `ghost_snoozed_until`) e passa a "done"; seção Skill registra `postingCount`
-- [ ] `docs/guia-teste-manual.md` ensina o cadastro e a sugestão de sem retorno; `docs/design/principles.md` move `PageApplications`, `PageNewApplication` e `PageApplicationDetail` para as páginas atuais
-- [ ] Gate check passes: `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
+- [x] Seção Application lista as rotas e colunas acrescentadas (`ghost-snooze`, `count`, `position`, `search_text`, `ghost_snoozed_until`) e passa a "done"; seção Skill registra `postingCount`
+- [x] `docs/guia-teste-manual.md` ensina o cadastro e a sugestão de sem retorno; `docs/design/principles.md` move `PageApplications`, `PageNewApplication` e `PageApplicationDetail` para as páginas atuais
+- [x] Gate check passes: `pnpm build && pnpm typecheck && pnpm lint && pnpm test`
 
 **Tests**: none
 **Gate**: build

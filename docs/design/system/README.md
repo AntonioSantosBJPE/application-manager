@@ -25,8 +25,8 @@ Abra [index.html](index.html) no navegador; cada carta também abre sozinha (`co
 - **Componentes existentes em `packages/ui`, redesenhados:** `Button` (+ intent `ghost`), `Alert` (+ intent `warning`), `Field` (+ textarea), `StatusBadge`, `CopyField`, `ConfirmDialog`.
 - **Arquétipos existentes, redesenhados:** `AppShell`, `AuthPage`, `ListPage` (+ cabeçalho de grupo), `DashboardPage` (grade de 12 colunas).
 - **Novos:** `Logo`, `PipelineStatus`, `SkillTag`, `Kbd`, `CommandMenu`, `EmptyState`, e os arquétipos `DetailPage` e `FormPage` previstos em [principles.md](../principles.md).
-- **Telas atuais (aplicadas em `apps/web`):** `PageLogin` (`/login` e `/admin/login`), `PageInvite`, `PageAccessStates` (convite inválido, sem acesso, indisponível), `PageMemberHome`, `PageAdminDashboard`, `PageAdminInvitations`, `PageSkills` (`/admin/skills`), `PageStatus`.
-- **Telas futuras (referência para as fases 1 a 4):** `PageApplications`, `PageNewApplication`, `PageApplicationDetail`, `PageMasterResume`, `PageResumeVersion`, `PageHomeDashboard`, `PageInsights`, `PageCommandPalette`.
+- **Telas atuais (aplicadas em `apps/web`):** `PageLogin` (`/login` e `/admin/login`), `PageInvite`, `PageAccessStates` (convite inválido, sem acesso, indisponível), `PageMemberHome`, `PageAdminDashboard`, `PageAdminInvitations`, `PageSkills` (`/admin/skills`), `PageStatus`, `PageApplications` (`/applications`), `PageNewApplication` (o diálogo de `/applications`) e `PageApplicationDetail` (`/applications/$id`).
+- **Telas futuras (referência para as fases 1 a 4):** `PageMasterResume`, `PageResumeVersion`, `PageHomeDashboard`, `PageInsights`, `PageCommandPalette`.
 - **Capa:** `components/Cover`.
 
 ## Decisões que este design toma
