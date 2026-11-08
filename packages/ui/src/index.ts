@@ -7,6 +7,7 @@ export {
   type CopyFieldStatus,
 } from './components/copy-field';
 export { Dialog } from './components/dialog';
+export { DropdownMenu } from './components/dropdown-menu';
 export { EmptyState } from './components/empty-state';
 export { Field, type FieldRootProps } from './components/field';
 export { FilterChip, type FilterChipProps } from './components/filter-chip';

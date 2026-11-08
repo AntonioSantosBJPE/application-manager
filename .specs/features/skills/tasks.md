@@ -589,8 +589,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] Dependência instalada; partes `Root`, `Trigger`, `Content`, `Item`
-- [ ] Story nos dois temas; teste de navegador: Enter abre, setas movem, Esc fecha e devolve o foco
+- [x] Dependência instalada; partes `Root`, `Trigger`, `Content`, `Item`
+- [x] Story nos dois temas; teste de navegador: Enter abre, setas movem, Esc fecha e devolve o foco
 
 **Tests**: unit
 **Gate**: quick
