@@ -549,8 +549,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] Exportado; story nos dois temas
-- [ ] Testes cobrem rótulo, digitação e foco
+- [x] Exportado; story nos dois temas
+- [x] Testes cobrem rótulo, digitação e foco
 
 **Tests**: unit
 **Gate**: quick

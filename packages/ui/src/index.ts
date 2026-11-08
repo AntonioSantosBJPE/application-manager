@@ -16,6 +16,7 @@ export {
   type PipelineStatusProps,
   type PipelineStatusValue,
 } from './components/pipeline-status';
+export { SearchInput, type SearchInputProps } from './components/search-input';
 export { SkillTag, type SkillTagProps, type SkillTagVariant } from './components/skill-tag';
 export { StatusBadge, type StatusBadgeProps } from './components/status-badge';
 export { AppShell } from './layouts/app-shell';
