@@ -327,9 +327,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] `Logo` com `variant` `mark`/`wordmark`, `tone`, `title` opcional (`aria-hidden` sem ele), espaço de meio símbolo, "rumo" 600 e "carreira" 400 em minúsculas
-- [ ] Testes e stories do símbolo e do logotipo em todas as cores permitidas sobre `surface`, `surface-raised` e bloco `accent`
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `Logo` com `variant` `mark`/`wordmark`, `tone`, `title` opcional (`aria-hidden` sem ele), espaço de meio símbolo, "rumo" 600 e "carreira" 400 em minúsculas
+- [x] Testes e stories do símbolo e do logotipo em todas as cores permitidas sobre `surface`, `surface-raised` e bloco `accent`
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick
