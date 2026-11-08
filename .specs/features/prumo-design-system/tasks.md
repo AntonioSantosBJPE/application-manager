@@ -267,9 +267,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Ponto antes do texto, borda e texto na cor do intent, fundo transparente
-- [ ] Testes e stories dos dois intents nos dois temas com contraste
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Ponto antes do texto, borda e texto na cor do intent, fundo transparente
+- [x] Testes e stories dos dois intents nos dois temas com contraste
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick
