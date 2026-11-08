@@ -3,7 +3,7 @@ import { Field, TagField, type ComboboxOption } from '@am/ui';
 import { Plus } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import type { Outcome } from '../../../lib/bff';
-import { problemMessage } from '../../identity';
+import { problemMessage, type Failure } from '../../identity';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '../model/categories';
 
 /** What the field keeps of a skill: enough to draw its tag and to send its id. */
@@ -29,6 +29,8 @@ export interface SkillsFieldProps {
   api: SkillsFieldApi;
   placeholder?: string;
   className?: string;
+  /** The line shown when creating a private skill fails; the default names only the unavailable service. */
+  failureMessage?: (failure: Failure) => string;
 }
 
 /** The note under the field while the person types (APP-59). */
@@ -51,7 +53,17 @@ const sameName = (a: string, b: string) => a.toLocaleLowerCase('pt-BR') === b.to
  * The field is controlled and holds nothing but the text and the menu. To keep both fields consistent in
  * one step, `onChange` receives the two lists together: pass the pair back to wherever the form keeps them.
  */
-export function SkillsField({ label, requirement, skills, other = [], onChange, api, placeholder, className }: SkillsFieldProps) {
+export function SkillsField({
+  label,
+  requirement,
+  skills,
+  other = [],
+  onChange,
+  api,
+  placeholder,
+  className,
+  failureMessage = problemMessage,
+}: SkillsFieldProps) {
   const id = useId();
   const [query, setQuery] = useState('');
   // The skills found for `for`; the create option waits for the answer of the text on screen.
@@ -109,7 +121,7 @@ export function SkillsField({ label, requirement, skills, other = [], onChange, 
     creating.current = false;
     if (outcome.ok) add(outcome.data);
     else {
-      setFailure(problemMessage(outcome));
+      setFailure(failureMessage(outcome));
       setPending(null);
       setOpen(false);
     }

@@ -204,6 +204,26 @@ describe('RowActions', () => {
     expect(api.callsTo('GET', '/applications?')).toHaveLength(1);
   });
 
+  it('APP-55 says what the api refused: 404 "Candidatura não encontrada." and 400 "Revise os campos destacados."', async () => {
+    const api = fakeApplications(server, portfolio());
+    renderList();
+    await rows();
+
+    api.fail('status', 404);
+    await openButtonMenu('Empresa Fictícia Alfa');
+    await openSubmenu('Status');
+    fireEvent.click(screen.getByRole('menuitemradio', { name: 'Proposta' }));
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Candidatura não encontrada.'));
+    expect(screen.getByRole('alert').textContent).not.toContain(MESSAGES.unavailable);
+
+    api.fail('status', 400);
+    await openButtonMenu('Empresa Fictícia Alfa');
+    await openSubmenu('Status');
+    fireEvent.click(screen.getByRole('menuitemradio', { name: 'Proposta' }));
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Revise os campos destacados.'));
+    expect(within(rowOf('Empresa Fictícia Alfa')).getByRole('img', { name: 'Enviada' })).toBeInTheDocument();
+  });
+
   it('APP-55 keeps the level on the row and shows the Alert when the level change fails, and the next success clears it', async () => {
     const api = fakeApplications(server, portfolio());
     api.fail('level', 503);

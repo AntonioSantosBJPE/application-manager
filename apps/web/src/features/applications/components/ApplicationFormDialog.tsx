@@ -16,10 +16,11 @@ import { useForm } from '@tanstack/react-form';
 import type { KeyboardEvent } from 'react';
 import { useId, useState } from 'react';
 import type { Outcome } from '../../../lib/bff';
-import { MESSAGES, problemMessage } from '../../identity';
+import { MESSAGES } from '../../identity';
 import { SkillsField, type SkillsFieldApi, type SkillsFieldSkill } from '../../skills';
 import { LEVEL_LABELS, LEVEL_ORDER, STATUS_LABELS, WORK_MODEL_LABELS, WORK_MODEL_ORDER } from '../model/labels';
-import { FORM_MESSAGES } from '../model/messages';
+import { FORM_MESSAGES, REFUSAL_MESSAGES } from '../model/messages';
+import { refusalMessage, refusedFieldsOf, type RefusedField } from '../model/refusal';
 
 /** What the form holds: the fields as typed, the level and the model as chosen, the two skill lists. */
 export interface ApplicationFormValues {
@@ -170,6 +171,8 @@ export function ApplicationFormDialog(props: ApplicationFormDialogProps) {
   const editing = props.mode === 'edit';
   const id = useId();
   const [unavailable, setUnavailable] = useState<string | undefined>();
+  // The fields a `400` named: each shows an error under it until the next try.
+  const [refused, setRefused] = useState<readonly RefusedField[]>([]);
   // What the form opened with: an edit sends only what differs from it.
   const [start] = useState<ApplicationFormValues>(() => ({ ...EMPTY_VALUES, ...initial }));
 
@@ -177,6 +180,7 @@ export function ApplicationFormDialog(props: ApplicationFormDialogProps) {
     defaultValues: start,
     onSubmit: async ({ value }) => {
       setUnavailable(undefined);
+      setRefused([]);
       if (value.level === null) return;
       let outcome: Outcome<ApplicationDetail>;
       try {
@@ -200,9 +204,15 @@ export function ApplicationFormDialog(props: ApplicationFormDialogProps) {
         return;
       }
       if (onExpired(outcome)) return;
-      setUnavailable(problemMessage(outcome));
+      setRefused(refusedFieldsOf(outcome));
+      setUnavailable(refusalMessage(outcome));
     },
   });
+
+  /** What shows under a field: its own check and, when the api refused it, "Revise este campo.". */
+  function errorText(errors: readonly unknown[], name: RefusedField): string {
+    return [...errors.map(String), ...(refused.includes(name) ? [REFUSAL_MESSAGES.field] : [])].join(' ');
+  }
 
   function submit() {
     if (form.state.isSubmitting) return;
@@ -244,7 +254,7 @@ export function ApplicationFormDialog(props: ApplicationFormDialogProps) {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <form.Field name="company" validators={{ onSubmit: ({ value }) => companyError(value) }}>
               {(field) => (
-                <Field.Root invalid={field.state.meta.errors.length > 0}>
+                <Field.Root invalid={field.state.meta.errors.length > 0 || refused.includes('company')}>
                   <Field.Label htmlFor={`${id}-company`}>{FORM_MESSAGES.company}</Field.Label>
                   <Field.Control
                     id={`${id}-company`}
@@ -254,13 +264,13 @@ export function ApplicationFormDialog(props: ApplicationFormDialogProps) {
                     onBlur={field.handleBlur}
                     onChange={(event) => field.handleChange(event.target.value)}
                   />
-                  <Field.Error>{field.state.meta.errors.map(String).join(' ')}</Field.Error>
+                  <Field.Error>{errorText(field.state.meta.errors, 'company')}</Field.Error>
                 </Field.Root>
               )}
             </form.Field>
             <form.Field name="title" validators={{ onSubmit: ({ value }) => titleError(value) }}>
               {(field) => (
-                <Field.Root invalid={field.state.meta.errors.length > 0}>
+                <Field.Root invalid={field.state.meta.errors.length > 0 || refused.includes('title')}>
                   <Field.Label htmlFor={`${id}-title`}>{FORM_MESSAGES.jobTitle}</Field.Label>
                   <Field.Control
                     id={`${id}-title`}
@@ -269,13 +279,13 @@ export function ApplicationFormDialog(props: ApplicationFormDialogProps) {
                     onBlur={field.handleBlur}
                     onChange={(event) => field.handleChange(event.target.value)}
                   />
-                  <Field.Error>{field.state.meta.errors.map(String).join(' ')}</Field.Error>
+                  <Field.Error>{errorText(field.state.meta.errors, 'title')}</Field.Error>
                 </Field.Root>
               )}
             </form.Field>
             <form.Field name="url" validators={{ onSubmit: ({ value }) => linkError(value) }}>
               {(field) => (
-                <Field.Root invalid={field.state.meta.errors.length > 0} className="sm:col-span-2">
+                <Field.Root invalid={field.state.meta.errors.length > 0 || refused.includes('url')} className="sm:col-span-2">
                   <Field.Label htmlFor={`${id}-url`}>
                     {FORM_MESSAGES.link} <span className="font-normal text-text-muted">{FORM_MESSAGES.linkHint}</span>
                   </Field.Label>
@@ -288,7 +298,7 @@ export function ApplicationFormDialog(props: ApplicationFormDialogProps) {
                     onBlur={field.handleBlur}
                     onChange={(event) => field.handleChange(event.target.value)}
                   />
-                  <Field.Error>{field.state.meta.errors.map(String).join(' ')}</Field.Error>
+                  <Field.Error>{errorText(field.state.meta.errors, 'url')}</Field.Error>
                 </Field.Root>
               )}
             </form.Field>
@@ -299,7 +309,7 @@ export function ApplicationFormDialog(props: ApplicationFormDialogProps) {
               validators={{ onSubmit: ({ value }) => (value === null ? FORM_MESSAGES.levelRequired : undefined) }}
             >
               {(field) => (
-                <Field.Root invalid={field.state.meta.errors.length > 0}>
+                <Field.Root invalid={field.state.meta.errors.length > 0 || refused.includes('level')}>
                   <span id={`${id}-level`} className="text-label text-text">
                     {FORM_MESSAGES.level}
                   </span>
@@ -309,7 +319,7 @@ export function ApplicationFormDialog(props: ApplicationFormDialogProps) {
                     value={field.state.value}
                     onValueChange={(value) => field.handleChange(value as JobLevel)}
                   />
-                  <Field.Error>{field.state.meta.errors.map(String).join(' ')}</Field.Error>
+                  <Field.Error>{errorText(field.state.meta.errors, 'level')}</Field.Error>
                 </Field.Root>
               )}
             </form.Field>
@@ -338,6 +348,7 @@ export function ApplicationFormDialog(props: ApplicationFormDialogProps) {
                   skills={required}
                   other={nice}
                   api={api.skills}
+                  failureMessage={refusalMessage}
                   placeholder={FORM_MESSAGES.skillsPlaceholder}
                   onChange={(skills, other) => {
                     form.setFieldValue('required', skills);
@@ -350,6 +361,7 @@ export function ApplicationFormDialog(props: ApplicationFormDialogProps) {
                   skills={nice}
                   other={required}
                   api={api.skills}
+                  failureMessage={refusalMessage}
                   placeholder={FORM_MESSAGES.skillsPlaceholder}
                   onChange={(skills, other) => {
                     form.setFieldValue('nice', skills);

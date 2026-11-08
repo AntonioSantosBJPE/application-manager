@@ -49,17 +49,17 @@ export function fakeApplications(server: SetupServer, initial: ApplicationSummar
   const calls: string[] = [];
   const bodies: unknown[] = [];
   const holds = new Map<string, Promise<void>>();
-  const failures = new Map<string, number>();
+  const failures = new Map<string, { status: number; errors?: { path: string; code: string }[] }>();
   let nextId = 900;
 
   const waitFor = async (name: string) => {
     await holds.get(name);
   };
   const failed = (name: string) => {
-    const status = failures.get(name);
-    if (status === undefined) return undefined;
+    const failure = failures.get(name);
+    if (failure === undefined) return undefined;
     failures.delete(name);
-    return problem(status);
+    return problem(failure.status, failure.errors);
   };
 
   const matches = (item: ApplicationSummary, key: string) =>
@@ -195,9 +195,9 @@ export function fakeApplications(server: SetupServer, initial: ApplicationSummar
       );
       return release;
     },
-    /** The next call of the endpoint answers with this status as Problem Details. */
-    fail(name: 'list' | 'status' | 'level' | 'create', status: number) {
-      failures.set(name, status);
+    /** The next call of the endpoint answers with this status as Problem Details, naming the fields in `errors`. */
+    fail(name: 'list' | 'status' | 'level' | 'create', status: number, errors?: { path: string; code: string }[]) {
+      failures.set(name, { status, errors });
     },
   };
 }

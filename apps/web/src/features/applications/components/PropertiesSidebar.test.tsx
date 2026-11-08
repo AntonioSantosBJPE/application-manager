@@ -197,6 +197,24 @@ describe('PropertiesSidebar', () => {
     expect(inSidebar().getByRole('button', { name: 'Editar local Recife, PE' })).toBeInTheDocument();
   });
 
+  it('APP-78 says what the api refused: 404 "Candidatura não encontrada." and 400 "Revise os campos destacados."', async () => {
+    const api = fakeDetail(server, opened());
+    renderDetail(opened());
+
+    api.fail('status', 404);
+    openMenu('Status Enviada');
+    fireEvent.click(await screen.findByRole('menuitemradio', { name: 'Proposta' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Candidatura não encontrada.');
+
+    api.fail('posting', 400, [{ path: 'location', code: 'too_big' }]);
+    fireEvent.click(inSidebar().getByRole('button', { name: /Editar local/ }));
+    const field = inSidebar().getByRole('textbox', { name: 'Editar local' });
+    fireEvent.change(field, { target: { value: 'Natal, RN' } });
+    fireEvent.keyDown(field, { key: 'Enter' });
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Revise os campos destacados.'));
+    expect(inSidebar().getByRole('button', { name: 'Editar local Recife, PE' })).toBeInTheDocument();
+  });
+
   it('APP-78 takes the Alert away when the next write works', async () => {
     const api = fakeDetail(server, opened());
     api.fail('status', 500);

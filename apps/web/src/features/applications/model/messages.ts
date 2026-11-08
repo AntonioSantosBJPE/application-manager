@@ -106,6 +106,13 @@ export const DETAIL_MESSAGES = {
   deleteCancel: 'Cancelar',
 } as const;
 
+/** What a refusal of the api says (`404` is `DETAIL_MESSAGES.notFound`), instead of "Serviço indisponível" (APP-55, APP-64, APP-78). */
+export const REFUSAL_MESSAGES = {
+  fields: 'Revise os campos destacados.',
+  field: 'Revise este campo.',
+  skills: 'Alguma skill escolhida não pode ser usada.',
+} as const;
+
 /** The accessible name of a property menu: the name of the property and the value it shows ("Status Enviada"). */
 export const propertyLabel = (name: string, value: string) => `${name} ${value}`;
 

@@ -4,6 +4,7 @@ import { Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import { SkillsField, type SkillsFieldApi, type SkillsFieldSkill } from '../../skills';
 import { DETAIL_MESSAGES } from '../model/messages';
+import { refusalMessage } from '../model/refusal';
 
 type Requirement = 'required' | 'nice';
 
@@ -106,6 +107,7 @@ export function SkillsSection({ skills, onChange, api }: SkillsSectionProps) {
                     requirement={row.requirement}
                     skills={[]}
                     api={api}
+                    failureMessage={refusalMessage}
                     placeholder={DETAIL_MESSAGES.skillsPlaceholder}
                     onChange={([picked]) => {
                       if (picked !== undefined) add(row.requirement, picked);

@@ -266,6 +266,31 @@ describe('ApplicationFormDialog', () => {
     expect(onSaved).toHaveBeenCalledTimes(1);
   });
 
+  it('APP-64 says what the api refused: 400 names the field and the Alert, 422 the skills, 404 the application', async () => {
+    const api = fakeApplications(server, [], { skillNames });
+    const { onClose } = renderDialog();
+    fillRequired('Empresa Fictícia Gama', 'Vaga de Teste Sênior', 'Sênior');
+
+    api.fail('create', 400, [{ path: 'company', code: 'too_big' }]);
+    fireEvent.click(create());
+    expect((await within(dialog()).findByRole('alert')).textContent).toContain('Revise os campos destacados.');
+    expect(screen.getByLabelText('Empresa')).toBeInvalid();
+    expect(screen.getByLabelText('Título')).not.toBeInvalid();
+    expect(within(dialog()).getByText('Revise este campo.')).toBeInTheDocument();
+
+    api.fail('create', 422);
+    fireEvent.click(create());
+    await waitFor(() => expect(within(dialog()).getByRole('alert').textContent).toContain('Alguma skill escolhida não pode ser usada.'));
+    expect(screen.getByLabelText('Empresa')).not.toBeInvalid();
+    expect(within(dialog()).queryByText('Revise este campo.')).toBeNull();
+
+    api.fail('create', 404);
+    fireEvent.click(create());
+    await waitFor(() => expect(within(dialog()).getByRole('alert').textContent).toContain('Candidatura não encontrada.'));
+    expect(within(dialog()).getByRole('alert').textContent).not.toContain(MESSAGES.unavailable);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   it('APP-64 leaves the failure to the login redirect when the answer is 401', async () => {
     const api = fakeApplications(server, []);
     api.fail('create', 401);

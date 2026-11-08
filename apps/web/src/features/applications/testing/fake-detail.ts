@@ -34,13 +34,13 @@ export function fakeDetail(server: SetupServer, initial: ApplicationDetail, opti
   let nextEvent = 5000;
   const calls: string[] = [];
   const holds = new Map<string, Promise<void>>();
-  const failures = new Map<string, number>();
+  const failures = new Map<string, { status: number; errors?: { path: string; code: string }[] }>();
 
   const failed = (name: DetailEndpoint) => {
-    const status = failures.get(name);
-    if (status === undefined) return undefined;
+    const failure = failures.get(name);
+    if (failure === undefined) return undefined;
     failures.delete(name);
-    return problem(status);
+    return problem(failure.status, failure.errors);
   };
   const wait = async (name: DetailEndpoint) => {
     await holds.get(name);
@@ -181,9 +181,9 @@ export function fakeDetail(server: SetupServer, initial: ApplicationDetail, opti
       );
       return release;
     },
-    /** The next call of the endpoint answers with this status as Problem Details. */
-    fail(name: DetailEndpoint, status: number) {
-      failures.set(name, status);
+    /** The next call of the endpoint answers with this status as Problem Details, naming the fields in `errors`. */
+    fail(name: DetailEndpoint, status: number, errors?: { path: string; code: string }[]) {
+      failures.set(name, { status, errors });
     },
   };
 }

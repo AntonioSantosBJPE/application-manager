@@ -4,11 +4,12 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import type { Outcome } from '../../../lib/bff';
-import { MESSAGES, problemMessage } from '../../identity';
+import { MESSAGES } from '../../identity';
 import { DEFAULT_APPLICATIONS_FILTERS, type ApplicationsFilters as Filters } from '../model/filters';
 import { groups } from '../model/groups';
 import { STATUS_GROUP_LABELS, STATUS_LABELS } from '../model/labels';
 import { APPLICATIONS_MESSAGES, newInStatusLabel } from '../model/messages';
+import { refusalMessage } from '../model/refusal';
 import { ApplicationsFilters, SortButton } from './ApplicationsFilters';
 import { RowActions } from './RowActions';
 
@@ -111,7 +112,7 @@ export function ApplicationsList({
       return;
     }
     if (onExpired(outcome)) return;
-    setFailure(problemMessage(outcome));
+    setFailure(refusalMessage(outcome));
   }
 
   const changeStatus = (application: ApplicationSummary, status: ApplicationStatus) =>

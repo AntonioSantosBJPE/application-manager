@@ -12,6 +12,6 @@ export const context: ApiRequestContext = {
 };
 
 /** An error as the api sends it: RFC 9457 Problem Details. */
-export function problem(status: number) {
-  return HttpResponse.json({ type: 'about:blank', title: `Problem ${status}`, status }, { status });
+export function problem(status: number, errors?: { path: string; code: string }[]) {
+  return HttpResponse.json({ type: 'about:blank', title: `Problem ${status}`, status, ...(errors === undefined ? {} : { errors }) }, { status });
 }

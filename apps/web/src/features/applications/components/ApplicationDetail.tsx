@@ -12,8 +12,9 @@ import { useEffect, useRef, useState } from 'react';
 import type { MouseEvent } from 'react';
 import type { Outcome } from '../../../lib/bff';
 import type { SkillsFieldApi } from '../../skills';
-import { MESSAGES, problemMessage } from '../../identity';
+import { MESSAGES } from '../../identity';
 import { DETAIL_MESSAGES } from '../model/messages';
+import { refusalMessage } from '../model/refusal';
 import { ApplicationTimeline } from './ApplicationTimeline';
 import { GhostAlert } from './GhostAlert';
 import { DeleteApplication } from './DeleteApplication';
@@ -164,7 +165,7 @@ export function ApplicationDetail({
       return undefined;
     }
     if (outcome.ok) return outcome.data;
-    if (!onExpired(outcome)) setFailure(problemMessage(outcome));
+    if (!onExpired(outcome)) setFailure(refusalMessage(outcome));
     return undefined;
   }
 
@@ -202,7 +203,7 @@ export function ApplicationDetail({
       onDeleted();
       return;
     }
-    if (!onExpired(outcome)) setFailure(problemMessage(outcome));
+    if (!onExpired(outcome)) setFailure(refusalMessage(outcome));
   }
 
   return (

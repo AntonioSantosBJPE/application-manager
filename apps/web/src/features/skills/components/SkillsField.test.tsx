@@ -4,6 +4,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Outcome } from '../../../lib/bff';
+import type { Failure } from '../../identity';
 import { SkillsField, SKILLS_FIELD_HINT, type SkillsFieldApi, type SkillsFieldSkill } from './SkillsField';
 
 const uuid = (n: number) => `0190a5b4-7c3a-7c8e-9f2a-${String(n).padStart(12, '0')}`;
@@ -44,8 +45,10 @@ function Harness({
   initialRequired = [],
   initialNice = [],
   onChange,
+  failureMessage,
 }: {
   api: SkillsFieldApi;
+  failureMessage?: (failure: Failure) => string;
   initialRequired?: SkillsFieldSkill[];
   initialNice?: SkillsFieldSkill[];
   onChange?: (required: SkillsFieldSkill[], nice: SkillsFieldSkill[]) => void;
@@ -60,6 +63,7 @@ function Harness({
         skills={required}
         other={nice}
         api={api}
+        failureMessage={failureMessage}
         onChange={(skills, other) => {
           setRequired(skills);
           setNice(other);
@@ -193,6 +197,18 @@ describe('SkillsField', () => {
 
     expect(await screen.findByText('Serviço indisponível. Tente novamente em instantes.')).toBeInTheDocument();
     expect(removeButtons()).toEqual([]);
+  });
+
+  it('APP-60 shows the line the screen gives for the refusal when it passes failureMessage', async () => {
+    const { api } = fakeApi();
+    const refusing: SkillsFieldApi = { ...api, create: () => Promise.resolve({ ok: false, status: 422 }) };
+    render(<Harness api={refusing} failureMessage={(failure) => `Recusa ${failure.status}`} />);
+
+    typeInto(required(), 'Skill Fictícia Alfa');
+    fireEvent.click(await screen.findByRole('option', { name: /Criar/ }));
+    fireEvent.click(await screen.findByRole('option', { name: 'Linguagem' }));
+
+    expect(await screen.findByText('Recusa 422')).toBeInTheDocument();
   });
 
   it('APP-61 moves a skill that is in the other field to this one, without repeating it', async () => {

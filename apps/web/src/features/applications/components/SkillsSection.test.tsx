@@ -106,6 +106,17 @@ describe('SkillsSection', () => {
     expect(names('Obrigatórias')).toEqual(['Java', 'Spring Boot']);
   });
 
+  it('APP-73 says the skill cannot be used when the api refuses the list with 422', async () => {
+    const api = fakeDetail(server, opened());
+    api.fail('skills', 422);
+    renderDetail(opened());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remover Java' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Alguma skill escolhida não pode ser usada.');
+    expect(names('Obrigatórias')).toEqual(['Java', 'Spring Boot']);
+  });
+
   it('APP-73 marks a private skill as private and keeps it when another skill is removed', async () => {
     const mine = { id: uuid(901), name: 'Skill Fictícia Privada', scope: 'private' as const, requirement: 'required' as const, category: 'tool' as const };
     const api = fakeDetail(server, opened([java, mine]));
