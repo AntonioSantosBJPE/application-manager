@@ -65,7 +65,7 @@ describe('applications route create', () => {
       },
     });
     await waitFor(async () =>
-      expect(within(await sidebar()).getByRole('link', { name: /^Candidaturas/ }).textContent).toBe('Candidaturas25'),
+      expect(within(await sidebar()).getByRole('link', { name: /^Candidaturas/ }).textContent).toBe('Candidaturas 25'),
     );
   });
 });

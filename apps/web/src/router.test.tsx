@@ -143,7 +143,8 @@ describe('member area guard', () => {
     expect(within(sidebar).getByText('rumo')).toBeInTheDocument();
     expect(within(sidebar).getByText('carreira')).toBeInTheDocument();
     const links = within(sidebar).getAllByRole('link');
-    expect(links.map((link) => link.textContent)).toEqual(['Início', 'Candidaturas0']);
+    expect(links.map((link) => link.textContent)).toEqual(['Início', 'Candidaturas 0']);
+    expect(within(sidebar).getByRole('link', { name: 'Candidaturas 0' })).toBeInTheDocument();
     expect(links[0]).toHaveAttribute('href', '/');
     expect(links[0]).toHaveAttribute('aria-current', 'page');
     expect(links[1]).not.toHaveAttribute('aria-current');
@@ -844,7 +845,8 @@ describe('applications', () => {
     const router = await openApplications('/applications');
 
     const links = within(await memberSidebar()).getAllByRole('link');
-    expect(links.map((link) => link.textContent)).toEqual(['Início', 'Candidaturas24']);
+    expect(links.map((link) => link.textContent)).toEqual(['Início', 'Candidaturas 24']);
+    expect(within(await memberSidebar()).getByRole('link', { name: 'Candidaturas 24' })).toBeInTheDocument();
     expect(links[1]).toHaveAttribute('href', '/applications');
     expect(links[1]).toHaveAttribute('aria-current', 'page');
     expect(within(links[1]!).getByText('24')).toHaveClass('font-mono');

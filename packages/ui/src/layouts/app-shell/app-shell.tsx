@@ -126,7 +126,11 @@ function NavItem({
       {icon === undefined ? null : <Icon icon={icon} size="sm" />}
       <Slottable>{children}</Slottable>
       {count === undefined ? null : (
-        <span className="ml-auto pl-2 font-mono text-caption">{count}</span>
+        <>
+          {/* A real space keeps the name the reader announces as "Label 24", not "Label24"; a flex row draws no gap for it. */}
+          {' '}
+          <span className="ml-auto pl-2 font-mono text-caption">{count}</span>
+        </>
       )}
     </Component>
   );
