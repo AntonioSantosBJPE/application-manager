@@ -153,7 +153,9 @@ describe('the skills catalog invariants', () => {
       const privateBruno = await insertSkill(bruno, 'skill ficticia alfa');
       const renamed = await insertSkill(null, 'Skill Fictícia Beta');
       const aliased = await insertSkill(null, 'Drizzle ORM de Teste');
-      const edited = await insertAlias(aliased, 'Drizzle Teste');
+      // The edited alias lives on another global skill, so its PATCH and the alias POST race on different skills.
+      const other = await insertSkill(null, 'Drizzle ORM de Teste Dois');
+      const edited = await insertAlias(other, 'Drizzle Teste Dois');
 
       // Five writes want the same key; the order they start in changes every round.
       const writes: Array<() => Promise<Response>> = [
@@ -161,7 +163,7 @@ describe('the skills catalog invariants', () => {
         () => call('POST', `/skills/${privateBruno}/promote`, admin),
         () => call('PATCH', `/skills/${renamed}`, admin, { name: 'Skill Fictícia Alfa' }),
         () => call('POST', `/skills/${aliased}/aliases`, admin, { alias: 'skill ficticia alfa' }),
-        () => call('PATCH', `/skills/${aliased}/aliases/${edited}`, admin, { alias: 'Skill-Ficticia-Alfa' }),
+        () => call('PATCH', `/skills/${other}/aliases/${edited}`, admin, { alias: 'Skill-Ficticia-Alfa' }),
       ];
       const order = writes.map((_, index) => writes[(index + round) % writes.length]!);
 
