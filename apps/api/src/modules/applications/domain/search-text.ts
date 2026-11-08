@@ -7,9 +7,15 @@ function normalizeSearchText(text: string): string {
   return text.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
-/** The value of `job_postings.search_text`: the company and the title, normalized. */
+/**
+ * Between the company and the title: a line break, which `normalizeSearchText` turns into a space
+ * in `q`, so no `q` can hold it and a search never matches across the two fields (APP-13).
+ */
+const FIELD_SEPARATOR = '\n';
+
+/** The value of `job_postings.search_text`: the company and the title, each normalized, apart. */
 export function searchTextOf(company: string, title: string): string {
-  return normalizeSearchText(`${company} ${title}`);
+  return `${normalizeSearchText(company)}${FIELD_SEPARATOR}${normalizeSearchText(title)}`;
 }
 
 /**

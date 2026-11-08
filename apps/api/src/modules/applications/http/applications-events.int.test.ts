@@ -74,6 +74,24 @@ describe('POST /applications/:id/events', () => {
     });
   });
 
+  it('APP-23 trims the note of a stage and stores a blank one as absent', async () => {
+    await withApplicationsEnv('app_event_stage_blank', async (env) => {
+      const created = await createApplication(env);
+
+      const blank = await addEvent(env, created.id, { kind: 'stage', stage: 'hr', note: '   ' });
+      const empty = await addEvent(env, created.id, { kind: 'stage', stage: 'hr', note: '' });
+      const padded = await addEvent(env, created.id, { kind: 'stage', stage: 'case', note: '  Conversa fictícia.  ' });
+
+      expect(blank.status).toBe(201);
+      expect(empty.status).toBe(201);
+      expect(applicationEventSchema.parse(await blank.json()).note).toBeNull();
+      expect(applicationEventSchema.parse(await empty.json()).note).toBeNull();
+      expect(applicationEventSchema.parse(await padded.json()).note).toBe('Conversa fictícia.');
+      const rows = await eventRows(env, created.id);
+      expect(rows.filter((row) => row.kind === 'stage').map((row) => row.note).sort()).toEqual(['Conversa fictícia.', null, null]);
+    });
+  });
+
   it('APP-23 accepts every stage of the enum', async () => {
     await withApplicationsEnv('app_event_stages', async (env) => {
       const created = await createApplication(env);

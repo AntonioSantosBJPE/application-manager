@@ -49,6 +49,20 @@ describe('ApplicationTimeline', () => {
     ]);
   });
 
+  it('APP-70 never shows a separator without text for a stage whose note is blank', () => {
+    render(
+      <ApplicationTimeline
+        createdAt="2026-10-14T15:00:00.000Z"
+        events={[
+          event(1, { kind: 'stage', stage: 'hr', note: '', occurredAt: '2026-10-18T15:00:00.000Z' }),
+          event(2, { kind: 'stage', stage: 'case', note: '   ', occurredAt: '2026-10-17T15:00:00.000Z' }),
+        ]}
+      />,
+    );
+
+    expect(entries().map((entry) => entry.text)).toEqual(['Etapa RH', 'Etapa Case', 'Vaga cadastrada']);
+  });
+
   it('APP-70 keeps the order the api gave, whatever the dates are', () => {
     render(
       <ApplicationTimeline

@@ -32,7 +32,7 @@ function EventText({ event }: { event: ApplicationEvent }): ReactNode {
     return (
       <>
         {DETAIL_MESSAGES.eventStage} <Timeline.Emphasis>{STAGE_LABELS[event.stage]}</Timeline.Emphasis>
-        {event.note === null ? null : ` · ${event.note}`}
+        {event.note === null || event.note.trim() === '' ? null : ` · ${event.note}`}
       </>
     );
   }

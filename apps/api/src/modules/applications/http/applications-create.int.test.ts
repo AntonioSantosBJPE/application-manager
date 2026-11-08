@@ -86,7 +86,7 @@ describe('POST /applications', () => {
         env.databaseUrl,
         'select user_id, search_text, created_at from applications.job_postings',
       );
-      expect(posting).toMatchObject({ user_id: env.ana.id, search_text: 'empresa ficticia alfa vaga de teste pleno' });
+      expect(posting).toMatchObject({ user_id: env.ana.id, search_text: 'empresa ficticia alfa\nvaga de teste pleno' });
       expect(posting!.created_at.toISOString()).toBe(env.clock.now().toISOString());
       const [application] = await query<{ id: string; user_id: string; last_activity_at: Date }>(
         env.databaseUrl,

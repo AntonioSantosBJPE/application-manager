@@ -203,6 +203,14 @@ describe('createEventRequestSchema', () => {
     expect(ok(createEventRequestSchema, { kind: 'other' })).toBe(false);
   });
 
+  it('APP-23 trims the note of a stage and takes a blank one as none', () => {
+    const parse = (note: string) => createEventRequestSchema.parse({ kind: 'stage', stage: 'hr', note });
+
+    expect(parse('  Conversa boa \n')).toMatchObject({ note: 'Conversa boa' });
+    expect(parse('')).toMatchObject({ note: undefined });
+    expect(parse('  \n\t ')).toMatchObject({ note: undefined });
+  });
+
   it('APP-25 accepts a note of 2000 characters and refuses 2001, on a note and on a stage', () => {
     expect(ok(createEventRequestSchema, { kind: 'note', note: 'n'.repeat(2000) })).toBe(true);
     expect(ok(createEventRequestSchema, { kind: 'note', note: 'n'.repeat(2001) })).toBe(false);
@@ -249,6 +257,13 @@ describe('listApplicationsQuerySchema', () => {
     expect(ok(listApplicationsQuerySchema, { workModel: 'remoto' })).toBe(false);
     expect(ok(listApplicationsQuerySchema, { tab: 'all' })).toBe(false);
     expect(ok(listApplicationsQuerySchema, { sort: 'company' })).toBe(false);
+  });
+
+  it('APP-17 refuses an empty list parameter, as a value outside the enum', () => {
+    expect(ok(listApplicationsQuerySchema, { status: '' })).toBe(false);
+    expect(ok(listApplicationsQuerySchema, { level: '' })).toBe(false);
+    expect(ok(listApplicationsQuerySchema, { workModel: '' })).toBe(false);
+    expect(ok(listApplicationsQuerySchema, { level: 'junior,' })).toBe(false);
   });
 
   it('APP-17 accepts q of 100 characters and refuses 101', () => {

@@ -144,12 +144,15 @@ export type ChangeStatusRequest = z.infer<typeof changeStatusRequestSchema>;
 
 const occurredAtSchema = z.iso.datetime({ offset: true });
 
+/** A note of a stage: trimmed, and a blank one is the same as none (APP-23). */
+const stageNoteSchema = freeText(NOTE_MAX_LENGTH).transform((text) => (text.trim() === '' ? undefined : text.trim()));
+
 /** A stage needs `stage`, a note needs `note`; `status_changed` is not created here (APP-23, APP-25). */
 export const createEventRequestSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('stage'),
     stage: stageSchema,
-    note: freeText(NOTE_MAX_LENGTH).optional(),
+    note: stageNoteSchema.optional(),
     occurredAt: occurredAtSchema.optional(),
   }),
   z.object({
@@ -164,10 +167,11 @@ export const createEventRequestSchema = z.discriminatedUnion('kind', [
 ]);
 export type CreateEventRequest = z.infer<typeof createEventRequestSchema>;
 
+/** A comma separated list: an empty part (`?level=`, `?level=a,`) is a value outside the enum, so it is refused (APP-17). */
 const csv = <T extends z.ZodType<unknown, string>>(item: T) =>
   z
     .string()
-    .transform((text): string[] => text.split(',').filter((part) => part !== ''))
+    .transform((text): string[] => text.split(','))
     .pipe(z.array(item));
 
 export const applicationsSortSchema = z.enum(['activity', 'created']);

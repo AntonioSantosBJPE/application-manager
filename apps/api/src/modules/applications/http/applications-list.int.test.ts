@@ -159,6 +159,12 @@ describe('GET /applications: isolation and filters', () => {
     expect(await companies(env.ana, '?q=zzzsemresultado')).toEqual([]);
   });
 
+  it('APP-13 never matches a q that spans the company and the title', async () => {
+    expect(await companies(env.ana, '?q=empresa%20ficticia%20alfa')).toEqual(['Empresa Fictícia Alfa']);
+    expect(await companies(env.ana, '?q=alfa%20vaga')).toEqual([]);
+    expect(await companies(env.ana, '?q=ltda%20engenheira')).toEqual([]);
+  });
+
   it('APP-13 finds an application by a skill of the posting, by name or by alias, and nodejs finds the one with Node.js', async () => {
     expect(await companies(env.ana, '?q=nodejs')).toEqual(['Empresa Fictícia Alfa']);
     expect(await companies(env.ana, '?q=Node.js')).toEqual(['Empresa Fictícia Alfa']);
@@ -191,6 +197,10 @@ describe('GET /applications: isolation and filters', () => {
       '?status=applied,archived',
       '?level=principal',
       '?workModel=remoto',
+      '?status=',
+      '?level=',
+      '?workModel=',
+      '?level=,',
       '?tab=all',
       '?sort=company',
       `?q=${'q'.repeat(101)}`,

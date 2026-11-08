@@ -17,9 +17,9 @@ function like(text: string, pattern: string): boolean {
 }
 
 describe('searchTextOf', () => {
-  it('APP-13 joins company and title without accent, case or extra spaces', () => {
-    expect(searchTextOf('Saúde  Ágil', ' Pleno ')).toBe('saude agil pleno');
-    expect(searchTextOf('Empresa Fictícia Alfa', 'Vaga de Teste Pleno')).toBe('empresa ficticia alfa vaga de teste pleno');
+  it('APP-13 keeps company and title apart, each without accent, case or extra spaces', () => {
+    expect(searchTextOf('Saúde  Ágil', ' Pleno ')).toBe('saude agil\npleno');
+    expect(searchTextOf('Empresa Fictícia Alfa', 'Vaga de Teste Pleno')).toBe('empresa ficticia alfa\nvaga de teste pleno');
   });
 });
 
@@ -29,8 +29,9 @@ describe('searchPatternOf', () => {
 
     expect(like(text, searchPatternOf('saude'))).toBe(true);
     expect(like(text, searchPatternOf('SAÚDE'))).toBe(true);
-    expect(like(text, searchPatternOf('agil pleno'))).toBe(true);
-    expect(like(text, searchPatternOf('  ágil   pleno '))).toBe(true);
+    expect(like(text, searchPatternOf('  ágil  '))).toBe(true);
+    expect(like(text, searchPatternOf('agil pleno'))).toBe(false);
+    expect(like(text, searchPatternOf('  ágil   pleno '))).toBe(false);
     expect(like(text, searchPatternOf('financeira'))).toBe(false);
   });
 
