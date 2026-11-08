@@ -709,8 +709,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] O diálogo diz que a skill passa a ser visível para todas as pessoas e que não se desfaz por aqui; depois do sucesso o foco vai para a linha
-- [ ] Testes `SKL-45`, `SKL-46`, `SKL-47` e `SKL-50` (promoção) passam
+- [x] O diálogo diz que a skill passa a ser visível para todas as pessoas e que não se desfaz por aqui; depois do sucesso o foco vai para a linha
+- [x] Testes `SKL-45`, `SKL-46`, `SKL-47` e `SKL-50` (promoção) passam
 
 **Tests**: unit
 **Gate**: quick

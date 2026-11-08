@@ -1,6 +1,6 @@
-import type { AdminSkillsPage } from '@am/contracts';
+import type { AdminSkill, AdminSkillsPage, Skill } from '@am/contracts';
 import { Alert, Button, EmptyState, FilterChip, ListPage, SearchInput } from '@am/ui';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { MESSAGES } from '../../identity';
@@ -15,7 +15,10 @@ export const SKILLS_QUERY_KEY = ['skills', 'catalog'] as const;
 /** What the catalog needs from the BFF; the route binds the server functions, a test binds the api. */
 export interface SkillsCatalogApi {
   list: (filters: CatalogFilters, cursor: string | undefined) => Promise<Outcome<AdminSkillsPage>>;
+  promote: (id: string) => Promise<Outcome<Skill>>;
 }
+
+type CatalogData = InfiniteData<AdminSkillsPage, string | undefined>;
 
 /** The search waits this long after the last key before it changes the filters (SKL-41). */
 export const SEARCH_DELAY_MS = 300;
@@ -49,6 +52,8 @@ export function SkillsCatalog({
   onFiltersChange,
   onExpired,
 }: SkillsCatalogProps) {
+  const queryClient = useQueryClient();
+  const [failure, setFailure] = useState<string | undefined>();
   const listRef = useRef<HTMLUListElement>(null);
   const pendingFocusAfter = useRef<number | undefined>(undefined);
 
@@ -97,6 +102,75 @@ export function SkillsCatalog({
     getNextPageParam: (page) => page.nextCursor ?? undefined,
     retry: false,
   });
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: SKILLS_QUERY_KEY });
+
+  /** Shows what the api just confirmed on the rows already loaded, in every filter the screen has opened. */
+  function updateLoaded(update: (data: CatalogData) => CatalogData) {
+    queryClient.setQueriesData<CatalogData>({ queryKey: SKILLS_QUERY_KEY }, (data) =>
+      data === undefined ? data : update(data),
+    );
+  }
+
+  /**
+   * The promoted row loses its badge and its button, and "Privadas" drops by one. The row stays in the
+   * list even under the "Privadas" filter, so the focus has somewhere to go (SKL-45).
+   */
+  function promoted(skill: Skill) {
+    updateLoaded((data) => {
+      const wasPrivate = data.pages.some((page) =>
+        page.items.some((item) => item.id === skill.id && item.scope === 'private'),
+      );
+      if (!wasPrivate) return data;
+      return {
+        ...data,
+        pages: data.pages.map((page) => ({
+          items: page.items.map((item) => (item.id === skill.id ? { ...item, ...skill } : item)),
+          nextCursor: page.nextCursor,
+          counts: { ...page.counts, private: page.counts.private - 1 },
+        })),
+      };
+    });
+  }
+
+  /**
+   * Gives the focus to a row once the confirmation dialog that was open is gone: the button that opened
+   * it left the page with the promotion, and a focus set while the dialog still holds it is taken back.
+   */
+  function focusRowWhenFree(id: string) {
+    let attempts = 0;
+    const focus = () => {
+      if (document.querySelector('[role="alertdialog"]') !== null && attempts++ < 50) {
+        setTimeout(focus, 0);
+        return;
+      }
+      const rows = listRef.current?.querySelectorAll<HTMLElement>('[data-skill-id]') ?? [];
+      Array.from(rows)
+        .find((row) => row.dataset.skillId === id)
+        ?.focus();
+    };
+    setTimeout(focus, 0);
+  }
+
+  async function promote(skill: AdminSkill) {
+    setFailure(undefined);
+    let outcome: Outcome<Skill>;
+    try {
+      outcome = await api.promote(skill.id);
+    } catch {
+      setFailure(MESSAGES.unavailable);
+      return;
+    }
+    if (outcome.ok) {
+      promoted(outcome.data);
+      focusRowWhenFree(skill.id);
+      return;
+    }
+    if (onExpired(outcome)) return;
+    if (outcome.status === 409) setFailure(SKILLS_MESSAGES.promoteConflict);
+    else if (outcome.status === 404) await refresh();
+    else setFailure(MESSAGES.unavailable);
+  }
 
   const pages = catalog.data?.pages ?? [];
   const items = pages.flatMap((page) => page.items);
@@ -160,6 +234,11 @@ export function SkillsCatalog({
         />
       </ListPage.Filters>
       <ListPage.Content>
+        {failure === undefined ? null : (
+          <Alert intent="danger" className="mx-6 mt-4">
+            {failure}
+          </Alert>
+        )}
         {catalog.isError && !expired ? (
           <Alert intent="danger" className="mx-6 mt-4">
             {MESSAGES.unavailable}
@@ -184,7 +263,7 @@ export function SkillsCatalog({
               <SkillRow
                 key={skill.id}
                 skill={skill}
-                onPromote={() => Promise.resolve()}
+                onPromote={promote}
                 onEdit={() => undefined}
                 onAliases={() => undefined}
               />

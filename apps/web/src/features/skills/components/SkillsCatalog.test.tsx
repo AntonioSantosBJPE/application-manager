@@ -6,7 +6,7 @@ import { http } from 'msw';
 import { setupServer } from 'msw/node';
 import { useState } from 'react';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { loadAdminSkills } from '../api/server-functions';
+import { loadAdminSkills, promoteSkillById } from '../api/server-functions';
 import { DEFAULT_CATALOG_FILTERS, type CatalogFilters } from '../model/filters';
 import { apiInternalUrl, context, problem } from '../testing/api';
 import { fakeCatalog, uuid } from '../testing/fake-api';
@@ -70,6 +70,7 @@ function Harness({
             },
             context,
           ),
+        promote: (id) => promoteSkillById(id, context),
       }}
     />
   );
@@ -387,5 +388,162 @@ describe('SkillsCatalog filters', () => {
 
     expect(screen.queryByText('Nenhuma skill encontrada.')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Limpar filtros' })).toBeNull();
+  });
+});
+
+const rowOf = (name: string) => screen.getByText(name).closest('li')!;
+const confirmPromotion = async (name: string) => {
+  fireEvent.click(within(rowOf(name)).getByRole('button', { name: 'Promover' }));
+  return within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Promover' });
+};
+
+describe('SkillsCatalog promotion', () => {
+  it('SKL-45 asks "Promover {nome}?" saying the skill becomes visible to everyone and that this screen cannot undo it', async () => {
+    const api = fakeCatalog(server, [alfa, drizzle]);
+    renderCatalog();
+    await rows();
+
+    fireEvent.click(within(rowOf('Drizzle ORM de Teste')).getByRole('button', { name: 'Promover' }));
+
+    const dialog = await screen.findByRole('alertdialog', { name: 'Promover Drizzle ORM de Teste?' });
+    expect(dialog).toHaveTextContent('A skill passa a ser visível para todas as pessoas.');
+    expect(dialog).toHaveTextContent('A promoção não se desfaz por aqui.');
+    expect(within(dialog).getByRole('button', { name: 'Cancelar' })).toBeInTheDocument();
+    expect(api.callsTo('POST', '/promote')).toEqual([]);
+  });
+
+  it('SKL-45 calls the promotion on confirm and shows the row without the badge and the button, with Privadas one lower and the total equal', async () => {
+    const api = fakeCatalog(server, [
+      alfa,
+      drizzle,
+      global_(4, 'Skill Fictícia Gama', 'tool'),
+      { ...drizzle, id: uuid(5), name: 'Skill Fictícia Delta' },
+    ]);
+    renderCatalog();
+    await rows();
+    expect(screen.getByRole('button', { name: 'Privadas2' })).toBeInTheDocument();
+    expect(screen.getByText('4')).toHaveClass('font-mono');
+
+    fireEvent.click(await confirmPromotion('Drizzle ORM de Teste'));
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    const row = rowOf('Drizzle ORM de Teste');
+    expect(within(row).queryByText('Privada')).toBeNull();
+    expect(within(row).queryByRole('button', { name: 'Promover' })).toBeNull();
+    expect(within(row).getByRole('button', { name: 'Ações de Drizzle ORM de Teste' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Privadas1' })).toBeInTheDocument();
+    expect(screen.getByText('4')).toHaveClass('font-mono');
+    expect(api.callsTo('POST', '/promote')).toEqual([`POST /skills/${drizzle.id}/promote`]);
+    expect(rowOf('Skill Fictícia Delta')).toHaveTextContent('Privada');
+  });
+
+  it('SKL-45 moves the focus to the updated row after the promotion', async () => {
+    fakeCatalog(server, [alfa, drizzle]);
+    renderCatalog();
+    await rows();
+
+    fireEvent.click(await confirmPromotion('Drizzle ORM de Teste'));
+
+    await waitFor(() => expect(rowOf('Drizzle ORM de Teste')).toHaveFocus());
+    expect(rowOf('Drizzle ORM de Teste')).toHaveAttribute('tabindex', '-1');
+    expect(document.activeElement).toBe(rowOf('Drizzle ORM de Teste'));
+  });
+
+  it('SKL-46 does not call the api on Cancelar and gives the focus back to the Promover button of the row', async () => {
+    const api = fakeCatalog(server, [alfa, drizzle]);
+    renderCatalog();
+    await rows();
+    const button = within(rowOf('Drizzle ORM de Teste')).getByRole('button', { name: 'Promover' });
+    fireEvent.click(button);
+
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Cancelar' }));
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    await waitFor(() => expect(document.activeElement).toBe(button));
+    expect(api.callsTo('POST', '/promote')).toEqual([]);
+    expect(rowOf('Drizzle ORM de Teste')).toHaveTextContent('Privada');
+  });
+
+  it('SKL-46 does not call the api when the dialog is closed with Esc and gives the focus back to the Promover button', async () => {
+    const api = fakeCatalog(server, [alfa, drizzle]);
+    renderCatalog();
+    await rows();
+    const button = within(rowOf('Drizzle ORM de Teste')).getByRole('button', { name: 'Promover' });
+    fireEvent.click(button);
+    const dialog = await screen.findByRole('alertdialog');
+
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    await waitFor(() => expect(document.activeElement).toBe(button));
+    expect(api.callsTo('POST', '/promote')).toEqual([]);
+  });
+
+  it('SKL-47 closes the dialog on a 409, keeps the row private and shows the danger Alert with the exact text', async () => {
+    fakeCatalog(server, [alfa, drizzle]);
+    server.use(http.post(`${apiInternalUrl}/skills/:id/promote`, () => problem(409)));
+    renderCatalog();
+    await rows();
+
+    fireEvent.click(await confirmPromotion('Drizzle ORM de Teste'));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toBe('Já existe uma skill global com esse nome ou apelido. A fusão é manual.');
+    expect(alert).toHaveClass('bg-danger-subtle');
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    const row = rowOf('Drizzle ORM de Teste');
+    expect(within(row).getByText('Privada')).toBeInTheDocument();
+    expect(within(row).getByRole('button', { name: 'Promover' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Privadas1' })).toBeInTheDocument();
+  });
+
+  it('SKL-47 hands a 401 of the promotion to onExpired and shows no alert', async () => {
+    fakeCatalog(server, [alfa, drizzle]);
+    server.use(http.post(`${apiInternalUrl}/skills/:id/promote`, () => problem(401)));
+    const { onExpired } = renderCatalog({ onExpired: () => true });
+    await rows();
+
+    fireEvent.click(await confirmPromotion('Drizzle ORM de Teste'));
+
+    await waitFor(() =>
+      expect(onExpired).toHaveBeenCalledWith(expect.objectContaining({ ok: false, status: 401 })),
+    );
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('SKL-47 says the service is unavailable when the promotion fails for another reason', async () => {
+    fakeCatalog(server, [alfa, drizzle]);
+    server.use(http.post(`${apiInternalUrl}/skills/:id/promote`, () => problem(503)));
+    renderCatalog();
+    await rows();
+
+    fireEvent.click(await confirmPromotion('Drizzle ORM de Teste'));
+
+    expect((await screen.findByRole('alert')).textContent).toBe(
+      'Serviço indisponível. Tente novamente em instantes.',
+    );
+    expect(within(rowOf('Drizzle ORM de Teste')).getByText('Privada')).toBeInTheDocument();
+  });
+
+  it('SKL-50 keeps the confirm button disabled and busy while the promotion is pending, and a second click sends no second call', async () => {
+    const api = fakeCatalog(server, [alfa, drizzle]);
+    const release = api.hold('promote');
+    renderCatalog();
+    await rows();
+    const confirm = await confirmPromotion('Drizzle ORM de Teste');
+
+    fireEvent.click(confirm);
+    await waitFor(() => expect(confirm).toBeDisabled());
+    fireEvent.click(confirm);
+    fireEvent.click(confirm);
+
+    expect(confirm).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    expect(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Cancelar' })).toBeDisabled();
+    release();
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    expect(api.callsTo('POST', '/promote')).toHaveLength(1);
+    expect(within(rowOf('Drizzle ORM de Teste')).queryByText('Privada')).toBeNull();
   });
 });
