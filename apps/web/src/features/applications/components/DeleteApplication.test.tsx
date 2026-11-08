@@ -33,6 +33,14 @@ describe('DeleteApplication', () => {
     expect(api.calls).toEqual([]);
   });
 
+  it('APP-75 draws the trash icon and "Excluir candidatura" in danger', () => {
+    renderDetail(opened());
+
+    const button = sidebarButton();
+    expect(button).toHaveClass('text-danger!');
+    expect(button.querySelector('svg')).not.toBeNull();
+  });
+
   it('APP-75 deletes and tells the route to open the list when the person confirms', async () => {
     const api = fakeDetail(server, opened());
     const { onDeleted } = renderDetail(opened());

@@ -46,6 +46,27 @@ describe('PropertiesSidebar', () => {
     expect(onChanged).toHaveBeenCalledTimes(1);
   });
 
+  it('APP-68 draws the values in one column: no extra left padding on the buttons, and the dark text of the card', () => {
+    renderDetail(opened());
+
+    for (const name of ['Status Enviada', 'Nível Pleno', 'Modelo Presencial']) {
+      expect(inSidebar().getByRole('button', { name })).toHaveClass('px-0!', 'text-text!');
+    }
+    for (const name of [/Editar local/, /Editar link da vaga/]) {
+      expect(inSidebar().getByRole('button', { name })).toHaveClass('px-0!');
+    }
+  });
+
+  it('APP-68 draws the link of the posting without the scheme, in the accent text, and keeps the whole link in its name', () => {
+    renderDetail(opened());
+
+    const link = inSidebar().getByRole('button', { name: /Editar link da vaga/ });
+    expect(link).toHaveAccessibleName('Editar link da vaga https://vagas.exemplo.com/1234');
+    expect(inSidebar().getByText('https://')).toHaveClass('sr-only');
+    expect(link.querySelector('.truncate')?.lastChild?.textContent).toBe('vagas.exemplo.com/1234');
+    expect(link).toHaveClass('text-accent-text!');
+  });
+
   it('APP-68 writes nothing when the status chosen is the one already there', async () => {
     const api = fakeDetail(server, opened());
     renderDetail(opened());

@@ -1,6 +1,6 @@
 import type { PostingSkill, ReplaceSkillsRequest } from '@am/contracts';
-import { Button, SkillTag } from '@am/ui';
-import { Plus, X } from 'lucide-react';
+import { Button, SkillTag, SkillTagAdd } from '@am/ui';
+import { X } from 'lucide-react';
 import { useState } from 'react';
 import { SkillsField, type SkillsFieldApi, type SkillsFieldSkill } from '../../skills';
 import { DETAIL_MESSAGES } from '../model/messages';
@@ -82,16 +82,9 @@ export function SkillsSection({ skills, onChange, api }: SkillsSectionProps) {
                   ))}
                 </ul>
                 {adding === row.requirement ? null : (
-                  <Button
-                    intent="ghost"
-                    size="sm"
-                    icon={Plus}
-                    aria-label={row.addLabel}
-                    className="h-5.5 border-dashed border-border-strong"
-                    onClick={() => setAdding(row.requirement)}
-                  >
+                  <SkillTagAdd aria-label={row.addLabel} onClick={() => setAdding(row.requirement)}>
                     {DETAIL_MESSAGES.addSkill}
-                  </Button>
+                  </SkillTagAdd>
                 )}
               </div>
               {adding === row.requirement ? (

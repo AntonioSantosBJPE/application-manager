@@ -116,7 +116,7 @@ function Description({ text }: { text: string }) {
         {text}
       </p>
       {cut && !expanded ? (
-        <Button intent="ghost" size="sm" className="self-start px-0 text-accent-text" onClick={() => setExpanded(true)}>
+        <Button intent="link" size="sm" className="self-start" onClick={() => setExpanded(true)}>
           {DETAIL_MESSAGES.showAll}
         </Button>
       ) : null}

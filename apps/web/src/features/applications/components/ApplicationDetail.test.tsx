@@ -110,6 +110,14 @@ describe('ApplicationDetail', () => {
     expect(within(sidebar()).queryByRole('button', { name: 'Ver texto completo' })).toBeNull();
   });
 
+  it('APP-76 draws "Ver texto completo" as the link button: accent text, aligned with the description', () => {
+    renderDetail({ ...opened, description: ['1', '2', '3', '4', '5', '6', '7'].join('\n') });
+
+    const link = within(sidebar()).getByRole('button', { name: 'Ver texto completo' });
+    expect(link).toHaveClass('text-accent-text', 'px-0', 'bg-transparent');
+    expect(link).not.toHaveClass('text-text-muted', 'px-2');
+  });
+
   it('APP-76 shows "Ver texto completo" for a description of more than six explicit lines', () => {
     renderDetail({ ...opened, description: ['1', '2', '3', '4', '5', '6', '7'].join('\n') });
 

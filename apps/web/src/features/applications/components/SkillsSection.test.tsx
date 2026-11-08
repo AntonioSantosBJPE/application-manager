@@ -106,6 +106,17 @@ describe('SkillsSection', () => {
     expect(names('Obrigatórias')).toEqual(['Java', 'Spring Boot']);
   });
 
+  it('APP-73 draws "+ Skill" as the dashed chip of the skill tags, with the plus icon and the name of its row', () => {
+    renderDetail(opened());
+
+    for (const name of ['Adicionar skill obrigatória', 'Adicionar skill desejável']) {
+      const add = screen.getByRole('button', { name });
+      expect(add).toHaveClass('border-dashed', 'border-border-strong', 'h-5.5', 'rounded-sm');
+      expect(add.textContent).toBe('Skill');
+      expect(add.querySelector('svg')).not.toBeNull();
+    }
+  });
+
   it('APP-73 says the skill cannot be used when the api refuses the list with 422', async () => {
     const api = fakeDetail(server, opened());
     api.fail('skills', 422);

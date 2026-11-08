@@ -24,6 +24,9 @@ import { DETAIL_MESSAGES, propertyLabel } from '../model/messages';
 const STATUSES = applicationStatusSchema.options;
 const NO_MODEL = 'none';
 
+/** The link is drawn without "https://", cut with an ellipsis by the row; the name keeps the whole link. */
+const schemeLength = (link: string) => /^https?:\/\//i.exec(link)?.[0].length ?? 0;
+
 export interface PropertiesSidebarProps {
   application: ApplicationDetail;
   /** Writes a new status; the screen shows what the api answers (APP-68). */
@@ -44,7 +47,7 @@ function ValueButton({ name, value, children }: { name: string; value: string; c
         intent="ghost"
         size="sm"
         aria-label={propertyLabel(name, value)}
-        className="w-full justify-start px-0! font-normal hover:bg-transparent!"
+        className="w-full justify-start px-0! font-normal text-text! hover:bg-transparent!"
       >
         {children}
       </Button>
@@ -142,6 +145,7 @@ export function PropertiesSidebar({ application, onStatus, onPosting, descriptio
             value={location ?? ''}
             emptyText={DETAIL_MESSAGES.empty}
             maxLength={LOCATION_MAX_LENGTH}
+            className="px-0!"
             onCommit={(text) => commit('location', location, text)}
           />
         </DetailPage.Property>
@@ -151,7 +155,8 @@ export function PropertiesSidebar({ application, onStatus, onPosting, descriptio
             value={url ?? ''}
             emptyText={DETAIL_MESSAGES.empty}
             maxLength={URL_MAX_LENGTH}
-            className={url === null ? undefined : 'text-accent-text!'}
+            visibleFrom={schemeLength}
+            className={url === null ? 'px-0!' : 'px-0! text-accent-text!'}
             onCommit={(text) => commit('url', url, text)}
           />
         </DetailPage.Property>

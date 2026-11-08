@@ -20,7 +20,7 @@ export function DeleteApplication({ company, onConfirm, buttonRef }: DeleteAppli
   return (
     <ConfirmDialog
       trigger={
-        <Button ref={buttonRef} intent="ghost" size="sm" icon={Trash2} className="justify-start text-danger">
+        <Button ref={buttonRef} intent="ghost" size="sm" icon={Trash2} className="justify-start text-danger! hover:text-danger!">
           {DETAIL_MESSAGES.delete}
         </Button>
       }
