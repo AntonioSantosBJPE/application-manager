@@ -6,6 +6,7 @@ export {
   type CopyFieldProps,
   type CopyFieldStatus,
 } from './components/copy-field';
+export { Dialog } from './components/dialog';
 export { EmptyState } from './components/empty-state';
 export { Field, type FieldRootProps } from './components/field';
 export { FilterChip, type FilterChipProps } from './components/filter-chip';

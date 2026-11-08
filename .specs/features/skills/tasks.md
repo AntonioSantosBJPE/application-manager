@@ -569,8 +569,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] Dependência `@radix-ui/react-dialog` instalada; partes `Root`, `Trigger`, `Content`, `Title`, `Description`, `Footer`
-- [ ] Story nos dois temas; teste de navegador: foco entra, fica preso, Esc fecha e o foco volta ao gatilho
+- [x] Dependência `@radix-ui/react-dialog` instalada; partes `Root`, `Trigger`, `Content`, `Title`, `Description`, `Footer`
+- [x] Story nos dois temas; teste de navegador: foco entra, fica preso, Esc fecha e o foco volta ao gatilho
 
 **Tests**: unit
 **Gate**: quick
