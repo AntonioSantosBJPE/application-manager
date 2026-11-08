@@ -469,9 +469,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Oito status, cada um com ícone SVG próprio de 14 px e cor `status-*`; `label` ao lado ou `aria-label` com `iconOnly`
-- [ ] Teste prova que os oito ícones são distintos entre si; stories dos oito nos dois temas com contraste de 3:1
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Oito status, cada um com ícone SVG próprio de 14 px e cor `status-*`; `label` ao lado ou `aria-label` com `iconOnly`
+- [x] Teste prova que os oito ícones são distintos entre si; stories dos oito nos dois temas com contraste de 3:1
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick

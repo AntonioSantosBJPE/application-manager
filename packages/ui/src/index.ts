@@ -10,6 +10,11 @@ export { EmptyState } from './components/empty-state';
 export { Field, type FieldRootProps } from './components/field';
 export { Kbd, type KbdProps } from './components/kbd';
 export { Logo, type LogoProps, type LogoTone } from './components/logo';
+export {
+  PipelineStatus,
+  type PipelineStatusProps,
+  type PipelineStatusValue,
+} from './components/pipeline-status';
 export { StatusBadge, type StatusBadgeProps } from './components/status-badge';
 export { AppShell } from './layouts/app-shell';
 export { AuthPage } from './layouts/auth-page';
