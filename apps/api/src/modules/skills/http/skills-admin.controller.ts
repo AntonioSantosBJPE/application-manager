@@ -13,7 +13,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post
 import type { ServerResponse } from 'node:http';
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
-import { Roles } from '../../identity/index.js';
+import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
 import {
   SkillConflictError,
   SkillNotFoundError,
@@ -55,8 +55,8 @@ export class SkillsAdminController {
   @Roles('admin')
   @Post('skills/:id/promote')
   @HttpCode(HttpStatus.OK)
-  promote(@Param('id') id: string): Promise<Skill> {
-    return answering(() => this.admin.promote(id));
+  promote(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<Skill> {
+    return answering(() => this.admin.promote(id, user.id));
   }
 
   /** `201` for a new alias and `200` for the one the skill already had (SKL-26..SKL-31). */
@@ -65,9 +65,10 @@ export class SkillsAdminController {
   async addAlias(
     @Param('id') id: string,
     @Body(zodBody(aliasRequestSchema)) body: AliasRequest,
+    @CurrentUser() user: AuthenticatedUser,
     @Res({ passthrough: true }) response: ServerResponse,
   ): Promise<Alias> {
-    const { alias, created } = await answering(() => this.admin.addAlias(id, body.alias));
+    const { alias, created } = await answering(() => this.admin.addAlias(id, body.alias, user.id));
     response.statusCode = created ? 201 : 200;
     return alias;
   }
@@ -75,8 +76,12 @@ export class SkillsAdminController {
   /** Name and category of a global skill; the id stays (SKL-62..SKL-66). */
   @Roles('admin')
   @Patch('skills/:id')
-  update(@Param('id') id: string, @Body(zodBody(updateSkillRequestSchema)) body: UpdateSkillRequest): Promise<Skill> {
-    return answering(() => this.admin.update(id, body));
+  update(
+    @Param('id') id: string,
+    @Body(zodBody(updateSkillRequestSchema)) body: UpdateSkillRequest,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<Skill> {
+    return answering(() => this.admin.update(id, body, user.id));
   }
 
   @Roles('admin')
@@ -85,14 +90,19 @@ export class SkillsAdminController {
     @Param('id') id: string,
     @Param('aliasId') aliasId: string,
     @Body(zodBody(aliasRequestSchema)) body: AliasRequest,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<Alias> {
-    return answering(() => this.admin.updateAlias(id, aliasId, body.alias));
+    return answering(() => this.admin.updateAlias(id, aliasId, body.alias, user.id));
   }
 
   @Roles('admin')
   @Delete('skills/:id/aliases/:aliasId')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async removeAlias(@Param('id') id: string, @Param('aliasId') aliasId: string): Promise<void> {
-    await answering(() => this.admin.removeAlias(id, aliasId));
+  async removeAlias(
+    @Param('id') id: string,
+    @Param('aliasId') aliasId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<void> {
+    await answering(() => this.admin.removeAlias(id, aliasId, user.id));
   }
 }

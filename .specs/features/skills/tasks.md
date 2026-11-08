@@ -428,8 +428,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] Cada operação registra `{ event, skillId, actorId }`, incluindo a criação feita em `SkillsService`
-- [ ] Testes `SKL-60` e `SKL-61` leem as linhas JSON e não acham cookie, token nem e-mail
+- [x] Cada operação registra `{ event, skillId, actorId }`, incluindo a criação feita em `SkillsService`
+- [x] Testes `SKL-60` e `SKL-61` leem as linhas JSON e não acham cookie, token nem e-mail
 
 **Tests**: integration
 **Gate**: full

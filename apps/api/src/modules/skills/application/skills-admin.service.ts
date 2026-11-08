@@ -1,11 +1,14 @@
 import { normalizeSkillKey, type AdminSkillsPage, type AdminSkillsQuery, type Alias, type Skill, type UpdateSkillRequest } from '@am/contracts';
 import { Injectable } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 import { encodeCursor, type SkillCursor } from '../domain/cursor.js';
 import { isUuid } from '../domain/ids.js';
 import { isUniqueViolation, SkillsRepository, type DatabaseExecutor, type SkillRecord } from '../infra/skills.repository.js';
 
 /** The admin lists 50 skills per page. */
 export const ADMIN_PAGE_SIZE = 50;
+
+type SkillEvent = 'skill.updated' | 'skill.promoted' | 'skill.alias_created' | 'skill.alias_updated' | 'skill.alias_removed';
 
 /** The skill, or the alias, does not exist (`404`). */
 export class SkillNotFoundError extends Error {}
@@ -17,7 +20,18 @@ export class SkillNotGlobalError extends Error {}
 /** What the admin does with the catalog: list, promote, edit and give aliases (SKL-17..SKL-37, SKL-62..SKL-71). */
 @Injectable()
 export class SkillsAdminService {
-  constructor(private readonly repository: SkillsRepository) {}
+  constructor(
+    private readonly repository: SkillsRepository,
+    private readonly logger: PinoLogger,
+  ) {}
+
+  /**
+   * One structured event per change: the operation, the skill and the person who acted, and nothing
+   * else. The name, the alias text, the e-mail and the session never go in (SKL-60, SKL-61).
+   */
+  private record(event: SkillEvent, skillId: string, actorId: string): void {
+    this.logger.info({ event, skillId, actorId });
+  }
 
   /**
    * One page of the catalog with the privates of every person and no owner anywhere, plus the counts
@@ -52,13 +66,17 @@ export class SkillsAdminService {
    * takes the lock of the global names before it reads, so two promotions of one key, or a promotion
    * and an alias of that key, line up and the second one sees the first's result.
    */
-  promote(id: string): Promise<Skill> {
-    return this.writingGlobalNames(async (tx) => {
-      const skill = await this.existing(id, tx);
-      if (skill.ownerUserId === null) return { id: skill.id, name: skill.name, category: skill.category, scope: 'global' };
-      await this.ensureKeyFree(skill.normalizedKey, undefined, tx);
-      return this.repository.makeGlobal(skill.id, tx);
+  async promote(id: string, actorId: string): Promise<Skill> {
+    const { skill, changed } = await this.writingGlobalNames(async (tx) => {
+      const current = await this.existing(id, tx);
+      if (current.ownerUserId === null) {
+        return { skill: { id: current.id, name: current.name, category: current.category, scope: 'global' as const }, changed: false };
+      }
+      await this.ensureKeyFree(current.normalizedKey, undefined, tx);
+      return { skill: await this.repository.makeGlobal(current.id, tx), changed: true };
     });
+    if (changed) this.record('skill.promoted', skill.id, actorId);
+    return skill;
   }
 
   /**
@@ -66,8 +84,8 @@ export class SkillsAdminService {
    * this skill is answered as it is; a key that is a global name (the skill's own included) or the
    * alias of another skill is refused. Same lock as the promotion.
    */
-  addAlias(skillId: string, alias: string): Promise<{ alias: Alias; created: boolean }> {
-    return this.writingGlobalNames(async (tx) => {
+  async addAlias(skillId: string, alias: string, actorId: string): Promise<{ alias: Alias; created: boolean }> {
+    const result = await this.writingGlobalNames(async (tx) => {
       const skill = await this.existing(skillId, tx);
       if (skill.ownerUserId !== null) throw new SkillNotGlobalError('Aliases belong to global skills');
       const key = normalizeSkillKey(alias);
@@ -77,6 +95,8 @@ export class SkillsAdminService {
       const inserted = await this.repository.insertAlias({ skillId: skill.id, alias, normalizedAlias: key }, tx);
       return { alias: inserted, created: true };
     });
+    if (result.created) this.record('skill.alias_created', skillId, actorId);
+    return result;
   }
 
   /**
@@ -84,22 +104,24 @@ export class SkillsAdminService {
    * (SKL-62..SKL-66). The new key may not be another global's key or any alias, the skill's own
    * included; the same key in another spelling is fine. No alias is made from the old name.
    */
-  update(id: string, { name, category }: UpdateSkillRequest): Promise<Skill> {
-    return this.writingGlobalNames(async (tx) => {
+  async update(id: string, { name, category }: UpdateSkillRequest, actorId: string): Promise<Skill> {
+    const updated = await this.writingGlobalNames(async (tx) => {
       const skill = await this.existing(id, tx);
       if (skill.ownerUserId !== null) throw new SkillNotGlobalError('Only global skills can be edited');
       const normalizedKey = name === undefined ? undefined : normalizeSkillKey(name);
       if (normalizedKey !== undefined) await this.ensureKeyFree(normalizedKey, skill.id, tx);
       return this.repository.updateSkill(skill.id, { name, normalizedKey, category }, tx);
     });
+    this.record('skill.updated', updated.id, actorId);
+    return updated;
   }
 
   /**
    * Changes the text and the key of an alias (SKL-67, SKL-68). The key may not be a global name or
    * the alias of any other row; the same key in another spelling is fine. Same lock as the other writes.
    */
-  updateAlias(skillId: string, aliasId: string, alias: string): Promise<Alias> {
-    return this.writingGlobalNames(async (tx) => {
+  async updateAlias(skillId: string, aliasId: string, alias: string, actorId: string): Promise<Alias> {
+    const updated = await this.writingGlobalNames(async (tx) => {
       const current = await this.aliasOf(skillId, aliasId, tx);
       const key = normalizeSkillKey(alias);
       const held = await this.repository.aliasWithKey(key, tx);
@@ -108,12 +130,15 @@ export class SkillsAdminService {
       }
       return this.repository.updateAlias(current.id, { alias, normalizedAlias: key }, tx);
     });
+    this.record('skill.alias_updated', skillId, actorId);
+    return updated;
   }
 
   /** Deletes an alias; the search for it stops finding the skill (SKL-69, SKL-70). It frees a name, so it needs no lock. */
-  async removeAlias(skillId: string, aliasId: string): Promise<void> {
+  async removeAlias(skillId: string, aliasId: string, actorId: string): Promise<void> {
     const removed = isUuid(skillId) && isUuid(aliasId) && (await this.repository.deleteAlias(skillId, aliasId));
     if (!removed) throw new SkillNotFoundError('Alias not found');
+    this.record('skill.alias_removed', skillId, actorId);
   }
 
   private async aliasOf(skillId: string, aliasId: string, tx: DatabaseExecutor): Promise<Alias> {

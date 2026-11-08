@@ -1,5 +1,6 @@
 import { normalizeSkillKey, type CreateSkillRequest, type Skill } from '@am/contracts';
 import { Injectable } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 import { SkillsRepository } from '../infra/skills.repository.js';
 
 /** The selector lists at most this many skills, with no cursor. */
@@ -8,7 +9,10 @@ export const SEARCH_LIMIT = 20;
 /** The member's use of the catalog: search and create (SKL-05..SKL-16). */
 @Injectable()
 export class SkillsService {
-  constructor(private readonly repository: SkillsRepository) {}
+  constructor(
+    private readonly repository: SkillsRepository,
+    private readonly logger: PinoLogger,
+  ) {}
 
   search(userId: string, q: string | undefined): Promise<Skill[]> {
     return this.repository.search(userId, normalizeSkillKey(q ?? ''), SEARCH_LIMIT);
@@ -25,7 +29,11 @@ export class SkillsService {
     if (existing !== undefined) return { skill: existing, created: false };
 
     const inserted = await this.repository.insertPrivate(userId, { name, normalizedKey: key, category });
-    if (inserted !== undefined) return { skill: inserted, created: true };
+    if (inserted !== undefined) {
+      // The event names the operation, the skill and the person, never the name (SKL-60, SKL-61).
+      this.logger.info({ event: 'skill.created', skillId: inserted.id, actorId: userId });
+      return { skill: inserted, created: true };
+    }
 
     // A request of the same member took the key between the check and the write: answer its skill (SKL-13).
     const winner = await this.repository.findVisibleMatch(userId, key);
