@@ -37,9 +37,28 @@ export function pageBackground(): string {
   return getComputedStyle(document.documentElement).getPropertyValue('--color-surface').trim();
 }
 
-/** Waits for running transitions to finish, so a computed color is the settled one. */
+/** True for an animation that ends: a transition or a finite animation, not a spinner. */
+function ends(animation: Animation): boolean {
+  const iterations = animation.effect?.getTiming().iterations ?? 1;
+  return iterations !== Infinity && animation.playState !== 'finished' && animation.playState !== 'idle';
+}
+
+/**
+ * Waits until the colors on screen are the settled ones. A theme switch starts transitions on the
+ * element and on its ancestors (the background behind it), and they start on the next frames, so
+ * this lets two frames pass and then waits for every finite animation of the document, more than
+ * once in case one ending starts another.
+ */
 export async function settle(element: Element): Promise<void> {
-  await Promise.all(element.getAnimations().map((animation) => animation.finished.catch(() => {})));
+  const view = element.ownerDocument.defaultView ?? window;
+  await new Promise<void>((resolve) => {
+    view.requestAnimationFrame(() => view.requestAnimationFrame(() => resolve()));
+  });
+  for (let round = 0; round < 5; round += 1) {
+    const running = element.ownerDocument.getAnimations().filter(ends);
+    if (running.length === 0) return;
+    await Promise.all(running.map((animation) => animation.finished.catch(() => {})));
+  }
 }
 
 /** What a person sees of the keyboard focus ring of an element right now (UI-24). */
