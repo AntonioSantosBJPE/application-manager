@@ -32,7 +32,7 @@ export function UnavailableScreen({
   return (
     <AuthPage.Root>
       <AuthPage.Header>
-        <h1 className="text-lg font-semibold">Application Manager</h1>
+        <h1 className="text-lg font-semibold">Rumo Carreira</h1>
       </AuthPage.Header>
       <Alert intent="danger">{MESSAGES.unavailable}</Alert>
       <Button intent="secondary" onClick={onRetry}>

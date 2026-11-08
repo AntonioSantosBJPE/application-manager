@@ -8,10 +8,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'Application Manager' },
+      { title: 'Rumo Carreira' },
     ],
     // The theme follows prefers-color-scheme in tokens.css only; the app never sets data-theme.
-    links: [{ rel: 'stylesheet', href: tokensCss }],
+    // The favicon swaps its own color with prefers-color-scheme; both icons are served from public/ (PRU-05).
+    links: [
+      { rel: 'stylesheet', href: tokensCss },
+      { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+      { rel: 'apple-touch-icon', href: '/app-icon.svg' },
+    ],
   }),
   component: RootComponent,
 });
