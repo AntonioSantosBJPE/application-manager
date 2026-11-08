@@ -489,9 +489,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Variantes `required`, `nice`, `private`, `match` de 22 px; `onRemove` com `removeLabel` do chamador
-- [ ] Testes e stories nos dois temas
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Variantes `required`, `nice`, `private`, `match` de 22 px; `onRemove` com `removeLabel` do chamador
+- [x] Testes e stories nos dois temas
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick

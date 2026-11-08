@@ -15,6 +15,7 @@ export {
   type PipelineStatusProps,
   type PipelineStatusValue,
 } from './components/pipeline-status';
+export { SkillTag, type SkillTagProps, type SkillTagVariant } from './components/skill-tag';
 export { StatusBadge, type StatusBadgeProps } from './components/status-badge';
 export { AppShell } from './layouts/app-shell';
 export { AuthPage } from './layouts/auth-page';
