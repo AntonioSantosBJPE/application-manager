@@ -92,6 +92,18 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: proofs.md C68 and root-commands timeouts (repo)
 - last seen: 2026-11-07T18:08:07Z
 
+### L-014 - Refuse control characters such as U+0000 in every text the API stores in Postgres, at the contract schema, so the request gets 400 and not 500
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `contracts` · harmful: 0
+- features: skills
+- evidence: verification.md finding 1; packages/contracts/src/skills.ts:21 (contracts)
+- last seen: 2026-11-08T18:24:42Z
+
+### L-015 - In a concurrency test, race writes on different resources unless the spec fixes the outcome of every interleaving, so an idempotent winner cannot flake the status count
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `api-integration` · harmful: 0
+- features: skills
+- evidence: verification.md finding 2; apps/api/src/modules/skills/http/skills-invariants.int.test.ts (api-integration)
+- last seen: 2026-11-08T18:24:42Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
