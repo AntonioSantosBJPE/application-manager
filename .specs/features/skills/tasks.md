@@ -156,9 +156,9 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `titles` tem o `422`
-- [ ] Um teste cobre o título do `422`
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `titles` tem o `422`
+- [x] Um teste cobre o título do `422`
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

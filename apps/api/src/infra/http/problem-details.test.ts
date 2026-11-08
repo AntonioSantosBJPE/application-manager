@@ -7,6 +7,7 @@ describe('problemFor', () => {
     expect(problemFor(401)).toEqual({ type: 'about:blank', title: 'Unauthorized', status: 401 });
     expect(problemFor(429).title).toBe('Too Many Requests');
     expect(problemFor(410).title).toBe('Gone');
+    expect(problemFor(422)).toEqual({ type: 'about:blank', title: 'Unprocessable Content', status: 422 });
   });
 
   it('adds the detail and the field errors only when they are given', () => {
