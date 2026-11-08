@@ -98,4 +98,44 @@
 - **Date**: 2026-11-08
 - **Status**: active
 
+### AD-013 (active)
+- **Decision**: O catálogo de skills do admin não mostra quantas vagas usam cada skill nem o grupo "Mais usadas"; as linhas ficam em ordem alfabética pelo nome oficial.
+- **Reason**: As vagas só existem na fatia Application, e um módulo não lê o schema do outro. Pergunta: "Como tratar 'N vagas' e o grupo 'Mais usadas'?"; opção escolhida: "Omitir agora".
+- **Trade-off**: A tela fica sem o sinal de quais privadas valem a promoção, até Application existir.
+- **Scope**: `apps/web` feature `skills`, `GET /admin/skills`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-014 (active)
+- **Decision**: Apelido só existe em skill global; para dar apelido a uma privada, o admin a promove antes. A linha de uma privada não mostra apelidos.
+- **Reason**: O apelido é único globalmente, então um apelido numa skill privada de uma pessoa passaria a bloquear esse nome para todas, inclusive para uma global futura. Pergunta: "Em quais skills o admin pode adicionar apelido?"; opção escolhida: "Só globais; '+ Apelido' abre um diálogo".
+- **Trade-off**: A carta mostra "drizzle" numa privada; o produto mostra "—".
+- **Scope**: módulo `skills`, `apps/web` feature `skills`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-015 (active)
+- **Decision**: A categoria `language` tem um só rótulo, "Linguagem", no chip de filtro e na linha.
+- **Reason**: O enum tem uma categoria `language`; "Linguagem/runtime" da carta é lido como texto de exemplo. Pergunta: "Qual rótulo a tela usa?"; opção escolhida: "'Linguagem' no chip e na linha".
+- **Trade-off**: A linha do Node.js diz "Linguagem", e não "Linguagem/runtime".
+- **Scope**: `apps/web` feature `skills`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-016 (active)
+- **Decision**: Os helpers do BFF do `web` (`Outcome`, `ApiFailure`, o parse do contrato, o contexto da requisição e o repasse de `Set-Cookie`) ficam em `apps/web/src/lib/bff.ts`; cada feature tem só as suas server functions e importa o resto de `lib`.
+- **Reason**: Uma feature não importa o interior de outra, e copiar os helpers criaria dois pontos de verdade para cookie e IP do cliente. Pergunta: "Aprova o design com a abordagem A?"; resposta do usuário: "Sim".
+- **Trade-off**: A feature `identity` perde a posse dos helpers e passa a importá-los de `lib`.
+- **Scope**: `apps/web`, todas as features
+- **Date**: 2026-11-08
+- **Status**: active
+
 ## Handoff
+
+- **Feature**: `skills` - closed on branch `feat/skills`, 2026-11-08.
+- **Done**: T1-T36 committed; Verifier (Opus 5.5) judged 76/76 checks holding; its finding (U+0000 answered 500) closed in `b707f9f` and `d7eb144`; a flaky C32 test closed in `ba12ec7`. Report: `.specs/features/skills/verification.md`.
+- **Gates at `ba12ec7`**: `pnpm build`, `typecheck`, `lint`, `pnpm test --force` (contracts 42, guardrails 32, api 74, web 401, ui 474), `pnpm test:integration` (163, twice), `pnpm test:e2e` (54).
+- **Lessons**: L-014 and L-015 recorded as candidates.
+- **Open for the author**: review the seed list `apps/api/src/modules/skills/seed/global-skills.json` (322 skills) in the PR before the merge; Verifier observations with no finding: the 60-character limit counts the text without NFC, and the web drops a search above 60 characters silently.
+- **Note for the next features**: turbo caches `@am/guardrails`, so a change outside that package does not rerun the repository pattern checks; run `pnpm test --force` in the gates.
+- **Next**: PR `feat/skills` -> `main`, merge with green CI, then `git switch main && git pull --ff-only && git branch -d feat/skills`.

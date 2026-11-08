@@ -1,10 +1,11 @@
 # Guia de teste manual
 
-Roteiro curto para ver o estado atual do projeto funcionando: a página de status e a feature `identity` (login, convites, sessão, bloqueio). Leva uns 15 minutos. Todos os dados são fictícios.
+Roteiro curto para ver o estado atual do projeto funcionando: a página de status e as features `identity` (login, convites, sessão, bloqueio) e `skills` (catálogo, privadas, promoção, apelidos). Leva uns 15 minutos. Todos os dados são fictícios.
 
 ## Estado atual
 
 - **Pronto:** esqueleto (web + api + banco + status), `identity` (CLI de admin, login por e-mail e senha, sessão por cookie, convites — criar, copiar, revogar, aceitar —, áreas de admin e de membro, bloqueio por tentativas) e a identidade visual Rumo Carreira (marca, ícones, telas no padrão do design system).
+- **Também pronto:** o catálogo de skills com seed de skills globais, skills privadas por pessoa, promoção e apelidos pelo admin (seção 8).
 - **Ainda não existe:** vagas, currículos, análise de skills (próximas fases do [roadmap](roadmap.md)). A home do membro (`/`) mostra só o título "Início", a saudação e os três passos até a primeira candidatura; ainda não há dados de candidaturas.
 
 ## 1. Subir a stack
@@ -93,13 +94,26 @@ docker compose stop api
 
 `docker compose start api` volta ao normal.
 
-## 8. Tema, largura e teclado
+## 8. Catálogo de skills
+
+O membro ainda não tem tela de skills: as privadas nascem por chamada direta à API, que a stack publica em `127.0.0.1:3333` (ou na porta de `API_PORT`). Use um membro e um admin fictícios (seções 2 a 5).
+
+1. Entre como membro no navegador e copie o nome e o valor do cookie de sessão, aquele cujo nome termina em `am_session` (ferramentas do navegador, aba de armazenamento). É a credencial da sessão: não a cole em lugar nenhum além do terminal.
+2. Crie uma privada: `curl -i -X POST http://127.0.0.1:3333/skills -H "Cookie: <nome>=<valor>" -H "Content-Type: application/json" -d '{"name":"Skill Fictícia Alfa","category":"tool"}'` → `201` com `scope: "private"`. Repetir o mesmo nome devolve `200` com o mesmo id.
+3. Busque com outro membro: `curl "http://127.0.0.1:3333/skills?q=Alfa" -H "Cookie: <nome>=<valor do outro membro>"` → a privada não aparece.
+4. Como admin, abra `/admin/skills`: o título mostra o total do catálogo e o chip "Privadas" conta as privadas. Filtre por "Privadas": a linha tem o selo "Privada" e o botão **Promover**. O painel `/admin` também lista as privadas no widget "Skills privadas aguardando promoção".
+5. Clique em **Promover** e confirme: a linha perde o selo e ganha o menu "⋯". Repita a busca do passo 3: a skill agora aparece, com o mesmo id e `scope: "global"`.
+6. No menu "⋯" escolha **Editar** (nome e categoria) e **Apelidos** (cadastrar, editar e remover). O botão **Apelido** da barra superior cadastra um apelido escolhendo a skill numa lista. A busca do membro passa a achar a skill pelo apelido e deixa de achar pelo apelido removido.
+7. Para ver o erro de promoção, crie a mesma privada com duas contas, promova uma e tente promover a outra: aparece o aviso "Já existe uma skill global com esse nome ou apelido. A fusão é manual."
+8. Só com o teclado: `Tab` até o "⋯", `Enter` abre, as setas movem entre "Editar" e "Apelidos", `Enter` escolhe; o foco fica preso no diálogo e `Esc` o fecha, devolvendo o foco ao "⋯".
+
+## 9. Tema, largura e teclado
 
 - Alterne o tema do sistema (claro/escuro): as telas e o favicon acompanham.
 - Estreite a janela para 375 px: nada rola na horizontal; e-mails e links longos quebram dentro da página, e a barra lateral vira uma barra no topo.
 - Navegue só com `Tab`: o botão em foco tem um anel visível. Em `/login`, o botão **Mostrar senha** é o próximo foco depois do campo "Senha" e funciona com `Enter` e `Espaço`.
 
-## 9. Rodar os testes
+## 10. Rodar os testes
 
 | Comando | Tempo | O que cobre |
 |---|---|---|
@@ -111,7 +125,7 @@ docker compose stop api
 
 No CI de cada PR rodam lint, tipos, `pnpm test`, integração, `test:repo-rules` e o scan de segredos.
 
-## 10. Encerrar
+## 11. Encerrar
 
 ```bash
 docker compose down -v   # apaga também o volume do banco

@@ -9,7 +9,7 @@ export const API_TIMEOUT_MS = 3000;
 /** The header the api counts a login attempt by; the browser never chooses its value (LOCK-09, LOCK-10). */
 export const FORWARDED_IP_HEADER = 'x-am-client-ip';
 
-export type ApiMethod = 'GET' | 'POST' | 'DELETE';
+export type ApiMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
 /** A `2xx` answer; `data` is the parsed body, `undefined` when the api answered `204`. */
 export interface ApiSuccess {

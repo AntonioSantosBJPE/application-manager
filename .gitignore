@@ -10,6 +10,7 @@ coverage/
 storybook-static/
 playwright-report/
 test-results/
+.vitest/
 *.tsbuildinfo
 
 # Environment and secrets — only .env.example is committed

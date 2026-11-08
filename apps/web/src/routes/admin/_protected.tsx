@@ -1,5 +1,5 @@
 import { AppShell } from '@am/ui';
-import { Activity, LayoutDashboard, Mail } from 'lucide-react';
+import { Activity, LayoutDashboard, Mail, Tags } from 'lucide-react';
 import {
   createFileRoute,
   Link,
@@ -57,7 +57,9 @@ function AdminLayout() {
           icon={LayoutDashboard}
           current={pathname === '/admin' || pathname === '/admin/'}
         >
-          <Link to="/admin">Painel</Link>
+          <Link to="/admin" activeOptions={{ exact: true }}>
+            Painel
+          </Link>
         </AppShell.NavItem>
         <AppShell.NavItem
           asChild
@@ -65,6 +67,9 @@ function AdminLayout() {
           current={pathname.startsWith('/admin/invitations')}
         >
           <Link to="/admin/invitations">Convites</Link>
+        </AppShell.NavItem>
+        <AppShell.NavItem asChild icon={Tags} current={pathname.startsWith('/admin/skills')}>
+          <Link to="/admin/skills">Catálogo de skills</Link>
         </AppShell.NavItem>
         <AppShell.NavItem asChild icon={Activity}>
           <Link to="/status">Status do sistema</Link>

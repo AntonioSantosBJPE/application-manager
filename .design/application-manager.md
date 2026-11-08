@@ -56,7 +56,7 @@ A alternativa mais pesada — versões como referências aos itens do mestre com
 |---|---|---|
 | [WalkingSkeleton](#walkingskeleton) | web + api + Postgres em produção na VPS, com CI, preview por PR e backup | open — 2 defaults taken |
 | [Identity](#identity) | login por sessão, convites, papéis | open — 2 defaults taken |
-| [Skill](#skill) | catálogo global + skills privadas, apelidos, promoção | open — 1 default taken |
+| [Skill](#skill) | catálogo global + skills privadas, apelidos, promoção | done — 1 default taken |
 | [Application](#application) | vaga com skills e nível, status, linha do tempo | clear |
 | [MasterResume](#masterresume) | currículo mestre com bullets marcados por skill | clear |
 | [ResumeVersion](#resumeversion) | cópia ordenada por relevância e editável por candidatura | clear |
@@ -159,7 +159,7 @@ Contas e acesso, decididos na feature Identity: contas separadas para operador e
 
 ### Skill
 
-**Delivers** o catálogo de skills com apelidos, skills privadas criadas na hora e promoção pelo admin. **Status: open.** Contém a Key decision 4.
+**Delivers** o catálogo de skills com apelidos, skills privadas criadas na hora e promoção pelo admin. **Status: done.** Contém a Key decision 4.
 
 | State | What should happen | Caller sees |
 |---|---|---|
@@ -173,6 +173,16 @@ Contas e acesso, decididos na feature Identity: contas separadas para operador e
 `POST /skills` `{ name, category }` → `201` `{ id, name, category, scope }`
 `POST /skills/:id/promote` → `200`
 `POST /skills/:id/aliases` `{ alias }` → `201`
+
+Rotas acrescentadas pela feature `skills`, todas de admin:
+
+| Rota | Papel | Corpo / resposta |
+| --- | --- | --- |
+| `GET /admin/skills?scope=&category=&q=&cursor=` | admin | `200` `{ items: [{ id, name, category, scope, aliases: [{ id, alias }] }], nextCursor, counts: { total, private } }` |
+| `PATCH /skills/:id` | admin | `{ name?, category? }` → `200` `{ id, name, category, scope }` |
+| `POST /skills/:id/aliases` | admin | `{ alias }` → `201` (ou `200` se repetido) `{ id, alias }` |
+| `PATCH /skills/:id/aliases/:aliasId` | admin | `{ alias }` → `200` `{ id, alias }` |
+| `DELETE /skills/:id/aliases/:aliasId` | admin | `204` |
 
 Tables `skills.skills`, `skills.skill_aliases`.
 

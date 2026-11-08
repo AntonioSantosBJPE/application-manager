@@ -141,11 +141,21 @@ describe('route access', () => {
       // purpose, and anything else fails below, named.
       const writingRoutes = [
         'DELETE /invitations/:id',
+        // The admin removes an alias of a global skill; the skill itself is never deleted (SKL-69, SKL-25).
+        'DELETE /skills/:id/aliases/:aliasId',
+        // The admin edits the name and category of a global skill, and the text of its aliases (SKL-62, SKL-67).
+        'PATCH /skills/:id',
+        'PATCH /skills/:id/aliases/:aliasId',
         'POST /auth/admin/login',
         'POST /auth/login',
         'POST /auth/logout',
         'POST /invitations',
         'POST /invitations/:token/accept',
+        // A member creates a private skill; it is a product route, not account administration (SKL-11).
+        'POST /skills',
+        // The admin gives a global skill an alias and makes a private skill global; catalog routes, not account administration (SKL-17, SKL-26).
+        'POST /skills/:id/aliases',
+        'POST /skills/:id/promote',
       ];
       const registeredWriting = routes
         .map((route) => route.route)

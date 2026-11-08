@@ -1,13 +1,17 @@
 export { Alert, type AlertProps } from './components/alert';
 export { Button, type ButtonProps } from './components/button';
+export { Combobox, type ComboboxOption, type ComboboxProps } from './components/combobox';
 export { ConfirmDialog, type ConfirmDialogProps } from './components/confirm-dialog';
 export {
   CopyField,
   type CopyFieldProps,
   type CopyFieldStatus,
 } from './components/copy-field';
+export { Dialog } from './components/dialog';
+export { DropdownMenu } from './components/dropdown-menu';
 export { EmptyState } from './components/empty-state';
 export { Field, type FieldRootProps } from './components/field';
+export { FilterChip, type FilterChipProps } from './components/filter-chip';
 export { Kbd, type KbdProps } from './components/kbd';
 export { Logo, type LogoProps, type LogoTone } from './components/logo';
 export {
@@ -15,6 +19,7 @@ export {
   type PipelineStatusProps,
   type PipelineStatusValue,
 } from './components/pipeline-status';
+export { SearchInput, type SearchInputProps } from './components/search-input';
 export { SkillTag, type SkillTagProps, type SkillTagVariant } from './components/skill-tag';
 export { StatusBadge, type StatusBadgeProps } from './components/status-badge';
 export { AppShell } from './layouts/app-shell';

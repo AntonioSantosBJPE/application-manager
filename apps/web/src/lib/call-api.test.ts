@@ -73,6 +73,21 @@ describe('callApi', () => {
     });
   });
 
+  it('SKL-54 sends a PATCH with its JSON body, so the edit endpoints are reachable', async () => {
+    const { result, received } = await call(
+      { method: 'PATCH', path: '/skills/skill-1', body: { name: 'Skill Fictícia Alfa', category: 'tool' } },
+      () => HttpResponse.json({ id: 'skill-1' }),
+    );
+
+    expect(result).toEqual({ ok: true, status: 200, data: { id: 'skill-1' } });
+    expect(received).toHaveLength(1);
+    const sent = received[0]!;
+    expect(sent.method).toBe('PATCH');
+    expect(new URL(sent.url).pathname).toBe('/skills/skill-1');
+    expect(sent.headers.get('content-type')).toBe('application/json');
+    await expect(sent.json()).resolves.toEqual({ name: 'Skill Fictícia Alfa', category: 'tool' });
+  });
+
   it('answers 204 with no data so a successful login needs no body', async () => {
     const { result } = await call({ method: 'POST', path: '/auth/login' }, () => new HttpResponse(null, { status: 204 }));
 
