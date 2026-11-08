@@ -782,11 +782,11 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Sugestões com nome oficial e categoria e a dica "Busque por nome ou apelido: “node”, “nodejs” e “Node.js” são a mesma skill."
-- [ ] "Criar “{texto}” como skill privada" só quando o texto não é o nome oficial de uma sugestão; abre as sete categorias; a tag nova tem a marca de privada
-- [ ] Skill já no outro campo é movida, sem repetir
-- [ ] Testes `APP-59` a `APP-61` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Sugestões com nome oficial e categoria e a dica "Busque por nome ou apelido: “node”, “nodejs” e “Node.js” são a mesma skill."
+- [x] "Criar “{texto}” como skill privada" só quando o texto não é o nome oficial de uma sugestão; abre as sete categorias; a tag nova tem a marca de privada
+- [x] Skill já no outro campo é movida, sem repetir
+- [x] Testes `APP-59` a `APP-61` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
