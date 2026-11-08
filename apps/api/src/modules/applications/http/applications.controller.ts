@@ -1,0 +1,39 @@
+import {
+  createApplicationRequestSchema,
+  type ApplicationDetail,
+  type CreateApplicationRequest,
+  type InvalidSkillsProblem,
+} from '@am/contracts';
+import { Body, Controller, Post } from '@nestjs/common';
+import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
+import { zodBody } from '../../../infra/http/zod-body.pipe.js';
+import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
+import { ApplicationsService, InvalidSkillsError } from '../application/applications.service.js';
+
+/** The rule errors of the service as the Problem Details answers the spec fixes (APP-05). */
+async function answering<T>(operation: () => Promise<T>): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (error instanceof InvalidSkillsError) {
+      const problem: InvalidSkillsProblem = { ...problemFor(422, error.message), invalidSkillIds: error.invalidSkillIds };
+      throw new ProblemDetailsException(problem);
+    }
+    throw error;
+  }
+}
+
+/** What a member does with applications; the admin has no use for these routes (AD-005, APP-38). */
+@Controller('applications')
+export class ApplicationsController {
+  constructor(private readonly applications: ApplicationsService) {}
+
+  @Roles('member')
+  @Post()
+  create(
+    @Body(zodBody(createApplicationRequestSchema)) body: CreateApplicationRequest,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ApplicationDetail> {
+    return answering(() => this.applications.create(user.id, body));
+  }
+}

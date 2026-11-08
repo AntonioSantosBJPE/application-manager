@@ -29,6 +29,8 @@ export {
   type EventKind,
   eventKindSchema,
   FUNNEL_ORDER,
+  type InvalidSkillsProblem,
+  invalidSkillsProblemSchema,
   type JobLevel,
   jobLevelSchema,
   type ListApplicationsQuery,

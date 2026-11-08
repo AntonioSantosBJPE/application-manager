@@ -146,6 +146,8 @@ describe('route access', () => {
         // The admin edits the name and category of a global skill, and the text of its aliases (SKL-62, SKL-67).
         'PATCH /skills/:id',
         'PATCH /skills/:id/aliases/:aliasId',
+        // A member registers a job posting and its application; a product route, not account administration (APP-01).
+        'POST /applications',
         'POST /auth/admin/login',
         'POST /auth/login',
         'POST /auth/logout',

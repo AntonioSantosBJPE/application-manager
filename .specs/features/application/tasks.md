@@ -255,11 +255,11 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] `ApplicationsModule`, `ApplicationsRepository.insert`, `ApplicationsService.create` e `ApplicationsController.create` criados; `index.ts` exporta o módulo; rota `@Roles('member')`
-- [ ] Vaga, skills (com `position`) e candidatura numa transação; evento `status_changed` sem `from_status` quando o status não é `saved`; `search_text` gravado
-- [ ] `InvalidSkillsError` → `422` com `invalidSkillIds` para skill inexistente, alheia, repetida ou id que não é uuid
-- [ ] Testes `APP-01` a `APP-06` passam contra Postgres real; teste unitário `APP-08` prova que `modules/applications` só importa `modules/skills/index.ts`
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] `ApplicationsModule`, `ApplicationsRepository.insert`, `ApplicationsService.create` e `ApplicationsController.create` criados; `index.ts` exporta o módulo; rota `@Roles('member')`
+- [x] Vaga, skills (com `position`) e candidatura numa transação; evento `status_changed` sem `from_status` quando o status não é `saved`; `search_text` gravado
+- [x] `InvalidSkillsError` → `422` com `invalidSkillIds` para skill inexistente, alheia, repetida ou id que não é uuid
+- [x] Testes `APP-01` a `APP-06` passam contra Postgres real; teste unitário `APP-08` prova que `modules/applications` só importa `modules/skills/index.ts`
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

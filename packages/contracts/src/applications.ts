@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { problemDetailsSchema } from './identity.js';
 import { skillCategorySchema, skillScopeSchema } from './skills.js';
 
 export const applicationStatusSchema = z.enum([
@@ -253,3 +254,7 @@ export type ApplicationsPage = z.infer<typeof applicationsPageSchema>;
 
 export const applicationsCountSchema = z.object({ total: countSchema });
 export type ApplicationsCount = z.infer<typeof applicationsCountSchema>;
+
+/** The `422` of a skill the member cannot use: Problem Details plus the ids that were refused (APP-05, APP-31). */
+export const invalidSkillsProblemSchema = problemDetailsSchema.extend({ invalidSkillIds: z.array(z.string()) });
+export type InvalidSkillsProblem = z.infer<typeof invalidSkillsProblemSchema>;
