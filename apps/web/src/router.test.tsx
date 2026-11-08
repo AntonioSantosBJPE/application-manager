@@ -125,7 +125,7 @@ describe('member area guard', () => {
     expect(links.map((link) => link.textContent)).toEqual(['Início']);
     expect(links[0]).toHaveAttribute('href', '/');
     expect(links[0]).toHaveAttribute('aria-current', 'page');
-    expect(within(sidebar).getByText('AN')).toHaveAttribute('aria-hidden', 'true');
+    expect(within(sidebar).getByText('AS')).toHaveAttribute('aria-hidden', 'true');
     expect(within(sidebar).getByText('Ana Souza')).toBeInTheDocument();
     expect(within(sidebar).getByRole('button', { name: 'Sair' })).toBeInTheDocument();
     // Only what exists (AD-008): no search button and no destination of a later phase.
@@ -274,7 +274,7 @@ describe('admin area guard', () => {
       'aria-current',
       'page',
     );
-    expect(within(sidebar).getByText('RO')).toHaveAttribute('aria-hidden', 'true');
+    expect(within(sidebar).getByText('RA')).toHaveAttribute('aria-hidden', 'true');
     expect(within(sidebar).getByText('Root Admin')).toBeInTheDocument();
     expect(within(sidebar).getByRole('button', { name: 'Sair' })).toBeInTheDocument();
     expect(within(sidebar).queryByText(/Catálogo de skills|Buscar/)).toBeNull();

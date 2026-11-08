@@ -29,7 +29,7 @@ describe('SessionMenu', () => {
   it('PRU-06 AC13 shows the initials, the name and Sair at the bottom of the sidebar', () => {
     renderMenu();
 
-    expect(screen.getByText('AN')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByText('AS')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.getByText('Ana Souza')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sair' })).toBeEnabled();
   });
