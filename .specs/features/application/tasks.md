@@ -1029,9 +1029,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Acrescentar ou remover grava a lista inteira pelo `PUT`
-- [ ] Teste `APP-73` passa
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Acrescentar ou remover grava a lista inteira pelo `PUT`
+- [x] Teste `APP-73` passa
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

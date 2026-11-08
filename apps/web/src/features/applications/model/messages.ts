@@ -86,6 +86,11 @@ export const DETAIL_MESSAGES = {
   notFound: 'Candidatura não encontrada.',
   backToList: 'Voltar para Candidaturas',
   empty: '—',
+  addSkill: 'Skill',
+  addRequired: 'Adicionar skill obrigatória',
+  addNice: 'Adicionar skill desejável',
+  cancelAddSkill: 'Cancelar',
+  skillsPlaceholder: 'Adicionar…',
   editLocation: 'Editar local',
   editPosting: 'Editar link da vaga',
 } as const;

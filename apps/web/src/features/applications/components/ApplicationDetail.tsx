@@ -3,19 +3,21 @@ import type {
   ApplicationEvent,
   ApplicationStatus,
   CreateEventRequest,
-  PostingSkill,
+  ReplaceSkillsRequest,
   UpdateJobPostingRequest,
 } from '@am/contracts';
-import { Alert, AppShell, Button, DetailPage, Icon, SkillTag } from '@am/ui';
+import { Alert, AppShell, Button, DetailPage, Icon } from '@am/ui';
 import { ChevronRight, ExternalLink, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { MouseEvent } from 'react';
 import type { Outcome } from '../../../lib/bff';
+import type { SkillsFieldApi } from '../../skills';
 import { MESSAGES, problemMessage } from '../../identity';
 import { DETAIL_MESSAGES } from '../model/messages';
 import { ApplicationTimeline } from './ApplicationTimeline';
 import { NoteComposer } from './NoteComposer';
 import { PropertiesSidebar } from './PropertiesSidebar';
+import { SkillsSection } from './SkillsSection';
 import { StageDialog } from './StageDialog';
 
 /** What the detail needs from the BFF; the route binds the server functions, a test binds the api. */
@@ -23,6 +25,9 @@ export interface ApplicationDetailApi {
   /** Reads the detail again: the events come back in their order, with the activity the api computed. */
   load: (id: string) => Promise<Outcome<ApplicationRecord>>;
   addEvent: (id: string, body: CreateEventRequest) => Promise<Outcome<ApplicationEvent>>;
+  replaceSkills: (id: string, body: ReplaceSkillsRequest) => Promise<Outcome<ApplicationRecord>>;
+  /** The search and the creation of the skills field, as in the registration dialog. */
+  skills: SkillsFieldApi;
   changeStatus: (id: string, status: ApplicationStatus) => Promise<Outcome<ApplicationRecord>>;
   updatePosting: (id: string, body: UpdateJobPostingRequest) => Promise<Outcome<ApplicationRecord>>;
 }
@@ -69,21 +74,6 @@ export function ListLink({
     >
       {children}
     </a>
-  );
-}
-
-function SkillRow({ label, skills, requirement }: { label: string; skills: PostingSkill[]; requirement: 'required' | 'nice' }) {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="w-22 shrink-0 pt-0.5 text-label text-text-muted">{label}</span>
-      <ul aria-label={label} className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-        {skills.map((skill) => (
-          <li key={skill.id}>
-            <SkillTag variant={skill.scope === 'private' ? 'private' : requirement}>{skill.name}</SkillTag>
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }
 
@@ -178,8 +168,6 @@ export function ApplicationDetail({ application, now, api, onExpired, onChanged,
     return true;
   }
 
-  const required = current.skills.filter((skill) => skill.requirement === 'required');
-  const nice = current.skills.filter((skill) => skill.requirement === 'nice_to_have');
   const id = current.id;
 
   return (
@@ -207,15 +195,11 @@ export function ApplicationDetail({ application, now, api, onExpired, onChanged,
             <span className="text-text-muted">{current.company}</span>
             <h1 className="text-heading-lg">{current.title}</h1>
           </div>
-          <section aria-labelledby="detail-skills" className="flex flex-col gap-3">
-            <h2 id="detail-skills" className="text-heading-sm">
-              {DETAIL_MESSAGES.skills}
-            </h2>
-            <div className="flex flex-col gap-1.5">
-              <SkillRow label={DETAIL_MESSAGES.required} skills={required} requirement="required" />
-              <SkillRow label={DETAIL_MESSAGES.nice} skills={nice} requirement="nice" />
-            </div>
-          </section>
+          <SkillsSection
+            skills={current.skills}
+            api={api.skills}
+            onChange={(body) => void save(() => api.replaceSkills(id, body))}
+          />
           <section aria-labelledby="detail-timeline" className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h2 id="detail-timeline" className="text-heading-sm">
