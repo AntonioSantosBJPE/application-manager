@@ -21,4 +21,5 @@ export { AppShell } from './layouts/app-shell';
 export { AuthPage } from './layouts/auth-page';
 export { DashboardPage } from './layouts/dashboard-page';
 export { DetailPage } from './layouts/detail-page';
+export { FormPage } from './layouts/form-page';
 export { ListPage } from './layouts/list-page';

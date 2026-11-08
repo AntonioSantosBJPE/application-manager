@@ -529,10 +529,10 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] `Root` (`main`), `Index` (`nav` de 200 px, sticky), `Section` (`heading-md` e área de ações) em largura de leitura de 720 px, `Actions`
-- [ ] `no-product-copy.test.tsx`: nenhum componente futuro renderiza texto próprio sem filhos ou props do chamador
-- [ ] Testes e stories nos dois temas
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `Root` (`main`), `Index` (`nav` de 200 px, sticky), `Section` (`heading-md` e área de ações) em largura de leitura de 720 px, `Actions`
+- [x] `no-product-copy.test.tsx`: nenhum componente futuro renderiza texto próprio sem filhos ou props do chamador
+- [x] Testes e stories nos dois temas
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick
