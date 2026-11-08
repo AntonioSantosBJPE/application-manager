@@ -449,9 +449,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Caixa tracejada `border-strong`, `radius-md`, texto `text-muted` do chamador e ação opcional, sem ilustração
-- [ ] Testes e stories nos dois temas
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Caixa tracejada `border-strong`, `radius-md`, texto `text-muted` do chamador e ação opcional, sem ilustração
+- [x] Testes e stories nos dois temas
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick
