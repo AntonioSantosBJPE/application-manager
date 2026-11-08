@@ -140,6 +140,8 @@ describe('route access', () => {
       // this list. It is an allowlist, not a pattern: a route that writes has to be added here on
       // purpose, and anything else fails below, named.
       const writingRoutes = [
+        // A member deletes an application with its posting, skills and events; a product route, not account administration (APP-36).
+        'DELETE /applications/:id',
         'DELETE /invitations/:id',
         // The admin removes an alias of a global skill; the skill itself is never deleted (SKL-69, SKL-25).
         'DELETE /skills/:id/aliases/:aliasId',

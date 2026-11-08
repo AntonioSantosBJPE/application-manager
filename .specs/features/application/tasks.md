@@ -460,9 +460,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] `204`; nenhuma linha das quatro tabelas sobra com aqueles ids; repetir dá `404`
-- [ ] Testes `APP-36` e `APP-37` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] `204`; nenhuma linha das quatro tabelas sobra com aqueles ids; repetir dá `404`
+- [x] Testes `APP-36` e `APP-37` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

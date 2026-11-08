@@ -36,7 +36,7 @@ import {
 /** The list shows 50 applications per page (APP-09). */
 export const LIST_PAGE_SIZE = 50;
 
-type ApplicationEventName = 'application.created' | 'application.posting_updated' | 'application.skills_replaced' | 'application.status_changed' | 'application.event_added' | 'application.ghost_snoozed';
+type ApplicationEventName = 'application.created' | 'application.posting_updated' | 'application.skills_replaced' | 'application.status_changed' | 'application.event_added' | 'application.ghost_snoozed' | 'application.deleted';
 
 /** The application does not exist, is somebody else's or the id is not a uuid (`404`, APP-19). */
 export class ApplicationNotFoundError extends Error {
@@ -279,6 +279,16 @@ export class ApplicationsService {
     await this.repository.snooze(userId, record.id, new Date(this.clock.now().getTime() + GHOST_SNOOZE_MS));
     this.record('application.ghost_snoozed', record.id, userId);
     return this.detailOf(userId, record.id);
+  }
+
+  /**
+   * Deletes the posting, its skills, the application and its events in one statement; asking again, or for
+   * somebody else's application, is `404` (APP-36, APP-37).
+   */
+  async remove(userId: string, id: string): Promise<void> {
+    const record = isUuid(id) ? await this.repository.findOwned(userId, id) : undefined;
+    if (record === undefined || !(await this.repository.deleteOwned(userId, record.jobPostingId))) throw new ApplicationNotFoundError();
+    this.record('application.deleted', record.id, userId);
   }
 
   /** The skill ids as stored: a uuid in lowercase, anything else untouched so it is refused as sent. */

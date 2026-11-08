@@ -159,6 +159,18 @@ export class ApplicationsRepository {
     return row;
   }
 
+  /**
+   * Deletes the posting of the application; its skills, the application and its events go with it by the
+   * cascade of the schema, all in this one statement. Answers whether a row of this user was there (APP-36).
+   */
+  async deleteOwned(userId: string, postingId: string): Promise<boolean> {
+    const deleted = await this.db
+      .delete(jobPostings)
+      .where(and(eq(jobPostings.id, postingId), eq(jobPostings.userId, userId)))
+      .returning({ id: jobPostings.id });
+    return deleted.length > 0;
+  }
+
   /** Hides the ghost suggestion until `until`; nothing else of the application changes (APP-35, AD-020). */
   async snooze(userId: string, applicationId: string, until: Date): Promise<void> {
     await this.db

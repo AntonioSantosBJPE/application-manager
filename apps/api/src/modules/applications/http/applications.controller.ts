@@ -17,7 +17,7 @@ import {
   type ReplaceSkillsRequest,
   type UpdateJobPostingRequest,
 } from '@am/contracts';
-import { Body, Controller, Get, HttpCode, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
 import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
@@ -126,5 +126,12 @@ export class ApplicationsController {
   @Post(':id/ghost-snooze')
   snoozeGhost(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<ApplicationDetail> {
     return answering(() => this.applications.snoozeGhost(user.id, id));
+  }
+
+  @Roles('member')
+  @HttpCode(204)
+  @Delete(':id')
+  async remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<void> {
+    await answering(() => this.applications.remove(user.id, id));
   }
 }
