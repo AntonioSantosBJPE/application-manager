@@ -692,10 +692,10 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] `/status` fora do shell: coluna de 560 px, logotipo, h1 "Status", veredito, "Verificado às {hora} de {data}." e linhas com `StatusBadge`; degradado → "Serviço degradado" e item afetado no topo em `danger`
-- [ ] Widget de status do painel (`StatusWidgets`) com `StatusBadge`, API, banco e horário
-- [ ] Testes de `StatusPanel` e de rota
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `/status` fora do shell: coluna de 560 px, logotipo, h1 "Status", veredito, "Verificado às {hora} de {data}." e linhas com `StatusBadge`; degradado → "Serviço degradado" e item afetado no topo em `danger`
+- [x] Widget de status do painel (`StatusWidgets`) com `StatusBadge`, API, banco e horário
+- [x] Testes de `StatusPanel` e de rota
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit (web)
 **Gate**: quick

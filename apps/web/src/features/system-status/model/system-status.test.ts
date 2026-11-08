@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { componentsInOrder, verdictOf, type ServiceState } from './system-status';
+import { componentsInOrder, formatCheckedAt, verdictOf, type ServiceState } from './system-status';
 
 describe('verdictOf', () => {
   it('PRU-06 AC21 is operational only when the API and the database both are', () => {
@@ -42,5 +42,29 @@ describe('componentsInOrder', () => {
       { component: 'api', state: 'unavailable' },
       { component: 'database', state: 'unavailable' },
     ]);
+  });
+});
+
+describe('formatCheckedAt', () => {
+  it('PRU-06 AC21 prints the date and the time of the read in São Paulo', () => {
+    expect(formatCheckedAt('2026-11-08T17:32:07.000Z')).toEqual({
+      date: '08 nov 2026',
+      time: '14:32:07',
+    });
+  });
+
+  it('reads the day in São Paulo, not in UTC, on a 24-hour clock', () => {
+    expect(formatCheckedAt('2026-11-09T02:05:09.000Z')).toEqual({
+      date: '08 nov 2026',
+      time: '23:05:09',
+    });
+    expect(formatCheckedAt('2026-03-02T03:00:00.000Z')).toEqual({
+      date: '02 mar 2026',
+      time: '00:00:00',
+    });
+  });
+
+  it('gives nothing for an instant that is not a date', () => {
+    expect(formatCheckedAt('not a date')).toBeUndefined();
   });
 });

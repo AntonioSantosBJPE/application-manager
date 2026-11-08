@@ -46,3 +46,34 @@ export function componentsInOrder(
     ...all.filter((item) => item.state === 'operational'),
   ];
 }
+
+/** The time zone of the person: fixed, so the server and the browser print the same text. */
+const TIME_ZONE = 'America/Sao_Paulo';
+
+const instantParts = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+  timeZone: TIME_ZONE,
+});
+
+/**
+ * The read instant as the screens print it, in São Paulo: the date ("08 nov 2026") and the time
+ * ("14:32:07"). An instant that is not a date gives `undefined`, so a screen leaves the line out.
+ */
+export function formatCheckedAt(iso: string): { date: string; time: string } | undefined {
+  const instant = new Date(iso);
+  if (Number.isNaN(instant.getTime())) return undefined;
+
+  const parts = Object.fromEntries(
+    instantParts.formatToParts(instant).map((part) => [part.type, part.value]),
+  );
+  return {
+    date: `${parts.day} ${parts.month?.replace('.', '')} ${parts.year}`,
+    time: `${parts.hour}:${parts.minute}:${parts.second}`,
+  };
+}

@@ -485,3 +485,23 @@ describe('admin dashboard', () => {
     expect(vi.mocked(getSystemStatus)).not.toHaveBeenCalled();
   });
 });
+
+describe('status page', () => {
+  it('PRU-06 AC21 opens /status outside the app shell, for anyone', async () => {
+    sessionIs(anonymous);
+
+    const router = await open('/status');
+
+    expect(here(router)).toBe('/status');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Status' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(
+      'Todos os sistemas operacionais',
+    );
+    expect(screen.getByText(/^Verificado às/)).toHaveTextContent(
+      'Verificado às 14:32:07 de 08 nov 2026.',
+    );
+    expect(screen.queryByRole('navigation')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Sair' })).toBeNull();
+    expect(screen.getAllByRole('main')).toHaveLength(1);
+  });
+});
