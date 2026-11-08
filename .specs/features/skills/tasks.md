@@ -468,8 +468,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `ApiMethod` inclui `PATCH`; um teste confere o método e o corpo enviados
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `ApiMethod` inclui `PATCH`; um teste confere o método e o corpo enviados
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
