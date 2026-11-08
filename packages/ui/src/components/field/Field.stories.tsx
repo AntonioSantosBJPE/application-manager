@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent } from 'storybook/test';
-import { focusRing, settle } from '../../testing/contrast';
+import { expectContrast, focusRing, settle } from '../../testing/contrast';
 import { Field } from './field';
 
 const meta = {
@@ -25,6 +25,38 @@ export const Padrao: Story = {
 export const Invalido: Story = {
   name: 'Inválido',
   args: { invalid: true },
+};
+
+export const SomenteLeitura: Story = {
+  name: 'Somente leitura',
+  render: () => (
+    <Field.Root>
+      <Field.Label htmlFor="field-invite-email">E-mail</Field.Label>
+      <Field.Control id="field-invite-email" type="email" readOnly value="ana@exemplo.com" />
+    </Field.Root>
+  ),
+};
+
+export const Textarea: Story = {
+  name: 'Textarea',
+  render: () => (
+    <Field.Root className="w-80">
+      <Field.Label htmlFor="field-notes">Notas</Field.Label>
+      <Field.Textarea id="field-notes" placeholder="O que ficou combinado na entrevista" />
+      <Field.Hint>Até 2000 caracteres.</Field.Hint>
+    </Field.Root>
+  ),
+};
+
+export const TextareaInvalida: Story = {
+  name: 'Textarea inválida',
+  render: () => (
+    <Field.Root className="w-80" invalid>
+      <Field.Label htmlFor="field-notes-invalid">Notas</Field.Label>
+      <Field.Textarea id="field-notes-invalid" />
+      <Field.Error>As notas passam de 2000 caracteres.</Field.Error>
+    </Field.Root>
+  ),
 };
 
 /** A CSS color as the browser resolves it, to compare with a computed style. */
@@ -92,4 +124,71 @@ export const FocoTemaEscuro: Story = {
   name: 'Foco por teclado, tema escuro',
   globals: { theme: 'dark' },
   play: focusContrast,
+};
+
+/** Every state of a field side by side: default with hint, invalid, read-only and textarea. */
+const allStates: Story['render'] = () => (
+  <div className="flex w-80 flex-col gap-4 bg-surface p-4">
+    <Field.Root>
+      <Field.Label htmlFor="contrast-name">Nome</Field.Label>
+      <Field.Control id="contrast-name" />
+      <Field.Hint>Como aparece no currículo.</Field.Hint>
+    </Field.Root>
+    <Field.Root invalid>
+      <Field.Label htmlFor="contrast-password">Senha</Field.Label>
+      <Field.Control id="contrast-password" type="password" />
+      <Field.Error>A senha precisa ter de 12 a 128 caracteres.</Field.Error>
+    </Field.Root>
+    <Field.Root>
+      <Field.Label htmlFor="contrast-email">E-mail</Field.Label>
+      <Field.Control id="contrast-email" readOnly value="ana@exemplo.com" />
+    </Field.Root>
+    <Field.Root>
+      <Field.Label htmlFor="contrast-notes">Notas</Field.Label>
+      <Field.Textarea id="contrast-notes" />
+    </Field.Root>
+  </div>
+);
+
+/**
+ * Texts at 4.5:1, control borders and the error icon at 3:1, and the keyboard focus of a text
+ * field drawn 1px inside with the border in focus (PRU-08 AC03, PRU-01 AC13).
+ */
+const contrast: Story['play'] = async ({ canvas }) => {
+  const name = canvas.getByLabelText('Nome');
+  await settle(name);
+  for (const label of ['Nome', 'Senha', 'E-mail', 'Notas']) {
+    await expectContrast(canvas.getByText(label), 4.5);
+  }
+  await expectContrast(canvas.getByText('Como aparece no currículo.'), 4.5);
+  const error = canvas.getByText('A senha precisa ter de 12 a 128 caracteres.');
+  await expectContrast(error, 4.5);
+  await expectContrast(error.querySelector('svg')!, 3);
+  await expectContrast(name, 3, 'borderTopColor');
+  await expectContrast(canvas.getByLabelText('Notas'), 3, 'borderTopColor');
+  await expectContrast(canvas.getByLabelText('Senha'), 3, 'borderTopColor');
+  await expectContrast(canvas.getByLabelText('E-mail'), 4.5);
+
+  await userEvent.tab();
+  await expect(name).toHaveFocus();
+  await settle(name);
+  const ring = focusRing(name);
+  await expect(ring.drawn).toBe(true);
+  await expect(ring.isFocusToken).toBe(true);
+  await expect(getComputedStyle(name).outlineOffset).toBe('-1px');
+  await expect(getComputedStyle(name).borderTopColor).toBe(getComputedStyle(name).outlineColor);
+};
+
+export const ContrasteClaro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema claro',
+  globals: { theme: 'light' },
+  render: allStates,
+  play: contrast,
+};
+
+export const ContrasteEscuro: Story = {
+  name: 'PRU-08 AC03 Contraste, tema escuro',
+  globals: { theme: 'dark' },
+  render: allStates,
+  play: contrast,
 };

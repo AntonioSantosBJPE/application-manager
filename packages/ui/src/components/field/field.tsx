@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useState } from 'react';
 import type { ComponentProps, ReactNode } from 'react';
+import { CircleAlert } from 'lucide-react';
+import { Icon } from '../../icons/icon';
 
 type FieldContextValue = {
   /**
@@ -72,23 +74,49 @@ function FieldRoot({ invalid = false, className, children, ...props }: FieldRoot
 }
 
 function FieldLabel({ className, ...props }: ComponentProps<'label'>) {
-  return <label className={join('text-xs font-medium text-text', className)} {...props} />;
+  return <label className={join('text-label text-text', className)} {...props} />;
+}
+
+/**
+ * The look every text control of a field shares (PRU-02): a `border-control` border that turns
+ * `danger` when invalid, a read-only fill in `surface-raised` with `text-muted`, and on keyboard
+ * focus the 2px ring drawn 1px inside with the border in `focus` too (PRU-01 AC13).
+ */
+function controlClassName(invalid: boolean, readOnly: boolean | undefined): string {
+  return join(
+    'w-full min-w-0 rounded-sm border px-2 text-body placeholder:text-text-muted',
+    'transition-colors duration-150',
+    readOnly ? 'bg-surface-raised text-text-muted' : 'bg-surface text-text',
+    invalid ? 'border-danger' : 'border-border-control hover:border-text-muted',
+    'outline-focus focus-visible:border-focus focus-visible:outline-2 focus-visible:-outline-offset-1',
+  );
 }
 
 /** The form control; carries `aria-describedby` and `aria-invalid` without the caller wiring ids. */
-function FieldControl({ className, ...props }: ComponentProps<'input'>) {
+function FieldControl({ className, readOnly, ...props }: ComponentProps<'input'>) {
   const { describedBy, invalid } = useField('Control');
 
   return (
     <input
-      className={join(
-        'h-8 rounded-sm border bg-surface px-2 text-xs text-text',
-        invalid ? 'border-danger' : 'border-border',
-        'outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
-        className,
-      )}
+      className={join('h-control-md', controlClassName(invalid, readOnly), className)}
       aria-describedby={describedBy}
       aria-invalid={invalid || undefined}
+      readOnly={readOnly}
+      {...props}
+    />
+  );
+}
+
+/** A multi-line control with the wiring and the border of `Field.Control`, at least 88px tall. */
+function FieldTextarea({ className, readOnly, ...props }: ComponentProps<'textarea'>) {
+  const { describedBy, invalid } = useField('Textarea');
+
+  return (
+    <textarea
+      className={join('min-h-22 resize-y py-1.5', controlClassName(invalid, readOnly), className)}
+      aria-describedby={describedBy}
+      aria-invalid={invalid || undefined}
+      readOnly={readOnly}
       {...props}
     />
   );
@@ -102,11 +130,11 @@ function FieldHint({ className, ...props }: ComponentProps<'p'>) {
     return () => registerHint(false);
   }, [registerHint]);
 
-  return <p id={hintId} className={join('text-xs text-text-muted', className)} {...props} />;
+  return <p id={hintId} className={join('text-caption text-text-muted', className)} {...props} />;
 }
 
 /** Renders only while the field is invalid, so the error never competes with the hint. */
-function FieldError({ className, ...props }: ComponentProps<'p'>) {
+function FieldError({ className, children, ...props }: ComponentProps<'p'>) {
   const { errorId, invalid, registerError } = useField('Error');
 
   useRegistrationEffect(() => {
@@ -117,12 +145,21 @@ function FieldError({ className, ...props }: ComponentProps<'p'>) {
 
   if (!invalid) return null;
 
-  return <p id={errorId} className={join('text-xs text-danger', className)} {...props} />;
+  return (
+    <p
+      id={errorId}
+      className={join('flex items-center gap-1 text-caption text-danger', className)}
+      {...props}
+    >
+      <Icon icon={CircleAlert} size="sm" className="shrink-0" />
+      {children}
+    </p>
+  );
 }
 
 /**
  * Compound field (UI-21, UI-22). `Field.Root` owns `invalid` and generates the ids; `Label`,
- * `Control`, `Hint` and `Error` read them from context, so the caller never repeats an id.
+ * `Control`, `Textarea`, `Hint` and `Error` read them from context, so the caller never repeats an id.
  * `Hint` and `Error` report that they are on screen, so the control describes itself only with
  * the elements that exist: the hint, and the error when the field is invalid.
  */
@@ -130,6 +167,7 @@ export const Field = {
   Root: FieldRoot,
   Label: FieldLabel,
   Control: FieldControl,
+  Textarea: FieldTextarea,
   Hint: FieldHint,
   Error: FieldError,
 };

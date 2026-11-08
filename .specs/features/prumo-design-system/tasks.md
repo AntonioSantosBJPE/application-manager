@@ -226,10 +226,10 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] `Field.Textarea` com a mesma fiação de ids e `aria-*`; altura mínima de 88 px
-- [ ] `Field.Control` no padrão do Prumo (borda `border-control`, inválido em `danger`, somente leitura em `surface-raised`); `Field.Error` com ícone
-- [ ] Testes e stories (padrão, dica, erro, somente leitura, textarea) nos dois temas
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `Field.Textarea` com a mesma fiação de ids e `aria-*`; altura mínima de 88 px
+- [x] `Field.Control` no padrão do Prumo (borda `border-control`, inválido em `danger`, somente leitura em `surface-raised`); `Field.Error` com ícone
+- [x] Testes e stories (padrão, dica, erro, somente leitura, textarea) nos dois temas
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick
