@@ -407,9 +407,9 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] Teste `SKL-32`: requisições paralelas misturando promover, renomear e criar ou editar apelido nunca deixam chave global igual a outra chave global ou a um apelido
-- [ ] Teste `SKL-25`: nenhuma rota registrada despromove ou exclui uma skill
-- [ ] Se um teste revelar falha, a correção entra nesta task, com o teste mantido
+- [x] Teste `SKL-32`: requisições paralelas misturando promover, renomear e criar ou editar apelido nunca deixam chave global igual a outra chave global ou a um apelido
+- [x] Teste `SKL-25`: nenhuma rota registrada despromove ou exclui uma skill
+- [x] Se um teste revelar falha, a correção entra nesta task, com o teste mantido
 
 **Tests**: integration
 **Gate**: full
