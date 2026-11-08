@@ -509,8 +509,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `parseCatalogSearch` aceita `scope`, `category` e `q` válidos e cai no padrão para o resto; `searchOf` omite o padrão
-- [ ] `categories.ts` e `messages.ts` com os textos da spec; testes unitários cobrem todos os ramos
+- [x] `parseCatalogSearch` aceita `scope`, `category` e `q` válidos e cai no padrão para o resto; `searchOf` omite o padrão
+- [x] `categories.ts` e `messages.ts` com os textos da spec; testes unitários cobrem todos os ramos
 
 **Tests**: unit
 **Gate**: quick
