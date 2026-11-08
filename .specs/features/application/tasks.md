@@ -190,9 +190,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] `searchTextOf("Saúde Ágil", "Pleno")` e `searchPatternOf("saude")` casam; `%`, `_` e `\` em `q` são escapados
-- [ ] `domain/cursor.ts` codifica e decodifica; texto que não é base64url, JSON inválido, `rank` fora de 0..7, data inválida ou id que não é uuid dão `undefined`
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `searchTextOf("Saúde Ágil", "Pleno")` e `searchPatternOf("saude")` casam; `%`, `_` e `\` em `q` são escapados
+- [x] `domain/cursor.ts` codifica e decodifica; texto que não é base64url, JSON inválido, `rank` fora de 0..7, data inválida ou id que não é uuid dão `undefined`
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
