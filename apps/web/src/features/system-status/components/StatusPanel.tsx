@@ -42,7 +42,7 @@ export function StatusWidgets({ status }: { status: SystemStatus }) {
           {verdict === 'operational' ? 'Operacional' : 'Degradado'}
         </StatusBadge>
       </DashboardPage.Widget.Header>
-      <dl className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
         {(['api', 'database'] as const).map((component) => (
           <div
             key={component}
@@ -50,21 +50,21 @@ export function StatusWidgets({ status }: { status: SystemStatus }) {
             aria-label={componentText[component]}
             className="flex items-center gap-4"
           >
-            <dt className="w-30 shrink-0 text-label text-text-muted">{componentText[component]}</dt>
-            <dd>
-              <StatusBadge intent={status[component]}>{stateText[status[component]]}</StatusBadge>
-            </dd>
+            <span className="w-30 shrink-0 text-label text-text-muted">
+              {componentText[component]}
+            </span>
+            <StatusBadge intent={status[component]}>{stateText[status[component]]}</StatusBadge>
           </div>
         ))}
         {checked === undefined ? null : (
           <div className="flex items-center gap-4">
-            <dt className="w-30 shrink-0 text-label text-text-muted">Verificado</dt>
-            <dd className="font-mono text-text-muted">
+            <span className="w-30 shrink-0 text-label text-text-muted">Verificado</span>
+            <span className="font-mono text-text-muted">
               {checked.date} {checked.time}
-            </dd>
+            </span>
           </div>
         )}
-      </dl>
+      </div>
     </DashboardPage.Widget>
   );
 }
