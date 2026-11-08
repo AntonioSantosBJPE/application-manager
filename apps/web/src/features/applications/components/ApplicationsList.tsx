@@ -1,15 +1,15 @@
 import type { ApplicationStatus, ApplicationsPage } from '@am/contracts';
 import { Alert, Button, EmptyState, Kbd, ListPage, PipelineStatus } from '@am/ui';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { ArrowUpDown, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useEffect, useId, useRef } from 'react';
 import type { Outcome } from '../../../lib/bff';
 import { DEFAULT_APPLICATIONS_FILTERS, type ApplicationsFilters as Filters } from '../model/filters';
 import { groups } from '../model/groups';
-import { SORT_LABELS, STATUS_GROUP_LABELS, STATUS_LABELS } from '../model/labels';
+import { STATUS_GROUP_LABELS, STATUS_LABELS } from '../model/labels';
 import { APPLICATIONS_MESSAGES, newInStatusLabel } from '../model/messages';
 import { ApplicationRow } from './ApplicationRow';
-import { ApplicationsFilters } from './ApplicationsFilters';
+import { ApplicationsFilters, SortButton } from './ApplicationsFilters';
 
 export const APPLICATIONS_QUERY_KEY = ['applications', 'list'] as const;
 
@@ -100,9 +100,7 @@ export function ApplicationsList({
           <span className="font-mono text-caption font-normal text-text-muted">{total}</span>
         )}
         <span className="ml-auto flex items-center gap-2">
-          <Button intent="ghost" size="sm" icon={ArrowUpDown}>
-            {SORT_LABELS[filters.sort]}
-          </Button>
+          <SortButton filters={filters} onFiltersChange={onFiltersChange} />
           <Button intent="primary" size="sm" icon={Plus} onClick={() => onNew()}>
             {APPLICATIONS_MESSAGES.newApplication}
             <Kbd tone="on-accent">{APPLICATIONS_MESSAGES.newShortcut}</Kbd>

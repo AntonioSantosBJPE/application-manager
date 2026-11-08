@@ -849,11 +849,11 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Cada controle grava na URL e a lista recarrega; recarregar mantém
-- [ ] "Filtro" mostra só os quatro status da aba; trocar de aba limpa `status`
-- [ ] Ordenação alterna "Última atividade" e "Cadastro"
-- [ ] Testes `APP-46` a `APP-48` passam (debounce com relógio falso)
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Cada controle grava na URL e a lista recarrega; recarregar mantém
+- [x] "Filtro" mostra só os quatro status da aba; trocar de aba limpa `status`
+- [x] Ordenação alterna "Última atividade" e "Cadastro"
+- [x] Testes `APP-46` a `APP-48` passam (debounce com relógio falso)
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
