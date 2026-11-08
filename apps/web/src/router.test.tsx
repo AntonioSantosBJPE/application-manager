@@ -551,6 +551,7 @@ describe('admin dashboard private skills widget', () => {
     category: 'tool' as const,
     scope: 'private' as const,
     aliases: [],
+    postingCount: 0,
   });
 
   it('SKL-55 reads the private skills with the dashboard and shows them with the link to the catalog filtered by private', async () => {

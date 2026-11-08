@@ -276,7 +276,7 @@ describe('adminSkillSchema postingCount', () => {
     expect(ok(adminSkillSchema, { ...skill, postingCount: 1.5 })).toBe(false);
   });
 
-  it('APP-85 still accepts a row without the count, as the catalog tests of the skills slice send', () => {
-    expect(ok(adminSkillSchema, skill)).toBe(true);
+  it('APP-85 requires the count on every row: a row without it is refused', () => {
+    expect(ok(adminSkillSchema, skill)).toBe(false);
   });
 });

@@ -504,11 +504,11 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] `modules/skills/domain/skill-usage.ts` declara `SkillUsage.countFor(ids)` e `SKILL_USAGE`; `index.ts` os exporta
-- [ ] `ApplicationsSkillUsageModule` (`@Global`) registra a implementação; o `AppModule` o importa; `modules/skills` não importa nada de `modules/applications` (teste de arquitetura)
-- [ ] `SkillsAdminService.list` acrescenta `postingCount` aos itens da página; ordem, cursor e `counts` iguais; os testes existentes do catálogo passam sem edição de asserção
-- [ ] Testes `APP-85` (API: contagens de duas contas em duas páginas, 0 sem vagas), `APP-86` (resposta sem dono nem dado de vaga) e `APP-87` (contagem muda ao trocar skills e ao excluir) passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] `modules/skills/domain/skill-usage.ts` declara `SkillUsage.countFor(ids)` e `SKILL_USAGE`; `index.ts` os exporta
+- [x] `ApplicationsSkillUsageModule` (`@Global`) registra a implementação; o `AppModule` o importa; `modules/skills` não importa nada de `modules/applications` (teste de arquitetura)
+- [x] `SkillsAdminService.list` acrescenta `postingCount` aos itens da página; ordem, cursor e `counts` iguais; os testes existentes do catálogo passam sem edição de asserção
+- [x] Testes `APP-85` (API: contagens de duas contas em duas páginas, 0 sem vagas), `APP-86` (resposta sem dono nem dado de vaga) e `APP-87` (contagem muda ao trocar skills e ao excluir) passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

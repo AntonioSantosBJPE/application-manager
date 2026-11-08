@@ -163,7 +163,7 @@ describe('skill responses', () => {
   it('SKL-33 accepts the admin page and the skill shape, with no owner field', () => {
     const skill = { id, name: 'Node.js', category: 'language', scope: 'global' };
     const page = {
-      items: [{ ...skill, aliases: [{ id, alias: 'node' }] }],
+      items: [{ ...skill, aliases: [{ id, alias: 'node' }], postingCount: 0 }],
       nextCursor: null,
       counts: { total: 1, private: 0 },
     };

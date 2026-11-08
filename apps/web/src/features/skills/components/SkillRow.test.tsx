@@ -15,6 +15,7 @@ const globalSkill: AdminSkill = {
     { id: uuid(11), alias: 'alfa' },
     { id: uuid(12), alias: 'alfa-js' },
   ],
+  postingCount: 0,
 };
 const privateSkill: AdminSkill = {
   id: uuid(2),
@@ -22,6 +23,7 @@ const privateSkill: AdminSkill = {
   category: 'tool',
   scope: 'private',
   aliases: [],
+  postingCount: 0,
 };
 
 function renderRow(skill: AdminSkill, handlers: Partial<Parameters<typeof SkillRow>[0]> = {}) {

@@ -1,8 +1,9 @@
 import { normalizeSkillKey, type AdminSkillsPage, type AdminSkillsQuery, type Alias, type Skill, type UpdateSkillRequest } from '@am/contracts';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { encodeCursor, type SkillCursor } from '../domain/cursor.js';
 import { isUuid } from '../domain/ids.js';
+import { SKILL_USAGE, type SkillUsage } from '../domain/skill-usage.js';
 import { isUniqueViolation, SkillsRepository, type DatabaseExecutor, type SkillRecord } from '../infra/skills.repository.js';
 
 /** The admin lists 50 skills per page. */
@@ -23,6 +24,7 @@ export class SkillsAdminService {
   constructor(
     private readonly repository: SkillsRepository,
     private readonly logger: PinoLogger,
+    @Inject(SKILL_USAGE) private readonly usage: SkillUsage,
   ) {}
 
   /**
@@ -35,7 +37,7 @@ export class SkillsAdminService {
 
   /**
    * One page of the catalog with the privates of every person and no owner anywhere, plus the counts
-   * of the whole catalog (SKL-33..SKL-36).
+   * of the whole catalog (SKL-33..SKL-36), and how many postings use each skill of the page (APP-85).
    */
   async list(query: Omit<AdminSkillsQuery, 'cursor'> & { cursor?: SkillCursor }): Promise<AdminSkillsPage> {
     const rows = await this.repository.listAdmin({
@@ -46,7 +48,9 @@ export class SkillsAdminService {
       limit: ADMIN_PAGE_SIZE + 1,
     });
     const page = rows.slice(0, ADMIN_PAGE_SIZE);
-    const [aliases, counts] = await Promise.all([this.repository.aliasesOf(page.map((skill) => skill.id)), this.repository.counts()]);
+    const ids = page.map((skill) => skill.id);
+    // The postings are counted for the skills of this page only, so the order and the paging stay those of the catalog (APP-85).
+    const [aliases, counts, postings] = await Promise.all([this.repository.aliasesOf(ids), this.repository.counts(), this.usage.countFor(ids)]);
     const last = page.at(-1);
     return {
       items: page.map((skill) => ({
@@ -55,6 +59,7 @@ export class SkillsAdminService {
         category: skill.category,
         scope: skill.scope,
         aliases: aliases.get(skill.id) ?? [],
+        postingCount: postings.get(skill.id) ?? 0,
       })),
       nextCursor: rows.length > ADMIN_PAGE_SIZE && last !== undefined ? encodeCursor({ key: last.key, id: last.id }) : null,
       counts,

@@ -14,7 +14,7 @@ import { CLOCK, systemClock, type Clock } from './infra/clock/clock.js';
 import { DatabaseModule } from './infra/database/database.module.js';
 import { ProblemDetailsFilter } from './infra/http/problem-details.filter.js';
 import { createLoggingModule } from './infra/logging/logging.module.js';
-import { ApplicationsModule } from './modules/applications/index.js';
+import { ApplicationsModule, ApplicationsSkillUsageModule } from './modules/applications/index.js';
 import { HealthModule } from './modules/health/index.js';
 import { IdentityModule, type PasswordHasher } from './modules/identity/index.js';
 import { SkillsModule } from './modules/skills/index.js';
@@ -64,6 +64,7 @@ export class AppModule implements NestModule {
         IdentityModule.forRoot(env, { passwordHasher: options.passwordHasher }),
         SkillsModule,
         ApplicationsModule,
+        ApplicationsSkillUsageModule,
         HealthModule,
       ],
       // Every error leaves as application/problem+json (AUTH-17), including a missing route.
