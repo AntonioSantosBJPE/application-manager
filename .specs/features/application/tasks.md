@@ -716,9 +716,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] `GET /skills?q=` e `POST /skills` com resposta validada; exportadas por `features/skills/index.ts`
-- [ ] Testes passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `GET /skills?q=` e `POST /skills` com resposta validada; exportadas por `features/skills/index.ts`
+- [x] Testes passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

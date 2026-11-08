@@ -1,8 +1,10 @@
 export {
   addSkillAlias,
+  createSkill,
   listAdminSkills,
   promoteSkill,
   removeSkillAlias,
+  searchSkills,
   updateSkill,
   updateSkillAlias,
 } from './api/server-functions';
