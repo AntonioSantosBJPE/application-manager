@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { useState } from 'react';
 import { vi } from 'vitest';
-import { loadAdminSkills, patchSkill, promoteSkillById } from '../api/server-functions';
+import { createSkillAlias, loadAdminSkills, patchSkill, promoteSkillById } from '../api/server-functions';
 import { SkillsCatalog } from '../components/SkillsCatalog';
 import { DEFAULT_CATALOG_FILTERS, type CatalogFilters } from '../model/filters';
 import { context } from './api';
@@ -63,6 +63,7 @@ function Harness({
           ),
         promote: (id) => promoteSkillById(id, context),
         update: (id, body) => patchSkill(id, body, context),
+        addAlias: (id, body) => createSkillAlias(id, body, context),
       }}
     />
   );

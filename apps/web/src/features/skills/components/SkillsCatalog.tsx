@@ -1,4 +1,4 @@
-import type { AdminSkill, AdminSkillsPage, Skill, UpdateSkillRequest } from '@am/contracts';
+import type { AdminSkill, AdminSkillsPage, Alias, AliasRequest, Skill, UpdateSkillRequest } from '@am/contracts';
 import { Alert, Button, EmptyState, FilterChip, ListPage, SearchInput } from '@am/ui';
 import { useInfiniteQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
@@ -8,6 +8,7 @@ import type { Outcome } from '../../../lib/bff';
 import { CATEGORY_LABELS, CATEGORY_ORDER } from '../model/categories';
 import { DEFAULT_CATALOG_FILTERS, type CatalogFilters } from '../model/filters';
 import { SKILLS_MESSAGES } from '../model/messages';
+import { AddAliasDialog } from './AddAliasDialog';
 import { EditSkillDialog } from './EditSkillDialog';
 import { SkillRow } from './SkillRow';
 
@@ -18,6 +19,7 @@ export interface SkillsCatalogApi {
   list: (filters: CatalogFilters, cursor: string | undefined) => Promise<Outcome<AdminSkillsPage>>;
   promote: (id: string) => Promise<Outcome<Skill>>;
   update: (id: string, body: UpdateSkillRequest) => Promise<Outcome<Skill>>;
+  addAlias: (id: string, body: AliasRequest) => Promise<Outcome<Alias>>;
 }
 
 type CatalogData = InfiniteData<AdminSkillsPage, string | undefined>;
@@ -147,6 +149,27 @@ export function SkillsCatalog({
     }));
   }
 
+  /** The alias shows on the row of its skill, when that row is loaded. */
+  function aliasAdded(skillId: string, alias: Alias) {
+    updateLoaded((data) => ({
+      ...data,
+      pages: data.pages.map((page) => ({
+        ...page,
+        items: page.items.map((item) =>
+          item.id === skillId && !item.aliases.some((known) => known.id === alias.id)
+            ? { ...item, aliases: [...item.aliases, alias] }
+            : item,
+        ),
+      })),
+    }));
+  }
+
+  async function saveAlias(skillId: string, body: AliasRequest) {
+    const outcome = await api.addAlias(skillId, body);
+    if (outcome.ok) aliasAdded(skillId, outcome.data);
+    return outcome;
+  }
+
   /** The row menu is where the focus returns to when a dialog opened from it closes. */
   function focusMenuOf(id: string) {
     const rows = listRef.current?.querySelectorAll<HTMLElement>('[data-skill-id]') ?? [];
@@ -221,9 +244,16 @@ export function SkillsCatalog({
         {counts === undefined ? null : (
           <span className="font-mono text-caption font-normal text-text-muted">{counts.total}</span>
         )}
-        <Button intent="secondary" size="sm" icon={Plus} className="ml-auto">
-          {SKILLS_MESSAGES.addAlias}
-        </Button>
+        <AddAliasDialog
+          trigger={
+            <Button intent="secondary" size="sm" icon={Plus} className="ml-auto">
+              {SKILLS_MESSAGES.addAlias}
+            </Button>
+          }
+          searchSkills={(q) => api.list({ scope: 'global', category: undefined, q }, undefined)}
+          onSave={saveAlias}
+          onExpired={onExpired}
+        />
       </ListPage.Header>
       <ListPage.Filters aria-label="Filtros">
         <FilterChip

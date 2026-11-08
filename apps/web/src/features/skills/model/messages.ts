@@ -23,6 +23,8 @@ export const SKILLS_MESSAGES = {
   editTitle: 'Editar skill',
   /** A name or an alias the contract rejects (SKL-49, SKL-73): empty, past 60 characters or with no letter or digit. */
   invalidText: 'Use de 1 a 60 caracteres, com ao menos uma letra ou número.',
+  /** The "Apelido" dialog asks for a skill picked from the list, not text typed (SKL-48). */
+  chooseSkill: 'Escolha uma skill da lista.',
   save: 'Salvar',
   cancel: 'Cancelar',
 } as const;

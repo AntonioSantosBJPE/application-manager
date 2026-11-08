@@ -749,8 +749,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] Exige escolher uma skill; envia, fecha e mostra o apelido na linha; `409` no campo "Apelido"; `400` no campo inválido
-- [ ] Testes `SKL-48`, `SKL-49` e `SKL-50` (apelido) passam
+- [x] Exige escolher uma skill; envia, fecha e mostra o apelido na linha; `409` no campo "Apelido"; `400` no campo inválido
+- [x] Testes `SKL-48`, `SKL-49` e `SKL-50` (apelido) passam
 
 **Tests**: unit
 **Gate**: quick
