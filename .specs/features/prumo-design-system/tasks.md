@@ -206,9 +206,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Intents `danger`/`info`/`warning` com fundo, ícone e `role` certos; prop `action` à direita
-- [ ] Testes de papel, ícone e ação; stories dos três intents nos dois temas com contraste
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Intents `danger`/`info`/`warning` com fundo, ícone e `role` certos; prop `action` à direita
+- [x] Testes de papel, ícone e ação; stories dos três intents nos dois temas com contraste
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick
