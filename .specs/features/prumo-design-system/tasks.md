@@ -247,9 +247,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] `Field.PasswordControl` com `showLabel`/`hideLabel`, começa oculto, `aria-pressed`, mantém valor e cursor, `autoComplete` e `aria-*`; botão `type="button"` que não vai no envio; desabilitado junto com o campo
-- [ ] Testes unit e de teclado (Tab/Enter/Space) e story "Senha" nos dois temas
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `Field.PasswordControl` com `showLabel`/`hideLabel`, começa oculto, `aria-pressed`, mantém valor e cursor, `autoComplete` e `aria-*`; botão `type="button"` que não vai no envio; desabilitado junto com o campo
+- [x] Testes unit e de teclado (Tab/Enter/Space) e story "Senha" nos dois temas
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick

@@ -192,3 +192,63 @@ export const ContrasteEscuro: Story = {
   render: allStates,
   play: contrast,
 };
+
+const passwordField: Story['render'] = () => (
+  <Field.Root className="w-80">
+    <Field.Label htmlFor="field-password">Senha</Field.Label>
+    <Field.PasswordControl
+      id="field-password"
+      name="password"
+      autoComplete="current-password"
+      showLabel="Mostrar senha"
+      hideLabel="Ocultar senha"
+    />
+    <Field.Hint>Use de 12 a 128 caracteres.</Field.Hint>
+  </Field.Root>
+);
+
+/**
+ * Types a password, shows it and hides it again with the toggle; the toggle icon reaches 3:1 and
+ * its keyboard ring is the focus token (PRU-03 AC03, PRU-08 AC03).
+ */
+const showAndHide: Story['play'] = async ({ canvas }) => {
+  const control = canvas.getByLabelText<HTMLInputElement>('Senha');
+  await settle(control);
+  await userEvent.type(control, 'correct-horse-battery');
+  await expect(control).toHaveAttribute('type', 'password');
+
+  await userEvent.click(canvas.getByRole('button', { name: 'Mostrar senha' }));
+  await expect(control).toHaveAttribute('type', 'text');
+  await expect(control).toHaveValue('correct-horse-battery');
+
+  const toggle = canvas.getByRole('button', { name: 'Ocultar senha' });
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await settle(toggle);
+  await expectContrast(toggle.querySelector('svg')!, 3);
+  const ring = focusRing(toggle);
+  await expect(ring.drawn, 'the focused toggle draws its ring').toBe(true);
+  await expect(ring.ratio).toBeGreaterThanOrEqual(3);
+
+  await userEvent.click(toggle);
+  await expect(control).toHaveAttribute('type', 'password');
+  await expect(control).toHaveValue('correct-horse-battery');
+};
+
+export const Senha: Story = {
+  name: 'Senha',
+  render: passwordField,
+};
+
+export const SenhaClaro: Story = {
+  name: 'PRU-03 AC03 Senha, tema claro',
+  globals: { theme: 'light' },
+  render: passwordField,
+  play: showAndHide,
+};
+
+export const SenhaEscuro: Story = {
+  name: 'PRU-03 AC03 Senha, tema escuro',
+  globals: { theme: 'dark' },
+  render: passwordField,
+  play: showAndHide,
+};
