@@ -367,8 +367,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `update` recalcula a chave, mantém o `id`, aceita só a grafia nova com a mesma chave, recusa chave de outra global ou de qualquer apelido (inclusive o próprio) com `409`, privada com `422`
-- [ ] Testes `SKL-62` a `SKL-66` passam, inclusive que o nome antigo deixa de casar e que nenhum apelido é criado
+- [x] `update` recalcula a chave, mantém o `id`, aceita só a grafia nova com a mesma chave, recusa chave de outra global ou de qualquer apelido (inclusive o próprio) com `409`, privada com `422`
+- [x] Testes `SKL-62` a `SKL-66` passam, inclusive que o nome antigo deixa de casar e que nenhum apelido é criado
 
 **Tests**: integration
 **Gate**: full

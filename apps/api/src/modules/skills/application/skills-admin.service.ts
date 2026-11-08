@@ -1,4 +1,4 @@
-import { normalizeSkillKey, type AdminSkillsPage, type AdminSkillsQuery, type Alias, type Skill } from '@am/contracts';
+import { normalizeSkillKey, type AdminSkillsPage, type AdminSkillsQuery, type Alias, type Skill, type UpdateSkillRequest } from '@am/contracts';
 import { Injectable } from '@nestjs/common';
 import { encodeCursor, type SkillCursor } from '../domain/cursor.js';
 import { isUuid } from '../domain/ids.js';
@@ -76,6 +76,21 @@ export class SkillsAdminService {
       await this.ensureKeyFree(key, undefined, tx);
       const inserted = await this.repository.insertAlias({ skillId: skill.id, alias, normalizedAlias: key }, tx);
       return { alias: inserted, created: true };
+    });
+  }
+
+  /**
+   * Changes the name and the category of a global skill; the id stays and the key is worked out again
+   * (SKL-62..SKL-66). The new key may not be another global's key or any alias, the skill's own
+   * included; the same key in another spelling is fine. No alias is made from the old name.
+   */
+  update(id: string, { name, category }: UpdateSkillRequest): Promise<Skill> {
+    return this.writingGlobalNames(async (tx) => {
+      const skill = await this.existing(id, tx);
+      if (skill.ownerUserId !== null) throw new SkillNotGlobalError('Only global skills can be edited');
+      const normalizedKey = name === undefined ? undefined : normalizeSkillKey(name);
+      if (normalizedKey !== undefined) await this.ensureKeyFree(normalizedKey, skill.id, tx);
+      return this.repository.updateSkill(skill.id, { name, normalizedKey, category }, tx);
     });
   }
 

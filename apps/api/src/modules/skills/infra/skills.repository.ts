@@ -271,4 +271,18 @@ export class SkillsRepository {
     const [row] = await executor.insert(skillAliases).values(values).returning({ id: skillAliases.id, alias: skillAliases.alias });
     return row!;
   }
+
+  /** Changes the name, with its key, and the category of a skill; the id stays. */
+  async updateSkill(
+    id: string,
+    patch: { name?: string; normalizedKey?: string; category?: SkillCategory },
+    executor: DatabaseExecutor = this.db,
+  ): Promise<Skill> {
+    const [row] = await executor
+      .update(skills)
+      .set(patch)
+      .where(eq(skills.id, id))
+      .returning({ id: skills.id, name: skills.name, category: skills.category, ownerUserId: skills.ownerUserId });
+    return toSkill(row!);
+  }
 }

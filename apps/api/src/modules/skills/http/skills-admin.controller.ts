@@ -1,13 +1,15 @@
 import {
   adminSkillsQuerySchema,
   aliasRequestSchema,
+  updateSkillRequestSchema,
   type AdminSkillsPage,
   type AdminSkillsQuery,
   type Alias,
   type AliasRequest,
   type Skill,
+  type UpdateSkillRequest,
 } from '@am/contracts';
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Res } from '@nestjs/common';
 import type { ServerResponse } from 'node:http';
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
@@ -68,5 +70,12 @@ export class SkillsAdminController {
     const { alias, created } = await answering(() => this.admin.addAlias(id, body.alias));
     response.statusCode = created ? 201 : 200;
     return alias;
+  }
+
+  /** Name and category of a global skill; the id stays (SKL-62..SKL-66). */
+  @Roles('admin')
+  @Patch('skills/:id')
+  update(@Param('id') id: string, @Body(zodBody(updateSkillRequestSchema)) body: UpdateSkillRequest): Promise<Skill> {
+    return answering(() => this.admin.update(id, body));
   }
 }

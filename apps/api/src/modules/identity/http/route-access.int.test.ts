@@ -141,6 +141,8 @@ describe('route access', () => {
       // purpose, and anything else fails below, named.
       const writingRoutes = [
         'DELETE /invitations/:id',
+        // The admin edits the name and category of a global skill (SKL-62).
+        'PATCH /skills/:id',
         'POST /auth/admin/login',
         'POST /auth/login',
         'POST /auth/logout',
