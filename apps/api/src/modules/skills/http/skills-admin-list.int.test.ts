@@ -189,6 +189,9 @@ describe('GET /admin/skills', () => {
       `cursor=${Buffer.from('not json', 'utf8').toString('base64url')}`,
       `cursor=${textOf({ key: 'node' })}`,
       `cursor=${textOf({ key: 'node', id: 'not-a-uuid' })}`,
+      `cursor=${textOf({ key: 'a\u0000', id: '0198a5b0-0000-7000-8000-000000000001' })}`,
+      `cursor=${textOf({ key: 'Node', id: '0198a5b0-0000-7000-8000-000000000001' })}`,
+      `cursor=${textOf({ key: 'node js', id: '0198a5b0-0000-7000-8000-000000000001' })}`,
       'cursor=',
     ];
     for (const params of bad) {

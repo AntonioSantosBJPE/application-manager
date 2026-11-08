@@ -1,3 +1,4 @@
+import { normalizeSkillKey } from '@am/contracts';
 import { isUuid } from './ids.js';
 
 /** Where a page of the admin list stopped: the last row's normalized key and id. */
@@ -11,7 +12,7 @@ export function encodeCursor(cursor: SkillCursor): string {
   return Buffer.from(JSON.stringify({ key: cursor.key, id: cursor.id }), 'utf8').toString('base64url');
 }
 
-/** The cursor a text names, or `undefined` when it is not base64url JSON with a text `key` and a uuid `id`. */
+/** The cursor a text names, or `undefined` when it is not base64url JSON with a normalized `key` and a uuid `id`. */
 export function decodeCursor(text: string): SkillCursor | undefined {
   if (!/^[A-Za-z0-9_-]+$/.test(text)) return undefined;
   let parsed: unknown;
@@ -23,5 +24,6 @@ export function decodeCursor(text: string): SkillCursor | undefined {
   if (parsed === null || typeof parsed !== 'object') return undefined;
   const { key, id } = parsed as { key?: unknown; id?: unknown };
   if (typeof key !== 'string' || typeof id !== 'string' || !isUuid(id)) return undefined;
+  if (key !== normalizeSkillKey(key)) return undefined;
   return { key, id };
 }

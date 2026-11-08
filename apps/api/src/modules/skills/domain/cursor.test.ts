@@ -21,4 +21,10 @@ describe('skill cursor', () => {
     expect(decodeCursor(textOf({ key: 5, id }))).toBeUndefined();
     expect(decodeCursor(textOf({ id }))).toBeUndefined();
   });
+
+  it('SKL-37 refuses a key that is not a normalized key: with U+0000, an uppercase letter or a space', () => {
+    expect(decodeCursor(textOf({ key: 'a\u0000', id }))).toBeUndefined();
+    expect(decodeCursor(textOf({ key: 'Node', id }))).toBeUndefined();
+    expect(decodeCursor(textOf({ key: 'node js', id }))).toBeUndefined();
+  });
 });
