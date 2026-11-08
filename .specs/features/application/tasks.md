@@ -759,11 +759,11 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] `relativeDays`: "hoje" abaixo de 24 h, "há N d" acima, em `America/Sao_Paulo`, com `now` injetado; `shortDate` dá "20 out"
-- [ ] `groups` corta a lista na ordem recebida e usa o número de `counts.byStatus`
-- [ ] Texto do Alert em Enviada e em Em entrevistas como no spec; data de etapa de hoje vira o `now`, outro dia vira 12:00 de São Paulo
-- [ ] Testes passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] `relativeDays`: "hoje" abaixo de 24 h, "há N d" acima, em `America/Sao_Paulo`, com `now` injetado; `shortDate` dá "20 out"
+- [x] `groups` corta a lista na ordem recebida e usa o número de `counts.byStatus`
+- [x] Texto do Alert em Enviada e em Em entrevistas como no spec; data de etapa de hoje vira o `now`, outro dia vira 12:00 de São Paulo
+- [x] Testes passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
