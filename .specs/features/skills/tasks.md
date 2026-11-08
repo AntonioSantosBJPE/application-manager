@@ -488,9 +488,9 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] Funções para listar, promover, editar, criar, editar e remover apelido, validadas contra os contratos
-- [ ] Teste `SKL-54` compara `ADMIN_SKILLS_ENDPOINTS` com a lista esperada e afirma que `GET /skills` e `POST /skills` não aparecem
-- [ ] Testes com MSW cobrem sucesso, `409`, `404` e API fora do ar (`503`)
+- [x] Funções para listar, promover, editar, criar, editar e remover apelido, validadas contra os contratos
+- [x] Teste `SKL-54` compara `ADMIN_SKILLS_ENDPOINTS` com a lista esperada e afirma que `GET /skills` e `POST /skills` não aparecem
+- [x] Testes com MSW cobrem sucesso, `409`, `404` e API fora do ar (`503`)
 
 **Tests**: unit
 **Gate**: quick
