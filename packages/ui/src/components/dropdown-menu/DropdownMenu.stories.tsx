@@ -110,3 +110,50 @@ export const SubmenuEscuro: Story = {
   render: withSubmenu,
   play: submenuPlay,
 };
+
+const withCheckboxes = () => (
+  <div className="p-12">
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <Button intent="secondary">Nível</Button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content aria-label="Nível">
+        <DropdownMenu.CheckboxItem checked onSelect={(event) => event.preventDefault()}>
+          Pleno
+        </DropdownMenu.CheckboxItem>
+        <DropdownMenu.CheckboxItem checked onSelect={(event) => event.preventDefault()}>
+          Sênior
+        </DropdownMenu.CheckboxItem>
+        <DropdownMenu.CheckboxItem checked={false} onSelect={(event) => event.preventDefault()}>
+          Júnior
+        </DropdownMenu.CheckboxItem>
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
+  </div>
+);
+
+/** Opens the menu with the keyboard and judges it: several items on at once, each at 4.5:1. */
+const checkboxesPlay: Story['play'] = async ({ canvas }) => {
+  canvas.getByRole('button', { name: 'Nível' }).focus();
+  await userEvent.keyboard('{Enter}');
+  const menu = within(document.body).getByRole('menu', { name: 'Nível' });
+
+  await expect(within(menu).getByRole('menuitemcheckbox', { name: 'Pleno' })).toHaveAttribute('aria-checked', 'true');
+  await expect(within(menu).getByRole('menuitemcheckbox', { name: 'Sênior' })).toHaveAttribute('aria-checked', 'true');
+  await expect(within(menu).getByRole('menuitemcheckbox', { name: 'Júnior' })).toHaveAttribute('aria-checked', 'false');
+  for (const item of within(menu).getAllByRole('menuitemcheckbox')) await expectContrast(item, 4.5);
+};
+
+export const MultiplaEscolhaClaro: Story = {
+  name: 'Múltipla escolha, tema claro',
+  globals: { theme: 'light' },
+  render: withCheckboxes,
+  play: checkboxesPlay,
+};
+
+export const MultiplaEscolhaEscuro: Story = {
+  name: 'Múltipla escolha, tema escuro',
+  globals: { theme: 'dark' },
+  render: withCheckboxes,
+  play: checkboxesPlay,
+};

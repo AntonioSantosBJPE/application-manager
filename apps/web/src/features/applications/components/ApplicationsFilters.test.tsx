@@ -88,29 +88,29 @@ describe('ApplicationsFilters', () => {
     await rows();
 
     const menu = await openMenu('Nível');
-    expect(within(menu).getAllByRole('menuitemradio').map((item) => item.textContent)).toEqual([
+    expect(within(menu).getAllByRole('menuitemcheckbox').map((item) => item.textContent)).toEqual([
       'Estágio',
       'Júnior',
       'Pleno',
       'Sênior',
       'Especialista',
     ]);
-    fireEvent.click(within(menu).getByRole('menuitemradio', { name: 'Pleno' }));
+    fireEvent.click(within(menu).getByRole('menuitemcheckbox', { name: 'Pleno' }));
 
     expect(onFiltersChange).toHaveBeenLastCalledWith({ ...DEFAULT_APPLICATIONS_FILTERS, level: ['mid'] });
     await waitFor(() => expect(companiesShown().sort()).toEqual(['Empresa Fictícia Alfa', 'Empresa Fictícia Delta']));
     expect(screen.getByRole('menu', { name: 'Nível' })).toBeInTheDocument();
-    expect(screen.getByRole('menuitemradio', { name: 'Pleno' })).toHaveAttribute('aria-checked', 'true');
-    expect(screen.getByRole('menuitemradio', { name: 'Sênior' })).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Pleno' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Sênior' })).toHaveAttribute('aria-checked', 'false');
 
-    fireEvent.click(screen.getByRole('menuitemradio', { name: 'Sênior' }));
+    fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Sênior' }));
 
     expect(onFiltersChange).toHaveBeenLastCalledWith({ ...DEFAULT_APPLICATIONS_FILTERS, level: ['mid', 'senior'] });
     await waitFor(() => expect(companiesShown()).toHaveLength(3));
     expect(companiesShown()).toContain('Empresa Fictícia Beta');
     expect(api.calls.at(-1)).toBe('GET /applications?tab=active&level=mid%2Csenior&sort=activity');
 
-    fireEvent.click(screen.getByRole('menuitemradio', { name: 'Pleno' }));
+    fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Pleno' }));
 
     expect(onFiltersChange).toHaveBeenLastCalledWith({ ...DEFAULT_APPLICATIONS_FILTERS, level: ['senior'] });
     await waitFor(() => expect(companiesShown()).toEqual(['Empresa Fictícia Beta']));
@@ -123,12 +123,14 @@ describe('ApplicationsFilters', () => {
     expect(screen.getByRole('button', { name: 'Modelo' })).toHaveAttribute('aria-pressed', 'false');
 
     const menu = await openMenu('Modelo');
-    expect(within(menu).getAllByRole('menuitemradio').map((item) => item.textContent)).toEqual(['Remoto', 'Híbrido', 'Presencial']);
-    fireEvent.click(within(menu).getByRole('menuitemradio', { name: 'Híbrido' }));
+    expect(within(menu).getAllByRole('menuitemcheckbox').map((item) => item.textContent)).toEqual(['Remoto', 'Híbrido', 'Presencial']);
+    fireEvent.click(within(menu).getByRole('menuitemcheckbox', { name: 'Híbrido' }));
 
     expect(onFiltersChange).toHaveBeenLastCalledWith({ ...DEFAULT_APPLICATIONS_FILTERS, workModel: ['hybrid'] });
     await waitFor(() => expect(companiesShown()).toEqual(['Empresa Fictícia Beta']));
     expect(screen.getByRole('button', { name: 'Modelo' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Híbrido' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Remoto' })).toHaveAttribute('aria-checked', 'false');
     expect(api.calls.at(-1)).toBe('GET /applications?tab=active&workModel=hybrid&sort=activity');
   });
 
@@ -138,19 +140,22 @@ describe('ApplicationsFilters', () => {
     await rows();
 
     const menu = await openMenu('Filtro');
-    expect(within(menu).getAllByRole('menuitemradio').map((item) => item.textContent)).toEqual([
+    expect(within(menu).getAllByRole('menuitemcheckbox').map((item) => item.textContent)).toEqual([
       'Salva',
       'Enviada',
       'Em entrevistas',
       'Proposta',
     ]);
-    fireEvent.click(within(menu).getByRole('menuitemradio', { name: 'Enviada' }));
-    fireEvent.click(screen.getByRole('menuitemradio', { name: 'Proposta' }));
+    fireEvent.click(within(menu).getByRole('menuitemcheckbox', { name: 'Enviada' }));
+    fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Proposta' }));
 
     expect(onFiltersChange).toHaveBeenLastCalledWith({ ...DEFAULT_APPLICATIONS_FILTERS, status: ['applied', 'offer'] });
     await waitFor(() => expect(companiesShown()).toHaveLength(3));
     expect(companiesShown()).not.toContain('Empresa Fictícia Gama');
     expect(screen.getByRole('button', { name: 'Filtro' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Enviada' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Proposta' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Salva' })).toHaveAttribute('aria-checked', 'false');
     expect(api.calls.at(-1)).toBe('GET /applications?tab=active&status=applied%2Coffer&sort=activity');
   });
 
@@ -161,7 +166,7 @@ describe('ApplicationsFilters', () => {
 
     const menu = await openMenu('Filtro');
 
-    expect(within(menu).getAllByRole('menuitemradio').map((item) => item.textContent)).toEqual([
+    expect(within(menu).getAllByRole('menuitemcheckbox').map((item) => item.textContent)).toEqual([
       'Aceita',
       'Recusada',
       'Desisti',
@@ -199,7 +204,7 @@ describe('ApplicationsFilters', () => {
     expect(screen.getByRole('button', { name: 'Cadastro' })).toBeInTheDocument();
     expect(api.calls[0]).toBe('GET /applications?tab=active&status=applied&level=mid&workModel=remote&q=nest&sort=created');
     await openMenu('Nível');
-    expect(screen.getByRole('menuitemradio', { name: 'Pleno' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Pleno' })).toHaveAttribute('aria-checked', 'true');
   });
 
   describe('search', () => {

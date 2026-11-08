@@ -35,9 +35,8 @@ interface MultiSelectProps<T extends string> {
 }
 
 /**
- * A chip that opens a menu where any number of options can be on. The menu has radio items only, so each
- * option is its own one-item group: it announces `aria-checked`, draws the check, and stays open when
- * chosen so the next option can be picked.
+ * A chip that opens a menu where any number of options can be on. Each option is a checkbox item: it
+ * announces `aria-checked`, draws the check, and stays open when chosen so the next option can be picked.
  */
 function MultiSelect<T extends string>({ icon, label, options, selected, onToggle, dashed = false }: MultiSelectProps<T>) {
   return (
@@ -50,17 +49,16 @@ function MultiSelect<T extends string>({ icon, label, options, selected, onToggl
       </DropdownMenu.Trigger>
       <DropdownMenu.Content align="start" aria-label={label}>
         {options.map((option) => (
-          <DropdownMenu.RadioGroup key={option.value} value={selected.includes(option.value) ? option.value : ''}>
-            <DropdownMenu.RadioItem
-              value={option.value}
-              onSelect={(event) => {
-                event.preventDefault();
-                onToggle(option.value);
-              }}
-            >
-              {option.label}
-            </DropdownMenu.RadioItem>
-          </DropdownMenu.RadioGroup>
+          <DropdownMenu.CheckboxItem
+            key={option.value}
+            checked={selected.includes(option.value)}
+            onSelect={(event) => {
+              event.preventDefault();
+              onToggle(option.value);
+            }}
+          >
+            {option.label}
+          </DropdownMenu.CheckboxItem>
         ))}
       </DropdownMenu.Content>
     </DropdownMenu.Root>

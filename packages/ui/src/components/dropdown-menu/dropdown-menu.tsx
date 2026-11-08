@@ -116,6 +116,26 @@ function DropdownMenuRadioItem({
   );
 }
 
+/**
+ * One option of a multiple choice: an `Item` with a check at the end while it is on (`aria-checked="true"`,
+ * role `menuitemcheckbox`). The caller owns `checked` and `onCheckedChange`; to keep the menu open for the
+ * next option, it calls `event.preventDefault()` in `onSelect`.
+ */
+function DropdownMenuCheckboxItem({
+  className,
+  children,
+  ...props
+}: ComponentProps<typeof RadixMenu.CheckboxItem>) {
+  return (
+    <RadixMenu.CheckboxItem className={join(itemClassName, className)} {...props}>
+      {children}
+      <RadixMenu.ItemIndicator className="ml-auto inline-flex text-accent-text">
+        <Icon icon={Check} size="sm" />
+      </RadixMenu.ItemIndicator>
+    </RadixMenu.CheckboxItem>
+  );
+}
+
 /** Row menu (SKL-40, SKL-53, APP-50, APP-68). The caller owns every label, including the name of the trigger. */
 export const DropdownMenu = {
   Root: DropdownMenuRoot,
@@ -127,4 +147,5 @@ export const DropdownMenu = {
   SubContent: DropdownMenuSubContent,
   RadioGroup: DropdownMenuRadioGroup,
   RadioItem: DropdownMenuRadioItem,
+  CheckboxItem: DropdownMenuCheckboxItem,
 };
