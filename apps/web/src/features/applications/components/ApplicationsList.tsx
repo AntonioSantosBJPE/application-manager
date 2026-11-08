@@ -1,21 +1,24 @@
-import type { ApplicationStatus, ApplicationsPage } from '@am/contracts';
+import type { ApplicationDetail, ApplicationStatus, ApplicationSummary, ApplicationsPage, JobLevel } from '@am/contracts';
 import { Alert, Button, EmptyState, Kbd, ListPage, PipelineStatus } from '@am/ui';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { Outcome } from '../../../lib/bff';
+import { MESSAGES, problemMessage } from '../../identity';
 import { DEFAULT_APPLICATIONS_FILTERS, type ApplicationsFilters as Filters } from '../model/filters';
 import { groups } from '../model/groups';
 import { STATUS_GROUP_LABELS, STATUS_LABELS } from '../model/labels';
 import { APPLICATIONS_MESSAGES, newInStatusLabel } from '../model/messages';
-import { ApplicationRow } from './ApplicationRow';
 import { ApplicationsFilters, SortButton } from './ApplicationsFilters';
+import { RowActions } from './RowActions';
 
 export const APPLICATIONS_QUERY_KEY = ['applications', 'list'] as const;
 
 /** What the list needs from the BFF; the route binds the server functions, a test binds the api. */
 export interface ApplicationsListApi {
   list: (filters: Filters, cursor: string | undefined) => Promise<Outcome<ApplicationsPage>>;
+  changeStatus: (id: string, status: ApplicationStatus) => Promise<Outcome<ApplicationDetail>>;
+  changeLevel: (id: string, level: JobLevel) => Promise<Outcome<ApplicationDetail>>;
 }
 
 export interface ApplicationsListProps {
@@ -58,6 +61,8 @@ export function ApplicationsList({
   onExpired,
 }: ApplicationsListProps) {
   const id = useId();
+  const queryClient = useQueryClient();
+  const [failure, setFailure] = useState<string | undefined>();
   const listRef = useRef<HTMLDivElement>(null);
   const pendingFocusAfter = useRef<number | undefined>(undefined);
 
@@ -88,6 +93,32 @@ export function ApplicationsList({
     listRef.current?.querySelectorAll<HTMLElement>('[data-application-id]')[after]?.focus();
   }, [items.length]);
 
+  /**
+   * Writes a change from the row menu and reads the list again from the api, so the row shows in its new
+   * group or leaves the tab and every number follows (APP-50). A failure leaves the row as it was (APP-55).
+   */
+  async function change(write: () => Promise<Outcome<ApplicationDetail>>) {
+    setFailure(undefined);
+    let outcome: Outcome<ApplicationDetail>;
+    try {
+      outcome = await write();
+    } catch {
+      setFailure(MESSAGES.unavailable);
+      return;
+    }
+    if (outcome.ok) {
+      await queryClient.invalidateQueries({ queryKey: APPLICATIONS_QUERY_KEY });
+      return;
+    }
+    if (onExpired(outcome)) return;
+    setFailure(problemMessage(outcome));
+  }
+
+  const changeStatus = (application: ApplicationSummary, status: ApplicationStatus) =>
+    void change(() => api.changeStatus(application.id, status));
+  const changeLevel = (application: ApplicationSummary, level: JobLevel) =>
+    void change(() => api.changeLevel(application.id, level));
+
   function clearFilters() {
     onFiltersChange({ ...DEFAULT_APPLICATIONS_FILTERS, tab: filters.tab });
   }
@@ -111,6 +142,11 @@ export function ApplicationsList({
         <ApplicationsFilters filters={filters} counts={counts} onFiltersChange={onFiltersChange} />
       </ListPage.Filters>
       <ListPage.Content>
+        {failure === undefined ? null : (
+          <Alert intent="danger" className="mx-6 mt-4">
+            {failure}
+          </Alert>
+        )}
         {applications.isError && !expired ? (
           <Alert
             intent="danger"
@@ -171,11 +207,13 @@ export function ApplicationsList({
               </ListPage.Group>
               <ul aria-labelledby={`${id}-${section.status}`}>
                 {section.items.map((application) => (
-                  <ApplicationRow
+                  <RowActions
                     key={application.id}
                     application={application}
                     now={now}
                     onOpen={onOpen}
+                    onStatus={changeStatus}
+                    onLevel={changeLevel}
                     tabIndex={-1}
                   />
                 ))}

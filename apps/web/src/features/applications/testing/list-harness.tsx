@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, within } from '@testing-library/react';
 import { useState } from 'react';
 import { vi } from 'vitest';
-import { loadApplications } from '../api/server-functions';
+import { loadApplications, patchJobPosting, postStatus } from '../api/server-functions';
 import { ApplicationsList } from '../components/ApplicationsList';
 import { DEFAULT_APPLICATIONS_FILTERS, type ApplicationsFilters } from '../model/filters';
 import { listInputOf } from '../model/list-query';
@@ -38,6 +38,8 @@ function Harness({
       onExpired={onExpired}
       api={{
         list: (current, cursor) => loadApplications(listInputOf(current, cursor), context),
+        changeStatus: (id, status) => postStatus(id, { status }, context),
+        changeLevel: (id, level) => patchJobPosting(id, { level }, context),
       }}
     />
   );

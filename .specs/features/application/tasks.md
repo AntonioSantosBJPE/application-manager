@@ -872,10 +872,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Escolher grava; a linha muda de grupo ou sai da aba e os números se atualizam pela resposta da API
-- [ ] Falha mantém a linha e mostra o `Alert` `danger`
-- [ ] Testes `APP-50` e `APP-55` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Escolher grava; a linha muda de grupo ou sai da aba e os números se atualizam pela resposta da API
+- [x] Falha mantém a linha e mostra o `Alert` `danger`
+- [x] Testes `APP-50` e `APP-55` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
