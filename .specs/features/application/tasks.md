@@ -590,9 +590,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Setas movem e escolhem; um clique escolhe; o escolhido tem `aria-checked="true"`; aceita estado inválido de `Field.Root`
-- [ ] Story e testes passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Setas movem e escolhem; um clique escolhe; o escolhido tem `aria-checked="true"`; aceita estado inválido de `Field.Root`
+- [x] Story e testes passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

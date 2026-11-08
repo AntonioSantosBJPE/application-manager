@@ -1,5 +1,10 @@
 export { Alert, type AlertProps } from './components/alert';
 export { Button, type ButtonProps } from './components/button';
+export {
+  ChoiceChips,
+  type ChoiceChipOption,
+  type ChoiceChipsProps,
+} from './components/choice-chips';
 export { Combobox, type ComboboxOption, type ComboboxProps } from './components/combobox';
 export { ConfirmDialog, type ConfirmDialogProps } from './components/confirm-dialog';
 export { ContextMenu } from './components/context-menu';
