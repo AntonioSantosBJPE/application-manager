@@ -737,10 +737,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Rótulos singular e plural dos oito status, níveis, modelos e etapas como no spec
-- [ ] `parseApplicationsSearch` ignora valor desconhecido; `searchOf` omite o padrão; `new=1` sobrevive ao parse
-- [ ] Testes passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Rótulos singular e plural dos oito status, níveis, modelos e etapas como no spec
+- [x] `parseApplicationsSearch` ignora valor desconhecido; `searchOf` omite o padrão; `new=1` sobrevive ao parse
+- [x] Testes passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
