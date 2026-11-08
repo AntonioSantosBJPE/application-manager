@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
+import { userEvent } from 'vitest/browser';
 import { contrastRatio, settle } from '../../testing/contrast';
 import { Field } from './field';
 
@@ -20,6 +21,42 @@ afterEach(() => {
 const themes = ['light', 'dark'] as const;
 
 describe('Field in the browser', () => {
+  it('PRU-01 AC13 draws the keyboard focus of Field.Control and Field.Textarea 2px solid offset -1px, with the border in focus', async () => {
+    for (const theme of themes) {
+      document.documentElement.setAttribute('data-theme', theme);
+      const { unmount } = render(
+        <div style={{ width: 320 }}>
+          <Field.Root>
+            <Field.Label htmlFor="company">Empresa</Field.Label>
+            <Field.Control id="company" />
+          </Field.Root>
+          <Field.Root>
+            <Field.Label htmlFor="notes">Notas</Field.Label>
+            <Field.Textarea id="notes" />
+          </Field.Root>
+        </div>,
+      );
+
+      for (const label of ['Empresa', 'Notas']) {
+        const control = screen.getByLabelText(label);
+        await userEvent.tab();
+        expect(control, `${label} ${theme}`).toBe(document.activeElement);
+        await settle(control);
+
+        const style = getComputedStyle(control);
+        const focus = tokenColor('focus');
+        expect(style.outlineStyle, `${label} ${theme}`).toBe('solid');
+        expect(style.outlineWidth, `${label} ${theme}`).toBe('2px');
+        expect(style.outlineOffset, `${label} ${theme}`).toBe('-1px');
+        expect(style.outlineColor, `${label} ${theme}`).toBe(focus);
+        for (const side of ['Top', 'Right', 'Bottom', 'Left'] as const) {
+          expect(style[`border${side}Color`], `${label} ${side} ${theme}`).toBe(focus);
+        }
+      }
+      unmount();
+    }
+  });
+
   it('PRU-02 AC09 draws Field.Textarea at least 88px tall with the border of the control', async () => {
     render(
       <div style={{ width: 320 }}>
