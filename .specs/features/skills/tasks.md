@@ -448,8 +448,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `identity` importa de `lib/bff.ts` e reexporta `Outcome` e `ApiFailure`; nenhum comportamento muda
-- [ ] Os testes do `identity` passam sem edição e o número de testes não cai
+- [x] `identity` importa de `lib/bff.ts` e reexporta `Outcome` e `ApiFailure`; nenhum comportamento muda
+- [x] Os testes do `identity` passam sem edição e o número de testes não cai
 
 **Tests**: unit
 **Gate**: quick
@@ -1099,7 +1099,7 @@ Proof: run web | ✓ SKL-76
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** 2026-11-08 - user: "Pode executar as task até o final, só pare se precisar de uma decisão importante minha"
-**Dispatched:** B1 (T1–T8, Sonnet 5.5) at HEAD 373a398, 2026-11-08 13:05 - returned; accepted at 21ec8ce after 1 fix round (console.log in the seed generator) | B2 (T9–T15, Sonnet 5.5) at HEAD 21ec8ce, 2026-11-08 13:22
+**Dispatched:** B1 (T1–T8, Sonnet 5.5) at HEAD 373a398, 2026-11-08 13:05 - returned; accepted at 21ec8ce after 1 fix round (console.log in the seed generator) | B2 (T9–T15, Sonnet 5.5) at HEAD 21ec8ce, 2026-11-08 13:22 - returned; accepted at 9b03ec7 with no fix round | B3 (T16–T25, Sonnet 5.5) at HEAD 9b03ec7, 2026-11-08 13:41
 **Walked:** none
 
 ---

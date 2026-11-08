@@ -6,7 +6,6 @@ import type {
   InvitationsPage,
   LoginRequest,
   MeResponse,
-  ProblemDetails,
 } from '@am/contracts';
 import {
   createInvitationResponseSchema,
@@ -14,28 +13,20 @@ import {
   invitationsPageSchema,
   meResponseSchema,
 } from '@am/contracts';
-import { createServerFn, createServerOnlyFn } from '@tanstack/react-start';
-import { appendResponseHeader, getRequestHeader, getRequestIP } from '@tanstack/react-start/server';
-import type { z } from 'zod';
+import { createServerFn } from '@tanstack/react-start';
 import {
-  apiContextOf,
-  callApi,
-  type ApiRequestContext,
-  type ApiResult,
-  type CallApiOptions,
-} from '../../../lib/call-api';
-import { loadServerEnv } from '../../../lib/env';
+  accepted,
+  contextOfCurrentRequest,
+  parsed,
+  responseOptionsOfCurrentRequest,
+  type ApiFailure,
+  type Outcome,
+} from '../../../lib/bff';
+import { callApi, type ApiRequestContext } from '../../../lib/call-api';
 
-/** The failed half of every answer; the shape `problemMessage` reads (UI-03, UI-04, UI-05). */
-export interface ApiFailure {
-  ok: false;
-  status: number;
-  problem?: ProblemDetails;
-  retryAfterSeconds?: number;
-}
-
-/** An answer with the body already checked against its contract, so a screen never reads raw json. */
-export type Outcome<T> = { ok: true; data: T } | ApiFailure;
+// The tests and the other files of this feature reach the helpers through here (AD-016).
+export { contextOfCurrentRequest, responseOptionsOfCurrentRequest };
+export type { ApiFailure, Outcome };
 
 /**
  * What a route guard asks before it renders: the session user, the fact that there is none, or the
@@ -45,28 +36,6 @@ export type SessionState =
   | { kind: 'authenticated'; user: MeResponse }
   | { kind: 'anonymous' }
   | { kind: 'unavailable' };
-
-/** A `2xx` whose body is not the contract is as unusable as no answer at all, so it becomes `503`. */
-function failed(result: Exclude<ApiResult, { ok: true }>): ApiFailure {
-  if (!('problem' in result)) return { ok: false, status: 503 };
-  return {
-    ok: false,
-    status: result.status,
-    problem: result.problem,
-    retryAfterSeconds: result.retryAfterSeconds,
-  };
-}
-
-function parsed<T>(result: ApiResult, schema: z.ZodType<T>): Outcome<T> {
-  if (!result.ok) return failed(result);
-  const data = schema.safeParse(result.data);
-  return data.success ? { ok: true, data: data.data } : { ok: false, status: 503 };
-}
-
-/** A `2xx` without a body (the `204` of login and logout) or with one the screen does not read. */
-function accepted(result: ApiResult): Outcome<undefined> {
-  return result.ok ? { ok: true, data: undefined } : failed(result);
-}
 
 /** `GET /auth/me` as the guard needs it: a user, no user, or an api that did not answer (UI-06, UI-07). */
 export function loadSession(context: ApiRequestContext, options = {}): Promise<SessionState> {
@@ -127,28 +96,6 @@ export function loadInvitations(cursor: string | undefined, context: ApiRequestC
 export function revokeInvitation(id: string, context: ApiRequestContext, options = {}) {
   return callApi({ method: 'DELETE', path: `/invitations/${encodeURIComponent(id)}` }, context, options).then(accepted);
 }
-
-/**
- * What the BFF forwards from the browser: the cookie, the request id and the address the lockout counts.
- * Everything else about the caller is decided by the api (AD-005).
- */
-export const contextOfCurrentRequest = createServerOnlyFn((): ApiRequestContext => {
-  const env = loadServerEnv();
-  return apiContextOf(
-    env.apiInternalUrl,
-    { header: (name) => getRequestHeader(name), socketAddress: getRequestIP() },
-    env.clientIpHeader,
-  );
-});
-
-/**
- * The one link between the api answer and the browser response: every `Set-Cookie` the api sends
- * becomes a header of the server function answer, one header per cookie, so login, the invitation
- * accept, logout and the renewal riding on `/auth/me` all reach the browser (AUTH-07, AUTH-11, UI-13).
- */
-export const responseOptionsOfCurrentRequest = createServerOnlyFn((): CallApiOptions => ({
-  appendSetCookie: (value) => appendResponseHeader('set-cookie', value),
-}));
 
 // One server function per endpoint (AD-007): the browser can only reach what has a function here, and
 // each one forwards method, path and body, with no rule of its own. The pure functions above carry the
