@@ -307,9 +307,9 @@ T29 → T30 → T31 → T32 → T33 → T34
 
 **Done when**:
 
-- [ ] Superfície `surface-overlay`, `border-strong`, `radius-lg`, `shadow-overlay`, largura máx. 440 px e véu `backdrop`; `Esc` e foco preservados
-- [ ] Testes (Esc não confirma, foco preso, medidas no navegador) e stories nos dois temas
-- [ ] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Superfície `surface-overlay`, `border-strong`, `radius-lg`, `shadow-overlay`, largura máx. 440 px e véu `backdrop`; `Esc` e foco preservados
+- [x] Testes (Esc não confirma, foco preso, medidas no navegador) e stories nos dois temas
+- [x] Gate passa: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit + browser + storybook
 **Gate**: quick

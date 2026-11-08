@@ -16,8 +16,10 @@ export type ConfirmDialogProps = {
 };
 
 /**
- * Confirmation before a destructive action (UI-21). Radix holds the focus inside, closes on
- * Esc, and labels the dialog with the title, so keyboard use needs no extra wiring here.
+ * Confirmation before a destructive action (UI-21). It floats on `surface-overlay` with
+ * `border-strong`, `radius-lg` and `shadow-overlay`, at most 440px wide over the `backdrop` veil
+ * (PRU-02). Radix holds the focus inside, opens on cancel, closes on Esc without confirming,
+ * returns the focus to the trigger, and labels the dialog with the title.
  */
 export function ConfirmDialog({
   trigger,
@@ -31,13 +33,13 @@ export function ConfirmDialog({
     <AlertDialog.Root>
       <AlertDialog.Trigger asChild>{trigger}</AlertDialog.Trigger>
       <AlertDialog.Portal>
-        <AlertDialog.Overlay className="fixed inset-0 bg-surface opacity-80" />
-        <AlertDialog.Content className="fixed left-1/2 top-1/2 flex w-full max-w-md -translate-x-1/2 -translate-y-1/2 flex-col gap-3 rounded-md border border-border bg-surface-raised p-4 text-text">
-          <AlertDialog.Title className="text-sm font-medium">{title}</AlertDialog.Title>
-          <AlertDialog.Description className="text-xs wrap-anywhere text-text-muted">
+        <AlertDialog.Overlay className="fixed inset-0 bg-backdrop" />
+        <AlertDialog.Content className="fixed top-1/2 left-1/2 flex w-full max-w-110 -translate-x-1/2 -translate-y-1/2 flex-col gap-3 rounded-lg border border-border-strong bg-surface-overlay p-4 text-text shadow-overlay">
+          <AlertDialog.Title className="text-heading-md">{title}</AlertDialog.Title>
+          <AlertDialog.Description className="text-body wrap-anywhere text-text-muted">
             {description}
           </AlertDialog.Description>
-          <div className="flex justify-end gap-2">
+          <div className="mt-1 flex justify-end gap-2">
             <AlertDialog.Cancel asChild>
               <Button intent="secondary">{cancelLabel}</Button>
             </AlertDialog.Cancel>
