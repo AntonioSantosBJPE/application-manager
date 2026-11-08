@@ -243,9 +243,9 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `SkillsModule`, `SkillsRepository.search` e `SkillsService.search` criados; rota `@Roles('member')`
-- [ ] Testes `SKL-05` a `SKL-10` passam contra Postgres real com o seed e duas contas member (ordem nome primeiro, 20 itens, isolamento, `q` acima de 60 caracteres, escopo)
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] `SkillsModule`, `SkillsRepository.search` e `SkillsService.search` criados; rota `@Roles('member')`
+- [x] Testes `SKL-05` a `SKL-10` passam contra Postgres real com o seed e duas contas member (ordem nome primeiro, 20 itens, isolamento, `q` acima de 60 caracteres, escopo)
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
