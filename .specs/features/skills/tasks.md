@@ -809,8 +809,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] Até 8 `SkillTag` privadas em ordem alfabética, "e mais N", ação "Abrir catálogo" para `/admin/skills?scope=private`; vazio e falha com os textos da spec
-- [ ] O loader de `routes/admin/_protected/index.tsx` lê as privadas no mesmo `Promise.all`; testes `SKL-55` a `SKL-57` passam
+- [x] Até 8 `SkillTag` privadas em ordem alfabética, "e mais N", ação "Abrir catálogo" para `/admin/skills?scope=private`; vazio e falha com os textos da spec
+- [x] O loader de `routes/admin/_protected/index.tsx` lê as privadas no mesmo `Promise.all`; testes `SKL-55` a `SKL-57` passam
 
 **Tests**: unit
 **Gate**: quick

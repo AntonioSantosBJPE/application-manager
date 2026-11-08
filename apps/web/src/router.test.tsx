@@ -488,7 +488,7 @@ describe('admin dashboard', () => {
     );
   });
 
-  it('PRU-06 AC14 opens the admin dashboard with the topbar "Painel", the h1 and the two widgets', async () => {
+  it('PRU-06 AC14 opens the admin dashboard with the topbar "Painel", the h1 and the widgets', async () => {
     sessionIs(signedInAs(admin));
     vi.mocked(pendingInvitations).mockResolvedValue({ ok: true, data: page });
 
@@ -505,7 +505,7 @@ describe('admin dashboard', () => {
     expect(title).toHaveClass('text-heading-lg');
     expect(
       screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent),
-    ).toEqual(['Status do sistema', 'Convites pendentes']);
+    ).toEqual(['Status do sistema', 'Convites pendentes', 'Skills privadas aguardando promoção']);
     expect(screen.getByText('08 nov 2026 14:32:07')).toHaveClass('font-mono');
     expect(within(screen.getByRole('group', { name: 'Convites pendentes' })).getByText('3')).toHaveClass(
       'text-heading-xl',
@@ -540,6 +540,86 @@ describe('admin dashboard', () => {
     expect(await screen.findByText('Esta área é da administração. Sua conta é de uso do produto.')).toBeInTheDocument();
     expect(vi.mocked(pendingInvitations)).not.toHaveBeenCalled();
     expect(vi.mocked(getSystemStatus)).not.toHaveBeenCalled();
+    expect(vi.mocked(listAdminSkills)).not.toHaveBeenCalled();
+  });
+});
+
+describe('admin dashboard private skills widget', () => {
+  const privateSkill = (n: number, name: string) => ({
+    id: `0190a5b4-7c3a-7c8e-9f2a-${String(n).padStart(12, '0')}`,
+    name,
+    category: 'tool' as const,
+    scope: 'private' as const,
+    aliases: [],
+  });
+
+  it('SKL-55 reads the private skills with the dashboard and shows them with the link to the catalog filtered by private', async () => {
+    sessionIs(signedInAs(admin));
+    vi.mocked(listAdminSkills).mockResolvedValue({
+      ok: true,
+      data: {
+        items: [privateSkill(1, 'Drizzle ORM de Teste'), privateSkill(2, 'Skill Fictícia Alfa')],
+        nextCursor: null,
+        counts: { total: 214, private: 2 },
+      },
+    });
+
+    await open('/admin');
+
+    const widget = await screen.findByRole('group', { name: 'Skills privadas aguardando promoção' });
+    expect(vi.mocked(listAdminSkills)).toHaveBeenCalledWith({ data: { scope: 'private' } });
+    expect(within(widget).getByText('Drizzle ORM de Teste')).toBeInTheDocument();
+    expect(within(widget).getByText('Skill Fictícia Alfa')).toBeInTheDocument();
+    expect(within(widget).getByRole('link', { name: 'Abrir catálogo' })).toHaveAttribute(
+      'href',
+      '/admin/skills?scope=private',
+    );
+  });
+
+  it('SKL-55 opens /admin/skills?scope=private from Abrir catálogo', async () => {
+    sessionIs(signedInAs(admin));
+    const queryClient = new QueryClient();
+    const history = createMemoryHistory({ initialEntries: ['/admin'] });
+    const router = createRouter({ routeTree, history, context: { queryClient } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    );
+    await router.load();
+
+    fireEvent.click(await screen.findByRole('link', { name: 'Abrir catálogo' }));
+
+    await waitFor(() => expect(here(router)).toBe('/admin/skills?scope=private'));
+    expect(await screen.findByRole('button', { name: /^Privadas/ })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('SKL-56 says nothing waits for promotion when there are no private skills, keeping the link', async () => {
+    sessionIs(signedInAs(admin));
+
+    await open('/admin');
+
+    const widget = await screen.findByRole('group', { name: 'Skills privadas aguardando promoção' });
+    expect(within(widget).getByText('Nenhuma skill privada aguardando promoção.')).toBeInTheDocument();
+    expect(within(widget).getByRole('link', { name: 'Abrir catálogo' })).toBeInTheDocument();
+  });
+
+  it('SKL-57 shows the alert in the widget while the other widgets stay on the screen when the skills read fails', async () => {
+    sessionIs(signedInAs(admin));
+    vi.mocked(listAdminSkills).mockResolvedValue({ ok: false, status: 503 });
+    vi.mocked(pendingInvitations).mockResolvedValue({
+      ok: true,
+      data: { items: [], nextCursor: null, totalPending: 3 },
+    });
+
+    await open('/admin');
+
+    const widget = await screen.findByRole('group', { name: 'Skills privadas aguardando promoção' });
+    expect(within(widget).getByRole('alert')).toHaveTextContent('Serviço indisponível. Tente novamente em instantes.');
+    expect(screen.getByRole('group', { name: 'API' })).toHaveTextContent('Operacional');
+    expect(screen.getByRole('group', { name: 'Banco de dados' })).toHaveTextContent('Operacional');
+    expect(within(screen.getByRole('group', { name: 'Convites pendentes' })).getByText('3')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Administração' })).toBeInTheDocument();
   });
 });
 
