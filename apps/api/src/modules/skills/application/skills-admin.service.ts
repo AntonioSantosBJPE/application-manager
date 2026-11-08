@@ -1,11 +1,18 @@
-import { normalizeSkillKey, type AdminSkillsPage } from '@am/contracts';
-import type { AdminSkillsQuery } from '@am/contracts';
+import { normalizeSkillKey, type AdminSkillsPage, type AdminSkillsQuery, type Skill } from '@am/contracts';
 import { Injectable } from '@nestjs/common';
 import { encodeCursor, type SkillCursor } from '../domain/cursor.js';
-import { SkillsRepository } from '../infra/skills.repository.js';
+import { isUuid } from '../domain/ids.js';
+import { isUniqueViolation, SkillsRepository, type DatabaseExecutor, type SkillRecord } from '../infra/skills.repository.js';
 
 /** The admin lists 50 skills per page. */
 export const ADMIN_PAGE_SIZE = 50;
+
+/** The skill, or the alias, does not exist (`404`). */
+export class SkillNotFoundError extends Error {}
+/** The name or alias collides with a global name or an alias (`409`). */
+export class SkillConflictError extends Error {}
+/** Aliases and edits belong to global skills only (`422`). */
+export class SkillNotGlobalError extends Error {}
 
 /** What the admin does with the catalog: list, promote, edit and give aliases (SKL-17..SKL-37, SKL-62..SKL-71). */
 @Injectable()
@@ -38,5 +45,48 @@ export class SkillsAdminService {
       nextCursor: rows.length > ADMIN_PAGE_SIZE && last !== undefined ? encodeCursor({ key: last.key, id: last.id }) : null,
       counts,
     };
+  }
+
+  /**
+   * Makes a private skill global, keeping its id (SKL-17..SKL-21, SKL-24). It runs in a transaction that
+   * takes the lock of the global names before it reads, so two promotions of one key, or a promotion
+   * and an alias of that key, line up and the second one sees the first's result.
+   */
+  promote(id: string): Promise<Skill> {
+    return this.writingGlobalNames(async (tx) => {
+      const skill = await this.existing(id, tx);
+      if (skill.ownerUserId === null) return { id: skill.id, name: skill.name, category: skill.category, scope: 'global' };
+      await this.ensureKeyFree(skill.normalizedKey, undefined, tx);
+      return this.repository.makeGlobal(skill.id, tx);
+    });
+  }
+
+  /**
+   * Runs a write of a global name in a transaction that starts with the lock, so the checks and the
+   * write see the same names. A unique index that still fires is the same conflict (`409`).
+   */
+  private async writingGlobalNames<T>(write: (tx: DatabaseExecutor) => Promise<T>): Promise<T> {
+    try {
+      return await this.repository.transaction(async (tx) => {
+        await this.repository.lockGlobalNames(tx);
+        return write(tx);
+      });
+    } catch (error) {
+      if (isUniqueViolation(error)) throw new SkillConflictError('A unique index of the catalog refused the write');
+      throw error;
+    }
+  }
+
+  private async existing(id: string, tx: DatabaseExecutor): Promise<SkillRecord> {
+    const skill = isUuid(id) ? await this.repository.findById(id, tx) : undefined;
+    if (skill === undefined) throw new SkillNotFoundError('Skill not found');
+    return skill;
+  }
+
+  /** The key is free when no other global has it and no alias has it. */
+  private async ensureKeyFree(key: string, exceptSkillId: string | undefined, tx: DatabaseExecutor): Promise<void> {
+    if ((await this.repository.globalKeyTaken(key, exceptSkillId, tx)) || (await this.repository.aliasWithKey(key, tx)) !== undefined) {
+      throw new SkillConflictError('The key is already a global name or an alias');
+    }
   }
 }

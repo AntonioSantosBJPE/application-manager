@@ -5,6 +5,29 @@ import { DATABASE, type Database } from '../../../infra/database/database.module
 import type { SkillCursor } from '../domain/cursor.js';
 import { skillAliases, skills } from './schema.js';
 
+/**
+ * What a write of the admin runs on: the database or a transaction of it. The lock of the global
+ * names only means something inside a transaction, so the writes receive the transaction's handle.
+ */
+export type DatabaseExecutor = Pick<Database, 'select' | 'insert' | 'update' | 'delete' | 'execute'>;
+
+/** Postgres answers a violated unique index with this SQLSTATE. */
+const UNIQUE_VIOLATION = '23505';
+
+/** Whether the failure is a unique index of the catalog: the safety net under the lock (SKL-24, SKL-32). */
+export function isUniqueViolation(error: unknown): boolean {
+  const cause = (error as { cause?: unknown }).cause;
+  return [error, cause].some((candidate) => (candidate as { code?: string } | undefined)?.code === UNIQUE_VIOLATION);
+}
+
+export interface SkillRecord {
+  id: string;
+  name: string;
+  normalizedKey: string;
+  category: SkillCategory;
+  ownerUserId: string | null;
+}
+
 /** The visibility rule of the member: the globals and the member's own privates (Key decision 1). */
 const visibleTo = (userId: string) => or(isNull(skills.ownerUserId), eq(skills.ownerUserId, userId));
 
@@ -176,5 +199,65 @@ export class SkillsRepository {
       })
       .from(skills);
     return { total: Number(row?.total ?? 0), private: Number(row?.private ?? 0) };
+  }
+
+  /** A transaction handle, so the lock, the check and the write are one step. */
+  transaction<T>(run: (tx: DatabaseExecutor) => Promise<T>): Promise<T> {
+    return this.db.transaction(run);
+  }
+
+  /**
+   * Takes the one lock every write of a global name takes, until the transaction ends: promote, create
+   * an alias, rename, edit an alias. The write that gets it second reads what the first one committed.
+   */
+  async lockGlobalNames(tx: DatabaseExecutor): Promise<void> {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended('skills.global-names', 0))`);
+  }
+
+  async findById(id: string, executor: DatabaseExecutor = this.db): Promise<SkillRecord | undefined> {
+    const [row] = await executor
+      .select({
+        id: skills.id,
+        name: skills.name,
+        normalizedKey: skills.normalizedKey,
+        category: skills.category,
+        ownerUserId: skills.ownerUserId,
+      })
+      .from(skills)
+      .where(eq(skills.id, id))
+      .limit(1);
+    return row;
+  }
+
+  /** Whether a global skill other than `exceptId` has the key. */
+  async globalKeyTaken(key: string, exceptId: string | undefined, executor: DatabaseExecutor = this.db): Promise<boolean> {
+    const [row] = await executor
+      .select({ id: skills.id })
+      .from(skills)
+      .where(
+        and(isNull(skills.ownerUserId), eq(skills.normalizedKey, key), exceptId === undefined ? undefined : sql`${skills.id} <> ${exceptId}::uuid`),
+      )
+      .limit(1);
+    return row !== undefined;
+  }
+
+  /** The alias that has the key, whichever skill it belongs to. */
+  async aliasWithKey(key: string, executor: DatabaseExecutor = this.db): Promise<{ id: string; skillId: string } | undefined> {
+    const [row] = await executor
+      .select({ id: skillAliases.id, skillId: skillAliases.skillId })
+      .from(skillAliases)
+      .where(eq(skillAliases.normalizedAlias, key))
+      .limit(1);
+    return row;
+  }
+
+  /** Makes a private skill global, keeping its id, name and category. */
+  async makeGlobal(id: string, executor: DatabaseExecutor = this.db): Promise<Skill> {
+    const [row] = await executor
+      .update(skills)
+      .set({ ownerUserId: null })
+      .where(eq(skills.id, id))
+      .returning({ id: skills.id, name: skills.name, category: skills.category, ownerUserId: skills.ownerUserId });
+    return toSkill(row!);
   }
 }

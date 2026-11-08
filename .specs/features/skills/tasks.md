@@ -327,8 +327,8 @@ Não há sub-agente de telas (screens), porque as fontes binding são as cartas 
 
 **Done when**:
 
-- [ ] `promote` roda em transação com `pg_advisory_xact_lock`, mantém `id`, nome e categoria, é idempotente para global e responde `409` quando a chave é de global ou de apelido
-- [ ] Testes `SKL-17` a `SKL-21` e `SKL-24` (duas privadas de mesma chave promovidas ao mesmo tempo: uma `200`, outra `409`) passam
+- [x] `promote` roda em transação com `pg_advisory_xact_lock`, mantém `id`, nome e categoria, é idempotente para global e responde `409` quando a chave é de global ou de apelido
+- [x] Testes `SKL-17` a `SKL-21` e `SKL-24` (duas privadas de mesma chave promovidas ao mesmo tempo: uma `200`, outra `409`) passam
 
 **Tests**: integration
 **Gate**: full

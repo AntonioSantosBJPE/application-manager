@@ -148,6 +148,8 @@ describe('route access', () => {
         'POST /invitations/:token/accept',
         // A member creates a private skill; it is a product route, not account administration (SKL-11).
         'POST /skills',
+        // The admin makes a private skill global; it is a catalog route, not account administration (SKL-17).
+        'POST /skills/:id/promote',
       ];
       const registeredWriting = routes
         .map((route) => route.route)
