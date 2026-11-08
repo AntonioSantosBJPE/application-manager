@@ -77,3 +77,49 @@ export const ContrasteEscuro: Story = {
   globals: { theme: 'dark' },
   play: contrast,
 };
+
+const large = () => (
+  <Dialog.Root>
+    <Dialog.Trigger asChild>
+      <Button intent="secondary">Nova candidatura</Button>
+    </Dialog.Trigger>
+    <Dialog.Content size="lg">
+      <Dialog.Title>Nova candidatura</Dialog.Title>
+      <Dialog.Description>Cadastre a vaga e escolha como ela começa.</Dialog.Description>
+      <Field.Root>
+        <Field.Label htmlFor="empresa">Empresa</Field.Label>
+        <Field.Control id="empresa" defaultValue="Empresa Fictícia Alfa" />
+      </Field.Root>
+      <Dialog.Footer>
+        <Dialog.Close asChild>
+          <Button intent="secondary">Cancelar</Button>
+        </Dialog.Close>
+        <Button intent="primary">Criar candidatura</Button>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Root>
+);
+
+/** The large dialog is 640px wide and keeps its text at 4.5:1. */
+const largeContrast: Story['play'] = async ({ canvas }) => {
+  await userEvent.click(canvas.getByRole('button', { name: 'Nova candidatura' }));
+  const dialog = within(document.body).getByRole('dialog', { name: 'Nova candidatura' });
+
+  await expect(dialog.getBoundingClientRect().width).toBeLessThanOrEqual(640);
+  await expectContrast(within(dialog).getByRole('heading', { name: 'Nova candidatura' }), 4.5);
+  await expectContrast(within(dialog).getByLabelText('Empresa'), 4.5);
+};
+
+export const GrandeClaro: Story = {
+  name: 'Grande, tema claro',
+  globals: { theme: 'light' },
+  render: large,
+  play: largeContrast,
+};
+
+export const GrandeEscuro: Story = {
+  name: 'Grande, tema escuro',
+  globals: { theme: 'dark' },
+  render: large,
+  play: largeContrast,
+};
