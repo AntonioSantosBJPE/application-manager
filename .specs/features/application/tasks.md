@@ -827,10 +827,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5) não impleme
 
 **Done when**:
 
-- [ ] Textos da carta e do spec: "Candidaturas", "Nova candidatura" com `C`, "Ativas", "Encerradas", "Nível", "Modelo", "Filtro", "Empresa, título ou skill", "Nenhuma candidatura ainda.", "Nenhuma candidatura com esses filtros.", "Limpar filtros", "Não foi possível carregar as candidaturas.", "Tentar de novo"
-- [ ] Botão "+" de cada grupo com nome "Nova candidatura em {status}"
-- [ ] Testes `APP-42` (composição), `APP-45` e `APP-51` a `APP-54` passam
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Textos da carta e do spec: "Candidaturas", "Nova candidatura" com `C`, "Ativas", "Encerradas", "Nível", "Modelo", "Filtro", "Empresa, título ou skill", "Nenhuma candidatura ainda.", "Nenhuma candidatura com esses filtros.", "Limpar filtros", "Não foi possível carregar as candidaturas.", "Tentar de novo"
+- [x] Botão "+" de cada grupo com nome "Nova candidatura em {status}"
+- [x] Testes `APP-42` (composição), `APP-45` e `APP-51` a `APP-54` passam
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
