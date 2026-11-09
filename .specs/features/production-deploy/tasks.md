@@ -116,11 +116,11 @@ T13 → T14
 
 **Done when**:
 
-- [ ] Servidor falso recebe, nessa ordem, a gravação de `IMAGE_TAG=<tag>` e o disparo, ambos com `Authorization: Bearer`
-- [ ] Secret ausente: sai 2 nomeando a variável e não faz nenhuma chamada; o valor do token nunca aparece na saída
-- [ ] Resposta 4xx/5xx na gravação ou no disparo: sai 1 com o status HTTP e não chama o disparo quando a gravação falhou
-- [ ] `COOLIFY_RESOURCE_KIND=services` troca o caminho das rotas
-- [ ] Gate passa: `pnpm --filter @am/guardrails test:deploy`
+- [x] Servidor falso recebe, nessa ordem, a gravação de `IMAGE_TAG=<tag>` e o disparo, ambos com `Authorization: Bearer`
+- [x] Secret ausente: sai 2 nomeando a variável e não faz nenhuma chamada; o valor do token nunca aparece na saída
+- [x] Resposta 4xx/5xx na gravação ou no disparo: sai 1 com o status HTTP e não chama o disparo quando a gravação falhou
+- [x] `COOLIFY_RESOURCE_KIND=services` troca o caminho das rotas
+- [x] Gate passa: `pnpm --filter @am/guardrails test:deploy`
 
 **Tests**: unit
 **Gate**: quick
