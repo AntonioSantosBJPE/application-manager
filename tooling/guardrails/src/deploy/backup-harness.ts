@@ -1,12 +1,13 @@
 import { randomBytes } from 'node:crypto';
 import { repoRoot, run, type RunResult } from '../repo.js';
 
-// A throwaway Postgres 18 and MinIO on a private Docker network, with the backup image built from
+// A throwaway Postgres 18 and an S3-compatible server (moto) on a private Docker network, with the backup image built from
 // infra/backup, shared by the backup, restore and verify-restore tests. Docker must be running.
 
 const POSTGRES_IMAGE =
   'postgres:18.6-alpine@sha256:10a5c69a83035ab5239f5620d708520e8b28f5aa1f2b20143e6024532edadfb5';
-const MINIO_IMAGE = 'minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e';
+// moto serves the S3 API over HTTP and needs no setup; MinIO's images are no longer published on Docker Hub.
+const S3_IMAGE = 'motoserver/moto@sha256:4ec079cbae737fa957efb6b17732bc4e9cdf33942e947ad70e5696694fca3e5e';
 
 export const credentials = {
   dbPassword: 'test-db-password',
@@ -38,7 +39,7 @@ const docker = (args: string[]) => run('docker', args, { cwd: repoRoot });
 
 export function s3Env(bucket: string, extra: Record<string, string> = {}): Record<string, string> {
   return {
-    BACKUP_S3_ENDPOINT: 'http://minio:9000',
+    BACKUP_S3_ENDPOINT: 'http://s3:5000',
     BACKUP_S3_ACCESS_KEY_ID: credentials.s3AccessKeyId,
     BACKUP_S3_SECRET_ACCESS_KEY: credentials.s3SecretKey,
     BACKUP_BUCKET: bucket,
@@ -76,12 +77,10 @@ export function startHarness(): Harness {
     POSTGRES_IMAGE,
   ]);
   if (pg.status !== 0) throw new Error(`postgres failed to start:\n${pg.output}`);
-  const minio = docker([
-    'run', '-d', '--rm', '--name', `${network}-minio`, '--network', network, '--network-alias', 'minio',
-    '-e', `MINIO_ROOT_USER=${credentials.s3AccessKeyId}`, '-e', `MINIO_ROOT_PASSWORD=${credentials.s3SecretKey}`,
-    MINIO_IMAGE, 'server', '/data',
+  const s3Server = docker([
+    'run', '-d', '--rm', '--name', `${network}-s3`, '--network', network, '--network-alias', 's3', S3_IMAGE,
   ]);
-  if (minio.status !== 0) throw new Error(`minio failed to start:\n${minio.output}`);
+  if (s3Server.status !== 0) throw new Error(`the S3 server failed to start:\n${s3Server.output}`);
 
   const psql = (sql: string, database = 'app') =>
     docker(['exec', `${network}-pg`, 'psql', '-U', 'app', '-d', database, '-v', 'ON_ERROR_STOP=1', '-tA', '-c', sql]);
@@ -97,7 +96,7 @@ export function startHarness(): Harness {
   const shell = (script: string, env: Record<string, string> = {}) => runImage(['-c', awsEnv + script], env, 'bash');
 
   waitUntil('postgres', () => psql('select 1').status === 0);
-  waitUntil('minio', () => shell('aws --endpoint-url "$BACKUP_S3_ENDPOINT" s3api list-buckets').status === 0);
+  waitUntil('the S3 server', () => shell('aws --endpoint-url "$BACKUP_S3_ENDPOINT" s3api list-buckets').status === 0);
   const made = shell('aws --endpoint-url "$BACKUP_S3_ENDPOINT" s3 mb "s3://$BACKUP_BUCKET"');
   if (made.status !== 0) throw new Error(`bucket creation failed:\n${made.output}`);
 
@@ -117,7 +116,7 @@ export function startHarness(): Harness {
         .sort(),
     put: (key) => shell(`: | aws --endpoint-url "$BACKUP_S3_ENDPOINT" s3 cp - "s3://$BACKUP_BUCKET/${key}" --only-show-errors`),
     destroy: () => {
-      docker(['rm', '-f', `${network}-pg`, `${network}-minio`]);
+      docker(['rm', '-f', `${network}-pg`, `${network}-s3`]);
       docker(['network', 'rm', network]);
       docker(['image', 'rm', '-f', image]);
     },
