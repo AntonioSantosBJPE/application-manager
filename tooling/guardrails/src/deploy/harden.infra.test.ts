@@ -87,16 +87,18 @@ describe('harden.sh', () => {
     expect(server.sh('ls /etc/sudoers.d').output).not.toContain('90-deploy');
   });
 
-  it('DEPLOY-26 the sshd drop-in turns off root and password login, and beats a cloud-init file that turns passwords on', () => {
+  it('DEPLOY-26 the sshd drop-in turns off password login and leaves root key-only, and beats a cloud-init file that turns passwords on', () => {
     const server = startServer();
     server.sh("mkdir -p /etc/ssh/sshd_config.d && echo 'PasswordAuthentication yes' > /etc/ssh/sshd_config.d/50-cloud-init.conf");
     const result = server.harden(base);
     expect(result.status, result.output).toBe(0);
     expect(server.sh('cat /etc/ssh/sshd_config.d/00-hardening.conf').output).toMatch(
-      /PermitRootLogin no\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nPubkeyAuthentication yes/,
+      /PermitRootLogin prohibit-password\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nPubkeyAuthentication yes/,
     );
     const effective = server.sh('sshd -T | grep -E "^(permitrootlogin|passwordauthentication|kbdinteractiveauthentication) "').output;
-    expect(effective).toContain('permitrootlogin no');
+    // Root keeps key-only login (sshd prints prohibit-password as without-password): Coolify manages
+    // the server it runs on by SSH as root.
+    expect(effective).toContain('permitrootlogin without-password');
     expect(effective).toContain('passwordauthentication no');
     expect(effective).toContain('kbdinteractiveauthentication no');
   }, 300_000);
@@ -250,6 +252,27 @@ describe('harden.sh', () => {
     expect(server.sh('id deploy').status).not.toBe(0);
     expect(server.sh('ls /etc/sudoers.d').output).not.toContain('90-deploy');
     expect(server.sh('test -e /etc/ssh/sshd_config.d/00-hardening.conf').status).not.toBe(0);
+  });
+
+  it('DEPLOY-27 HARDEN_STEPS=firewall runs only the firewall step and needs no admin account or key', () => {
+    const server = startServer();
+    const result = server.harden({ HARDEN_CF_IPS_FILE: CF_FILE, HARDEN_STEPS: 'firewall' }, ['--dry-run']);
+    expect(result.status, result.output).toBe(0);
+    expect(result.output).toContain('+ ufw default deny incoming');
+    expect(result.output).toMatch(/^\[firewall\] /m);
+    for (const other of ['user', 'key', 'ssh', 'updates', 'fail2ban']) expect(result.output).not.toMatch(new RegExp(`^\\[${other}\\] `, 'm'));
+    expect(result.output).not.toMatch(/useradd|sshd -t|sudoers|authorized_keys/);
+    expect(server.sh('dpkg -s ufw').status).not.toBe(0);
+  });
+
+  it('DEPLOY-27 refuses a HARDEN_STEPS with an unknown step, and still asks for the key when a step needs it', () => {
+    const server = startServer();
+    const unknown = server.harden({ ...base, HARDEN_STEPS: 'firewall,nonsense' }, ['--dry-run']);
+    expect(unknown.status).toBe(2);
+    expect(unknown.output).toContain('nonsense');
+    const noKey = server.harden({ HARDEN_CF_IPS_FILE: CF_FILE, HARDEN_STEPS: 'ssh' }, ['--dry-run']);
+    expect(noKey.status).toBe(2);
+    expect(noKey.output).toContain('ADMIN_SSH_PUBLIC_KEY');
   });
 
   it('DEPLOY-29 a second run with the same values exits 0, reports unchanged for every step and changes no file', () => {
