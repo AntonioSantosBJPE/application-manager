@@ -382,8 +382,8 @@ T13 → T14
 
 **Done when**:
 
-- [ ] O job `integration` roda `pnpm --filter @am/guardrails test:infra` e o teste de workflow confere
-- [ ] Gate passa: `pnpm lint; pnpm typecheck; pnpm test`
+- [x] O job `integration` roda `pnpm --filter @am/guardrails test:infra` e o teste de workflow confere
+- [x] Gate passa: `pnpm lint; pnpm typecheck; pnpm test`
 
 **Tests**: unit
 **Gate**: build
