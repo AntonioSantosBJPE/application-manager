@@ -183,10 +183,10 @@ T13 → T14
 
 **Done when**:
 
-- [ ] Teste roda `docker compose config` com todas as variáveis (ok) e sem `IMAGE_TAG`, `POSTGRES_PASSWORD` ou `WEB_PUBLIC_URL` (falha nomeando cada uma)
-- [ ] Teste lê o resultado: imagens `${IMAGE_REPOSITORY}-web|-api|-backup:${IMAGE_TAG}`, `postgres` e `api` sem `ports`, `SESSION_COOKIE_SECURE=true`, `CLIENT_IP_HEADER=cf-connecting-ip` mesmo com valores diferentes no ambiente, `restart: unless-stopped`, `migrate` antes da `api`, volume nomeado do Postgres
-- [ ] Nenhum IP, hostname, senha ou token literal no arquivo
-- [ ] Gate passa: `pnpm --filter @am/guardrails test:deploy`
+- [x] Teste roda `docker compose config` com todas as variáveis (ok) e sem `IMAGE_TAG`, `POSTGRES_PASSWORD` ou `WEB_PUBLIC_URL` (falha nomeando cada uma)
+- [x] Teste lê o resultado: imagens `${IMAGE_REPOSITORY}-web|-api|-backup:${IMAGE_TAG}`, `postgres` e `api` sem `ports`, `SESSION_COOKIE_SECURE=true`, `CLIENT_IP_HEADER=cf-connecting-ip` mesmo com valores diferentes no ambiente, `restart: unless-stopped`, `migrate` antes da `api`, volume nomeado do Postgres
+- [x] Nenhum IP, hostname, senha ou token literal no arquivo
+- [x] Gate passa: `pnpm --filter @am/guardrails test:deploy`
 
 **Tests**: integration
 **Gate**: quick
