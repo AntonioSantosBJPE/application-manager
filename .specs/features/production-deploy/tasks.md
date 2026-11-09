@@ -338,9 +338,9 @@ T13 → T14
 
 **Done when**:
 
-- [ ] `--dry-run` mostra: entrada negada por padrão, porta SSH e `EXTRA_ALLOW_TCP` permitidas, 80/443 só para cada faixa IPv4 e IPv6 do arquivo `HARDEN_CF_IPS_FILE`, e as mesmas regras na chain `DOCKER-USER`
-- [ ] Nenhuma regra libera 80/443 para `0.0.0.0/0` ou `::/0`
-- [ ] Gate passa: `pnpm --filter @am/guardrails test:infra`
+- [x] `--dry-run` mostra: entrada negada por padrão, porta SSH e `EXTRA_ALLOW_TCP` permitidas, 80/443 só para cada faixa IPv4 e IPv6 do arquivo `HARDEN_CF_IPS_FILE`, e as mesmas regras na chain `DOCKER-USER`
+- [x] Nenhuma regra libera 80/443 para `0.0.0.0/0` ou `::/0`
+- [x] Gate passa: `pnpm --filter @am/guardrails test:infra`
 
 **Tests**: integration
 **Gate**: full

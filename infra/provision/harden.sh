@@ -9,6 +9,9 @@
 #   ADMIN_SSH_PUBLIC_KEY  its public key, one line (required)
 #   SSH_PORT              the SSH port the firewall keeps open (default 22)
 #   EXTRA_ALLOW_TCP       comma-separated TCP ports to keep open besides SSH (default none)
+#   HARDEN_CF_IPS_FILE    optional file with the Cloudflare ranges, one CIDR per line; without it the
+#                         lists published at https://www.cloudflare.com/ips-v4 and /ips-v6 are fetched
+#   HARDEN_PUBLIC_IFACE   optional name of the public network interface (default: the default route's)
 #
 # --dry-run prints every command that would run (prefixed with `+`) and changes nothing.
 # Read docs/runbooks/production-deploy.md before running it on a server you reach over SSH: keep your
@@ -236,6 +239,139 @@ step_fail2ban() {
   report fail2ban "$([ "$changed" -eq 1 ] && echo changed || echo unchanged)"
 }
 
+# Cloudflare's published ranges, validated: a broken list must never turn into "open to everyone".
+cf_v4=()
+cf_v6=()
+read_cloudflare_ranges() {
+  local raw cidr
+  if [ -n "${HARDEN_CF_IPS_FILE:-}" ]; then
+    raw="$(cat "$HARDEN_CF_IPS_FILE")" || { echo "harden: cannot read $HARDEN_CF_IPS_FILE" >&2; exit 1; }
+  else
+    raw="$(curl -fsS --max-time 20 https://www.cloudflare.com/ips-v4; echo; curl -fsS --max-time 20 https://www.cloudflare.com/ips-v6)" \
+      || { echo "harden: cannot fetch the Cloudflare ranges; the firewall was not touched" >&2; exit 1; }
+  fi
+  while IFS= read -r cidr; do
+    cidr="${cidr//[$'\r ']/}"
+    [ -z "$cidr" ] && continue
+    if ! [[ "$cidr" =~ ^[0-9a-fA-F:.]+/[0-9]{1,3}$ ]] || [[ "$cidr" =~ /0$ ]]; then
+      echo "harden: refusing the Cloudflare range '$cidr' (not a CIDR, or it covers every address)" >&2
+      exit 1
+    fi
+    if [[ "$cidr" == *:* ]]; then cf_v6+=("$cidr"); else cf_v4+=("$cidr"); fi
+  done <<<"$raw"
+  if [ "${#cf_v4[@]}" -eq 0 ] || [ "${#cf_v6[@]}" -eq 0 ]; then
+    echo "harden: the Cloudflare list has no IPv4 or no IPv6 range; the firewall was not touched" >&2
+    exit 1
+  fi
+}
+
+# The ufw commands: deny by default, SSH and the extra ports open, 80/443 only from Cloudflare.
+ufw_rule_lines() {
+  local port cidr
+  echo "ufw default deny incoming"
+  echo "ufw default allow outgoing"
+  echo "ufw allow ${SSH_PORT}/tcp"
+  if [ -n "$EXTRA_ALLOW_TCP" ]; then
+    for port in ${EXTRA_ALLOW_TCP//,/ }; do echo "ufw allow ${port}/tcp"; done
+  fi
+  for cidr in "${cf_v4[@]}" "${cf_v6[@]}"; do
+    for port in 80 443; do echo "ufw allow from ${cidr} to any port ${port} proto tcp"; done
+  done
+  echo "ufw --force enable"
+}
+
+# Docker publishes ports through its own iptables rules, ahead of ufw, so ufw alone leaves 80, 443 and
+# the Coolify ports open to the world. DOCKER-USER runs before Docker's rules: a chain of ours, jumped
+# to from it for traffic arriving on the public interface, lets through only answers to connections the
+# containers started, Cloudflare on 80/443 and the extra ports, and drops every other new connection.
+docker_user_rule_lines() {
+  local iface="$1" tool cidr port
+  local -a cidrs
+  for tool in iptables ip6tables; do
+    if [ "$tool" = iptables ]; then cidrs=("${cf_v4[@]}"); else cidrs=("${cf_v6[@]}"); fi
+    echo "$tool -w -N DOCKER-USER 2>/dev/null || true"
+    echo "$tool -w -N HARDEN-WEB 2>/dev/null || true"
+    echo "$tool -w -F HARDEN-WEB"
+    echo "$tool -w -A HARDEN-WEB -m conntrack --ctstate ESTABLISHED,RELATED -j RETURN"
+    for cidr in "${cidrs[@]}"; do
+      for port in 80 443; do
+        echo "$tool -w -A HARDEN-WEB -s ${cidr} -p tcp -m conntrack --ctorigdstport ${port} -j RETURN"
+      done
+    done
+    if [ -n "$EXTRA_ALLOW_TCP" ]; then
+      for port in ${EXTRA_ALLOW_TCP//,/ }; do
+        echo "$tool -w -A HARDEN-WEB -p tcp -m conntrack --ctorigdstport ${port} -j RETURN"
+      done
+    fi
+    echo "$tool -w -A HARDEN-WEB -j DROP"
+    echo "$tool -w -C DOCKER-USER -i ${iface} -j HARDEN-WEB 2>/dev/null || $tool -w -I DOCKER-USER 1 -i ${iface} -j HARDEN-WEB"
+  done
+}
+
+step_firewall() {
+  local changed=0 iface applied=0 line ufw_script docker_script script_changed=0
+  local -a parts
+  read_cloudflare_ranges
+  ensure_packages ufw iptables curl ca-certificates && changed=1
+
+  if ! have_systemd && [ "$DRY_RUN" -eq 0 ]; then
+    echo "harden: no systemd here (a container?): ufw and iptables were not touched"
+    report firewall "$([ "$changed" -eq 1 ] && echo changed || echo unchanged)"
+    return
+  fi
+
+  iface="${HARDEN_PUBLIC_IFACE:-}"
+  if [ -z "$iface" ]; then
+    iface="$(ip route show default 2>/dev/null | awk '/^default/ {print $5; exit}' || true)"
+  fi
+  if [ -z "$iface" ]; then
+    if [ "$DRY_RUN" -eq 1 ]; then
+      iface="<public-interface>"
+    else
+      echo "harden: cannot tell the public network interface; set HARDEN_PUBLIC_IFACE" >&2
+      exit 1
+    fi
+  fi
+
+  ufw_script="$(ufw_rule_lines)"
+  docker_script="$(docker_user_rule_lines "$iface")"
+
+  run mkdir -p /etc/harden
+  if printf '%s\n' "$ufw_script" | write_file /etc/harden/ufw.rules 600; then
+    changed=1
+    applied=1
+  fi
+  if [ "$applied" -eq 1 ] || { [ "$DRY_RUN" -eq 0 ] && ! ufw status 2>/dev/null | grep -q '^Status: active'; }; then
+    while IFS= read -r line; do
+      read -ra parts <<<"$line"
+      run "${parts[@]}"
+    done <<<"$ufw_script"
+  fi
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    while IFS= read -r line; do echo "+ $line"; done <<<"$docker_script"
+  fi
+  if { printf '#!/bin/sh\n# Written by harden.sh: the DOCKER-USER rules, reapplied by harden-docker-user.service.\nset -e\n%s\n' "$docker_script"; } \
+    | write_file /usr/local/sbin/harden-docker-user.sh 750; then
+    script_changed=1
+    changed=1
+  fi
+  if printf '%s\n' '[Unit]' 'Description=Restrict published container ports to Cloudflare (DOCKER-USER)' \
+    'After=docker.service' 'PartOf=docker.service' '' '[Service]' 'Type=oneshot' 'RemainAfterExit=yes' \
+    'ExecStart=/usr/local/sbin/harden-docker-user.sh' '' '[Install]' 'WantedBy=multi-user.target' \
+    | write_file /etc/systemd/system/harden-docker-user.service 644; then
+    changed=1
+    script_changed=1
+    run systemctl daemon-reload
+  fi
+  run systemctl enable harden-docker-user.service
+  if [ "$script_changed" -eq 1 ]; then
+    # Docker may not be installed yet: the unit then runs when it is.
+    if [ "$DRY_RUN" -eq 1 ]; then echo "+ systemctl restart harden-docker-user.service"; else systemctl restart harden-docker-user.service || true; fi
+  fi
+  report firewall "$([ "$changed" -eq 1 ] && echo changed || echo unchanged)"
+}
+
 # ---------------------------------------------------------------------------------------------------
 
 validate_inputs
@@ -244,3 +380,4 @@ step_key
 step_ssh
 step_updates
 step_fail2ban
+step_firewall

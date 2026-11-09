@@ -22,11 +22,15 @@ interface Server {
   sh(command: string): RunResult;
 }
 
-function startServer(): Server {
+function startServer(options: { netAdmin?: boolean } = {}): Server {
   const name = `am-harden-${randomBytes(4).toString('hex')}`;
-  const started = run('docker', ['run', '-d', '--rm', '--name', name, '-v', `${provisionDir}:/provision:ro`, UBUNTU, 'sleep', 'infinity']);
+  const started = run('docker', [
+    'run', '-d', '--rm', '--name', name, ...(options.netAdmin ? ['--cap-add', 'NET_ADMIN'] : []),
+    '-v', `${provisionDir}:/provision:ro`, UBUNTU, 'sleep', 'infinity',
+  ]);
   if (started.status !== 0) throw new Error(`container failed to start:\n${started.output}`);
   containers.push(name);
+  run('docker', ['exec', name, 'bash', '-c', `printf '%s\\n' ${CF_FIXTURE.join(' ')} > ${CF_FILE}`]);
   return {
     name,
     harden: (env, args = []) =>
@@ -42,7 +46,10 @@ afterAll(() => {
   if (containers.length > 0) run('docker', ['rm', '-f', ...containers]);
 }, 60_000);
 
-const base = { ADMIN_USER: 'deploy', ADMIN_SSH_PUBLIC_KEY: PUBLIC_KEY, HARDEN_CF_IPS_FILE: '' };
+/** Documentation ranges standing in for Cloudflare's, in the file the script reads when HARDEN_CF_IPS_FILE is set. */
+const CF_FILE = '/tmp/cf-ips.txt';
+const CF_FIXTURE = ['203.0.113.0/24', '198.51.100.0/24', '2001:db8::/32'];
+const base = { ADMIN_USER: 'deploy', ADMIN_SSH_PUBLIC_KEY: PUBLIC_KEY, HARDEN_CF_IPS_FILE: CF_FILE };
 
 /** The first server runs the whole script once; the idempotency test reruns it. */
 let main: Server;
@@ -133,6 +140,77 @@ describe('harden.sh', () => {
     const dry = startServer().harden({ ...base, HARDEN_FORCE_SYSTEMD: '1' }, ['--dry-run']).output;
     expect(dry).toContain('+ systemctl enable --now fail2ban');
     expect(dry).toContain('+ systemctl enable --now apt-daily.timer apt-daily-upgrade.timer');
+  });
+
+  it('DEPLOY-27 prints a firewall that denies by default and opens SSH, the extra ports and 80/443 only to Cloudflare, in ufw and in DOCKER-USER', () => {
+    const server = startServer();
+    const result = server.harden({ ...base, EXTRA_ALLOW_TCP: '8000,9000' }, ['--dry-run']);
+    expect(result.status, result.output).toBe(0);
+    const lines = result.output.split('\n').filter((line) => line.startsWith('+ '));
+    const has = (text: string) => expect(lines, text).toContain(`+ ${text}`);
+
+    has('ufw default deny incoming');
+    has('ufw allow 22/tcp');
+    has('ufw allow 8000/tcp');
+    has('ufw allow 9000/tcp');
+    for (const cidr of CF_FIXTURE) {
+      for (const port of [80, 443]) has(`ufw allow from ${cidr} to any port ${port} proto tcp`);
+    }
+    // DOCKER-USER: a chain of ours, per address family, that lets Cloudflare in and drops the rest.
+    for (const cidr of CF_FIXTURE.slice(0, 2)) {
+      for (const port of [80, 443]) {
+        has(`iptables -w -A HARDEN-WEB -s ${cidr} -p tcp -m conntrack --ctorigdstport ${port} -j RETURN`);
+      }
+    }
+    for (const port of [80, 443]) {
+      has(`ip6tables -w -A HARDEN-WEB -s 2001:db8::/32 -p tcp -m conntrack --ctorigdstport ${port} -j RETURN`);
+    }
+    has('iptables -w -A HARDEN-WEB -p tcp -m conntrack --ctorigdstport 8000 -j RETURN');
+    has('iptables -w -A HARDEN-WEB -j DROP');
+    has('ip6tables -w -A HARDEN-WEB -j DROP');
+    expect(lines.some((line) => /iptables -w -I DOCKER-USER 1 -i \S+ -j HARDEN-WEB/.test(line))).toBe(true);
+
+    // No rule opens 80 or 443 to everyone: each one names a source range.
+    for (const line of lines.filter((entry) => /(port|ctorigdstport) (80|443)\b/.test(entry) && !entry.includes('-j DROP'))) {
+      expect(line, line).toMatch(/ (from|-s) [0-9a-f:.]+\/(?!0\b)\d+/);
+    }
+    expect(result.output).not.toMatch(/\/0\b/);
+  });
+
+  it('DEPLOY-27 the DOCKER-USER rules it prints are accepted by iptables and end in a drop for the public interface', () => {
+    const server = startServer({ netAdmin: true });
+    const install = server.sh('apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends iptables');
+    expect(install.status, install.output).toBe(0);
+    const dry = server.harden({ ...base, EXTRA_ALLOW_TCP: '8000', HARDEN_PUBLIC_IFACE: 'eth0' }, ['--dry-run']);
+    const commands = dry.output.split('\n').filter((line) => /^\+ ip6?tables /.test(line)).map((line) => line.slice(2));
+    expect(commands.length).toBeGreaterThan(10);
+    // The script's own lines are shell (`a 2>/dev/null || b`), so they run through bash, twice: reapplying must not stack rules.
+    for (let round = 0; round < 2; round += 1) {
+      const applied = server.sh(`set -e\n${commands.join('\n')}`);
+      expect(applied.status, applied.output).toBe(0);
+    }
+    const v4 = server.sh('iptables -S HARDEN-WEB; iptables -S DOCKER-USER').output;
+    expect(v4.split('\n').filter((line) => line.includes('-s 203.0.113.0/24') && line.includes('--ctorigdstport 443'))).toHaveLength(1);
+    expect(v4).toContain('-A HARDEN-WEB -j DROP');
+    expect(v4.match(/-A DOCKER-USER -i eth0 -j HARDEN-WEB/g)).toHaveLength(1);
+    expect(server.sh('ip6tables -S HARDEN-WEB').output).toContain('-s 2001:db8::/32');
+  }, 300_000);
+
+  it('DEPLOY-27 refuses a Cloudflare list that would open the ports to every address, before touching the firewall', () => {
+    const server = startServer();
+    server.sh(`printf '%s\\n' 203.0.113.0/24 2001:db8::/32 0.0.0.0/0 > ${CF_FILE}`);
+    const result = server.harden(base, ['--dry-run']);
+    expect(result.status).toBe(1);
+    expect(result.output).toContain('refusing the Cloudflare range');
+    expect(result.output).not.toMatch(/^\+ ufw/m);
+  });
+
+  it('DEPLOY-27 refuses a Cloudflare list without an IPv6 range', () => {
+    const server = startServer();
+    server.sh(`printf '%s\\n' 203.0.113.0/24 > ${CF_FILE}`);
+    const result = server.harden(base, ['--dry-run']);
+    expect(result.status).toBe(1);
+    expect(result.output).toContain('no IPv4 or no IPv6 range');
   });
 
   it('DEPLOY-29 a second run with the same values exits 0, reports unchanged for every step and changes no file', () => {
