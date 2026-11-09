@@ -159,12 +159,12 @@ T13 → T14
 
 **Done when**:
 
-- [ ] Teste lê o YAML: triggers só `push` em `main` e `workflow_dispatch`; `build` e `publish` dependem de `gates`; `publish` depende de `build`, e `build` usa `push: false`; `release` roda `check-tag.sh` e `coolify.sh` e depois `smoke.sh`
-- [ ] Matrix constrói `api`, `web` e `backup` e publica com a tag igual a `github.sha`
-- [ ] `permissions` mínimas, `packages: write` só em `publish`, toda action por SHA, `concurrency` sem `cancel-in-progress`
-- [ ] Com `tag` informada os jobs `gates`, `build` e `publish` são pulados
-- [ ] O teste `ci-workflow.test.ts` muda só a lista de triggers (acrescenta `workflow_call`), sem enfraquecer nenhuma outra asserção; actionlint do CI continua verde
-- [ ] Gate passa: `pnpm --filter @am/guardrails test:deploy` e `pnpm --filter @am/guardrails test`
+- [x] Teste lê o YAML: triggers só `push` em `main` e `workflow_dispatch`; `build` e `publish` dependem de `gates`; `publish` depende de `build`, e `build` usa `push: false`; `release` roda `check-tag.sh` e `coolify.sh` e depois `smoke.sh`
+- [x] Matrix constrói `api`, `web` e `backup` e publica com a tag igual a `github.sha`
+- [x] `permissions` mínimas, `packages: write` só em `publish`, toda action por SHA, `concurrency` sem `cancel-in-progress`
+- [x] Com `tag` informada os jobs `gates`, `build` e `publish` são pulados
+- [x] O teste `ci-workflow.test.ts` muda só a lista de triggers (acrescenta `workflow_call`), sem enfraquecer nenhuma outra asserção; actionlint do CI continua verde
+- [x] Gate passa: `pnpm --filter @am/guardrails test:deploy` e `pnpm --filter @am/guardrails test`
 
 **Tests**: unit
 **Gate**: quick

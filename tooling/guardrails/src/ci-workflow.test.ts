@@ -32,7 +32,7 @@ function commands(jobName: string): string {
 describe('ci workflow', () => {
   it('runs every required step on pull_request and push to main', () => {
     // Triggers (CI-01).
-    expect(Object.keys(workflow.on ?? {}).sort()).toEqual(['pull_request', 'push']);
+    expect(Object.keys(workflow.on ?? {}).sort()).toEqual(['pull_request', 'push', 'workflow_call']);
     expect((workflow.on?.push as { branches?: string[] }).branches).toEqual(['main']);
 
     // One job per concern.

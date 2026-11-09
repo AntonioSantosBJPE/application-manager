@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  # deploy.yml calls this workflow as its gates job, so a deploy runs the same checks as the PR.
+  workflow_call:
 
 # Unit and integration tests run on every PR. The end-to-end tests and the image builds are off for
 # now (they run locally, see docs/workflow.md) until the first VPS deploy flow exists. They are gated
