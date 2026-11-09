@@ -226,12 +226,12 @@ T13 → T14
 
 **Done when**:
 
-- [ ] `infra/backup/Dockerfile` (base por digest, `aws-cli` e `jq` com versão fixada) constrói
-- [ ] Com Postgres e MinIO (Testcontainers): `--once` grava `<prefixo>/<ISO UTC>.dump` que `pg_restore --list` lê
-- [ ] Objetos mais velhos que `BACKUP_RETENTION_DAYS` somem só depois de um envio bem-sucedido; envio falho (bucket inexistente) sai ≠ 0, loga o erro e deixa os antigos
-- [ ] A espera até `BACKUP_SCHEDULE_UTC_HOUR` é calculada por função testada para antes, depois e igual à hora atual
-- [ ] Nenhuma saída contém a senha do banco, a chave ou o segredo S3
-- [ ] Gate passa: `pnpm --filter @am/guardrails test:infra`
+- [x] `infra/backup/Dockerfile` (base por digest, `aws-cli` e `jq` com versão fixada) constrói
+- [x] Com Postgres e MinIO (Testcontainers): `--once` grava `<prefixo>/<ISO UTC>.dump` que `pg_restore --list` lê
+- [x] Objetos mais velhos que `BACKUP_RETENTION_DAYS` somem só depois de um envio bem-sucedido; envio falho (bucket inexistente) sai ≠ 0, loga o erro e deixa os antigos
+- [x] A espera até `BACKUP_SCHEDULE_UTC_HOUR` é calculada por função testada para antes, depois e igual à hora atual
+- [x] Nenhuma saída contém a senha do banco, a chave ou o segredo S3
+- [x] Gate passa: `pnpm --filter @am/guardrails test:infra`
 
 **Tests**: integration
 **Gate**: full
