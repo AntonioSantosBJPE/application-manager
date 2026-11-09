@@ -205,9 +205,9 @@ T13 → T14
 
 **Done when**:
 
-- [ ] Com imagens locais (`IMAGE_REPOSITORY`/`IMAGE_TAG` locais) e sem rede para o GHCR, `GET /status` do `web` responde 200 com API e Banco operacionais, e `smoke.sh` sai 0
-- [ ] Com `migrate` substituído por um comando que falha (override só do teste), a `api` não inicia e `smoke.sh` sai 1
-- [ ] Gate passa: `pnpm --filter @am/guardrails test:infra`
+- [x] Com imagens locais (`IMAGE_REPOSITORY`/`IMAGE_TAG` locais) e sem rede para o GHCR, `GET /status` do `web` responde 200 com API e Banco operacionais, e `smoke.sh` sai 0
+- [x] Com `migrate` substituído por um comando que falha (override só do teste), a `api` não inicia e `smoke.sh` sai 1
+- [x] Gate passa: `pnpm --filter @am/guardrails test:infra`
 
 **Tests**: integration
 **Gate**: full
