@@ -64,7 +64,7 @@ describe('coolify.sh', () => {
     expect(result.code).toBe(0);
     expect(calls.map((call) => `${call.method} ${call.url}`)).toEqual([
       `PATCH /api/v1/applications/${UUID}/envs`,
-      `GET /api/v1/deploy?uuid=${UUID}&force=false`,
+      `POST /api/v1/deploy?uuid=${UUID}&force=false`,
     ]);
     expect(JSON.parse(calls[0]!.body)).toMatchObject({ key: 'IMAGE_TAG', value: 'abc123' });
     expect(calls.map((call) => call.authorization)).toEqual([`Bearer ${TOKEN}`, `Bearer ${TOKEN}`]);
@@ -74,8 +74,23 @@ describe('coolify.sh', () => {
     const { url, calls } = await fakeCoolify((call) => (call.method === 'PATCH' ? 404 : 201));
     const result = await coolify('abc123', base(url));
     expect(result.code).toBe(0);
-    expect(calls.map((call) => call.method)).toEqual(['PATCH', 'POST', 'GET']);
+    expect(calls.map((call) => call.method)).toEqual(['PATCH', 'POST', 'POST']);
+    expect(calls.map((call) => call.url)).toEqual([`/api/v1/applications/${UUID}/envs`, `/api/v1/applications/${UUID}/envs`, `/api/v1/deploy?uuid=${UUID}&force=false`]);
     expect(JSON.parse(calls[1]!.body)).toMatchObject({ key: 'IMAGE_TAG', value: 'abc123' });
+  });
+
+  it('DEPLOY-06 falls back to GET for the deploy when the instance answers 405 to POST, and not for any other error', async () => {
+    const onlyGet = await fakeCoolify((call) => (call.url.startsWith('/api/v1/deploy') && call.method === 'POST' ? 405 : 200));
+    const ok = await coolify('abc123', base(onlyGet.url));
+    expect(ok.code).toBe(0);
+    expect(onlyGet.calls.filter((call) => call.url.startsWith('/api/v1/deploy')).map((call) => call.method)).toEqual(['POST', 'GET']);
+    server?.close();
+
+    const refused = await fakeCoolify((call) => (call.url.startsWith('/api/v1/deploy') ? 403 : 200));
+    const failed = await coolify('abc123', base(refused.url));
+    expect(failed.code).toBe(1);
+    expect(failed.output).toContain('HTTP 403');
+    expect(refused.calls.filter((call) => call.url.startsWith('/api/v1/deploy')).map((call) => call.method)).toEqual(['POST']);
   });
 
   it('DEPLOY-06 uses the services routes when COOLIFY_RESOURCE_KIND is services', async () => {
