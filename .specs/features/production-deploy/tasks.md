@@ -139,8 +139,8 @@ T13 → T14
 
 **Done when**:
 
-- [ ] Registry falso com as três imagens: sai 0; faltando uma: sai 1 listando qual
-- [ ] Gate passa: `pnpm --filter @am/guardrails test:deploy`
+- [x] Registry falso com as três imagens: sai 0; faltando uma: sai 1 listando qual
+- [x] Gate passa: `pnpm --filter @am/guardrails test:deploy`
 
 **Tests**: unit
 **Gate**: quick
