@@ -345,96 +345,96 @@ O autor registra candidaturas numa planilha ou em lugar nenhum, e não sabe o qu
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| APP-01 | P1: Cadastrar vaga e candidatura (API) | Design | Pending |
-| APP-02 | P1: Cadastrar vaga e candidatura (API) | Design | Pending |
-| APP-03 | P1: Cadastrar vaga e candidatura (API) | Design | Pending |
-| APP-04 | P1: Cadastrar vaga e candidatura (API) | Design | Pending |
-| APP-05 | P1: Cadastrar vaga e candidatura (API) | Design | Pending |
-| APP-06 | P1: Cadastrar vaga e candidatura (API) | Design | Pending |
-| APP-07 | P1: Cadastrar vaga e candidatura (API) | Design | Pending |
-| APP-08 | P1: Cadastrar vaga e candidatura (API) | Design | Pending |
-| APP-09 | P1: Listar e filtrar (API) | Design | Pending |
-| APP-10 | P1: Listar e filtrar (API) | Design | Pending |
-| APP-11 | P1: Listar e filtrar (API) | Design | Pending |
-| APP-12 | P1: Listar e filtrar (API) | Design | Pending |
-| APP-13 | P1: Listar e filtrar (API) | Design | Pending |
-| APP-14 | P1: Listar e filtrar (API) | Design | Pending |
-| APP-15 | P1: Listar e filtrar (API) | Design | Pending |
-| APP-16 | P1: Listar e filtrar (API) | Design | Pending |
-| APP-17 | P1: Listar e filtrar (API) | Design | Pending |
-| APP-18 | P1: Detalhe, status e linha do tempo (API) | Design | Pending |
-| APP-19 | P1: Detalhe, status e linha do tempo (API) | Design | Pending |
-| APP-20 | P1: Detalhe, status e linha do tempo (API) | Design | Pending |
-| APP-21 | P1: Detalhe, status e linha do tempo (API) | Design | Pending |
-| APP-22 | P1: Detalhe, status e linha do tempo (API) | Design | Pending |
-| APP-23 | P1: Detalhe, status e linha do tempo (API) | Design | Pending |
-| APP-24 | P1: Detalhe, status e linha do tempo (API) | Design | Pending |
-| APP-25 | P1: Detalhe, status e linha do tempo (API) | Design | Pending |
-| APP-26 | P1: Detalhe, status e linha do tempo (API) | Design | Pending |
-| APP-27 | P1: Detalhe, status e linha do tempo (API) | Design | Pending |
-| APP-28 | P1: Editar a vaga e as skills (API) | Design | Pending |
-| APP-29 | P1: Editar a vaga e as skills (API) | Design | Pending |
-| APP-30 | P1: Editar a vaga e as skills (API) | Design | Pending |
-| APP-31 | P1: Editar a vaga e as skills (API) | Design | Pending |
-| APP-32 | P1: Sugestão de sem retorno | Design | Pending |
-| APP-33 | P1: Sugestão de sem retorno | Design | Pending |
-| APP-34 | P1: Sugestão de sem retorno | Design | Pending |
-| APP-35 | P1: Sugestão de sem retorno | Design | Pending |
-| APP-36 | P1: Excluir candidatura (API) | Design | Pending |
-| APP-37 | P1: Excluir candidatura (API) | Design | Pending |
-| APP-38 | P1: Acesso e logs (API) | Design | Pending |
-| APP-39 | P1: Acesso e logs (API) | Design | Pending |
-| APP-40 | P1: Acesso e logs (API) | Design | Pending |
-| APP-41 | P1: Acesso e logs (API) | Design | Pending |
-| APP-42 | P1: Lista de candidaturas (web) | Design | Pending |
-| APP-43 | P1: Lista de candidaturas (web) | Design | Pending |
-| APP-44 | P1: Lista de candidaturas (web) | Design | Pending |
-| APP-45 | P1: Lista de candidaturas (web) | Design | Pending |
-| APP-46 | P1: Lista de candidaturas (web) | Design | Pending |
-| APP-47 | P1: Lista de candidaturas (web) | Design | Pending |
-| APP-48 | P1: Lista de candidaturas (web) | Design | Pending |
-| APP-49 | P1: Lista de candidaturas (web) | Design | Pending |
-| APP-50 | P1: Lista de candidaturas (web) | Design | Pending |
-| APP-51 | P1: Lista de candidaturas (web) | Design | Pending |
-| APP-52 | P1: Lista de candidaturas (web) | Design | Pending |
-| APP-53 | P1: Lista de candidaturas (web) | Design | Pending |
-| APP-54 | P1: Lista de candidaturas (web) | Design | Pending |
-| APP-55 | P1: Lista de candidaturas (web) | Design | Pending |
-| APP-56 | P1: Lista de candidaturas (web) | Design | Pending |
-| APP-57 | P1: Nova candidatura (web) | Design | Pending |
-| APP-58 | P1: Nova candidatura (web) | Design | Pending |
-| APP-59 | P1: Nova candidatura (web) | Design | Pending |
-| APP-60 | P1: Nova candidatura (web) | Design | Pending |
-| APP-61 | P1: Nova candidatura (web) | Design | Pending |
-| APP-62 | P1: Nova candidatura (web) | Design | Pending |
-| APP-63 | P1: Nova candidatura (web) | Design | Pending |
-| APP-64 | P1: Nova candidatura (web) | Design | Pending |
-| APP-65 | P1: Nova candidatura (web) | Design | Pending |
-| APP-66 | P1: Detalhe da candidatura (web) | Design | Pending |
-| APP-67 | P1: Detalhe da candidatura (web) | Design | Pending |
-| APP-68 | P1: Detalhe da candidatura (web) | Design | Pending |
-| APP-69 | P1: Detalhe da candidatura (web) | Design | Pending |
-| APP-70 | P1: Detalhe da candidatura (web) | Design | Pending |
-| APP-71 | P1: Detalhe da candidatura (web) | Design | Pending |
-| APP-72 | P1: Detalhe da candidatura (web) | Design | Pending |
-| APP-73 | P1: Detalhe da candidatura (web) | Design | Pending |
-| APP-74 | P1: Detalhe da candidatura (web) | Design | Pending |
-| APP-75 | P1: Detalhe da candidatura (web) | Design | Pending |
-| APP-76 | P1: Detalhe da candidatura (web) | Design | Pending |
-| APP-77 | P1: Detalhe da candidatura (web) | Design | Pending |
-| APP-78 | P1: Detalhe da candidatura (web) | Design | Pending |
-| APP-79 | P1: Detalhe da candidatura (web) | Design | Pending |
-| APP-80 | P1: Sugestão de sem retorno (web) | Design | Pending |
-| APP-81 | P1: Sugestão de sem retorno (web) | Design | Pending |
-| APP-82 | P1: Sugestão de sem retorno (web) | Design | Pending |
-| APP-83 | P2: Home e catálogo do admin | Design | Pending |
-| APP-84 | P2: Home e catálogo do admin | Design | Pending |
-| APP-85 | P2: Home e catálogo do admin | Design | Pending |
-| APP-86 | P2: Home e catálogo do admin | Design | Pending |
-| APP-87 | P2: Home e catálogo do admin | Design | Pending |
-| APP-88 | Edge Cases | Design | Pending |
+| APP-01 | P1: Cadastrar vaga e candidatura (API) | Execute | Verified |
+| APP-02 | P1: Cadastrar vaga e candidatura (API) | Execute | Verified |
+| APP-03 | P1: Cadastrar vaga e candidatura (API) | Execute | Verified |
+| APP-04 | P1: Cadastrar vaga e candidatura (API) | Execute | Verified |
+| APP-05 | P1: Cadastrar vaga e candidatura (API) | Execute | Verified |
+| APP-06 | P1: Cadastrar vaga e candidatura (API) | Execute | Verified |
+| APP-07 | P1: Cadastrar vaga e candidatura (API) | Execute | Verified |
+| APP-08 | P1: Cadastrar vaga e candidatura (API) | Execute | Verified |
+| APP-09 | P1: Listar e filtrar (API) | Execute | Verified |
+| APP-10 | P1: Listar e filtrar (API) | Execute | Verified |
+| APP-11 | P1: Listar e filtrar (API) | Execute | Verified |
+| APP-12 | P1: Listar e filtrar (API) | Execute | Verified |
+| APP-13 | P1: Listar e filtrar (API) | Execute | Verified |
+| APP-14 | P1: Listar e filtrar (API) | Execute | Verified |
+| APP-15 | P1: Listar e filtrar (API) | Execute | Verified |
+| APP-16 | P1: Listar e filtrar (API) | Execute | Verified |
+| APP-17 | P1: Listar e filtrar (API) | Execute | Verified |
+| APP-18 | P1: Detalhe, status e linha do tempo (API) | Execute | Verified |
+| APP-19 | P1: Detalhe, status e linha do tempo (API) | Execute | Verified |
+| APP-20 | P1: Detalhe, status e linha do tempo (API) | Execute | Verified |
+| APP-21 | P1: Detalhe, status e linha do tempo (API) | Execute | Verified |
+| APP-22 | P1: Detalhe, status e linha do tempo (API) | Execute | Verified |
+| APP-23 | P1: Detalhe, status e linha do tempo (API) | Execute | Verified |
+| APP-24 | P1: Detalhe, status e linha do tempo (API) | Execute | Verified |
+| APP-25 | P1: Detalhe, status e linha do tempo (API) | Execute | Verified |
+| APP-26 | P1: Detalhe, status e linha do tempo (API) | Execute | Verified |
+| APP-27 | P1: Detalhe, status e linha do tempo (API) | Execute | Verified |
+| APP-28 | P1: Editar a vaga e as skills (API) | Execute | Verified |
+| APP-29 | P1: Editar a vaga e as skills (API) | Execute | Verified |
+| APP-30 | P1: Editar a vaga e as skills (API) | Execute | Verified |
+| APP-31 | P1: Editar a vaga e as skills (API) | Execute | Verified |
+| APP-32 | P1: Sugestão de sem retorno | Execute | Verified |
+| APP-33 | P1: Sugestão de sem retorno | Execute | Verified |
+| APP-34 | P1: Sugestão de sem retorno | Execute | Verified |
+| APP-35 | P1: Sugestão de sem retorno | Execute | Verified |
+| APP-36 | P1: Excluir candidatura (API) | Execute | Verified |
+| APP-37 | P1: Excluir candidatura (API) | Execute | Verified |
+| APP-38 | P1: Acesso e logs (API) | Execute | Verified |
+| APP-39 | P1: Acesso e logs (API) | Execute | Verified |
+| APP-40 | P1: Acesso e logs (API) | Execute | Verified |
+| APP-41 | P1: Acesso e logs (API) | Execute | Verified |
+| APP-42 | P1: Lista de candidaturas (web) | Execute | Verified |
+| APP-43 | P1: Lista de candidaturas (web) | Execute | Verified |
+| APP-44 | P1: Lista de candidaturas (web) | Execute | Verified |
+| APP-45 | P1: Lista de candidaturas (web) | Execute | Verified |
+| APP-46 | P1: Lista de candidaturas (web) | Execute | Verified |
+| APP-47 | P1: Lista de candidaturas (web) | Execute | Verified |
+| APP-48 | P1: Lista de candidaturas (web) | Execute | Verified |
+| APP-49 | P1: Lista de candidaturas (web) | Execute | Verified |
+| APP-50 | P1: Lista de candidaturas (web) | Execute | Verified |
+| APP-51 | P1: Lista de candidaturas (web) | Execute | Verified |
+| APP-52 | P1: Lista de candidaturas (web) | Execute | Verified |
+| APP-53 | P1: Lista de candidaturas (web) | Execute | Verified |
+| APP-54 | P1: Lista de candidaturas (web) | Execute | Verified |
+| APP-55 | P1: Lista de candidaturas (web) | Execute | Verified |
+| APP-56 | P1: Lista de candidaturas (web) | Execute | Verified |
+| APP-57 | P1: Nova candidatura (web) | Execute | Verified |
+| APP-58 | P1: Nova candidatura (web) | Execute | Verified |
+| APP-59 | P1: Nova candidatura (web) | Execute | Verified |
+| APP-60 | P1: Nova candidatura (web) | Execute | Verified |
+| APP-61 | P1: Nova candidatura (web) | Execute | Verified |
+| APP-62 | P1: Nova candidatura (web) | Execute | Verified |
+| APP-63 | P1: Nova candidatura (web) | Execute | Verified |
+| APP-64 | P1: Nova candidatura (web) | Execute | Verified |
+| APP-65 | P1: Nova candidatura (web) | Execute | Verified |
+| APP-66 | P1: Detalhe da candidatura (web) | Execute | Verified |
+| APP-67 | P1: Detalhe da candidatura (web) | Execute | Verified |
+| APP-68 | P1: Detalhe da candidatura (web) | Execute | Verified |
+| APP-69 | P1: Detalhe da candidatura (web) | Execute | Verified |
+| APP-70 | P1: Detalhe da candidatura (web) | Execute | Verified |
+| APP-71 | P1: Detalhe da candidatura (web) | Execute | Verified |
+| APP-72 | P1: Detalhe da candidatura (web) | Execute | Verified |
+| APP-73 | P1: Detalhe da candidatura (web) | Execute | Verified |
+| APP-74 | P1: Detalhe da candidatura (web) | Execute | Verified |
+| APP-75 | P1: Detalhe da candidatura (web) | Execute | Verified |
+| APP-76 | P1: Detalhe da candidatura (web) | Execute | Verified |
+| APP-77 | P1: Detalhe da candidatura (web) | Execute | Verified |
+| APP-78 | P1: Detalhe da candidatura (web) | Execute | Verified |
+| APP-79 | P1: Detalhe da candidatura (web) | Execute | Verified |
+| APP-80 | P1: Sugestão de sem retorno (web) | Execute | Verified |
+| APP-81 | P1: Sugestão de sem retorno (web) | Execute | Verified |
+| APP-82 | P1: Sugestão de sem retorno (web) | Execute | Verified |
+| APP-83 | P2: Home e catálogo do admin | Execute | Verified |
+| APP-84 | P2: Home e catálogo do admin | Execute | Verified |
+| APP-85 | P2: Home e catálogo do admin | Execute | Verified |
+| APP-86 | P2: Home e catálogo do admin | Execute | Verified |
+| APP-87 | P2: Home e catálogo do admin | Execute | Verified |
+| APP-88 | Edge Cases | Execute | Verified |
 
-**Coverage:** 88 total, 0 mapped to tasks, 88 unmapped ⚠️ (tasks ainda não escritas)
+**Coverage:** 88 total, 88 mapped to tasks (T1–T48), 0 unmapped
 
 ---
 

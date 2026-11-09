@@ -64,4 +64,4 @@ As cartas `PageApplications`, `PageNewApplication`, `PageApplicationDetail` e `P
 
 ## Deferred Ideas
 
-None - discussion stayed within feature scope
+- Defeito de acessibilidade achado na passada de correções (2026-11-08): depois de mudar o status pelo menu da linha, a linha muda de grupo e o foco vai para o `body`. Todos os controles continuam alcançáveis pelo teclado, mas o foco deveria voltar à linha movida. Fica para uma correção própria.

@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: `.specs/features/application/design.md`
-**Status**: Approved
+**Status**: Done
 **Approved**: 2026-11-08 - user: "Tasks aprovadas"
 **Build**: `pnpm build; pnpm typecheck; pnpm lint`
 **Run api-unit**: `pnpm --filter @am/api exec vitest run --project unit --reporter=verbose`

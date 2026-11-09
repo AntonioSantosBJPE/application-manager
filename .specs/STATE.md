@@ -188,9 +188,10 @@
 
 ## Handoff
 
-- **Feature**: `skills` - closed on branch `feat/skills`, 2026-11-08.
-- **Done**: T1-T36 committed; Verifier (Opus 5.5) judged 76/76 checks holding; its finding (U+0000 answered 500) closed in `b707f9f` and `d7eb144`; a flaky C32 test closed in `ba12ec7`. Report: `.specs/features/skills/verification.md`.
-- **Gates at `ba12ec7`**: `pnpm build`, `typecheck`, `lint`, `pnpm test --force` (contracts 42, guardrails 32, api 74, web 401, ui 474), `pnpm test:integration` (163, twice), `pnpm test:e2e` (54).
-- **Lessons**: L-014 and L-015 recorded as candidates.
-- **Open for the author**: review the seed list `apps/api/src/modules/skills/seed/global-skills.json` (322 skills) in the PR before the merge; Verifier observations with no finding: the 60-character limit counts the text without NFC, and the web drops a search above 60 characters silently.
-- **Next**: PR `feat/skills` -> `main`, merge with green CI, then `git switch main && git pull --ff-only && git branch -d feat/skills`.
+- **Feature**: `application` - closed on branch `feat/application`, 2026-11-08.
+- **Done**: T1-T48 committed by Sonnet 5.5 workers in 7 batches (B4 and B5 with one fix round each), orchestrated and checked by Opus 5.5. Verifier (Opus 5.5) judged 81/88 checks holding and wrote 13 findings, all closed (`0d56abd`..`d0809a7`, `1c8daf3`, `f32b4a3`); screens round 2: the three pictures match their captures. Reports: `.specs/features/application/verification.md`, `screens.md`.
+- **Gates at `1c8daf3`**: `pnpm build`, `typecheck`, `lint`, `pnpm test --force` (contracts 75, guardrails 37, api 102, web 649, ui 609), `pnpm test:integration` (272), `pnpm test:e2e` (61), tree clean after e2e.
+- **Decisions in the feature**: AD-017 to AD-023 (AD-022 and AD-023 taken by the orchestrator under the user's delegation).
+- **Lessons**: L-016 to L-028 recorded as candidates.
+- **Open for the author**: focus goes to `body` after changing a status from the row menu (Deferred Ideas in `context.md`); `job_postings.search_text` rows written before `0d56abd` keep the old format (only local dev data).
+- **Next**: push `feat/application` and open the PR to `main` after the author's go-ahead; merge with green CI, then `git switch main && git pull --ff-only && git branch -d feat/application`.
