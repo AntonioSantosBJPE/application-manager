@@ -1,15 +1,17 @@
 # Application screens
 
 **Verifier**: independent sub-agent (author != verifier)
-**Round**: 1
+**Round**: 2
 
 Pictures retaken by the verifier: compose stack built from this checkout (`docker compose up --build --wait`), test `captures` of `tests/e2e/specs/browser/applications.spec.ts` run alone (`playwright test --project=browser --no-deps -g "captures: PageApplications"`). Its context is `viewport 1280 × 800`, `colorScheme: 'light'`, asserted with `page.viewportSize()` before the first shot and never resized; `page.screenshot` saves without scaling. The three files came out 1280 × 800 and byte-identical to the author's, so git shows no change in them. The stack was removed with its volumes afterwards.
+
+Round 2: only `PageNewApplication` and `PageApplicationDetail` were retaken, and only their `differs` rows reopened. Same stack (`docker compose up --build --wait` at `7f0bf2c`), same test run alone with `CAPTURE=1` (`playwright test --project=browser --no-deps -g "captures: PageApplications"`); the context is still `viewport 1280 × 800`, `colorScheme: 'light'`, asserted with `page.viewportSize()` and never resized. Both files came out 1280 × 800; `PageApplicationDetail.running.png` came out byte-identical to the committed one (refreshed in `5c1d3d9`), so git shows no change in it. The stack was removed with its volumes afterwards.
 
 | Screen | Compared with | Verdict | Finding |
 | --- | --- | --- | --- |
 | `captures/PageApplications.running.png` | `captures/PageApplications.png` | matches | 0 rows differ |
-| `captures/PageNewApplication.running.png` | `captures/PageNewApplication.png` | diverges | 4 rows differ |
-| `captures/PageApplicationDetail.running.png` | `captures/PageApplicationDetail.png` | diverges | 6 rows differ |
+| `captures/PageNewApplication.running.png` | `captures/PageNewApplication.png` | matches | 0 rows differ (round 2: the 4 rows of round 1 now same) |
+| `captures/PageApplicationDetail.running.png` | `captures/PageApplicationDetail.png` | matches | 0 rows differ (round 2: the 6 rows of round 1 now same) |
 
 ### `captures/PageApplications.running.png`
 
@@ -47,11 +49,11 @@ Pictures retaken by the verifier: compose stack built from this checkout (`docke
 | "Link da vaga · opcional" with placeholder "https://", full width | same | |
 | "Nível" chips Estágio, Júnior, Pleno (pressed), Sênior, Especialista, and "Modelo" chips Remoto (pressed), Híbrido, Presencial, the two groups side by side | same | |
 | "Skills obrigatórias": field with tags React, Node.js, PostgreSQL and the typed text "nes" | same | note: tags carry a "×" (removable tag, APP-59); the field shows a teal focus border |
-| hint under the required field "Busque por nome ou apelido: “node”, …" (partly visible beside the menu) | differs | not visible: the menu covers it entirely |
-| suggestion menu: small popover (~240 px) anchored under the typed text, starting near the caret | differs | a menu as wide as the field (339–941 px) right under it, covering the hint, the "Skills desejáveis" label and the top half of that field |
-| menu item "NestJS" with category "framework" on the right, highlighted as the active option | differs | "NestJS" and "framework" without any active highlight |
+| hint under the required field "Busque por nome ou apelido: “node”, …" (partly visible beside the menu) | same | round 2: "Busque por nome ou apelido: “node”, “nodejs” e “" visible left of the menu |
+| suggestion menu: small popover (~240 px) anchored under the typed text, starting near the caret | same | round 2: popover ~240 px (609–847 px) under "nes", over the hint only |
+| menu item "NestJS" with category "framework" on the right, highlighted as the active option | same | round 2: grey active fill on the NestJS row |
 | menu item "+ Criar “nes” como skill privada" | same | |
-| "Skills desejáveis" label, field with dashed "Docker" tag and placeholder "Adicionar…" | differs | label hidden under the menu; only the lower half of the field shows ("Docker ×" dashed, "Adicionar…") |
+| "Skills desejáveis" label, field with dashed "Docker" tag and placeholder "Adicionar…" | same | round 2: label and whole field visible; "Docker" dashed with "×" (AD-023) |
 | "Descrição · opcional, cole o texto da vaga" with a resizable textarea | same | note: textarea ~87 px tall, capture ~55 px |
 | footer left: "Entra como **Salva**." kbd `⌘` `↵` "para criar" | same | |
 | footer right: "Cancelar" (secondary) and "Criar candidatura" (primary teal) | same | |
@@ -69,18 +71,18 @@ Note: the "Skills desejáveis" row is counted apart from the menu row because it
 | company "Vento Seguros" (muted) over the title "Desenvolvedor Backend Pleno" (h1) | same | |
 | "Skills da vaga" heading; "seu currículo cobre 1/6 obrigatórias" on the right | same | phrase absent, as approved (AD-017) |
 | "Obrigatórias" row: bordered tags; one `match` tag (teal with ✓) | same | all tags in the required style, as approved (AD-017); note: tags carry "×" (APP-73) and the approved "+ Skill" (AD-022), so "+ Skill" wraps to a second line |
-| "Desejáveis" row: dashed tags and "+ Skill" drawn as a dashed button | differs | dashed tags with "×", then "+ Skill" as plain text with no border |
+| "Desejáveis" row: dashed tags and "+ Skill" drawn as a dashed button | same | round 2: dashed tags with "×" (AD-023), then "+ Skill" in a dashed border |
 | "Currículo" section (version card, PDF card) | same | absent, as approved (AD-017) |
 | "Linha do tempo" heading with "+ Etapa" on the right | same | |
 | timeline: icon column joined by a thin vertical line, date in `mono` on the right as "dd mmm" | same | |
 | event "Nota · {nota}" with note icon | same | |
 | event "Etapa **RH** concluída" | same | "Etapa **RH**" without "concluída", as approved (AD-018) |
-| event "Status **Salva** → **Enviada** com curriculo-vento-seguros.pdf" | differs | "Status → **Enviada**", no "Salva" (the walked state created Vento directly as Enviada, so there is no from status); the document is absent as approved (AD-017) |
+| event "Status **Salva** → **Enviada** com curriculo-vento-seguros.pdf" | same | round 2: "Status **Salva** → **Enviada**"; the document is absent as approved (AD-017) |
 | event "Vaga cadastrada" with dashed status icon | same | |
 | note field "Adicionar nota…" full width under the timeline | same | note: ~88 px tall, capture ~64 px |
-| property list: Status (icon + "Enviada"), Nível, Modelo, Local, Vaga, Cadastrada, Atividade; values in one aligned column | differs | "Local" and "Vaga" values drawn as buttons whose text sits ~7 px right of the other values, so the column is ragged; note: "Pleno" and "Presencial" in muted grey where the capture draws dark text |
-| "Vaga" value: teal link shown without scheme ("vagas.exemplo.com/1…") | differs | teal link with the scheme, "https://vagas.exe…" |
+| property list: Status (icon + "Enviada"), Nível, Modelo, Local, Vaga, Cadastrada, Atividade; values in one aligned column | same | round 2: every value starts at x 1123–1125; "Pleno" and "Presencial" dark; note: the "Local" and "Vaga" rows are a few px taller, so the row pitch is uneven |
+| "Vaga" value: teal link shown without scheme ("vagas.exemplo.com/1…") | same | round 2: teal "vagas.exemplo.com/v…" |
 | "Cadastrada" date in `mono`, "Atividade" date in `mono` warning | same | |
 | divider, "Descrição da vaga" label, clamped text with ellipsis | same | |
-| "Ver texto completo" as a teal link aligned with the text | differs | dark text button, indented ~9 px from the description |
-| divider, "Excluir candidatura" with trash icon in danger red | differs | trash icon and label in neutral dark grey, not red |
+| "Ver texto completo" as a teal link aligned with the text | same | round 2: teal, starting at x 1019 with the description at 1018; note: slightly heavier weight than the capture |
+| divider, "Excluir candidatura" with trash icon in danger red | same | round 2: icon and label in danger red |
