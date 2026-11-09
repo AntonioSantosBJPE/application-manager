@@ -22,10 +22,10 @@ interface Server {
   sh(command: string): RunResult;
 }
 
-function startServer(options: { netAdmin?: boolean } = {}): Server {
+function startServer(options: { netAdmin?: boolean; noNetwork?: boolean } = {}): Server {
   const name = `am-harden-${randomBytes(4).toString('hex')}`;
   const started = run('docker', [
-    'run', '-d', '--rm', '--name', name, ...(options.netAdmin ? ['--cap-add', 'NET_ADMIN'] : []),
+    'run', '-d', '--rm', '--name', name, ...(options.netAdmin ? ['--cap-add', 'NET_ADMIN'] : []), ...(options.noNetwork ? ['--network', 'none'] : []),
     '-v', `${provisionDir}:/provision:ro`, UBUNTU, 'sleep', 'infinity',
   ]);
   if (started.status !== 0) throw new Error(`container failed to start:\n${started.output}`);
@@ -213,6 +213,45 @@ describe('harden.sh', () => {
     expect(result.output).toContain('no IPv4 or no IPv6 range');
   });
 
+  it.each([
+    ['SSH_PORT', '99999999999999999999'],
+    ['SSH_PORT', '0'],
+    ['SSH_PORT', '65536'],
+    ['SSH_PORT', 'ssh'],
+    ['EXTRA_ALLOW_TCP', '70000'],
+    ['EXTRA_ALLOW_TCP', '8000,0'],
+    ['EXTRA_ALLOW_TCP', '22,abc'],
+    ['EXTRA_ALLOW_TCP', '8000, 9000'],
+    ['EXTRA_ALLOW_TCP', '443'],
+    ['EXTRA_ALLOW_TCP', '8000,80'],
+    ['EXTRA_ALLOW_TCP', '0443'],
+  ])('DEPLOY-27 refuses %s=%s before touching anything', (name, value) => {
+    const server = startServer();
+    const result = server.harden({ ...base, [name]: value });
+    expect(result.status).toBe(2);
+    expect(result.output).toContain(name);
+    expect(server.sh('id deploy').status).not.toBe(0);
+    expect(server.sh('dpkg -s sudo').status).not.toBe(0);
+  });
+
+  it('DEPLOY-27 writes ports without leading zeros', () => {
+    const result = startServer().harden({ ...base, SSH_PORT: '0022', EXTRA_ALLOW_TCP: '08000' }, ['--dry-run']);
+    expect(result.status, result.output).toBe(0);
+    expect(result.output).toContain('+ ufw allow 22/tcp');
+    expect(result.output).toContain('+ ufw allow 8000/tcp');
+    expect(result.output).not.toContain('0022');
+  });
+
+  it('DEPLOY-24 a failed package install stops the script: no step reports changed, no user and no sudoers file appear', () => {
+    const server = startServer({ noNetwork: true });
+    const result = server.harden(base);
+    expect(result.status).not.toBe(0);
+    expect(result.output).not.toMatch(/^\[[a-z0-9-]+\] changed$/m);
+    expect(server.sh('id deploy').status).not.toBe(0);
+    expect(server.sh('ls /etc/sudoers.d').output).not.toContain('90-deploy');
+    expect(server.sh('test -e /etc/ssh/sshd_config.d/00-hardening.conf').status).not.toBe(0);
+  });
+
   it('DEPLOY-29 a second run with the same values exits 0, reports unchanged for every step and changes no file', () => {
     const fingerprint = "find /etc /home -xdev -type f -exec sha256sum {} + | sort | sha256sum";
     const before = main.sh(fingerprint).output;
@@ -223,6 +262,39 @@ describe('harden.sh', () => {
     for (const line of steps) expect(line, line).toMatch(/ unchanged$/);
     expect(main.sh(fingerprint).output).toBe(before);
   }, 300_000);
+
+  it('DEPLOY-29 the firewall step is idempotent too: a second run rewrites no rule file, script or unit', () => {
+    // Where systemd would run, ufw and systemctl are stubbed: the script then really writes its files.
+    const server = startServer();
+    server.sh(
+      `printf '#!/bin/sh\\ncase "$1" in status) echo "Status: active";; esac\\nexit 0\\n' > /usr/local/bin/ufw && ` +
+        `printf '#!/bin/sh\\nexit 0\\n' > /usr/local/bin/systemctl && chmod +x /usr/local/bin/ufw /usr/local/bin/systemctl`,
+    );
+    const env = { ...base, HARDEN_FORCE_SYSTEMD: '1', HARDEN_PUBLIC_IFACE: 'eth0' };
+    const first = server.harden(env);
+    expect(first.status, first.output).toBe(0);
+    expect(first.output).toMatch(/^\[firewall\] changed$/m);
+    expect(server.sh('cat /etc/harden/ufw.rules').output).toContain('ufw allow from 203.0.113.0/24 to any port 443 proto tcp');
+    expect(server.sh('cat /usr/local/sbin/harden-docker-user.sh').output).toContain('HARDEN-WEB');
+    expect(server.sh('test -f /etc/systemd/system/harden-docker-user.service').status).toBe(0);
+
+    const fingerprint = 'find /etc /home /usr/local -xdev -type f -exec sha256sum {} + | sort | sha256sum';
+    const before = server.sh(fingerprint).output;
+    const second = server.harden(env);
+    expect(second.status, second.output).toBe(0);
+    for (const line of second.output.split('\n').filter((entry) => /^\[[a-z0-9-]+\] /.test(entry))) expect(line).toMatch(/ unchanged$/);
+    expect(second.output).toMatch(/^\[firewall\] unchanged$/m);
+    expect(server.sh(fingerprint).output).toBe(before);
+  }, 300_000);
+
+  it('DEPLOY-30 --dry-run changes no file under /etc, /home, /usr/local, /root or the package database', () => {
+    const server = startServer();
+    const fingerprint = 'find /etc /home /usr/local /root /var/lib/dpkg -xdev -type f -exec sha256sum {} + | sort | sha256sum';
+    const before = server.sh(fingerprint).output;
+    const result = server.harden({ ...base, HARDEN_FORCE_SYSTEMD: '1', HARDEN_PUBLIC_IFACE: 'eth0' }, ['--dry-run']);
+    expect(result.status, result.output).toBe(0);
+    expect(server.sh(fingerprint).output).toBe(before);
+  });
 
   it('DEPLOY-30 --dry-run prints the commands it would run and changes nothing', () => {
     const server = startServer();

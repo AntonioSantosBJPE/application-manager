@@ -45,39 +45,50 @@ run() {
   fi
 }
 
-# write_file <path> <mode>: installs stdin at <path> when its content or mode differs; prints
-# `changed`/`unchanged` through the caller's report. Returns 0 when it changed something.
+# The helpers below report what they did in a variable instead of their exit status: a function on the
+# left of `&&` or in an `if` runs with `set -e` off, which would hide a failed install or apt-get.
+# Call them as plain statements, then read the variable.
+
+write_changed=0
+# write_file <path> <mode> <content>: installs <content> at <path> when the content or the mode differs
+# and sets write_changed to 1 (0 when the file was already right). A failure aborts the script.
 write_file() {
   local path="$1" mode="$2" tmp
   tmp="$(mktemp)"
-  cat >"$tmp"
+  printf '%s\n' "$3" >"$tmp"
+  write_changed=0
   if [ -f "$path" ] && cmp -s "$tmp" "$path" && [ "$(stat -c '%a' "$path")" = "$mode" ]; then
     rm -f "$tmp"
-    return 1
+    return 0
   fi
+  write_changed=1
   if [ "$DRY_RUN" -eq 1 ]; then
     echo "+ write $path (mode $mode)"
   else
     install -m "$mode" "$tmp" "$path"
   fi
   rm -f "$tmp"
-  return 0
 }
 
 apt_updated=0
-# ensure_packages <name>...: installs the missing ones.
+pkg_changed=0
+# ensure_packages <name>...: installs the missing ones and sets pkg_changed to 1 when it had to. A
+# failure (no network, a missing package) aborts the script.
 ensure_packages() {
   local missing=() pkg
+  pkg_changed=0
   for pkg in "$@"; do
     dpkg -s "$pkg" >/dev/null 2>&1 || missing+=("$pkg")
   done
-  [ "${#missing[@]}" -eq 0 ] && return 1
+  if [ "${#missing[@]}" -eq 0 ]; then
+    return 0
+  fi
   if [ "$apt_updated" -eq 0 ]; then
     run env DEBIAN_FRONTEND=noninteractive apt-get update -qq
     apt_updated=1
   fi
   run env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends "${missing[@]}"
-  return 0
+  pkg_changed=1
 }
 
 # Services are managed only where systemd runs (not in the container the script is rehearsed in).
@@ -87,8 +98,11 @@ have_systemd() { [ -d /run/systemd/system ] || [ "${HARDEN_FORCE_SYSTEMD:-0}" = 
 # ---------------------------------------------------------------------------------------------------
 # Inputs are checked before anything is touched.
 
+# A port number, 1 to 65535, in at most five digits.
+valid_port() { [[ "$1" =~ ^[0-9]{1,5}$ ]] && [ "$((10#$1))" -ge 1 ] && [ "$((10#$1))" -le 65535 ]; }
+
 validate_inputs() {
-  local errors=()
+  local errors=() port
   if ! [[ "$ADMIN_USER" =~ ^[a-z_][a-z0-9_-]{0,31}$ ]] || [ "$ADMIN_USER" = "root" ]; then
     errors+=("ADMIN_USER must be a lowercase account name other than root")
   fi
@@ -97,11 +111,21 @@ validate_inputs() {
   elif ! [[ "$ADMIN_SSH_PUBLIC_KEY" =~ ^(ssh-ed25519|ssh-rsa|ecdsa-sha2-nistp(256|384|521)|sk-ssh-ed25519@openssh\.com)\ [A-Za-z0-9+/]+=*(\ .*)?$ ]]; then
     errors+=("ADMIN_SSH_PUBLIC_KEY is not a valid public key line")
   fi
-  if ! [[ "$SSH_PORT" =~ ^[0-9]+$ ]] || [ "$SSH_PORT" -lt 1 ] || [ "$SSH_PORT" -gt 65535 ]; then
-    errors+=("SSH_PORT must be a port number")
+  if ! valid_port "$SSH_PORT"; then
+    errors+=("SSH_PORT must be a port number from 1 to 65535")
   fi
-  if [ -n "$EXTRA_ALLOW_TCP" ] && ! [[ "$EXTRA_ALLOW_TCP" =~ ^[0-9]+(,[0-9]+)*$ ]]; then
-    errors+=("EXTRA_ALLOW_TCP must be comma-separated port numbers")
+  if [ -n "$EXTRA_ALLOW_TCP" ]; then
+    if ! [[ "$EXTRA_ALLOW_TCP" =~ ^[0-9]+(,[0-9]+)*$ ]]; then
+      errors+=("EXTRA_ALLOW_TCP must be comma-separated port numbers")
+    else
+      for port in ${EXTRA_ALLOW_TCP//,/ }; do
+        if ! valid_port "$port"; then
+          errors+=("EXTRA_ALLOW_TCP has $port, which is not a port from 1 to 65535")
+        elif [ "$((10#$port))" -eq 80 ] || [ "$((10#$port))" -eq 443 ]; then
+          errors+=("EXTRA_ALLOW_TCP must not open 80 or 443: they stay reachable only from Cloudflare")
+        fi
+      done
+    fi
   fi
   if [ "$DRY_RUN" -eq 0 ] && [ "$(id -u)" -ne 0 ]; then
     errors+=("run as root (sudo -E), or pass --dry-run")
@@ -110,6 +134,13 @@ validate_inputs() {
     printf 'harden: %s\n' "${errors[@]}" >&2
     exit 2
   fi
+  # Ports are written without leading zeros, so 0022 and 22 are the same rule.
+  SSH_PORT=$((10#$SSH_PORT))
+  if [ -n "$EXTRA_ALLOW_TCP" ]; then
+    local normalized=()
+    for port in ${EXTRA_ALLOW_TCP//,/ }; do normalized+=("$((10#$port))"); done
+    EXTRA_ALLOW_TCP="$(IFS=,; echo "${normalized[*]}")"
+  fi
 }
 
 # ---------------------------------------------------------------------------------------------------
@@ -117,7 +148,8 @@ validate_inputs() {
 
 step_user() {
   local changed=0 groups
-  ensure_packages sudo && changed=1
+  ensure_packages sudo
+  if [ "$pkg_changed" -eq 1 ]; then changed=1; fi
   if ! getent group docker >/dev/null; then
     run groupadd docker
     changed=1
@@ -140,7 +172,8 @@ step_user() {
     run usermod --password '*' "$ADMIN_USER"
     changed=1
   fi
-  printf '%s ALL=(ALL) NOPASSWD:ALL\n' "$ADMIN_USER" | write_file "/etc/sudoers.d/90-$ADMIN_USER" 440 && changed=1
+  write_file "/etc/sudoers.d/90-$ADMIN_USER" 440 "$ADMIN_USER ALL=(ALL) NOPASSWD:ALL"
+  if [ "$write_changed" -eq 1 ]; then changed=1; fi
   report user "$([ "$changed" -eq 1 ] && echo changed || echo unchanged)"
 }
 
@@ -180,14 +213,15 @@ step_key() {
 # value it reads, and cloud images ship 50-cloud-init.conf with PasswordAuthentication yes.
 step_ssh() {
   local file=/etc/ssh/sshd_config.d/00-hardening.conf previous="" had_previous=0 changed=0
-  ensure_packages openssh-server && changed=1
+  ensure_packages openssh-server
+  if [ "$pkg_changed" -eq 1 ]; then changed=1; fi
   run mkdir -p /etc/ssh/sshd_config.d /run/sshd
   if [ -f "$file" ]; then
     previous="$(cat "$file")"
     had_previous=1
   fi
-  if printf '%s\n' 'PermitRootLogin no' 'PasswordAuthentication no' 'KbdInteractiveAuthentication no' 'PubkeyAuthentication yes' \
-    | write_file "$file" 644; then
+  write_file "$file" 644 "$(printf '%s\n' 'PermitRootLogin no' 'PasswordAuthentication no' 'KbdInteractiveAuthentication no' 'PubkeyAuthentication yes')"
+  if [ "$write_changed" -eq 1 ]; then
     changed=1
     # A configuration sshd rejects is rolled back before sshd ever reloads it.
     if [ "$DRY_RUN" -eq 1 ]; then
@@ -215,9 +249,10 @@ step_ssh() {
 # Automatic security updates (the package's default origins are the security pockets).
 step_updates() {
   local changed=0
-  ensure_packages unattended-upgrades && changed=1
-  printf '%s\n' 'APT::Periodic::Update-Package-Lists "1";' 'APT::Periodic::Unattended-Upgrade "1";' \
-    | write_file /etc/apt/apt.conf.d/20auto-upgrades 644 && changed=1
+  ensure_packages unattended-upgrades
+  if [ "$pkg_changed" -eq 1 ]; then changed=1; fi
+  write_file /etc/apt/apt.conf.d/20auto-upgrades 644 "$(printf '%s\n' 'APT::Periodic::Update-Package-Lists "1";' 'APT::Periodic::Unattended-Upgrade "1";')"
+  if [ "$write_changed" -eq 1 ]; then changed=1; fi
   if have_systemd; then
     run systemctl enable --now apt-daily.timer apt-daily-upgrade.timer
   fi
@@ -226,13 +261,14 @@ step_updates() {
 
 # Bans addresses that keep failing to log in over SSH.
 step_fail2ban() {
-  local changed=0
-  ensure_packages fail2ban && changed=1
-  printf '%s\n' '[sshd]' 'enabled = true' "port = $SSH_PORT" 'maxretry = 5' 'findtime = 10m' 'bantime = 1h' \
-    | write_file /etc/fail2ban/jail.d/sshd.local 644 && changed=1 && reload_fail2ban=1
+  local changed=0 reload=0
+  ensure_packages fail2ban
+  if [ "$pkg_changed" -eq 1 ]; then changed=1; fi
+  write_file /etc/fail2ban/jail.d/sshd.local 644 "$(printf '%s\n' '[sshd]' 'enabled = true' "port = $SSH_PORT" 'maxretry = 5' 'findtime = 10m' 'bantime = 1h')"
+  if [ "$write_changed" -eq 1 ]; then changed=1; reload=1; fi
   if have_systemd; then
     run systemctl enable --now fail2ban
-    if [ "${reload_fail2ban:-0}" -eq 1 ]; then
+    if [ "$reload" -eq 1 ]; then
       run systemctl reload fail2ban
     fi
   fi
@@ -312,7 +348,8 @@ step_firewall() {
   local changed=0 iface applied=0 line ufw_script docker_script script_changed=0
   local -a parts
   read_cloudflare_ranges
-  ensure_packages ufw iptables curl ca-certificates && changed=1
+  ensure_packages ufw iptables curl ca-certificates
+  if [ "$pkg_changed" -eq 1 ]; then changed=1; fi
 
   if ! have_systemd && [ "$DRY_RUN" -eq 0 ]; then
     echo "harden: no systemd here (a container?): ufw and iptables were not touched"
@@ -337,7 +374,8 @@ step_firewall() {
   docker_script="$(docker_user_rule_lines "$iface")"
 
   run mkdir -p /etc/harden
-  if printf '%s\n' "$ufw_script" | write_file /etc/harden/ufw.rules 600; then
+  write_file /etc/harden/ufw.rules 600 "$ufw_script"
+  if [ "$write_changed" -eq 1 ]; then
     changed=1
     applied=1
   fi
@@ -351,15 +389,15 @@ step_firewall() {
   if [ "$DRY_RUN" -eq 1 ]; then
     while IFS= read -r line; do echo "+ $line"; done <<<"$docker_script"
   fi
-  if { printf '#!/bin/sh\n# Written by harden.sh: the DOCKER-USER rules, reapplied by harden-docker-user.service.\nset -e\n%s\n' "$docker_script"; } \
-    | write_file /usr/local/sbin/harden-docker-user.sh 750; then
+  write_file /usr/local/sbin/harden-docker-user.sh 750 "$(printf '#!/bin/sh\n# Written by harden.sh: the DOCKER-USER rules, reapplied by harden-docker-user.service.\nset -e\n%s' "$docker_script")"
+  if [ "$write_changed" -eq 1 ]; then
     script_changed=1
     changed=1
   fi
-  if printf '%s\n' '[Unit]' 'Description=Restrict published container ports to Cloudflare (DOCKER-USER)' \
+  write_file /etc/systemd/system/harden-docker-user.service 644 "$(printf '%s\n' '[Unit]' 'Description=Restrict published container ports to Cloudflare (DOCKER-USER)' \
     'After=docker.service' 'PartOf=docker.service' '' '[Service]' 'Type=oneshot' 'RemainAfterExit=yes' \
-    'ExecStart=/usr/local/sbin/harden-docker-user.sh' '' '[Install]' 'WantedBy=multi-user.target' \
-    | write_file /etc/systemd/system/harden-docker-user.service 644; then
+    'ExecStart=/usr/local/sbin/harden-docker-user.sh' '' '[Install]' 'WantedBy=multi-user.target')"
+  if [ "$write_changed" -eq 1 ]; then
     changed=1
     script_changed=1
     run systemctl daemon-reload
