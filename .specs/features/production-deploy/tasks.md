@@ -359,11 +359,11 @@ T13 → T14
 
 **Done when**:
 
-- [ ] Teste confere as seções na ordem do spec
-- [ ] Teste compara os nomes da tabela de variáveis com `infra/compose.prod.yaml`, `deploy.yml` e os scripts: nome faltando ou sobrando falha
-- [ ] Rollback aciona o workflow com a tag anterior; admin com `create-admin --password-stdin`; sessão SSH aberta e acesso ao painel do Coolify descritos
-- [ ] O runbook manda tornar os três pacotes do GHCR públicos e conferir a API do Coolify na instância
-- [ ] Gate passa: `pnpm --filter @am/guardrails test:deploy`
+- [x] Teste confere as seções na ordem do spec
+- [x] Teste compara os nomes da tabela de variáveis com `infra/compose.prod.yaml`, `deploy.yml` e os scripts: nome faltando ou sobrando falha
+- [x] Rollback aciona o workflow com a tag anterior; admin com `create-admin --password-stdin`; sessão SSH aberta e acesso ao painel do Coolify descritos
+- [x] O runbook manda tornar os três pacotes do GHCR públicos e conferir a API do Coolify na instância
+- [x] Gate passa: `pnpm --filter @am/guardrails test:deploy`
 
 **Tests**: unit
 **Gate**: quick

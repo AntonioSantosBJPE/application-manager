@@ -138,6 +138,8 @@ jobs:
           COOLIFY_URL: ${{ secrets.COOLIFY_URL }}
           COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
           COOLIFY_RESOURCE_UUID: ${{ secrets.COOLIFY_RESOURCE_UUID }}
+          # Empty means `applications`; see docs/runbooks/production-deploy.md for `services`.
+          COOLIFY_RESOURCE_KIND: ${{ vars.COOLIFY_RESOURCE_KIND }}
         run: infra/deploy/coolify.sh "$TAG"
       - name: Wait for the new version
         env:
