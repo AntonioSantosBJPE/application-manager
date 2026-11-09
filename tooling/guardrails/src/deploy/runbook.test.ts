@@ -65,12 +65,27 @@ describe('production deploy runbook', () => {
     }
   });
 
+  it('DEPLOY-20 uses, for the names it shares with .env.example, the very same spelling', () => {
+    const example = new Set([...read('.env.example').matchAll(/^#?\s*([A-Z][A-Z0-9_]*)=/gm)].map((match) => match[1]!));
+    const shared = composeVariables.filter((name) => example.has(name));
+    // POSTGRES_*, WEB_PUBLIC_URL and LOG_LEVEL exist in both files and in the runbook table.
+    expect(shared).toEqual(expect.arrayContaining(['POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB', 'WEB_PUBLIC_URL', 'LOG_LEVEL']));
+    for (const name of shared) expect(tableNames, `${name} is in .env.example and compose.prod.yaml but not in the runbook table`).toContain(name);
+  });
+
+  it('DEPLOY-20 asks for a database password the URL can carry, and the runbook does not suggest one with reserved characters', () => {
+    expect(runbook).toContain('openssl rand -hex 32');
+    expect(runbook).not.toContain('openssl rand -base64');
+  });
+
   it('DEPLOY-21 describes the rollback as a manual run of the workflow with the previous SHA, which builds nothing', () => {
     const rollback = runbook.slice(runbook.indexOf('**Reverter (rollback)**'));
     expect(rollback).toContain('Run workflow');
     expect(rollback).toContain('`tag`');
     expect(rollback).toContain('SHA anterior');
     expect(rollback).toMatch(/pula os gates e a construção/);
+    // A failed migration is an outage, and the runbook says so and sends the author to the rollback.
+    expect(rollback).toContain('Uma migration que falha derruba o site');
     const dispatch = (parse(workflowText) as { on: { workflow_dispatch: { inputs: Record<string, unknown> } } }).on.workflow_dispatch;
     expect(Object.keys(dispatch.inputs)).toContain('tag');
   });

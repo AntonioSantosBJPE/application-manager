@@ -10,7 +10,7 @@ Convenções: `<DOMINIO>` é o domínio do produto, `<IP_DA_VPS>` o IP do servid
 2. Com tudo verde, o workflow `Deploy` constrói as imagens `api`, `web` e `backup`, e só então as publica no GHCR com o SHA do commit como tag.
 3. O workflow grava `IMAGE_TAG=<sha>` no recurso do Coolify pela API e dispara o deploy.
 4. O Coolify baixa as imagens e sobe `infra/compose.prod.yaml`: `postgres`, `migrate` (aplica as migrations e termina), `api`, `web` e `backup`.
-5. O workflow consulta `<WEB_PUBLIC_URL>/status` a cada 10 segundos, por até 5 minutos, e só termina verde quando a API aparece como "Operacional".
+5. O workflow consulta `<WEB_PUBLIC_URL>/status` a cada 10 segundos, por até 5 minutos, e só termina verde quando a API aparece como "Operacional" **e** a página vem da versão recém-implantada: o `web` devolve o commit de que a imagem foi construída no cabeçalho `x-app-version`. Sem isso, um deploy que falhou no meio (uma migration que sai com erro deixa a `api` e o `web` antigos no ar) pareceria saudável.
 
 O mesmo `infra/compose.prod.yaml` sobe em qualquer servidor com Docker, sem Coolify, se você exportar as variáveis da tabela abaixo.
 
@@ -26,7 +26,7 @@ O mesmo `infra/compose.prod.yaml` sobe em qualquer servidor com Docker, sem Cool
 | `IMAGE_REPOSITORY` | Coolify: variável do recurso | `ghcr.io/<DONO>/<REPO>`, em minúsculas; as imagens são `-api`, `-web` e `-backup` |
 | `IMAGE_TAG` | Coolify: variável do recurso, gravada pelo workflow | Tag das imagens em uso (o SHA do commit); o workflow a atualiza a cada deploy |
 | `POSTGRES_USER` | Coolify: variável do recurso | Usuário do banco |
-| `POSTGRES_PASSWORD` | Coolify: variável do recurso | Senha do banco (gere com `openssl rand -base64 32`) |
+| `POSTGRES_PASSWORD` | Coolify: variável do recurso | Senha do banco (gere com `openssl rand -hex 32`: só letras e dígitos, porque a senha entra numa URL de conexão e um `/` ou `@` a quebraria) |
 | `POSTGRES_DB` | Coolify: variável do recurso | Nome do banco |
 | `LOG_LEVEL` | Coolify: variável do recurso, opcional | `fatal`, `error`, `warn`, `info` (padrão), `debug` ou `trace` |
 | `BACKUP_S3_ENDPOINT` | Coolify: variável do recurso | Endereço S3 do bucket de backup (no R2, `https://<ID_DA_CONTA>.r2.cloudflarestorage.com`) |
@@ -142,4 +142,5 @@ Confirme que `$API_CONTAINER` é o contêiner da `api` do seu recurso (`docker p
 
 1. Em Actions > Deploy > **Run workflow**, informe em `tag` o **SHA anterior** que estava saudável (o histórico de Actions mostra os SHAs implantados).
 2. O workflow pula os gates e a construção, confere que a tag existe no GHCR, grava `IMAGE_TAG`, dispara o deploy e roda o smoke test.
-3. As migrations só avançam: reverter o código não desfaz uma migration já aplicada. Se a versão anterior não funciona com o schema novo, restaure o banco de um backup (`restore.sh`) antes ou junto.
+3. **Uma migration que falha derruba o site.** O Compose troca os contêineres da `api` e do `web` antes de rodar a migration; se ela sai com erro, os novos nunca iniciam e os antigos já foram trocados. O smoke test falha o workflow, e a saída é o rollback acima, feito na hora.
+4. As migrations só avançam: reverter o código não desfaz uma migration já aplicada. Se a versão anterior não funciona com o schema novo, restaure o banco de um backup (`restore.sh`) antes ou junto.

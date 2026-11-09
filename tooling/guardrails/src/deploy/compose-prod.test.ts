@@ -107,6 +107,15 @@ describe('compose.prod.yaml', () => {
     const addresses = code.match(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g) ?? [];
     expect(addresses.filter((address) => address !== '127.0.0.1')).toEqual([]);
     expect(code).not.toMatch(/ghcr\.io\/[a-z0-9]/i);
+    // Every address with a scheme is either a variable reference or an internal one (the api by its
+    // service name, loopback in a healthcheck): a literal public hostname fails here.
+    const urls = code.match(/[a-z][a-z0-9+.-]*:\/\/[^\s"')]+/gi) ?? [];
+    expect(urls.length).toBeGreaterThan(0);
+    for (const url of urls) {
+      expect(url, url).toMatch(/\$\{|^http:\/\/api:3333|^http:\/\/127\.0\.0\.1:\d+\//);
+    }
+    // No bare hostname after a variable name either (`SOMETHING_HOST: db.example.com`).
+    expect(code).not.toMatch(/:\s+[a-z0-9-]+(\.[a-z0-9-]+)+\.(com|net|org|io|dev|app|cloud)\b/i);
     for (const line of code.split('\n')) {
       const match = /^\s*[A-Z_]*(PASSWORD|SECRET|TOKEN|ACCESS_KEY_ID|ENDPOINT):\s*(.+)$/.exec(line);
       if (match) expect(match[2], line).toMatch(/^\$\{/);

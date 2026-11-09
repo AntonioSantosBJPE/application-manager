@@ -112,4 +112,29 @@ describe('coolify.sh', () => {
     expect(result.code).toBe(1);
     expect(result.output).toContain('HTTP 500');
   });
+
+  it.each(['abc"def', 't1","key":"POSTGRES_PASSWORD","value":"x', '../etc', '-leading-dash', 'a b', ''.padEnd(129, 'a')])(
+    'DEPLOY-43 refuses the tag %j before any call, so it can never become JSON keys or a path',
+    async (tag) => {
+      const { url, calls } = await fakeCoolify(() => 200);
+      const result = await coolify(tag, base(url));
+      expect(result.code).toBe(2);
+      expect(result.output).toContain('not a valid image tag');
+      expect(calls).toEqual([]);
+    },
+  );
+
+  it('DEPLOY-06 sends exactly the three fields of IMAGE_TAG, whatever valid characters the tag has', async () => {
+    const { url, calls } = await fakeCoolify(() => 200);
+    const result = await coolify('v1.2_3-rc.4', base(url));
+    expect(result.code).toBe(0);
+    expect(JSON.parse(calls[0]!.body)).toEqual({ key: 'IMAGE_TAG', value: 'v1.2_3-rc.4', is_preview: false });
+  });
+
+  it('DEPLOY-43 reports a Coolify that does not answer as HTTP 000, not 000000', async () => {
+    const result = await coolify('abc123', base('http://127.0.0.1:9'));
+    expect(result.code).toBe(1);
+    expect(result.output).toContain('HTTP 000;');
+    expect(result.output).not.toContain('000000');
+  });
 });

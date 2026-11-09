@@ -6,10 +6,18 @@
 # Needs COOLIFY_URL, COOLIFY_TOKEN and COOLIFY_RESOURCE_UUID. COOLIFY_RESOURCE_KIND is `applications`
 # (default) or `services`: Coolify exposes a compose resource under one of the two route families
 # (docs/runbooks/production-deploy.md says how to check which one the instance uses).
-# Exit 2: a required variable is missing (named, never its value). Exit 1: Coolify refused a call.
+# <tag> must be an OCI tag (letters, digits, `_`, `.`, `-`, up to 128 characters, not starting with a
+# dot or a dash); anything else is refused before any call, because the tag becomes JSON and a path.
+# Exit 2: a required variable is missing (named, never its value) or the tag is invalid. Exit 1:
+# Coolify refused a call.
 set -euo pipefail
 
 tag="${1:?usage: coolify.sh <tag>}"
+
+if ! [[ "$tag" =~ ^[A-Za-z0-9_][A-Za-z0-9._-]{0,127}$ ]]; then
+  echo "coolify: the tag is not a valid image tag" >&2
+  exit 2
+fi
 
 for name in COOLIFY_URL COOLIFY_TOKEN COOLIFY_RESOURCE_UUID; do
   if [ -z "${!name:-}" ]; then
@@ -22,19 +30,21 @@ kind="${COOLIFY_RESOURCE_KIND:-applications}"
 api="${COOLIFY_URL%/}/api/v1"
 resource="$api/$kind/$COOLIFY_RESOURCE_UUID"
 
-# call <method> <url> [json body]: prints the HTTP status; the response body is kept out of the log.
+# call <method> <url> [json body]: prints the HTTP status (000 when nothing answered); the response
+# body is kept out of the log.
 call() {
-  local method="$1" url="$2" body="${3:-}"
+  local method="$1" url="$2" body="${3:-}" code
   local args=(-sS -o /dev/null -w '%{http_code}' --max-time 30 -X "$method" -H "Authorization: Bearer $COOLIFY_TOKEN" -H 'Accept: application/json')
   if [ -n "$body" ]; then
     args+=(-H 'Content-Type: application/json' --data "$body")
   fi
-  curl "${args[@]}" "$url" 2>/dev/null || echo 000
+  code="$(curl "${args[@]}" "$url" 2>/dev/null || true)"
+  echo "${code:-000}"
 }
 
 ok() { [[ "$1" =~ ^2[0-9][0-9]$ ]]; }
 
-payload="$(printf '{"key":"IMAGE_TAG","value":"%s","is_preview":false}' "$tag")"
+payload="$(jq -cn --arg tag "$tag" '{key: "IMAGE_TAG", value: $tag, is_preview: false}')"
 status="$(call PATCH "$resource/envs" "$payload")"
 if [ "$status" = "404" ]; then
   status="$(call POST "$resource/envs" "$payload")"

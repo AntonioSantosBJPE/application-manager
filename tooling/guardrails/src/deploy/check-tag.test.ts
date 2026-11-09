@@ -65,4 +65,18 @@ describe('check-tag.sh', () => {
     expect(result.output).toContain('owner/app-web');
     expect(result.output).toContain('owner/app-backup');
   });
+
+  it.each(['t1/../../x', '..', 'a b', 't1"x', ''.padEnd(129, 'a')])('DEPLOY-45 refuses the tag %j before any request', async (tag) => {
+    const registry = await fakeRegistry(['owner/app-api:t1']);
+    const result = await checkTag(tag, registry);
+    expect(result.code).toBe(2);
+    expect(result.output).toContain('not a valid image tag');
+  });
+
+  it('DEPLOY-45 reports a registry that does not answer as HTTP 000, not 000000', async () => {
+    const result = await checkTag('t1', 'http://127.0.0.1:9');
+    expect(result.code).toBe(1);
+    expect(result.output).toContain('HTTP 000)');
+    expect(result.output).not.toContain('000000');
+  });
 });
