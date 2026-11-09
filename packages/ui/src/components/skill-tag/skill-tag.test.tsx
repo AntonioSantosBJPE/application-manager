@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { SkillTag } from './skill-tag';
+import { SkillTag, SkillTagAdd } from './skill-tag';
 
 describe('SkillTag', () => {
   it('PRU-07 AC07 renders the name of the caller in the four variants', () => {
@@ -69,5 +69,22 @@ describe('SkillTag', () => {
     );
 
     expect(container.textContent).toBe('React');
+  });
+
+  it('draws the add chip like a tag: 22px, dashed border, muted text, a plus icon and the name of the caller', () => {
+    const onClick = vi.fn();
+    render(
+      <SkillTagAdd aria-label="Adicionar skill obrigatória" onClick={onClick}>
+        Skill
+      </SkillTagAdd>,
+    );
+
+    const add = screen.getByRole('button', { name: 'Adicionar skill obrigatória' });
+    expect(add).toHaveClass('h-5.5', 'border-dashed', 'border-border-strong', 'text-text-muted', 'text-caption', 'rounded-sm');
+    expect(add).toHaveAttribute('type', 'button');
+    expect(add.querySelector('svg')).not.toBeNull();
+    expect(add.textContent).toBe('Skill');
+    fireEvent.click(add);
+    expect(onClick).toHaveBeenCalledTimes(1);
   });
 });

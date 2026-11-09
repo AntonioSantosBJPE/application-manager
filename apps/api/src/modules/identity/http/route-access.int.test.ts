@@ -140,12 +140,22 @@ describe('route access', () => {
       // this list. It is an allowlist, not a pattern: a route that writes has to be added here on
       // purpose, and anything else fails below, named.
       const writingRoutes = [
+        // A member deletes an application with its posting, skills and events; a product route, not account administration (APP-36).
+        'DELETE /applications/:id',
         'DELETE /invitations/:id',
         // The admin removes an alias of a global skill; the skill itself is never deleted (SKL-69, SKL-25).
         'DELETE /skills/:id/aliases/:aliasId',
+        // A member edits the posting of an application; a product route, not account administration (APP-28).
+        'PATCH /applications/:id/job-posting',
         // The admin edits the name and category of a global skill, and the text of its aliases (SKL-62, SKL-67).
         'PATCH /skills/:id',
         'PATCH /skills/:id/aliases/:aliasId',
+        // A member registers a job posting and its application; a product route, not account administration (APP-01).
+        'POST /applications',
+        // A member changes the status of an application, adds stages and notes and snoozes the ghost suggestion; product routes, not account administration (APP-20, APP-23, APP-35).
+        'POST /applications/:id/events',
+        'POST /applications/:id/ghost-snooze',
+        'POST /applications/:id/status',
         'POST /auth/admin/login',
         'POST /auth/login',
         'POST /auth/logout',
@@ -156,6 +166,8 @@ describe('route access', () => {
         // The admin gives a global skill an alias and makes a private skill global; catalog routes, not account administration (SKL-17, SKL-26).
         'POST /skills/:id/aliases',
         'POST /skills/:id/promote',
+        // A member replaces the skills of a posting; a product route, not account administration (APP-30).
+        'PUT /applications/:id/skills',
       ];
       const registeredWriting = routes
         .map((route) => route.route)

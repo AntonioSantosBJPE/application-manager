@@ -57,7 +57,7 @@ A alternativa mais pesada — versões como referências aos itens do mestre com
 | [WalkingSkeleton](#walkingskeleton) | web + api + Postgres em produção na VPS, com CI, preview por PR e backup | open — 2 defaults taken |
 | [Identity](#identity) | login por sessão, convites, papéis | open — 2 defaults taken |
 | [Skill](#skill) | catálogo global + skills privadas, apelidos, promoção | done — 1 default taken |
-| [Application](#application) | vaga com skills e nível, status, linha do tempo | clear |
+| [Application](#application) | vaga com skills e nível, status, linha do tempo | done |
 | [MasterResume](#masterresume) | currículo mestre com bullets marcados por skill | clear |
 | [ResumeVersion](#resumeversion) | cópia ordenada por relevância e editável por candidatura | clear |
 | [ResumeDocument](#resumedocument) | PDF ATS imutável, gerado no worker | spike |
@@ -178,7 +178,7 @@ Rotas acrescentadas pela feature `skills`, todas de admin:
 
 | Rota | Papel | Corpo / resposta |
 | --- | --- | --- |
-| `GET /admin/skills?scope=&category=&q=&cursor=` | admin | `200` `{ items: [{ id, name, category, scope, aliases: [{ id, alias }] }], nextCursor, counts: { total, private } }` |
+| `GET /admin/skills?scope=&category=&q=&cursor=` | admin | `200` `{ items: [{ id, name, category, scope, aliases: [{ id, alias }], postingCount }], nextCursor, counts: { total, private } }`; `postingCount` é o número de vagas de todas as pessoas que têm a skill, sem revelar de quem (feature `application`) |
 | `PATCH /skills/:id` | admin | `{ name?, category? }` → `200` `{ id, name, category, scope }` |
 | `POST /skills/:id/aliases` | admin | `{ alias }` → `201` (ou `200` se repetido) `{ id, alias }` |
 | `PATCH /skills/:id/aliases/:aliasId` | admin | `{ alias }` → `200` `{ id, alias }` |
@@ -202,7 +202,7 @@ Seed inicial: ~200 skills globais comuns com apelidos, curadas pelo autor.
 
 ### Application
 
-**Delivers** o cadastro de uma vaga com skills e nível, o status da candidatura e sua linha do tempo. **Status: clear.** Contém a Key decision 8.
+**Delivers** o cadastro de uma vaga com skills e nível, o status da candidatura e sua linha do tempo. **Status: done.** Contém a Key decision 8.
 
 | State | What should happen | Caller sees |
 |---|---|---|
@@ -217,13 +217,20 @@ Seed inicial: ~200 skills globais comuns com apelidos, curadas pelo autor.
 | Exclusão | remove vaga, candidatura, eventos, versões e documentos (incluindo os arquivos) | `204` |
 
 `POST /applications` `{ jobPosting: { company, title, url?, description?, level, location?, workModel? }, skills: [{ skillId, requirement }], status? }` → `201` `Application`
-`GET /applications?status=&level=&q=&cursor=` → `200` `{ items, nextCursor }`
+`GET /applications?tab=&status=&level=&workModel=&q=&sort=&cursor=` → `200` `{ items, nextCursor, counts }`
 `GET /applications/:id` → `200` `Application` com `events` e `ghostSuggested`
 `PATCH /applications/:id/job-posting` `{ ...campos da vaga }` → `200`
 `PUT /applications/:id/skills` `[{ skillId, requirement }]` → `200`
 `POST /applications/:id/status` `{ status, note?, submittedDocumentId? }` → `200`
 `POST /applications/:id/events` `{ kind, stage?, note?, occurredAt }` → `201`
 `DELETE /applications/:id` → `204`
+
+Rotas acrescentadas pela feature `application`, todas de member:
+
+| Rota | Corpo / resposta |
+| --- | --- |
+| `GET /applications/count` | `200` `{ total }`: o total de candidaturas da conta, para o item "Candidaturas" da sidebar e para o passo 03 da home |
+| `POST /applications/:id/ghost-snooze` | `200` `Application`: "Ainda não" esconde a sugestão de `ghosted` por mais 21 dias (grava `ghost_snoozed_until`; nenhum status muda) |
 
 Tables `applications.job_postings`, `applications.job_posting_skills`, `applications.applications`, `applications.application_events`.
 
@@ -238,15 +245,18 @@ Tables `applications.job_postings`, `applications.job_posting_skills`, `applicat
 | `job_postings.level` | enum | no | | `intern`, `junior`, `mid`, `senior`, `specialist` |
 | `job_postings.location` | text | yes | | |
 | `job_postings.work_model` | enum | yes | | `remote`, `hybrid`, `onsite` |
+| `job_postings.search_text` | text | no | | empresa e título normalizados; é o que a busca `q` compara |
 | `job_posting_skills.job_posting_id` | uuid | no | `job_postings.id` | PK composta com `skill_id` |
 | `job_posting_skills.skill_id` | uuid | no | | id do módulo Skill, sem FK (Key decision 2) |
 | `job_posting_skills.requirement` | enum | no | | `required`, `nice_to_have` |
+| `job_posting_skills.position` | smallint | no | | a ordem em que as skills foram enviadas; a linha da lista mostra as duas primeiras obrigatórias |
 | `applications.id` | uuid | no | | |
 | `applications.user_id` | uuid | no | | |
 | `applications.job_posting_id` | uuid | no | `job_postings.id` | único: uma candidatura por vaga |
 | `applications.status` | enum | no | | `saved`, `applied`, `interviewing`, `offer`, `accepted`, `rejected`, `withdrawn`, `ghosted` |
 | `applications.submitted_document_id` | uuid | yes | | ResumeDocument enviado, sem FK (Key decision 2) |
 | `applications.last_activity_at` | timestamptz | no | | atualizado por qualquer evento; base da sugestão de `ghosted` |
+| `applications.ghost_snoozed_until` | timestamptz | yes | | "Ainda não": a sugestão de `ghosted` fica escondida até este instante |
 | `application_events.id` | uuid | no | | |
 | `application_events.application_id` | uuid | no | `applications.id` | |
 | `application_events.kind` | enum | no | | `status_changed`, `stage`, `note` |

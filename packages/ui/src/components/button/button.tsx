@@ -24,6 +24,9 @@ const buttonVariants = cva(
         ghost: 'border-transparent bg-transparent text-text-muted hover:bg-surface-hover hover:text-text',
         danger:
           'border-danger bg-danger text-on-accent hover:border-danger-hover hover:bg-danger-hover',
+        // A text link that does something, as "Ver texto completo": accent text, no box and no side
+        // padding, so it lines up with the text above it.
+        link: 'border-transparent bg-transparent text-accent-text hover:underline',
       },
       size: {
         default: 'h-control-md text-body',
@@ -33,8 +36,9 @@ const buttonVariants = cva(
     },
     // A button with only an icon is a square of the control height; one with a label has side padding.
     compoundVariants: [
-      { iconOnly: false, size: 'default', className: 'px-3' },
-      { iconOnly: false, size: 'sm', className: 'px-2' },
+      { iconOnly: false, size: 'default', intent: ['primary', 'secondary', 'ghost', 'danger'], className: 'px-3' },
+      { iconOnly: false, size: 'sm', intent: ['primary', 'secondary', 'ghost', 'danger'], className: 'px-2' },
+      { iconOnly: false, intent: 'link', className: 'px-0' },
       { iconOnly: true, size: 'default', className: 'w-control-md' },
       { iconOnly: true, size: 'sm', className: 'w-control-sm' },
     ],

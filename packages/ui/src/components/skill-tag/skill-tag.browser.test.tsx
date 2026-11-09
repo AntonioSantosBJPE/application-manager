@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { settle } from '../../testing/contrast';
-import { SkillTag } from './skill-tag';
+import { SkillTag, SkillTagAdd } from './skill-tag';
 
 /** A token color as the browser resolves it, to compare with a computed style. */
 function tokenColor(token: string): string {
@@ -71,5 +71,24 @@ describe('SkillTag in the browser', () => {
 
     await userEvent.click(button);
     expect(onRemove).toHaveBeenCalledTimes(2);
+  });
+
+  it('paints the add chip 22px tall with a dashed border on border-strong and muted text, in both themes', async () => {
+    render(
+      <div className="bg-surface">
+        <SkillTagAdd>Skill</SkillTagAdd>
+      </div>,
+    );
+    const add = screen.getByRole('button', { name: 'Skill' });
+
+    for (const theme of ['light', 'dark']) {
+      document.documentElement.setAttribute('data-theme', theme);
+      await settle(add);
+      const style = getComputedStyle(add);
+      expect(add.getBoundingClientRect().height, theme).toBe(22);
+      expect(style.borderTopStyle, theme).toBe('dashed');
+      expect(style.borderTopColor, theme).toBe(tokenColor('border-strong'));
+      expect(style.color, theme).toBe(tokenColor('text-muted'));
+    }
   });
 });

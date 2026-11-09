@@ -1,9 +1,19 @@
-import type { AdminSkillsPage, Alias, AliasRequest, Skill, UpdateSkillRequest } from '@am/contracts';
+import type {
+  AdminSkillsPage,
+  Alias,
+  AliasRequest,
+  CreateSkillRequest,
+  SearchSkillsQuery,
+  Skill,
+  UpdateSkillRequest,
+} from '@am/contracts';
 import {
   adminSkillsQuerySchema,
   adminSkillsPageSchema,
   aliasRequestSchema,
   aliasSchema,
+  createSkillRequestSchema,
+  searchSkillsQuerySchema,
   skillSchema,
   updateSkillRequestSchema,
 } from '@am/contracts';
@@ -13,8 +23,8 @@ import { accepted, contextOfCurrentRequest, parsed, responseOptionsOfCurrentRequ
 import { callApi, type ApiRequestContext } from '../../../lib/call-api';
 
 /**
- * The only endpoints the browser reaches for skills (SKL-54, AD-007). `GET /skills` and `POST /skills`
- * are the member's and have no function here: they get one with the slice that uses them.
+ * The admin endpoints the browser reaches for skills (SKL-54, AD-007). The member's `GET /skills` and
+ * `POST /skills` are `searchSkills` and `createSkill`, below, added with the slice that uses them (APP-59, APP-60).
  */
 export const ADMIN_SKILLS_ENDPOINTS = {
   listAdminSkills: { method: 'GET', path: '/admin/skills' },
@@ -44,6 +54,27 @@ export function loadAdminSkills(
   const text = query.toString();
   const path = `${ADMIN_SKILLS_ENDPOINTS.listAdminSkills.path}${text === '' ? '' : `?${text}`}`;
   return callApi({ method: 'GET', path }, context, options).then((result) => parsed(result, adminSkillsPageSchema));
+}
+
+/** `GET /skills?q=`: the skills the member can use whose name or alias matches the text (APP-59). */
+export function findSkills(
+  input: SearchSkillsQuery,
+  context: ApiRequestContext,
+  options = {},
+): Promise<Outcome<Skill[]>> {
+  const query = new URLSearchParams();
+  if (input.q !== undefined) query.set('q', input.q);
+  const text = query.toString();
+  return callApi({ method: 'GET', path: `/skills${text === '' ? '' : `?${text}`}` }, context, options).then((result) =>
+    parsed(result, z.array(skillSchema)),
+  );
+}
+
+/** `POST /skills`: a private skill for the member, `201` when new and `200` when they already had it (APP-60). */
+export function postSkill(body: CreateSkillRequest, context: ApiRequestContext, options = {}): Promise<Outcome<Skill>> {
+  return callApi({ method: 'POST', path: '/skills', body }, context, options).then((result) =>
+    parsed(result, skillSchema),
+  );
 }
 
 /** `POST /skills/:id/promote`: a private skill becomes global with the same id, or the api says why not (SKL-17..SKL-21). */
@@ -153,4 +184,16 @@ export const removeSkillAlias = createServerFn({ method: 'POST' })
   )
   .handler(({ data }): Promise<Outcome<undefined>> =>
     deleteSkillAlias(data.id, data.aliasId, contextOfCurrentRequest(), responseOptionsOfCurrentRequest()),
+  );
+
+export const searchSkills = createServerFn({ method: 'GET' })
+  .validator((input: SearchSkillsQuery) => searchSkillsQuerySchema.parse(input))
+  .handler(({ data }): Promise<Outcome<Skill[]>> =>
+    findSkills(data, contextOfCurrentRequest(), responseOptionsOfCurrentRequest()),
+  );
+
+export const createSkill = createServerFn({ method: 'POST' })
+  .validator((input: CreateSkillRequest) => createSkillRequestSchema.parse(input))
+  .handler(({ data }): Promise<Outcome<Skill>> =>
+    postSkill(data, contextOfCurrentRequest(), responseOptionsOfCurrentRequest()),
   );

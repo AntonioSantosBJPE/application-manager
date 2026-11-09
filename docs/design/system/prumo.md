@@ -119,7 +119,7 @@ Componentes que o código ainda não tem e que este design acrescenta, cada um p
 
 ## Telas
 
-As cartas `Page*` mostram as telas a 1280px. **Páginas atuais**: `PageLogin`, `PageInvite`, `PageAccessStates`, `PageMemberHome`, `PageAdminDashboard`, `PageAdminInvitations`, `PageSkills`, `PageStatus`. **Páginas futuras**: `PageApplications`, `PageNewApplication`, `PageApplicationDetail`, `PageMasterResume`, `PageResumeVersion`, `PageHomeDashboard`, `PageInsights`, `PageCommandPalette`.
+As cartas `Page*` mostram as telas a 1280px. **Páginas atuais**: `PageLogin`, `PageInvite`, `PageAccessStates`, `PageMemberHome`, `PageAdminDashboard`, `PageAdminInvitations`, `PageSkills`, `PageStatus`, `PageApplications`, `PageNewApplication`, `PageApplicationDetail`. **Páginas futuras**: `PageMasterResume`, `PageResumeVersion`, `PageHomeDashboard`, `PageInsights`, `PageCommandPalette`.
 
 ## Proibido
 

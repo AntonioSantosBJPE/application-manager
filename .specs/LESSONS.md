@@ -104,6 +104,84 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: verification.md finding 2; apps/api/src/modules/skills/http/skills-invariants.int.test.ts (api-integration)
 - last seen: 2026-11-08T18:24:42Z
 
+### L-016 - Store each searchable field apart (or joined by a separator the query normalization cannot produce) so a search never matches text that spans two fields
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `api-search` · harmful: 0
+- features: application
+- evidence: verification.md finding 1 (APP-13) (api-search)
+- last seen: 2026-11-09T00:10:51Z
+
+### L-017 - Refuse an empty value in a comma-separated query list instead of turning it into an empty IN that filters everything out
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `api-query` · harmful: 0
+- features: application
+- evidence: verification.md finding 2 (APP-12, APP-17) (api-query)
+- last seen: 2026-11-09T00:10:51Z
+
+### L-018 - Trim optional free text and store a blank as absent, so the UI never renders a separator before nothing
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `api-validation` · harmful: 0
+- features: application
+- evidence: verification.md finding 3 (APP-23) (api-validation)
+- last seen: 2026-11-09T00:10:51Z
+
+### L-019 - Test each screen's error message with a 4xx refusal as well as a 5xx, since a shared mapper may collapse every refusal into 'unavailable'
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `web-errors` · harmful: 0
+- features: application
+- evidence: verification.md finding 4 (APP-55, APP-64, APP-78) (web-errors)
+- last seen: 2026-11-09T00:10:51Z
+
+### L-020 - A web test asserts what the web sends to the API, never matching rules implemented inside the fake API
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `web-tests` · harmful: 0
+- features: application
+- evidence: verification.md finding 5 (APP-46) (web-tests)
+- last seen: 2026-11-09T00:10:51Z
+
+### L-021 - Prove a narrow-width criterion by asserting which elements are visible and where blocks sit, not only the absence of horizontal overflow
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `e2e` · harmful: 0
+- features: application
+- evidence: verification.md findings 6-7 (APP-56, APP-79) (e2e)
+- last seen: 2026-11-09T00:10:51Z
+
+### L-022 - When an action on one screen must change another, test the second screen after the action, not only the screen where it happened
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `web-routes` · harmful: 0
+- features: application
+- evidence: verification.md finding 8 (APP-82) (web-routes)
+- last seen: 2026-11-09T00:10:51Z
+
+### L-023 - Assert the intent (danger, warning) a criterion names on the component, since a role like status matches every intent
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `web-tests` · harmful: 0
+- features: application
+- evidence: verification.md finding 9 (APP-75, APP-80) (web-tests)
+- last seen: 2026-11-09T00:10:51Z
+
+### L-024 - Tests write generated artifacts to their output folder by default and overwrite versioned files only behind an explicit flag
+- signal: `gate_fail` · recurrence: 1 feature(s) · scope: `e2e` · harmful: 0
+- features: application
+- evidence: verification.md finding 10 (e2e captures) (e2e)
+- last seen: 2026-11-09T00:10:51Z
+
+### L-025 - A keyboard-only journey reaches every control with Tab or shortcuts and asserts focus, never locator.focus()
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `e2e` · harmful: 0
+- features: application
+- evidence: verification.md finding 11 (keyboard journey) (e2e)
+- last seen: 2026-11-09T00:10:51Z
+
+### L-026 - Fix a layout gap in the shared archetype with a ui test, never with a page-level class override
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `ui-layout` · harmful: 0
+- features: application
+- evidence: verification.md finding 12 (ListPage width) (ui-layout)
+- last seen: 2026-11-09T00:10:51Z
+
+### L-027 - When a criterion adds a control a binding capture does not draw, record it in Differences from the source before the spec is approved
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `spec-captures` · harmful: 0
+- features: application
+- evidence: verification.md finding 13 (APP-59, APP-73) (spec-captures)
+- last seen: 2026-11-09T00:10:51Z
+
+### L-028 - Run the closing gate with pnpm test --force so a cached green cannot hide a guardrail that a new env read breaks
+- signal: `gate_fail` · recurrence: 1 feature(s) · scope: `gates` · harmful: 0
+- features: application
+- evidence: orchestrator: CAPTURE missing from .env.example passed the worker gate through the turbo cache (gates)
+- last seen: 2026-11-09T00:10:51Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

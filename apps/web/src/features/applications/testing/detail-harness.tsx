@@ -1,0 +1,32 @@
+import type { ApplicationDetail } from '@am/contracts';
+import { render } from '@testing-library/react';
+import { vi } from 'vitest';
+import { loadApplication, patchJobPosting, postEvent, postStatus, putSkills, removeApplicationById, postGhostSnooze } from '../api/server-functions';
+import { ApplicationDetail as Detail, type ApplicationDetailApi } from '../components/ApplicationDetail';
+import { context } from './api';
+import { fakeSkillsApi } from './skills-api';
+import { NOW } from './fixtures';
+
+/** The detail api bound to the BFF functions, so a test talks to the fake api through MSW. */
+export function detailApi(): ApplicationDetailApi {
+  const skills = fakeSkillsApi();
+  return {
+    snooze: (id) => postGhostSnooze(id, context),
+    remove: (id) => removeApplicationById(id, context),
+    replaceSkills: (id, body) => putSkills(id, body, context),
+    skills: { search: skills.search, create: skills.create },
+    load: (id) => loadApplication(id, context),
+    addEvent: (id, body) => postEvent(id, body, context),
+    changeStatus: (id, status) => postStatus(id, { status }, context),
+    updatePosting: (id, body) => patchJobPosting(id, body, context),
+  };
+}
+
+/** Renders the detail the way the route holds it; `onExpired` and `onChanged` are spies. */
+export function renderDetail(application: ApplicationDetail, api: ApplicationDetailApi = detailApi()) {
+  const onExpired = vi.fn(() => false);
+  const onChanged = vi.fn();
+  const onDeleted = vi.fn();
+  render(<Detail application={application} now={NOW} api={api} onExpired={onExpired} onChanged={onChanged} onDeleted={onDeleted} />);
+  return { onExpired, onChanged, onDeleted };
+}

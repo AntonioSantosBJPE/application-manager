@@ -16,6 +16,7 @@ function privates(count: number): AdminSkillsPage {
       category: 'tool' as const,
       scope: 'private' as const,
       aliases: [],
+      postingCount: 0,
     })),
     nextCursor: null,
     counts: { total: 212, private: count },

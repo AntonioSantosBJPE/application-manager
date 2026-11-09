@@ -1,0 +1,137 @@
+import {
+  changeStatusRequestSchema,
+  createApplicationRequestSchema,
+  createEventRequestSchema,
+  listApplicationsQuerySchema,
+  replaceSkillsRequestSchema,
+  updateJobPostingRequestSchema,
+  type ApplicationDetail,
+  type ApplicationEvent,
+  type ApplicationsCount,
+  type ApplicationsPage,
+  type ChangeStatusRequest,
+  type CreateApplicationRequest,
+  type CreateEventRequest,
+  type InvalidSkillsProblem,
+  type ListApplicationsQuery,
+  type ReplaceSkillsRequest,
+  type UpdateJobPostingRequest,
+} from '@am/contracts';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
+import { zodBody } from '../../../infra/http/zod-body.pipe.js';
+import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
+import { decodeCursor } from '../domain/cursor.js';
+import { ApplicationNotFoundError, ApplicationsService, EventInFutureError, InvalidSkillsError } from '../application/applications.service.js';
+
+/** The rule errors of the service as the Problem Details answers the spec fixes (APP-05). */
+async function answering<T>(operation: () => Promise<T>): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (error instanceof InvalidSkillsError) {
+      const problem: InvalidSkillsProblem = { ...problemFor(422, error.message), invalidSkillIds: error.invalidSkillIds };
+      throw new ProblemDetailsException(problem);
+    }
+    if (error instanceof EventInFutureError) {
+      throw new ProblemDetailsException(problemFor(400, error.message, [{ path: 'occurredAt', code: 'too_far_in_future' }]));
+    }
+    if (error instanceof ApplicationNotFoundError) throw new ProblemDetailsException(problemFor(404, error.message));
+    throw error;
+  }
+}
+
+/** What a member does with applications; the admin has no use for these routes (AD-005, APP-38). */
+@Controller('applications')
+export class ApplicationsController {
+  constructor(private readonly applications: ApplicationsService) {}
+
+  @Roles('member')
+  @Post()
+  create(
+    @Body(zodBody(createApplicationRequestSchema)) body: CreateApplicationRequest,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ApplicationDetail> {
+    return answering(() => this.applications.create(user.id, body));
+  }
+
+  @Roles('member')
+  @Get()
+  list(@Query(zodBody(listApplicationsQuerySchema)) query: ListApplicationsQuery, @CurrentUser() user: AuthenticatedUser): Promise<ApplicationsPage> {
+    // A cursor that is not one of ours is a request the client got wrong (APP-17).
+    if (query.cursor !== undefined && decodeCursor(query.cursor) === undefined) {
+      throw new ProblemDetailsException(problemFor(400, 'Invalid cursor', [{ path: 'cursor', code: 'invalid_cursor' }]));
+    }
+    return this.applications.list(user.id, query);
+  }
+
+  /** Declared before `:id`, which would otherwise take "count" for an application id. */
+  @Roles('member')
+  @Get('count')
+  count(@CurrentUser() user: AuthenticatedUser): Promise<ApplicationsCount> {
+    return this.applications.count(user.id);
+  }
+
+  @Roles('member')
+  @Get(':id')
+  get(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<ApplicationDetail> {
+    return answering(() => this.applications.get(user.id, id));
+  }
+
+  @Roles('member')
+  @Patch(':id/job-posting')
+  updatePosting(
+    @Param('id') id: string,
+    @Body(zodBody(updateJobPostingRequestSchema)) body: UpdateJobPostingRequest,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ApplicationDetail> {
+    return answering(() => this.applications.updatePosting(user.id, id, body));
+  }
+
+  @Roles('member')
+  @Put(':id/skills')
+  replaceSkills(
+    @Param('id') id: string,
+    @Body(zodBody(replaceSkillsRequestSchema)) body: ReplaceSkillsRequest,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ApplicationDetail> {
+    return answering(() => this.applications.replaceSkills(user.id, id, body));
+  }
+
+  /** `200` also when the status is the one it already has: nothing is written then (APP-22). */
+  @Roles('member')
+  @HttpCode(200)
+  @Post(':id/status')
+  changeStatus(
+    @Param('id') id: string,
+    @Body(zodBody(changeStatusRequestSchema)) body: ChangeStatusRequest,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ApplicationDetail> {
+    return answering(() => this.applications.changeStatus(user.id, id, body));
+  }
+
+  @Roles('member')
+  @Post(':id/events')
+  addEvent(
+    @Param('id') id: string,
+    @Body(zodBody(createEventRequestSchema)) body: CreateEventRequest,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ApplicationEvent> {
+    return answering(() => this.applications.addEvent(user.id, id, body));
+  }
+
+  /** "Ainda não" on the suggestion of "sem retorno" (APP-35). */
+  @Roles('member')
+  @HttpCode(200)
+  @Post(':id/ghost-snooze')
+  snoozeGhost(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<ApplicationDetail> {
+    return answering(() => this.applications.snoozeGhost(user.id, id));
+  }
+
+  @Roles('member')
+  @HttpCode(204)
+  @Delete(':id')
+  async remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<void> {
+    await answering(() => this.applications.remove(user.id, id));
+  }
+}

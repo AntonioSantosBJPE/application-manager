@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, fn, userEvent } from 'storybook/test';
 import { expectContrast } from '../../testing/contrast';
-import { SkillTag } from './skill-tag';
+import { SkillTag, SkillTagAdd } from './skill-tag';
 
 const meta = {
   title: 'Components/SkillTag',
@@ -85,4 +85,22 @@ export const ContrasteEscuro: Story = {
   globals: { theme: 'dark' },
   render: todas,
   play: contrast,
+};
+
+export const Adicionar: Story = {
+  name: 'Adicionar',
+  args: { variant: 'nice', children: 'Kubernetes' },
+  render: () => (
+    <div className="flex flex-wrap items-center gap-1.5 bg-surface p-4">
+      <SkillTag variant="nice">Kubernetes</SkillTag>
+      <SkillTagAdd aria-label="Adicionar skill desejável" onClick={fn()}>
+        Skill
+      </SkillTagAdd>
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const add = canvas.getByRole('button', { name: 'Adicionar skill desejável' });
+    await expect(add).toHaveClass('border-dashed');
+    await expectContrast(add, 4.5);
+  },
 };

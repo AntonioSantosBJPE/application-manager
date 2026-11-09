@@ -31,7 +31,7 @@ const aliasId = '8f6a1c2e-0000-7000-8000-000000000002';
 const alfa = { id: skillId, name: 'Skill Fictícia Alfa', category: 'tool', scope: 'global' };
 const alias = { id: aliasId, alias: 'alfa-apelido' };
 const page = {
-  items: [{ ...alfa, aliases: [alias] }],
+  items: [{ ...alfa, aliases: [alias], postingCount: 0 }],
   nextCursor: null,
   counts: { total: 1, private: 0 },
 };

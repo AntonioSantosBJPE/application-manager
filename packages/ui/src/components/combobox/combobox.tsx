@@ -1,5 +1,7 @@
 import { useContext, useId, useState } from 'react';
-import type { ComponentProps, KeyboardEvent } from 'react';
+import type { ComponentProps, KeyboardEvent, ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { Icon } from '../../icons/icon';
 import { controlClassName, FieldContext, join } from '../field/field-context';
 
 export type ComboboxOption = {
@@ -7,6 +9,10 @@ export type ComboboxOption = {
   id: string;
   /** The text the person reads and the text the field shows once the option is chosen. */
   label: string;
+  /** A secondary note drawn at the right of the option, muted ("framework"). It is part of the option's accessible name. */
+  hint?: ReactNode;
+  /** A Lucide icon drawn before the label; decorative, so it adds nothing to the accessible name. */
+  icon?: LucideIcon;
 };
 
 export type ComboboxProps = Omit<
@@ -24,6 +30,17 @@ export type ComboboxProps = Omit<
   onSelect: (option: ComboboxOption | null) => void;
   /** Classes of the wrapper that holds the input and the list, to set its width. */
   wrapperClassName?: string;
+  /** Whether the list is open, when the caller wants to control it. Without it the combobox opens and closes by itself. */
+  open?: boolean;
+  /** Called with the next state whenever the combobox would open or close the list; pair it with `open`. */
+  onOpenChange?: (open: boolean) => void;
+  /** Classes of the list, to set its width: it is as wide as the wrapper unless the caller says otherwise (`w-60`). */
+  listClassName?: string;
+  /**
+   * Makes the first option the active one while the person types, so Enter chooses it and it is drawn
+   * highlighted (`aria-activedescendant`). Without it no option is active until an arrow key moves there.
+   */
+  activateFirst?: boolean;
 };
 
 /**
@@ -41,6 +58,10 @@ export function Combobox({
   selected,
   onSelect,
   wrapperClassName,
+  open: openProp,
+  onOpenChange,
+  listClassName = 'w-full',
+  activateFirst = false,
   className,
   onKeyDown,
   onBlur,
@@ -49,7 +70,12 @@ export function Combobox({
 }: ComboboxProps) {
   const field = useContext(FieldContext);
   const listId = useId();
-  const [open, setOpen] = useState(false);
+  const [ownOpen, setOwnOpen] = useState(false);
+  const open = openProp ?? ownOpen;
+  function setOpen(next: boolean) {
+    if (openProp === undefined) setOwnOpen(next);
+    if (next !== open) onOpenChange?.(next);
+  }
   const [active, setActive] = useState(-1);
 
   const expanded = open && options.length > 0;
@@ -102,7 +128,7 @@ export function Combobox({
           onQueryChange(event.target.value);
           if (selected !== null) onSelect(null);
           setOpen(true);
-          setActive(-1);
+          setActive(activateFirst ? 0 : -1);
         }}
         onKeyDown={handleKeyDown}
         onFocus={onFocus}
@@ -121,7 +147,10 @@ export function Combobox({
         aria-labelledby={props['aria-labelledby']}
         className={
           expanded
-            ? 'absolute top-full left-0 z-10 mt-1 flex max-h-60 w-full flex-col overflow-y-auto rounded-md border border-border-strong bg-surface-overlay p-1 text-text shadow-overlay'
+            ? join(
+                'absolute top-full left-0 z-10 mt-1 flex max-h-60 flex-col overflow-y-auto rounded-md border border-border-strong bg-surface-overlay p-1 text-text shadow-overlay',
+                listClassName,
+              )
             : undefined
         }
       >
@@ -136,9 +165,16 @@ export function Combobox({
                 // Keeps the focus in the input: a click on an option must not blur the field first.
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => choose(option)}
-                className="flex h-7.5 cursor-pointer items-center rounded-sm px-2 text-body text-text data-active:bg-surface-hover aria-selected:font-medium"
+                className="flex h-7.5 cursor-pointer items-center gap-2 rounded-sm px-2 text-body text-text data-active:bg-surface-hover aria-selected:font-medium"
               >
-                {option.label}
+                {option.icon === undefined ? null : <Icon icon={option.icon} className="shrink-0" />}
+                <span>{option.label}</span>
+                {option.hint === undefined ? null : (
+                  <>
+                    {/* Keeps a space between label and hint in the accessible name; a flex container draws none. */}{' '}
+                    <span className="ml-auto pl-3 text-caption text-text-muted">{option.hint}</span>
+                  </>
+                )}
               </li>
             ))
           : null}

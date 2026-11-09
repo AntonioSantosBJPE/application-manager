@@ -92,7 +92,7 @@ describe('GET /admin/skills', () => {
     await dropDatabase(inject('databaseUrl'), database);
   });
 
-  it('SKL-33 answers { items, nextCursor, counts } and every item has exactly id, name, category, scope and aliases, with no owner', async () => {
+  it('SKL-33 answers { items, nextCursor, counts } and every item has exactly id, name, category, scope, aliases and postingCount, with no owner', async () => {
     const response = await get('?scope=private');
     expect(response.status).toBe(200);
     const body = (await response.json()) as AdminSkillsPage;
@@ -106,7 +106,7 @@ describe('GET /admin/skills', () => {
       },
     ));
     for (const item of body.items) {
-      expect(Object.keys(item).sort()).toEqual(['aliases', 'category', 'id', 'name', 'scope']);
+      expect(Object.keys(item).sort()).toEqual(['aliases', 'category', 'id', 'name', 'postingCount', 'scope']);
       expect(item.scope).toBe('private');
     }
     // No value of the answer is the id or the e-mail of a person.

@@ -235,6 +235,14 @@ describe('AppShell parts', () => {
     expect(within(other).queryByText('3')).toBeNull();
   });
 
+  it('APP-43 separates the label from the count with a space, so the accessible name reads "Painel 3"', () => {
+    renderFullShell();
+
+    const current = screen.getByRole('link', { name: 'Painel 3' });
+    expect(current.textContent).toContain('Painel 3');
+    expect(within(current).getByText('3')).toHaveClass('font-mono', 'ml-auto');
+  });
+
   it('PRU-04 AC04 keeps one link per item with asChild, icon and count inside the caller element', () => {
     const { container } = renderFullShell();
 

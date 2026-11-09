@@ -22,6 +22,7 @@ export const alfa: AdminSkill = {
   category: 'language',
   scope: 'global',
   aliases: [{ id: uuid(11), alias: 'alfa' }],
+  postingCount: 0,
 };
 export const beta: AdminSkill = {
   id: uuid(2),
@@ -29,6 +30,7 @@ export const beta: AdminSkill = {
   category: 'database',
   scope: 'global',
   aliases: [],
+  postingCount: 0,
 };
 export const drizzle: AdminSkill = {
   id: uuid(3),
@@ -36,6 +38,7 @@ export const drizzle: AdminSkill = {
   category: 'tool',
   scope: 'private',
   aliases: [],
+  postingCount: 0,
 };
 
 /** The catalog the way the route holds it: the filters live outside it and come back through `onFiltersChange`. */
@@ -109,6 +112,7 @@ export const global_ = (n: number, name: string, category: AdminSkill['category'
   category,
   scope: 'global',
   aliases: [],
+  postingCount: 0,
 });
 
 /** Opens the "⋯" menu of a global row with Enter and chooses one of its items. */

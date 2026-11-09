@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import type { AdminSkill } from '@am/contracts';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { SkillRow } from './SkillRow';
 
@@ -15,6 +15,7 @@ const globalSkill: AdminSkill = {
     { id: uuid(11), alias: 'alfa' },
     { id: uuid(12), alias: 'alfa-js' },
   ],
+  postingCount: 0,
 };
 const privateSkill: AdminSkill = {
   id: uuid(2),
@@ -22,6 +23,7 @@ const privateSkill: AdminSkill = {
   category: 'tool',
   scope: 'private',
   aliases: [],
+  postingCount: 0,
 };
 
 function renderRow(skill: AdminSkill, handlers: Partial<Parameters<typeof SkillRow>[0]> = {}) {
@@ -93,4 +95,19 @@ describe('SkillRow', () => {
 
     expect(onPromote).toHaveBeenCalledExactlyOnceWith(privateSkill);
   });
+
+  it.each([
+    [0, '0 vagas'],
+    [1, '1 vaga'],
+    [7, '7 vagas'],
+  ])(
+    'APP-85 shows %i posting(s) as "%s" in mono, for a global and a private skill',
+    (count, label) => {
+      renderRow({ ...globalSkill, postingCount: count });
+      expect(screen.getByText(label)).toHaveClass('font-mono');
+      cleanup();
+      renderRow({ ...privateSkill, postingCount: count });
+      expect(screen.getByText(label)).toHaveClass('font-mono');
+    },
+  );
 });

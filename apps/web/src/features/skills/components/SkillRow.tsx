@@ -2,7 +2,15 @@ import type { AdminSkill } from '@am/contracts';
 import { Button, ConfirmDialog, DropdownMenu, ListPage, StatusBadge } from '@am/ui';
 import { Ellipsis } from 'lucide-react';
 import { CATEGORY_LABELS } from '../model/categories';
-import { PROMOTE_DESCRIPTION, promoteTitle, rowMenuLabel, SKILLS_MESSAGES } from '../model/messages';
+import {
+  PROMOTE_DESCRIPTION,
+  promoteTitle,
+  rowMenuLabel,
+  SKILLS_MESSAGES,
+} from '../model/messages';
+
+/** "0 vagas", "1 vaga" or "{N} vagas": every job posting of every person that has the skill (APP-85). */
+const postingCountLabel = (count: number) => `${count} ${count === 1 ? 'vaga' : 'vagas'}`;
 
 export interface SkillRowProps {
   skill: AdminSkill;
@@ -19,18 +27,22 @@ export interface SkillRowProps {
  */
 export function SkillRow({ skill, onPromote, onEdit, onAliases }: SkillRowProps) {
   const isPrivate = skill.scope === 'private';
-  const aliases = isPrivate || skill.aliases.length === 0 ? SKILLS_MESSAGES.noAliases : skill.aliases.map((alias) => alias.alias).join(', ');
+  const aliases =
+    isPrivate || skill.aliases.length === 0
+      ? SKILLS_MESSAGES.noAliases
+      : skill.aliases.map((alias) => alias.alias).join(', ');
 
   return (
     <ListPage.Row data-skill-id={skill.id} tabIndex={-1} className="outline-none">
       <ListPage.RowText className="flex items-center gap-2">
         <span className="font-medium whitespace-nowrap">{skill.name}</span>
-        {isPrivate ? (
-          <StatusBadge>{SKILLS_MESSAGES.privateBadge}</StatusBadge>
-        ) : null}
+        {isPrivate ? <StatusBadge>{SKILLS_MESSAGES.privateBadge}</StatusBadge> : null}
         <span className="min-w-0 truncate text-caption text-text-muted">{aliases}</span>
       </ListPage.RowText>
       <ListPage.RowMeta>
+        <span className="w-20 text-right font-mono text-caption whitespace-nowrap">
+          {postingCountLabel(skill.postingCount)}
+        </span>
         <span className="w-30 text-caption">{CATEGORY_LABELS[skill.category]}</span>
         <span className="flex w-22 justify-end">
           {isPrivate ? (
@@ -59,8 +71,12 @@ export function SkillRow({ skill, onPromote, onEdit, onAliases }: SkillRowProps)
                 />
               </DropdownMenu.Trigger>
               <DropdownMenu.Content>
-                <DropdownMenu.Item onSelect={() => onEdit(skill)}>{SKILLS_MESSAGES.edit}</DropdownMenu.Item>
-                <DropdownMenu.Item onSelect={() => onAliases(skill)}>{SKILLS_MESSAGES.aliases}</DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={() => onEdit(skill)}>
+                  {SKILLS_MESSAGES.edit}
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={() => onAliases(skill)}>
+                  {SKILLS_MESSAGES.aliases}
+                </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Root>
           )}

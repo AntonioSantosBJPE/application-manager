@@ -18,7 +18,11 @@ describe('seed migration', () => {
     };
     const tags = journal.entries.sort((a, b) => a.idx - b.idx).map((entry) => entry.tag);
 
-    expect(tags.slice(-2)).toEqual(['0002_skills_schema', '0003_skills_seed']);
+    const schemaAt = tags.indexOf('0002_skills_schema');
+
+    // Later migrations of other modules may follow; what matters is that the seed comes right after the schema.
+    expect(schemaAt).toBeGreaterThanOrEqual(0);
+    expect(tags.slice(schemaAt, schemaAt + 2)).toEqual(['0002_skills_schema', '0003_skills_seed']);
   });
 });
 

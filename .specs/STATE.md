@@ -74,13 +74,13 @@
 - **Date**: 2026-11-08
 - **Status**: active
 
-### AD-010 (active)
+### AD-010 (superseded by AD-021)
 - **Decision**: A home do member mostra os três passos numerados e o `EmptyState` com a dica do ⌘K, sem os botões "Começar pelo perfil" e "Nova candidatura" até as fatias existirem.
 - **Reason**: Pergunta: "O que a home mostra hoje, já que os passos levam a telas inexistentes?"; opção escolhida: "Passos sem ação".
 - **Trade-off**: Os passos 2 e 3 são texto, sem caminho para agir.
 - **Scope**: `apps/web` rota `_member/index`
 - **Date**: 2026-11-08
-- **Status**: active
+- **Status**: superseded by AD-021
 
 ### AD-011 (active)
 - **Decision**: Dois textos das cartas mudam: a home saúda "Olá, {nome}" (sem "Bom dia/Boa tarde") e o convite diz "Você recebeu um convite para o Rumo Carreira." (sem flexão de gênero).
@@ -98,13 +98,13 @@
 - **Date**: 2026-11-08
 - **Status**: active
 
-### AD-013 (active)
+### AD-013 (superseded by AD-019)
 - **Decision**: O catálogo de skills do admin não mostra quantas vagas usam cada skill nem o grupo "Mais usadas"; as linhas ficam em ordem alfabética pelo nome oficial.
 - **Reason**: As vagas só existem na fatia Application, e um módulo não lê o schema do outro. Pergunta: "Como tratar 'N vagas' e o grupo 'Mais usadas'?"; opção escolhida: "Omitir agora".
 - **Trade-off**: A tela fica sem o sinal de quais privadas valem a promoção, até Application existir.
 - **Scope**: `apps/web` feature `skills`, `GET /admin/skills`
 - **Date**: 2026-11-08
-- **Status**: active
+- **Status**: superseded by AD-019
 
 ### AD-014 (active)
 - **Decision**: Apelido só existe em skill global; para dar apelido a uma privada, o admin a promove antes. A linha de uma privada não mostra apelidos.
@@ -130,11 +130,68 @@
 - **Date**: 2026-11-08
 - **Status**: active
 
+### AD-017 (active)
+- **Decision**: A feature Application não mostra nada que dependa do currículo: sem a cobertura "4/6" na lista, sem a frase "seu currículo cobre" e a tag `match` no detalhe, sem a seção "Currículo" e sem o documento no evento de status. `POST /applications/:id/status` não aceita `submittedDocumentId` até ResumeDocument existir.
+- **Reason**: MasterResume, ResumeVersion e ResumeDocument ainda não existem. Pergunta: "O que a feature Application faz com elas?"; opção escolhida: "Omitir até existirem".
+- **Trade-off**: As telas ficam mais vazias que as cartas `PageApplications` e `PageApplicationDetail`; cada fatia de currículo acrescenta a sua parte.
+- **Scope**: módulo `applications`, `apps/web` feature `applications`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-018 (active)
+- **Decision**: A etapa na linha do tempo mostra "Etapa {tipo}" e a nota, sem resultado ("concluída").
+- **Reason**: O evento `stage` do `.design` não tem resultado. Pergunta: "O que a linha mostra?"; opção escolhida: "'Etapa RH' + nota".
+- **Trade-off**: Para dizer que a etapa foi concluída, o usuário escreve na nota.
+- **Scope**: `apps/web` feature `applications`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-019 (active)
+- **Decision**: O catálogo de skills do admin mostra, em cada linha, quantas vagas de todas as pessoas usam a skill ("0 vagas", "1 vaga", "N vagas"). A ordem continua alfabética e paginada no SQL, e o grupo "Mais usadas" fica de fora. A contagem vem só para as skills da página, por uma porta (`SKILL_USAGE.countFor(ids)`) que o módulo `skills` declara e o `applications` implementa, sem um ler o schema do outro. Substitui AD-013.
+- **Reason**: A fatia Application existe agora. Pergunta: "Quais entram agora?"; opção escolhida: "Os dois". Ordenar por uso exigiria carregar o catálogo inteiro, o que o usuário recusou ("não é aceitável a página do admin carregar todas as skill"); pergunta seguinte: "Uma listagem simples, sem carregar primeiro as mais usadas resolve o problema?"; confirmação: "Sim".
+- **Trade-off**: Sem o sinal de "mais usadas" no topo; ele pode voltar como um grupo separado das 10 mais usadas sem mexer na paginação. É uma leitura agregada entre usuários; só o número sai do módulo, nunca a vaga ou o dono.
+- **Scope**: módulos `skills` e `applications`, `GET /admin/skills`, `apps/web` feature `skills`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-020 (active)
+- **Decision**: "Ainda não" no Alert de sem retorno grava `applications.ghost_snoozed_until` (agora + 21 dias) por `POST /applications/:id/ghost-snooze`; a sugestão some até essa data, sem evento e sem contar como atividade.
+- **Reason**: Pergunta: "O que 'Ainda não' faz?"; opção escolhida: "Adia 21 dias, salvo". Acrescenta uma coluna e uma rota ao `.design`.
+- **Trade-off**: Um estado a mais na candidatura que não aparece na linha do tempo.
+- **Scope**: módulo `applications`, `apps/web` feature `applications`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-021 (active)
+- **Decision**: O passo 03 da home do member ganha o botão "Nova candidatura", que abre `/applications` com o diálogo aberto. Substitui AD-010 no que toca ao passo 03; o passo 02 segue sem ação até MasterResume.
+- **Reason**: Pergunta: "Quais entram agora?"; opção escolhida: "Os dois".
+- **Trade-off**: Nenhum.
+- **Scope**: `apps/web` rota `_member/index`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-022 (active)
+- **Decision**: No detalhe da candidatura, "+ Skill" aparece nas linhas "Obrigatórias" e "Desejáveis"; a carta `PageApplicationDetail` o desenha só em "Desejáveis".
+- **Reason**: Sem o botão em "Obrigatórias" não há como acrescentar uma skill obrigatória pelo detalhe (APP-73). Decidido pelo orquestrador durante a execução, com a delegação do usuário: "Só me chame em dúvidas críticas que você não consegue resolver só".
+- **Trade-off**: Um controle a mais que a carta.
+- **Scope**: `apps/web` feature `applications`
+- **Date**: 2026-11-08
+- **Status**: active
+
+### AD-023 (active)
+- **Decision**: As tags de skill do diálogo de cadastro e do detalhe mostram o "×" de remover; as cartas `PageNewApplication` e `PageApplicationDetail` desenham as tags do detalhe sem ele.
+- **Reason**: Os critérios aprovados APP-59 ("tag removível") e APP-73 ("o '×' de uma tag") pedem o gesto; spec aprovada pelo usuário em 2026-11-08 ("Sim"). Registrado como diferença pelo orquestrador depois do achado 13 do Verifier.
+- **Trade-off**: As tags ficam mais largas que na carta, e a linha "Obrigatórias" pode quebrar.
+- **Scope**: `apps/web` features `applications` e `skills`
+- **Date**: 2026-11-08
+- **Status**: active
+
 ## Handoff
 
-- **Feature**: `skills` - closed on branch `feat/skills`, 2026-11-08.
-- **Done**: T1-T36 committed; Verifier (Opus 5.5) judged 76/76 checks holding; its finding (U+0000 answered 500) closed in `b707f9f` and `d7eb144`; a flaky C32 test closed in `ba12ec7`. Report: `.specs/features/skills/verification.md`.
-- **Gates at `ba12ec7`**: `pnpm build`, `typecheck`, `lint`, `pnpm test --force` (contracts 42, guardrails 32, api 74, web 401, ui 474), `pnpm test:integration` (163, twice), `pnpm test:e2e` (54).
-- **Lessons**: L-014 and L-015 recorded as candidates.
-- **Open for the author**: review the seed list `apps/api/src/modules/skills/seed/global-skills.json` (322 skills) in the PR before the merge; Verifier observations with no finding: the 60-character limit counts the text without NFC, and the web drops a search above 60 characters silently.
-- **Next**: PR `feat/skills` -> `main`, merge with green CI, then `git switch main && git pull --ff-only && git branch -d feat/skills`.
+- **Feature**: `application` - closed on branch `feat/application`, 2026-11-08.
+- **Done**: T1-T48 committed by Sonnet 5.5 workers in 7 batches (B4 and B5 with one fix round each), orchestrated and checked by Opus 5.5. Verifier (Opus 5.5) judged 81/88 checks holding and wrote 13 findings, all closed (`0d56abd`..`d0809a7`, `1c8daf3`, `f32b4a3`); screens round 2: the three pictures match their captures. Reports: `.specs/features/application/verification.md`, `screens.md`.
+- **Gates at `1c8daf3`**: `pnpm build`, `typecheck`, `lint`, `pnpm test --force` (contracts 75, guardrails 37, api 102, web 649, ui 609), `pnpm test:integration` (272), `pnpm test:e2e` (61), tree clean after e2e.
+- **Decisions in the feature**: AD-017 to AD-023 (AD-022 and AD-023 taken by the orchestrator under the user's delegation).
+- **Lessons**: L-016 to L-028 recorded as candidates.
+- **Open for the author**: focus goes to `body` after changing a status from the row menu (Deferred Ideas in `context.md`); `job_postings.search_text` rows written before `0d56abd` keep the old format (only local dev data).
+- **Next**: push `feat/application` and open the PR to `main` after the author's go-ahead; merge with green CI, then `git switch main && git pull --ff-only && git branch -d feat/application`.

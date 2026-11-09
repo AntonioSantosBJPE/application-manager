@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { expect, userEvent, within } from 'storybook/test';
 import { expectContrast, focusRing } from '../../testing/contrast';
@@ -93,4 +94,46 @@ export const ContrasteEscuro: Story = {
   args: Padrao.args,
   globals: { theme: 'dark' },
   play: contrast,
+};
+
+const withHints: ComboboxOption[] = [
+  { id: 'nest', label: 'NestJS', hint: 'framework' },
+  { id: 'pg', label: 'PostgreSQL', hint: 'banco de dados' },
+  { id: 'new', label: 'Criar “nes” como skill privada', icon: Plus },
+];
+
+function WithHints() {
+  const [query, setQuery] = useState('');
+  return (
+    <div className="h-64 bg-surface p-4">
+      <Field.Root className="w-72">
+        <Field.Label htmlFor="skill">Skill</Field.Label>
+        <Combobox id="skill" query={query} options={withHints} selected={null} onQueryChange={setQuery} onSelect={() => {}} />
+      </Field.Root>
+    </div>
+  );
+}
+
+const hints: Story['play'] = async ({ canvas }) => {
+  await userEvent.type(canvas.getByRole('combobox', { name: 'Skill' }), 'nes');
+  const body = within(document.body);
+  await expect(body.getByRole('option', { name: 'NestJS framework' })).toBeVisible();
+  await expect(body.getByText('banco de dados')).toBeVisible();
+  for (const option of body.getAllByRole('option')) await expectContrast(option, 4.5);
+};
+
+export const ComHintEIconeClaro: Story = {
+  name: 'Com hint e ícone, tema claro',
+  args: Padrao.args,
+  globals: { theme: 'light' },
+  render: () => <WithHints />,
+  play: hints,
+};
+
+export const ComHintEIconeEscuro: Story = {
+  name: 'Com hint e ícone, tema escuro',
+  args: Padrao.args,
+  globals: { theme: 'dark' },
+  render: () => <WithHints />,
+  play: hints,
 };

@@ -16,22 +16,27 @@ const DialogClose = RadixDialog.Close;
 
 /**
  * The surface of a form dialog, the same as the `ConfirmDialog`: `surface-overlay` with
- * `border-strong`, `radius-lg` and `shadow-overlay`, at most 440px wide over the `backdrop` veil. Radix
+ * `border-strong`, `radius-lg` and `shadow-overlay`, at most 440px wide (640px with `size="lg"`) over the `backdrop` veil. Radix
  * moves the focus in, keeps it inside, closes on Esc and gives it back to the trigger, and names the
  * dialog after `Dialog.Title`.
  */
 function DialogContent({
   className,
   children,
+  size = 'md',
   onEscapeKeyDown,
   ...props
-}: ComponentProps<typeof RadixDialog.Content>) {
+}: ComponentProps<typeof RadixDialog.Content> & {
+  /** `md` (the default) is at most 440px wide; `lg` is at most 640px, for a dialog with a full form. */
+  size?: 'md' | 'lg';
+}) {
   return (
     <RadixDialog.Portal>
       <RadixDialog.Overlay className="fixed inset-0 bg-backdrop" />
       <RadixDialog.Content
         className={join(
-          'fixed top-1/2 left-1/2 flex max-h-screen w-full max-w-110 -translate-x-1/2 -translate-y-1/2 flex-col gap-3 overflow-y-auto rounded-lg border border-border-strong bg-surface-overlay p-4 text-text shadow-overlay',
+          size === 'lg' ? 'max-w-160' : 'max-w-110',
+          'fixed top-1/2 left-1/2 flex max-h-screen w-full -translate-x-1/2 -translate-y-1/2 flex-col gap-3 overflow-y-auto rounded-lg border border-border-strong bg-surface-overlay p-4 text-text shadow-overlay',
           className,
         )}
         onEscapeKeyDown={(event) => {

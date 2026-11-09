@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 16,
+  "next_id": 29,
   "lessons": [
     {
       "id": "L-001",
@@ -275,6 +275,240 @@
       ],
       "created": "2026-11-08T18:24:42Z",
       "last_seen": "2026-11-08T18:24:42Z"
+    },
+    {
+      "id": "L-016",
+      "key": "ac_gap::store each searchable field apart or joined by a separator the query normalization cannot produce so a search never matches text that spans two fields",
+      "text": "Store each searchable field apart (or joined by a separator the query normalization cannot produce) so a search never matches text that spans two fields",
+      "signal": "ac_gap",
+      "scope": "api-search",
+      "status": "candidate",
+      "features": [
+        "application"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 1 (APP-13) (api-search)"
+      ],
+      "created": "2026-11-09T00:10:51Z",
+      "last_seen": "2026-11-09T00:10:51Z"
+    },
+    {
+      "id": "L-017",
+      "key": "ac_gap::refuse an empty value in a comma separated query list instead of turning it into an empty in that filters everything out",
+      "text": "Refuse an empty value in a comma-separated query list instead of turning it into an empty IN that filters everything out",
+      "signal": "ac_gap",
+      "scope": "api-query",
+      "status": "candidate",
+      "features": [
+        "application"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 2 (APP-12, APP-17) (api-query)"
+      ],
+      "created": "2026-11-09T00:10:51Z",
+      "last_seen": "2026-11-09T00:10:51Z"
+    },
+    {
+      "id": "L-018",
+      "key": "ac_gap::trim optional free text and store a blank as absent so the ui never renders a separator before nothing",
+      "text": "Trim optional free text and store a blank as absent, so the UI never renders a separator before nothing",
+      "signal": "ac_gap",
+      "scope": "api-validation",
+      "status": "candidate",
+      "features": [
+        "application"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 3 (APP-23) (api-validation)"
+      ],
+      "created": "2026-11-09T00:10:51Z",
+      "last_seen": "2026-11-09T00:10:51Z"
+    },
+    {
+      "id": "L-019",
+      "key": "weak_test::test each screen s error message with a 4xx refusal as well as a 5xx since a shared mapper may collapse every refusal into unavailable",
+      "text": "Test each screen's error message with a 4xx refusal as well as a 5xx, since a shared mapper may collapse every refusal into 'unavailable'",
+      "signal": "weak_test",
+      "scope": "web-errors",
+      "status": "candidate",
+      "features": [
+        "application"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 4 (APP-55, APP-64, APP-78) (web-errors)"
+      ],
+      "created": "2026-11-09T00:10:51Z",
+      "last_seen": "2026-11-09T00:10:51Z"
+    },
+    {
+      "id": "L-020",
+      "key": "weak_test::a web test asserts what the web sends to the api never matching rules implemented inside the fake api",
+      "text": "A web test asserts what the web sends to the API, never matching rules implemented inside the fake API",
+      "signal": "weak_test",
+      "scope": "web-tests",
+      "status": "candidate",
+      "features": [
+        "application"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 5 (APP-46) (web-tests)"
+      ],
+      "created": "2026-11-09T00:10:51Z",
+      "last_seen": "2026-11-09T00:10:51Z"
+    },
+    {
+      "id": "L-021",
+      "key": "weak_test::prove a narrow width criterion by asserting which elements are visible and where blocks sit not only the absence of horizontal overflow",
+      "text": "Prove a narrow-width criterion by asserting which elements are visible and where blocks sit, not only the absence of horizontal overflow",
+      "signal": "weak_test",
+      "scope": "e2e",
+      "status": "candidate",
+      "features": [
+        "application"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md findings 6-7 (APP-56, APP-79) (e2e)"
+      ],
+      "created": "2026-11-09T00:10:51Z",
+      "last_seen": "2026-11-09T00:10:51Z"
+    },
+    {
+      "id": "L-022",
+      "key": "weak_test::when an action on one screen must change another test the second screen after the action not only the screen where it happened",
+      "text": "When an action on one screen must change another, test the second screen after the action, not only the screen where it happened",
+      "signal": "weak_test",
+      "scope": "web-routes",
+      "status": "candidate",
+      "features": [
+        "application"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 8 (APP-82) (web-routes)"
+      ],
+      "created": "2026-11-09T00:10:51Z",
+      "last_seen": "2026-11-09T00:10:51Z"
+    },
+    {
+      "id": "L-023",
+      "key": "weak_test::assert the intent danger warning a criterion names on the component since a role like status matches every intent",
+      "text": "Assert the intent (danger, warning) a criterion names on the component, since a role like status matches every intent",
+      "signal": "weak_test",
+      "scope": "web-tests",
+      "status": "candidate",
+      "features": [
+        "application"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 9 (APP-75, APP-80) (web-tests)"
+      ],
+      "created": "2026-11-09T00:10:51Z",
+      "last_seen": "2026-11-09T00:10:51Z"
+    },
+    {
+      "id": "L-024",
+      "key": "gate_fail::tests write generated artifacts to their output folder by default and overwrite versioned files only behind an explicit flag",
+      "text": "Tests write generated artifacts to their output folder by default and overwrite versioned files only behind an explicit flag",
+      "signal": "gate_fail",
+      "scope": "e2e",
+      "status": "candidate",
+      "features": [
+        "application"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 10 (e2e captures) (e2e)"
+      ],
+      "created": "2026-11-09T00:10:51Z",
+      "last_seen": "2026-11-09T00:10:51Z"
+    },
+    {
+      "id": "L-025",
+      "key": "weak_test::a keyboard only journey reaches every control with tab or shortcuts and asserts focus never locator focus",
+      "text": "A keyboard-only journey reaches every control with Tab or shortcuts and asserts focus, never locator.focus()",
+      "signal": "weak_test",
+      "scope": "e2e",
+      "status": "candidate",
+      "features": [
+        "application"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 11 (keyboard journey) (e2e)"
+      ],
+      "created": "2026-11-09T00:10:51Z",
+      "last_seen": "2026-11-09T00:10:51Z"
+    },
+    {
+      "id": "L-026",
+      "key": "ac_gap::fix a layout gap in the shared archetype with a ui test never with a page level class override",
+      "text": "Fix a layout gap in the shared archetype with a ui test, never with a page-level class override",
+      "signal": "ac_gap",
+      "scope": "ui-layout",
+      "status": "candidate",
+      "features": [
+        "application"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 12 (ListPage width) (ui-layout)"
+      ],
+      "created": "2026-11-09T00:10:51Z",
+      "last_seen": "2026-11-09T00:10:51Z"
+    },
+    {
+      "id": "L-027",
+      "key": "spec_deviation::when a criterion adds a control a binding capture does not draw record it in differences from the source before the spec is approved",
+      "text": "When a criterion adds a control a binding capture does not draw, record it in Differences from the source before the spec is approved",
+      "signal": "spec_deviation",
+      "scope": "spec-captures",
+      "status": "candidate",
+      "features": [
+        "application"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 13 (APP-59, APP-73) (spec-captures)"
+      ],
+      "created": "2026-11-09T00:10:51Z",
+      "last_seen": "2026-11-09T00:10:51Z"
+    },
+    {
+      "id": "L-028",
+      "key": "gate_fail::run the closing gate with pnpm test force so a cached green cannot hide a guardrail that a new env read breaks",
+      "text": "Run the closing gate with pnpm test --force so a cached green cannot hide a guardrail that a new env read breaks",
+      "signal": "gate_fail",
+      "scope": "gates",
+      "status": "candidate",
+      "features": [
+        "application"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "orchestrator: CAPTURE missing from .env.example passed the worker gate through the turbo cache (gates)"
+      ],
+      "created": "2026-11-09T00:10:51Z",
+      "last_seen": "2026-11-09T00:10:51Z"
     }
   ]
 }

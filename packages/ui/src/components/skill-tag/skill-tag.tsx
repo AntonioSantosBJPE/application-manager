@@ -1,5 +1,5 @@
 import { cva } from 'class-variance-authority';
-import { Check, X } from 'lucide-react';
+import { Check, Plus, X } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { Icon } from '../../icons/icon';
 
@@ -69,5 +69,32 @@ export function SkillTag({
         </button>
       )}
     </span>
+  );
+}
+
+export type SkillTagAddProps = Omit<ComponentProps<'button'>, 'type'>;
+
+/**
+ * "Adicionar": the dashed chip that ends a row of skill tags ("+ Skill"). It has the size and the shape
+ * of a tag, with the border dashed and the text muted, and it is a button, so the caller names it with
+ * its text and, when the text is not enough, with `aria-label`.
+ */
+export function SkillTagAdd({ children, className, ...props }: SkillTagAddProps) {
+  return (
+    <button
+      type="button"
+      className={[
+        'inline-flex h-5.5 items-center gap-1 rounded-sm border border-dashed border-border-strong bg-surface px-2 text-caption whitespace-nowrap text-text-muted',
+        'transition-colors duration-150 hover:bg-surface-hover hover:text-text',
+        'outline-focus focus-visible:outline-2 focus-visible:outline-offset-2',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      {...props}
+    >
+      <Icon icon={Plus} size="sm" />
+      {children}
+    </button>
   );
 }
