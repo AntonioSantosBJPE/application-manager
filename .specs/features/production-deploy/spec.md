@@ -175,53 +175,53 @@ Os itens `n` são defaults meus para você corrigir ao aprovar.
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| DEPLOY-01 | P1: Publicar e implantar (critério 1) | Specify | Pending |
-| DEPLOY-02 | P1: Publicar e implantar (critério 2) | Specify | Pending |
-| DEPLOY-03 | P1: Publicar e implantar (critério 3) | Specify | Pending |
-| DEPLOY-04 | P1: Publicar e implantar (critério 4) | Specify | Pending |
-| DEPLOY-05 | P1: Publicar e implantar (critério 5) | Specify | Pending |
-| DEPLOY-06 | P1: Publicar e implantar (critério 6) | Specify | Pending |
-| DEPLOY-07 | P1: Publicar e implantar (critério 7) | Specify | Pending |
-| DEPLOY-08 | P1: Publicar e implantar (critério 8) | Specify | Pending |
-| DEPLOY-09 | P1: Publicar e implantar (critério 9) | Specify | Pending |
-| DEPLOY-10 | P1: Publicar e implantar (critério 10) | Specify | Pending |
-| DEPLOY-11 | P1: Compose de produção (critério 1) | Specify | Pending |
-| DEPLOY-12 | P1: Compose de produção (critério 2) | Specify | Pending |
-| DEPLOY-13 | P1: Compose de produção (critério 3) | Specify | Pending |
-| DEPLOY-14 | P1: Compose de produção (critério 4) | Specify | Pending |
-| DEPLOY-15 | P1: Compose de produção (critério 5) | Specify | Pending |
-| DEPLOY-16 | P1: Compose de produção (critério 6) | Specify | Pending |
-| DEPLOY-17 | P1: Compose de produção (critério 7) | Specify | Pending |
-| DEPLOY-18 | P1: Compose de produção (critério 8) | Specify | Pending |
-| DEPLOY-19 | P1: Runbook (critério 1) | Specify | Pending |
-| DEPLOY-20 | P1: Runbook (critério 2) | Specify | Pending |
-| DEPLOY-21 | P1: Runbook (critério 3) | Specify | Pending |
-| DEPLOY-22 | P1: Runbook (critério 4) | Specify | Pending |
-| DEPLOY-23 | P1: Runbook (critério 5) | Specify | Pending |
-| DEPLOY-24 | P2: Hardening (critério 1) | Specify | Pending |
-| DEPLOY-25 | P2: Hardening (critério 2) | Specify | Pending |
-| DEPLOY-26 | P2: Hardening (critério 3) | Specify | Pending |
-| DEPLOY-27 | P2: Hardening (critério 4) | Specify | Pending |
-| DEPLOY-28 | P2: Hardening (critério 5) | Specify | Pending |
-| DEPLOY-29 | P2: Hardening (critério 6) | Specify | Pending |
-| DEPLOY-30 | P2: Hardening (critério 7) | Specify | Pending |
-| DEPLOY-31 | P2: Hardening (critério 8) | Specify | Pending |
-| DEPLOY-32 | P2: Hardening (critério 9) | Specify | Pending |
-| DEPLOY-33 | P2: Backup (critério 1) | Specify | Pending |
-| DEPLOY-34 | P2: Backup (critério 2) | Specify | Pending |
-| DEPLOY-35 | P2: Backup (critério 3) | Specify | Pending |
-| DEPLOY-36 | P2: Backup (critério 4) | Specify | Pending |
-| DEPLOY-37 | P2: Backup (critério 5) | Specify | Pending |
-| DEPLOY-38 | P2: Backup (critério 6) | Specify | Pending |
-| DEPLOY-39 | P2: Backup (critério 7) | Specify | Pending |
-| DEPLOY-40 | P2: Backup (critério 8) | Specify | Pending |
-| DEPLOY-41 | P2: Backup (critério 9) | Specify | Pending |
-| DEPLOY-42 | Edge cases | Specify | Pending |
-| DEPLOY-43 | Edge cases | Specify | Pending |
-| DEPLOY-44 | Edge cases | Specify | Pending |
-| DEPLOY-45 | Edge cases | Specify | Pending |
+| DEPLOY-01 | P1: Publicar e implantar (critério 1) | Execute | Verified |
+| DEPLOY-02 | P1: Publicar e implantar (critério 2) | Execute | Verified |
+| DEPLOY-03 | P1: Publicar e implantar (critério 3) | Execute | Verified |
+| DEPLOY-04 | P1: Publicar e implantar (critério 4) | Execute | Verified |
+| DEPLOY-05 | P1: Publicar e implantar (critério 5) | Execute | Verified |
+| DEPLOY-06 | P1: Publicar e implantar (critério 6) | Execute | Verified |
+| DEPLOY-07 | P1: Publicar e implantar (critério 7) | Execute | Verified |
+| DEPLOY-08 | P1: Publicar e implantar (critério 8) | Execute | Verified |
+| DEPLOY-09 | P1: Publicar e implantar (critério 9) | Execute | Verified |
+| DEPLOY-10 | P1: Publicar e implantar (critério 10) | Execute | Verified |
+| DEPLOY-11 | P1: Compose de produção (critério 1) | Execute | Verified |
+| DEPLOY-12 | P1: Compose de produção (critério 2) | Execute | Verified |
+| DEPLOY-13 | P1: Compose de produção (critério 3) | Execute | Verified |
+| DEPLOY-14 | P1: Compose de produção (critério 4) | Execute | Verified |
+| DEPLOY-15 | P1: Compose de produção (critério 5) | Execute | Verified |
+| DEPLOY-16 | P1: Compose de produção (critério 6) | Execute | Verified |
+| DEPLOY-17 | P1: Compose de produção (critério 7) | Execute | Verified |
+| DEPLOY-18 | P1: Compose de produção (critério 8) | Execute | Verified |
+| DEPLOY-19 | P1: Runbook (critério 1) | Execute | Verified |
+| DEPLOY-20 | P1: Runbook (critério 2) | Execute | Verified |
+| DEPLOY-21 | P1: Runbook (critério 3) | Execute | Verified |
+| DEPLOY-22 | P1: Runbook (critério 4) | Execute | Verified |
+| DEPLOY-23 | P1: Runbook (critério 5) | Execute | Verified |
+| DEPLOY-24 | P2: Hardening (critério 1) | Execute | Verified |
+| DEPLOY-25 | P2: Hardening (critério 2) | Execute | Verified |
+| DEPLOY-26 | P2: Hardening (critério 3) | Execute | Verified |
+| DEPLOY-27 | P2: Hardening (critério 4) | Execute | Verified |
+| DEPLOY-28 | P2: Hardening (critério 5) | Execute | Verified |
+| DEPLOY-29 | P2: Hardening (critério 6) | Execute | Verified |
+| DEPLOY-30 | P2: Hardening (critério 7) | Execute | Verified |
+| DEPLOY-31 | P2: Hardening (critério 8) | Execute | Verified |
+| DEPLOY-32 | P2: Hardening (critério 9) | Execute | Verified |
+| DEPLOY-33 | P2: Backup (critério 1) | Execute | Verified |
+| DEPLOY-34 | P2: Backup (critério 2) | Execute | Verified |
+| DEPLOY-35 | P2: Backup (critério 3) | Execute | Verified |
+| DEPLOY-36 | P2: Backup (critério 4) | Execute | Verified |
+| DEPLOY-37 | P2: Backup (critério 5) | Execute | Verified |
+| DEPLOY-38 | P2: Backup (critério 6) | Execute | Verified |
+| DEPLOY-39 | P2: Backup (critério 7) | Execute | Verified |
+| DEPLOY-40 | P2: Backup (critério 8) | Execute | Verified |
+| DEPLOY-41 | P2: Backup (critério 9) | Execute | Verified |
+| DEPLOY-42 | Edge cases | Execute | Verified |
+| DEPLOY-43 | Edge cases | Execute | Verified |
+| DEPLOY-44 | Edge cases | Execute | Verified |
+| DEPLOY-45 | Edge cases | Execute | Verified |
 
-**Coverage:** 45 total, 0 mapped to tasks, 45 unmapped ⚠️
+**Coverage:** 45 total, 45 mapped to tasks, 0 unmapped
 
 Implicit-requirement sweep: validação de entrada coberta por DEPLOY-12, 25 e 45; falha parcial por DEPLOY-02, 35, 42, 43 e 44; idempotência por DEPLOY-29 e 22; auth e segredos por DEPLOY-04, 05, 07, 18, 31 e 38; concorrência por DEPLOY-10; ciclo de vida de dados por DEPLOY-36; observabilidade por DEPLOY-09, 35 e 43 (log estruturado e falha visível no workflow); falha de dependência externa por DEPLOY-09, 35 e 43; integridade de transição de estado N/A because nenhuma entidade de domínio muda de estado.
 

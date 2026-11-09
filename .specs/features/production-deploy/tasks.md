@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: `.specs/features/production-deploy/design.md`
-**Status**: Approved
+**Status**: Done
 **Approved**: 2026-11-09 - user: "Pode seguir com as tasks, porem quero ir adiantando tudo que for possivel"
 **Build**: `pnpm typecheck; pnpm lint`
 
@@ -533,8 +533,8 @@ Proof: run deploy | ✓ DEPLOY-45
 
 ## Handoff
 
-**Settled mid-build:** none
-**Dispatched:** none
+**Settled mid-build:** user: "Pode seguir com as tasks, porem quero ir adiantando tudo que for possivel"; execution inline (user: "Inline, eu mesmo"). Decisions of the author: `infra` job in `ci.yml` (parallel, runs on push to main and on deploy, on PR only with CI_FULL) instead of a step in `integration`; the aws env lines of the harness; `pnpm test:repo-rules` fails on `main` too in this environment (offline pnpm store), so it is not a result of this feature.
+**Dispatched:** Verifier (independent sub-agent) at `HEAD` 9d5b3bf, 2026-11-09, `returned` FAIL with 21 findings, all closed in 493dd08, 561a50f and 43d32a4; no screens sub-agent (no criterion cites a capture)
 **Walked:** none
 
 ---

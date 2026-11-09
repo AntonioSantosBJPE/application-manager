@@ -182,6 +182,30 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: orchestrator: CAPTURE missing from .env.example passed the worker gate through the turbo cache (gates)
 - last seen: 2026-11-09T00:10:51Z
 
+### L-029 - A post-deploy health check must also prove the new version answers, not only that something healthy answers, or the old release passes it while the deploy fails
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `deploy` · harmful: 0
+- features: production-deploy
+- evidence: smoke.sh:23 (deploy)
+- last seen: 2026-11-09T11:11:37Z
+
+### L-030 - Test a workflow or CI condition by evaluating it for each situation (green, red, manual, rollback), not by matching substrings of its expression
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `ci` · harmful: 0
+- features: production-deploy
+- evidence: deploy-workflow.test.ts:69 (ci)
+- last seen: 2026-11-09T11:11:37Z
+
+### L-031 - In bash with set -e, a function called on the left of && or inside an if runs with errexit off, so report success through a variable and call it as a plain statement
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `scripts` · harmful: 0
+- features: production-deploy
+- evidence: harden.sh:120 (scripts)
+- last seen: 2026-11-09T11:11:37Z
+
+### L-032 - Validate numeric and credential settings before use and fail with a structured message, since a value such as a password with a slash otherwise surfaces as a tool error that echoes pieces of the secret
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `scripts` · harmful: 0
+- features: production-deploy
+- evidence: backup.sh:62 (scripts)
+- last seen: 2026-11-09T11:11:37Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 29,
+  "next_id": 33,
   "lessons": [
     {
       "id": "L-001",
@@ -509,6 +509,78 @@
       ],
       "created": "2026-11-09T00:10:51Z",
       "last_seen": "2026-11-09T00:10:51Z"
+    },
+    {
+      "id": "L-029",
+      "key": "ac_gap::a post deploy health check must also prove the new version answers not only that something healthy answers or the old release passes it while the deploy fails",
+      "text": "A post-deploy health check must also prove the new version answers, not only that something healthy answers, or the old release passes it while the deploy fails",
+      "signal": "ac_gap",
+      "scope": "deploy",
+      "status": "candidate",
+      "features": [
+        "production-deploy"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "smoke.sh:23 (deploy)"
+      ],
+      "created": "2026-11-09T11:11:37Z",
+      "last_seen": "2026-11-09T11:11:37Z"
+    },
+    {
+      "id": "L-030",
+      "key": "weak_test::test a workflow or ci condition by evaluating it for each situation green red manual rollback not by matching substrings of its expression",
+      "text": "Test a workflow or CI condition by evaluating it for each situation (green, red, manual, rollback), not by matching substrings of its expression",
+      "signal": "weak_test",
+      "scope": "ci",
+      "status": "candidate",
+      "features": [
+        "production-deploy"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "deploy-workflow.test.ts:69 (ci)"
+      ],
+      "created": "2026-11-09T11:11:37Z",
+      "last_seen": "2026-11-09T11:11:37Z"
+    },
+    {
+      "id": "L-031",
+      "key": "ac_gap::in bash with set e a function called on the left of or inside an if runs with errexit off so report success through a variable and call it as a plain statement",
+      "text": "In bash with set -e, a function called on the left of && or inside an if runs with errexit off, so report success through a variable and call it as a plain statement",
+      "signal": "ac_gap",
+      "scope": "scripts",
+      "status": "candidate",
+      "features": [
+        "production-deploy"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "harden.sh:120 (scripts)"
+      ],
+      "created": "2026-11-09T11:11:37Z",
+      "last_seen": "2026-11-09T11:11:37Z"
+    },
+    {
+      "id": "L-032",
+      "key": "ac_gap::validate numeric and credential settings before use and fail with a structured message since a value such as a password with a slash otherwise surfaces as a tool error that echoes pieces of the secret",
+      "text": "Validate numeric and credential settings before use and fail with a structured message, since a value such as a password with a slash otherwise surfaces as a tool error that echoes pieces of the secret",
+      "signal": "ac_gap",
+      "scope": "scripts",
+      "status": "candidate",
+      "features": [
+        "production-deploy"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "backup.sh:62 (scripts)"
+      ],
+      "created": "2026-11-09T11:11:37Z",
+      "last_seen": "2026-11-09T11:11:37Z"
     }
   ]
 }
