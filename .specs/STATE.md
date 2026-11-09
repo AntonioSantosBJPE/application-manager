@@ -186,6 +186,14 @@
 - **Date**: 2026-11-08
 - **Status**: active
 
+### AD-024 (active)
+- **Decision**: O hardening deixa o root entrar por SSH só com chave (`PermitRootLogin prohibit-password`) em vez de desligar o login de root, e o `harden.sh` aceita `HARDEN_STEPS` para rodar só alguns passos (num servidor já endurecido, só `firewall`).
+- **Reason**: O Coolify administra o servidor em que roda por SSH como root, então desligar esse login pararia todos os deploys. Mostrado na verificação do servidor real em 2026-11-09, que o critério DEPLOY-26 (desligar o login de root) não previa; os demais critérios de DEPLOY-26 (senha desligada, `sshd -t` antes do reload, rollback) seguem valendo.
+- **Trade-off**: A conta de root continua existindo para login por chave; a proteção contra força bruta fica com a chave, o `fail2ban` e o firewall.
+- **Scope**: `infra/provision/harden.sh`, `docs/runbooks/production-deploy.md`, feature `production-deploy` (DEPLOY-26)
+- **Date**: 2026-11-09
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: `application` - closed on branch `feat/application`, 2026-11-08.

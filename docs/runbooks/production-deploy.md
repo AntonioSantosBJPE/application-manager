@@ -41,6 +41,7 @@ O mesmo `infra/compose.prod.yaml` sobe em qualquer servidor com Docker, sem Cool
 | `SSH_PORT` | Terminal, ao rodar `harden.sh` | Porta SSH que o firewall mantém aberta (padrão 22) |
 | `EXTRA_ALLOW_TCP` | Terminal, ao rodar `harden.sh` | Portas TCP extras abertas ao mundo, separadas por vírgula (padrão nenhuma) |
 | `HARDEN_CF_IPS_FILE` | Terminal, ao rodar `harden.sh`, opcional | Arquivo com as faixas da Cloudflare; sem ele o script baixa as listas oficiais |
+| `HARDEN_STEPS` | Terminal, ao rodar `harden.sh`, opcional | Passos a rodar, entre `user,key,ssh,updates,fail2ban,firewall` (padrão: todos). Num servidor que já tem conta, SSH e `fail2ban`, use `firewall` |
 | `HARDEN_PUBLIC_IFACE` | Terminal, ao rodar `harden.sh`, opcional | Interface de rede pública, quando a rota padrão não a mostra |
 | `TARGET_DATABASE_URL` | Terminal, ao rodar `restore.sh` | Banco vazio de destino de um restore |
 | `MIGRATIONS_JOURNAL` | Terminal, ao rodar `verify-restore.sh` | Caminho de `apps/api/drizzle/meta/_journal.json` do commit implantado |
@@ -49,7 +50,14 @@ Os segredos de produção ficam só no Coolify e no GitHub; nunca em arquivo ver
 
 ## 1. Preparar o servidor (hardening)
 
-O script `infra/provision/harden.sh` cria a conta não-root, desliga login de root e por senha no SSH, instala `fail2ban` e as atualizações automáticas de segurança e configura o firewall: entrada negada por padrão e as portas 80 e 443 abertas só às faixas da Cloudflare, no `ufw` e também na chain `DOCKER-USER`, porque o Docker publica portas à frente do `ufw`. É idempotente: rodar de novo não muda nada.
+O script `infra/provision/harden.sh` cria a conta não-root, desliga o login por senha no SSH (root só entra com chave: o Coolify administra o servidor por SSH como root, e desligar esse login pararia todos os deploys), instala `fail2ban` e as atualizações automáticas de segurança e configura o firewall: entrada negada por padrão e as portas 80 e 443 abertas só às faixas da Cloudflare, no `ufw` e também na chain `DOCKER-USER`, porque o Docker publica portas à frente do `ufw`. É idempotente: rodar de novo não muda nada.
+
+**Se o servidor já tem a conta, o SSH por chave, o `fail2ban` e as atualizações** (confira com o bloco de verificação da seção 7 ou por conta própria), rode **só o firewall**, que não toca no usuário nem no SSH:
+```bash
+HARDEN_STEPS=firewall ./harden.sh --dry-run    # leia as regras
+sudo HARDEN_STEPS=firewall ./harden.sh         # aplique
+```
+Nesse modo as variáveis `ADMIN_USER` e `ADMIN_SSH_PUBLIC_KEY` não são necessárias. O que ele muda: o `ufw` passa a liberar 80 e 443 só às faixas da Cloudflare, e a chain `DOCKER-USER` impede que o Docker as publique ao mundo.
 
 **Antes de rodar, e para não ficar trancado para fora:**
 

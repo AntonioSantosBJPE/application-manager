@@ -12,6 +12,12 @@
 #   HARDEN_CF_IPS_FILE    optional file with the Cloudflare ranges, one CIDR per line; without it the
 #                         lists published at https://www.cloudflare.com/ips-v4 and /ips-v6 are fetched
 #   HARDEN_PUBLIC_IFACE   optional name of the public network interface (default: the default route's)
+#   HARDEN_STEPS          comma-separated steps to run, from user,key,ssh,updates,fail2ban,firewall
+#                         (default: all). On a server that already has the account, the SSH settings and
+#                         fail2ban, `HARDEN_STEPS=firewall` runs only the firewall and needs no ADMIN_*.
+#
+# Root can still log in, but only with a key (PermitRootLogin prohibit-password): Coolify manages the
+# server it runs on by SSH as root, so switching root login off would stop every deploy.
 #
 # --dry-run prints every command that would run (prefixed with `+`) and changes nothing.
 # Read docs/runbooks/production-deploy.md before running it on a server you reach over SSH: keep your
@@ -26,6 +32,7 @@ for arg in "$@"; do
   esac
 done
 
+HARDEN_STEPS="${HARDEN_STEPS:-user,key,ssh,updates,fail2ban,firewall}"
 ADMIN_USER="${ADMIN_USER:-}"
 ADMIN_SSH_PUBLIC_KEY="${ADMIN_SSH_PUBLIC_KEY:-}"
 SSH_PORT="${SSH_PORT:-22}"
@@ -101,15 +108,30 @@ have_systemd() { [ -d /run/systemd/system ] || [ "${HARDEN_FORCE_SYSTEMD:-0}" = 
 # A port number, 1 to 65535, in at most five digits.
 valid_port() { [[ "$1" =~ ^[0-9]{1,5}$ ]] && [ "$((10#$1))" -ge 1 ] && [ "$((10#$1))" -le 65535 ]; }
 
+# Whether HARDEN_STEPS lists a step.
+wants() { [[ ",$HARDEN_STEPS," == *",$1,"* ]]; }
+
 validate_inputs() {
-  local errors=() port
-  if ! [[ "$ADMIN_USER" =~ ^[a-z_][a-z0-9_-]{0,31}$ ]] || [ "$ADMIN_USER" = "root" ]; then
-    errors+=("ADMIN_USER must be a lowercase account name other than root")
+  local errors=() port step
+  for step in ${HARDEN_STEPS//,/ }; do
+    case "$step" in
+      user|key|ssh|updates|fail2ban|firewall) ;;
+      *) errors+=("HARDEN_STEPS has '$step', which is not one of user,key,ssh,updates,fail2ban,firewall") ;;
+    esac
+  done
+  if [ -z "$HARDEN_STEPS" ]; then
+    errors+=("HARDEN_STEPS is empty")
   fi
-  if [ -z "$ADMIN_SSH_PUBLIC_KEY" ]; then
-    errors+=("ADMIN_SSH_PUBLIC_KEY is empty: without a key the server would be locked out once password login is off")
-  elif ! [[ "$ADMIN_SSH_PUBLIC_KEY" =~ ^(ssh-ed25519|ssh-rsa|ecdsa-sha2-nistp(256|384|521)|sk-ssh-ed25519@openssh\.com)\ [A-Za-z0-9+/]+=*(\ .*)?$ ]]; then
-    errors+=("ADMIN_SSH_PUBLIC_KEY is not a valid public key line")
+  # The account and its key matter to the steps that create them or that switch passwords off.
+  if wants user || wants key || wants ssh; then
+    if ! [[ "$ADMIN_USER" =~ ^[a-z_][a-z0-9_-]{0,31}$ ]] || [ "$ADMIN_USER" = "root" ]; then
+      errors+=("ADMIN_USER must be a lowercase account name other than root")
+    fi
+    if [ -z "$ADMIN_SSH_PUBLIC_KEY" ]; then
+      errors+=("ADMIN_SSH_PUBLIC_KEY is empty: without a key the server would be locked out once password login is off")
+    elif ! [[ "$ADMIN_SSH_PUBLIC_KEY" =~ ^(ssh-ed25519|ssh-rsa|ecdsa-sha2-nistp(256|384|521)|sk-ssh-ed25519@openssh\.com)\ [A-Za-z0-9+/]+=*(\ .*)?$ ]]; then
+      errors+=("ADMIN_SSH_PUBLIC_KEY is not a valid public key line")
+    fi
   fi
   if ! valid_port "$SSH_PORT"; then
     errors+=("SSH_PORT must be a port number from 1 to 65535")
@@ -220,7 +242,7 @@ step_ssh() {
     previous="$(cat "$file")"
     had_previous=1
   fi
-  write_file "$file" 644 "$(printf '%s\n' 'PermitRootLogin no' 'PasswordAuthentication no' 'KbdInteractiveAuthentication no' 'PubkeyAuthentication yes')"
+  write_file "$file" 644 "$(printf '%s\n' 'PermitRootLogin prohibit-password' 'PasswordAuthentication no' 'KbdInteractiveAuthentication no' 'PubkeyAuthentication yes')"
   if [ "$write_changed" -eq 1 ]; then
     changed=1
     # A configuration sshd rejects is rolled back before sshd ever reloads it.
@@ -413,9 +435,9 @@ step_firewall() {
 # ---------------------------------------------------------------------------------------------------
 
 validate_inputs
-step_user
-step_key
-step_ssh
-step_updates
-step_fail2ban
-step_firewall
+if wants user; then step_user; fi
+if wants key; then step_key; fi
+if wants ssh; then step_ssh; fi
+if wants updates; then step_updates; fi
+if wants fail2ban; then step_fail2ban; fi
+if wants firewall; then step_firewall; fi

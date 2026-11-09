@@ -13,7 +13,7 @@ const tableNames = new Set([...runbook.matchAll(/^\| `([A-Z][A-Z0-9_]*)` \|/gm)]
 /** Variables each script documents and reads, so a rename in a script breaks this test. */
 const scriptVariables: Record<string, string[]> = {
   'infra/deploy/coolify.sh': ['COOLIFY_URL', 'COOLIFY_TOKEN', 'COOLIFY_RESOURCE_UUID', 'COOLIFY_RESOURCE_KIND'],
-  'infra/provision/harden.sh': ['ADMIN_USER', 'ADMIN_SSH_PUBLIC_KEY', 'SSH_PORT', 'EXTRA_ALLOW_TCP', 'HARDEN_CF_IPS_FILE', 'HARDEN_PUBLIC_IFACE'],
+  'infra/provision/harden.sh': ['ADMIN_USER', 'ADMIN_SSH_PUBLIC_KEY', 'SSH_PORT', 'EXTRA_ALLOW_TCP', 'HARDEN_CF_IPS_FILE', 'HARDEN_PUBLIC_IFACE', 'HARDEN_STEPS'],
   'infra/backup/restore.sh': ['TARGET_DATABASE_URL'],
   'infra/backup/verify-restore.sh': ['MIGRATIONS_JOURNAL'],
 };
