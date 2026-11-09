@@ -271,9 +271,9 @@ T13 → T14
 
 **Done when**:
 
-- [ ] Backup do banco migrado: sai 0 e remove o banco descartável
-- [ ] Backup de banco sem a última migration: sai ≠ 0 mostrando as duas contagens
-- [ ] Gate passa: `pnpm --filter @am/guardrails test:infra`
+- [x] Backup do banco migrado: sai 0 e remove o banco descartável
+- [x] Backup de banco sem a última migration: sai ≠ 0 mostrando as duas contagens
+- [x] Gate passa: `pnpm --filter @am/guardrails test:infra`
 
 **Tests**: integration
 **Gate**: full
