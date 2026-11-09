@@ -57,6 +57,42 @@ describe('restore.sh', () => {
     expect(harness.psql("select count(*) from pg_class where relname = 'notes'", 'not_empty').output.trim()).toBe('0');
   });
 
+  it.each([
+    ['only an enum type', 'create type public.mood as enum ($$ok$$)'],
+    ['only a function', 'create function public.one() returns int language sql as $$select 1$$'],
+    ['only a schema of its own', 'create schema leftover'],
+    ['only a view', 'create view public.v as select 1 as one'],
+    ['only a sequence', 'create sequence public.s'],
+  ])('DEPLOY-40 refuses a target with %s, exits non-zero and leaves it exactly as it was', (_label, ddl) => {
+    const name = `target_${_label.replace(/[^a-z]/g, '')}`;
+    newDatabase(name);
+    expect(harness.psql(ddl, name).status).toBe(0);
+    const inventory = "select (select count(*) from pg_namespace where nspname not like 'pg_%') || ',' || (select count(*) from pg_class where relnamespace = 'public'::regnamespace) || ',' || (select count(*) from pg_proc where pronamespace = 'public'::regnamespace) || ',' || (select count(*) from pg_type where typnamespace = 'public'::regnamespace and typtype = 'e')";
+    const before = harness.psql(inventory, name).output.trim();
+    const result = restore([sourceKey], name);
+    expect(result.status).toBe(3);
+    expect(harness.psql(inventory, name).output.trim()).toBe(before);
+    expect(harness.psql("select count(*) from pg_namespace where nspname = 'drizzle'", name).output.trim()).toBe('0');
+  });
+
+  it('DEPLOY-40 a dump that cannot be restored leaves an empty target empty', () => {
+    // A dump whose second statement cannot run: a function needing a type that the dump does not create.
+    newDatabase('half_way');
+    const broken = harness.shell(
+      `export PGPASSWORD=test-db-password
+       psql "postgres://app@pg:5432/app" -qc 'create table half_a (id int)' &&
+       pg_dump --format=custom "postgres://app@pg:5432/app" -t half_a > /tmp/half.dump &&
+       psql "postgres://app@pg:5432/app" -qc 'drop table half_a' &&
+       aws --endpoint-url "$BACKUP_S3_ENDPOINT" s3 cp /tmp/half.dump "s3://$BACKUP_BUCKET/rs/2999-01-01T00:00:00Z.dump" --only-show-errors &&
+       head -c 200 /tmp/half.dump > /tmp/truncated.dump &&
+       aws --endpoint-url "$BACKUP_S3_ENDPOINT" s3 cp /tmp/truncated.dump "s3://$BACKUP_BUCKET/rs/2999-01-02T00:00:00Z.dump" --only-show-errors`,
+    );
+    expect(broken.status, broken.output).toBe(0);
+    const result = restore(['rs/2999-01-02T00:00:00Z.dump'], 'half_way');
+    expect(result.status).toBe(1);
+    expect(harness.psql("select count(*) from pg_class where relname = 'half_a'", 'half_way').output.trim()).toBe('0');
+  });
+
   it('DEPLOY-40 with --force restores over a target that is not empty', () => {
     newDatabase('forced');
     expect(harness.psql('create table notes (id int primary key, body text); insert into notes values (9, $$stale$$)', 'forced').status).toBe(0);

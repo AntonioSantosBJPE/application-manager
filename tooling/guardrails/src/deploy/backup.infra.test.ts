@@ -42,7 +42,7 @@ describe('backup.sh', () => {
     expect(wait('2026-01-01T04:00:00Z')).toBe('82800');
   });
 
-  it('DEPLOY-34 without --once waits for the scheduled hour, then runs one cycle, then waits again', () => {
+  it.each(['3', '17', '0'])('DEPLOY-34 without --once waits for BACKUP_SCHEDULE_UTC_HOUR=%s, then runs one cycle, then waits again', (hour) => {
     // Stubs stand in for sleep, pg_dump and aws so the loop can be observed without waiting a day.
     const bin = mkdtempSync(join(tmpdir(), 'backup-loop-'));
     const log = join(bin, 'calls.log');
@@ -62,14 +62,17 @@ describe('backup.sh', () => {
         BACKUP_S3_ACCESS_KEY_ID: 'id',
         BACKUP_S3_SECRET_ACCESS_KEY: 'secret',
         BACKUP_BUCKET: 'b',
-        BACKUP_SCHEDULE_UTC_HOUR: '3',
+        BACKUP_SCHEDULE_UTC_HOUR: hour,
       },
     });
     expect(result.status).toBe(7);
     const calls = readFileSync(log, 'utf8').trim().split('\n');
     expect(calls[0]).toMatch(/^sleep \d+$/);
-    expect(Number(calls[0]!.split(' ')[1])).toBeGreaterThan(0);
-    expect(Number(calls[0]!.split(' ')[1])).toBeLessThanOrEqual(86400);
+    // The first wait is the time left until the configured hour (a few seconds of slack for the clock).
+    const now = Math.floor(Date.now() / 1000);
+    const target = now - (now % 86400) + Number(hour) * 3600;
+    const expected = target <= now ? target + 86400 - now : target - now;
+    expect(Math.abs(Number(calls[0]!.split(' ')[1]) - expected)).toBeLessThanOrEqual(5);
     expect(calls[1]).toBe('pg_dump');
     expect(calls.filter((call) => call.startsWith('aws') && call.includes('s3 cp'))).toHaveLength(1);
     expect(calls.at(-1)).toMatch(/^sleep \d+$/);
@@ -106,6 +109,44 @@ describe('backup.sh', () => {
     expect(harness.keys('other36')).toHaveLength(1);
   });
 
+  it('DEPLOY-36 keeps a backup 13 days old and deletes one 15 days old when the retention is 14', () => {
+    const kept = `t36c/${dayAgo(13)}.dump`;
+    const deleted = `t36c/${dayAgo(15)}.dump`;
+    for (const key of [kept, deleted]) expect(harness.put(key).status).toBe(0);
+    const result = once('t36c', { BACKUP_RETENTION_DAYS: '14' });
+    expect(result.status, result.output).toBe(0);
+    expect(harness.keys('t36c')).toContain(kept);
+    expect(harness.keys('t36c')).not.toContain(deleted);
+  });
+
+  it('DEPLOY-36 a key with an impossible date in the prefix is left alone and does not stop the retention', () => {
+    const impossible = 't36d/2026-99-99T99:99:99Z.dump';
+    const old = `t36d/${dayAgo(40)}.dump`;
+    for (const key of [impossible, old]) expect(harness.put(key).status).toBe(0);
+    const result = once('t36d');
+    expect(result.status, result.output).toBe(0);
+    expect(harness.keys('t36d')).toContain(impossible);
+    expect(harness.keys('t36d')).not.toContain(old);
+    for (const line of result.output.split('\n').filter((entry) => entry !== '')) expect(() => JSON.parse(line), line).not.toThrow();
+  });
+
+  it.each([
+    ['BACKUP_RETENTION_DAYS', '0'],
+    ['BACKUP_RETENTION_DAYS', 'fourteen'],
+    ['BACKUP_RETENTION_DAYS', '-3'],
+    ['BACKUP_SCHEDULE_UTC_HOUR', '24'],
+    ['BACKUP_SCHEDULE_UTC_HOUR', 'noon'],
+  ])('DEPLOY-36 refuses %s=%s with a JSON error before uploading or deleting anything', (name, value) => {
+    const prefix = `t36e${(name + value).replace(/[^a-z0-9]/gi, '')}`;
+    const key = `${prefix}/${dayAgo(40)}.dump`;
+    expect(harness.put(key).status).toBe(0);
+    const result = once(prefix, { [name]: value });
+    expect(result.status).toBe(2);
+    expect(JSON.parse(result.output.trim().split('\n')[0]!)).toMatchObject({ level: 'error' });
+    expect(result.output).toContain(name);
+    expect(harness.keys(prefix)).toEqual([key]);
+  });
+
   it('DEPLOY-37 reaches the store only through BACKUP_S3_ENDPOINT, with no vendor-specific code', () => {
     const source = readFileSync(backupScript, 'utf8');
     expect(source).toContain('--endpoint-url "$BACKUP_S3_ENDPOINT"');
@@ -126,4 +167,15 @@ describe('backup.sh', () => {
     }
     expect(Object.keys(s3Env('b'))).toContain('BACKUP_S3_SECRET_ACCESS_KEY');
   });
+
+  it.each(['qz9/Wx7+Yk3', 'qz9@Wx7?Yk3', 'qz9 Wx7#Yk3'])(
+    'DEPLOY-38 a database password with reserved URL characters (%s) is refused without echoing any piece of it',
+    (password) => {
+      const result = once('t38b', { DATABASE_URL: `postgres://app:${password}@pg:5432/app` });
+      expect(result.status).toBe(2);
+      expect(result.output).toContain('openssl rand -hex 32');
+      for (const piece of ['qz9', 'Wx7', 'Yk3']) expect(result.output).not.toContain(piece);
+      expect(harness.keys('t38b')).toEqual([]);
+    },
+  );
 });

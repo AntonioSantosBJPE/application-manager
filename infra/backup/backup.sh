@@ -47,6 +47,29 @@ prefix="${BACKUP_PREFIX:-postgres}"
 retention_days="${BACKUP_RETENTION_DAYS:-14}"
 schedule_hour="${BACKUP_SCHEDULE_UTC_HOUR:-3}"
 
+# Settings are checked before anything runs: a retention of 0 would delete the backup just uploaded, and
+# a bad number would otherwise surface as a shell error outside the JSON log.
+if ! [[ "$retention_days" =~ ^[1-9][0-9]{0,3}$ ]]; then
+  log error "BACKUP_RETENTION_DAYS must be a whole number of days, at least 1"
+  exit 2
+fi
+if ! [[ "$schedule_hour" =~ ^(0?[0-9]|1[0-9]|2[0-3])$ ]]; then
+  log error "BACKUP_SCHEDULE_UTC_HOUR must be an hour from 0 to 23"
+  exit 2
+fi
+# The password sits in a URL, so a character that URLs reserve breaks it and makes the tools echo pieces
+# of it in their errors. Only what needs no encoding is accepted (openssl rand -hex 32 makes one).
+db_password=""
+if [[ "$DATABASE_URL" == *@* ]]; then
+  db_userinfo="${DATABASE_URL#*://}"
+  db_userinfo="${db_userinfo%@*}"
+  db_password="${db_userinfo#*:}"
+  if ! [[ "$db_password" =~ ^[A-Za-z0-9._~%-]*$ ]]; then
+    log error "the database password in DATABASE_URL has characters a URL reserves; use only letters and digits (openssl rand -hex 32)"
+    exit 2
+  fi
+fi
+
 # The aws client reads its credentials from the environment, never from the command line.
 export AWS_ACCESS_KEY_ID="$BACKUP_S3_ACCESS_KEY_ID"
 export AWS_SECRET_ACCESS_KEY="$BACKUP_S3_SECRET_ACCESS_KEY"
@@ -59,7 +82,7 @@ s3() { aws --endpoint-url "$BACKUP_S3_ENDPOINT" "$@"; }
 first_error_line() {
   local line
   line="$(head -n 1 "$1" | tr -d '"\\')"
-  for secret in "$BACKUP_S3_SECRET_ACCESS_KEY" "$BACKUP_S3_ACCESS_KEY_ID" "$DATABASE_URL" "${DATABASE_URL##*:}"; do
+  for secret in "$BACKUP_S3_SECRET_ACCESS_KEY" "$BACKUP_S3_ACCESS_KEY_ID" "$DATABASE_URL" "$db_password"; do
     [ -n "$secret" ] && line="${line//"$secret"/***}"
   done
   printf '%s' "$line"
@@ -80,7 +103,8 @@ apply_retention() {
     (. // [])[]
     | select(startswith($prefix))
     | select(ltrimstr($prefix) | test("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z\\.dump$"))
-    | select((ltrimstr($prefix) | rtrimstr(".dump") | fromdateiso8601) < $cutoff)')"
+    | select(((ltrimstr($prefix) | rtrimstr(".dump") | try fromdateiso8601 catch null) // empty) < $cutoff)')" \
+    || { log error "reading the list of backups failed"; return 1; }
   while IFS= read -r key; do
     [ -z "$key" ] && continue
     s3 s3 rm "s3://$BACKUP_BUCKET/$key" >/dev/null 2>"$errors" || { fail "deleting $key" "$errors"; return 1; }

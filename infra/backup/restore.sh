@@ -50,10 +50,23 @@ if [ "$key" = "--latest" ]; then
   fi
 fi
 
-# The target must be empty before anything is touched.
-objects="$(psql "$TARGET_DATABASE_URL" -tA -v ON_ERROR_STOP=1 -c \
-  "select count(*) from pg_class c join pg_namespace n on n.oid = c.relnamespace
-   where n.nspname not in ('pg_catalog', 'information_schema', 'pg_toast') and c.relkind in ('r', 'p', 'v', 'm', 'S', 'f')" 2>"$work/err")" \
+# The target must be empty before anything is touched: no table, view, sequence, enum, domain, range,
+# composite type or function outside the system schemas (and none an extension owns), and no schema of
+# its own besides `public`.
+objects="$(psql "$TARGET_DATABASE_URL" -tA -v ON_ERROR_STOP=1 -c "
+  with user_schemas as (
+    select oid, nspname from pg_namespace where nspname not like 'pg_%' and nspname <> 'information_schema'
+  )
+  select
+    (select count(*) from pg_class c join user_schemas n on n.oid = c.relnamespace
+       where c.relkind in ('r', 'p', 'v', 'm', 'S', 'f', 'c')
+         and not exists (select 1 from pg_depend d where d.classid = 'pg_class'::regclass and d.objid = c.oid and d.deptype = 'e'))
+  + (select count(*) from pg_type t join user_schemas n on n.oid = t.typnamespace
+       where t.typtype in ('e', 'd', 'r', 'm')
+         and not exists (select 1 from pg_depend d where d.classid = 'pg_type'::regclass and d.objid = t.oid and d.deptype = 'e'))
+  + (select count(*) from pg_proc p join user_schemas n on n.oid = p.pronamespace
+       where not exists (select 1 from pg_depend d where d.classid = 'pg_proc'::regclass and d.objid = p.oid and d.deptype = 'e'))
+  + (select count(*) from user_schemas where nspname <> 'public')" 2>"$work/err")" \
   || { echo "restore: cannot read the target database" >&2; exit 1; }
 if [ "$objects" != "0" ] && [ "$force" -ne 1 ]; then
   echo "restore: the target database is not empty ($objects objects); nothing was changed. Use --force to replace them." >&2
@@ -63,7 +76,8 @@ fi
 s3 s3 cp "s3://$BACKUP_BUCKET/$key" "$work/dump" --only-show-errors 2>"$work/err" \
   || { echo "restore: downloading $key failed" >&2; exit 1; }
 
-flags=(--no-owner --dbname "$TARGET_DATABASE_URL")
+# One transaction: a restore that fails halfway leaves the target as it was.
+flags=(--no-owner --single-transaction --dbname "$TARGET_DATABASE_URL")
 if [ "$force" -eq 1 ]; then
   flags+=(--clean --if-exists)
 else
