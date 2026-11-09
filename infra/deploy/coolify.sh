@@ -2,7 +2,7 @@
 # Points the Coolify resource at <tag> and starts a deploy:
 #   1. writes IMAGE_TAG=<tag> as a variable of the resource (PATCH, falling back to POST when the
 #      variable does not exist yet),
-#   2. triggers the deploy of the resource.
+#   2. triggers the deploy of the resource (POST, or GET where the instance refuses POST).
 # Needs COOLIFY_URL, COOLIFY_TOKEN and COOLIFY_RESOURCE_UUID. COOLIFY_RESOURCE_KIND is `applications`
 # (default) or `services`: Coolify exposes a compose resource under one of the two route families
 # (docs/runbooks/production-deploy.md says how to check which one the instance uses).
@@ -55,7 +55,13 @@ if ! ok "$status"; then
 fi
 echo "coolify: IMAGE_TAG set to $tag"
 
-status="$(call GET "$api/deploy?uuid=$COOLIFY_RESOURCE_UUID&force=false")"
+# The deploy route is documented as GET and as POST; an instance accepts one and answers 405 to the
+# other (v4.6.0 refuses GET), so POST is tried first and GET only when POST is refused with 405.
+deploy_url="$api/deploy?uuid=$COOLIFY_RESOURCE_UUID&force=false"
+status="$(call POST "$deploy_url")"
+if [ "$status" = "405" ]; then
+  status="$(call GET "$deploy_url")"
+fi
 if ! ok "$status"; then
   echo "coolify: starting the deploy failed with HTTP $status" >&2
   exit 1
