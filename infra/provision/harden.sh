@@ -78,7 +78,8 @@ ensure_packages() {
 }
 
 # Services are managed only where systemd runs (not in the container the script is rehearsed in).
-have_systemd() { [ -d /run/systemd/system ]; }
+# HARDEN_FORCE_SYSTEMD=1 makes --dry-run print the service commands there too.
+have_systemd() { [ -d /run/systemd/system ] || [ "${HARDEN_FORCE_SYSTEMD:-0}" = "1" ]; }
 
 # ---------------------------------------------------------------------------------------------------
 # Inputs are checked before anything is touched.
@@ -172,8 +173,74 @@ step_key() {
   report key "$([ "$changed" -eq 1 ] && echo changed || echo unchanged)"
 }
 
+# sshd: no root login, no passwords, keys only. The file is named 00- because sshd keeps the first
+# value it reads, and cloud images ship 50-cloud-init.conf with PasswordAuthentication yes.
+step_ssh() {
+  local file=/etc/ssh/sshd_config.d/00-hardening.conf previous="" had_previous=0 changed=0
+  ensure_packages openssh-server && changed=1
+  run mkdir -p /etc/ssh/sshd_config.d /run/sshd
+  if [ -f "$file" ]; then
+    previous="$(cat "$file")"
+    had_previous=1
+  fi
+  if printf '%s\n' 'PermitRootLogin no' 'PasswordAuthentication no' 'KbdInteractiveAuthentication no' 'PubkeyAuthentication yes' \
+    | write_file "$file" 644; then
+    changed=1
+    # A configuration sshd rejects is rolled back before sshd ever reloads it.
+    if [ "$DRY_RUN" -eq 1 ]; then
+      echo "+ sshd -t"
+    elif ! sshd -t 2>/tmp/harden-sshd-test.err; then
+      if [ "$had_previous" -eq 1 ]; then
+        printf '%s\n' "$previous" >"$file"
+      else
+        rm -f "$file"
+      fi
+      echo "harden: sshd rejected the new configuration, the previous one was restored: $(head -n 1 /tmp/harden-sshd-test.err)" >&2
+      exit 1
+    fi
+    if have_systemd; then
+      if [ "$DRY_RUN" -eq 1 ]; then
+        echo "+ systemctl reload ssh"
+      else
+        systemctl reload ssh 2>/dev/null || systemctl reload sshd
+      fi
+    fi
+  fi
+  report ssh "$([ "$changed" -eq 1 ] && echo changed || echo unchanged)"
+}
+
+# Automatic security updates (the package's default origins are the security pockets).
+step_updates() {
+  local changed=0
+  ensure_packages unattended-upgrades && changed=1
+  printf '%s\n' 'APT::Periodic::Update-Package-Lists "1";' 'APT::Periodic::Unattended-Upgrade "1";' \
+    | write_file /etc/apt/apt.conf.d/20auto-upgrades 644 && changed=1
+  if have_systemd; then
+    run systemctl enable --now apt-daily.timer apt-daily-upgrade.timer
+  fi
+  report updates "$([ "$changed" -eq 1 ] && echo changed || echo unchanged)"
+}
+
+# Bans addresses that keep failing to log in over SSH.
+step_fail2ban() {
+  local changed=0
+  ensure_packages fail2ban && changed=1
+  printf '%s\n' '[sshd]' 'enabled = true' "port = $SSH_PORT" 'maxretry = 5' 'findtime = 10m' 'bantime = 1h' \
+    | write_file /etc/fail2ban/jail.d/sshd.local 644 && changed=1 && reload_fail2ban=1
+  if have_systemd; then
+    run systemctl enable --now fail2ban
+    if [ "${reload_fail2ban:-0}" -eq 1 ]; then
+      run systemctl reload fail2ban
+    fi
+  fi
+  report fail2ban "$([ "$changed" -eq 1 ] && echo changed || echo unchanged)"
+}
+
 # ---------------------------------------------------------------------------------------------------
 
 validate_inputs
 step_user
 step_key
+step_ssh
+step_updates
+step_fail2ban

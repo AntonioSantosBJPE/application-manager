@@ -316,10 +316,10 @@ T13 → T14
 
 **Done when**:
 
-- [ ] Drop-in `sshd_config.d` desabilita root e senha; `sshd -t` roda antes do recarregamento
-- [ ] Drop-in inválido: removido e configuração anterior preservada, sai ≠ 0
-- [ ] `fail2ban` com jail do SSH e `unattended-upgrades` configurados e habilitados
-- [ ] Gate passa: `pnpm --filter @am/guardrails test:infra`
+- [x] Drop-in `sshd_config.d` desabilita root e senha; `sshd -t` roda antes do recarregamento
+- [x] Drop-in inválido: removido e configuração anterior preservada, sai ≠ 0
+- [x] `fail2ban` com jail do SSH e `unattended-upgrades` configurados e habilitados
+- [x] Gate passa: `pnpm --filter @am/guardrails test:infra`
 
 **Tests**: integration
 **Gate**: full

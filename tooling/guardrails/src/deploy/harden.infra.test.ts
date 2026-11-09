@@ -80,6 +80,61 @@ describe('harden.sh', () => {
     expect(server.sh('ls /etc/sudoers.d').output).not.toContain('90-deploy');
   });
 
+  it('DEPLOY-26 the sshd drop-in turns off root and password login, and beats a cloud-init file that turns passwords on', () => {
+    const server = startServer();
+    server.sh("mkdir -p /etc/ssh/sshd_config.d && echo 'PasswordAuthentication yes' > /etc/ssh/sshd_config.d/50-cloud-init.conf");
+    const result = server.harden(base);
+    expect(result.status, result.output).toBe(0);
+    expect(server.sh('cat /etc/ssh/sshd_config.d/00-hardening.conf').output).toMatch(
+      /PermitRootLogin no\nPasswordAuthentication no\nKbdInteractiveAuthentication no\nPubkeyAuthentication yes/,
+    );
+    const effective = server.sh('sshd -T | grep -E "^(permitrootlogin|passwordauthentication|kbdinteractiveauthentication) "').output;
+    expect(effective).toContain('permitrootlogin no');
+    expect(effective).toContain('passwordauthentication no');
+    expect(effective).toContain('kbdinteractiveauthentication no');
+  }, 300_000);
+
+  it('DEPLOY-26 when sshd -t rejects the configuration it restores the previous file, or removes the new one, and exits non-zero', () => {
+    const server = startServer();
+    expect(server.harden(base).status).toBe(0);
+    const file = '/etc/ssh/sshd_config.d/00-hardening.conf';
+    // Something outside the script's file breaks the configuration, so any new write must be rolled back.
+    server.sh("echo 'NotADirective yes' > /etc/ssh/sshd_config.d/99-broken.conf");
+
+    server.sh(`echo 'PermitRootLogin yes' > ${file}`);
+    const withPrevious = server.harden(base);
+    expect(withPrevious.status).toBe(1);
+    expect(withPrevious.output).toContain('previous one was restored');
+    expect(server.sh(`cat ${file}`).output.trim()).toBe('PermitRootLogin yes');
+
+    server.sh(`rm ${file}`);
+    const withoutPrevious = server.harden(base);
+    expect(withoutPrevious.status).toBe(1);
+    expect(server.sh(`test -e ${file}`).status).not.toBe(0);
+  }, 300_000);
+
+  it('DEPLOY-26 validates with sshd -t before it reloads the service', () => {
+    const server = startServer();
+    const result = server.harden({ ...base, HARDEN_FORCE_SYSTEMD: '1' }, ['--dry-run']);
+    expect(result.status, result.output).toBe(0);
+    const test = result.output.indexOf('+ sshd -t');
+    const reload = result.output.indexOf('+ systemctl reload ssh');
+    expect(test).toBeGreaterThan(-1);
+    expect(reload).toBeGreaterThan(test);
+  });
+
+  it('DEPLOY-28 installs and enables fail2ban for SSH and the automatic security updates', () => {
+    expect(main.sh('dpkg -s fail2ban unattended-upgrades').status).toBe(0);
+    const jail = main.sh('cat /etc/fail2ban/jail.d/sshd.local').output;
+    expect(jail).toMatch(/\[sshd\]\nenabled = true\nport = 22\n/);
+    const periodic = main.sh('cat /etc/apt/apt.conf.d/20auto-upgrades').output;
+    expect(periodic).toContain('APT::Periodic::Update-Package-Lists "1";');
+    expect(periodic).toContain('APT::Periodic::Unattended-Upgrade "1";');
+    const dry = startServer().harden({ ...base, HARDEN_FORCE_SYSTEMD: '1' }, ['--dry-run']).output;
+    expect(dry).toContain('+ systemctl enable --now fail2ban');
+    expect(dry).toContain('+ systemctl enable --now apt-daily.timer apt-daily-upgrade.timer');
+  });
+
   it('DEPLOY-29 a second run with the same values exits 0, reports unchanged for every step and changes no file', () => {
     const fingerprint = "find /etc /home -xdev -type f -exec sha256sum {} + | sort | sha256sum";
     const before = main.sh(fingerprint).output;
