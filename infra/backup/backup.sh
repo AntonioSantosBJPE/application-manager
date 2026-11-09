@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Daily Postgres backup to an S3-compatible bucket (R2 in production, MinIO in tests).
+# Daily Postgres backup to an S3-compatible bucket (R2 in production, a local S3 server in tests).
 #   backup.sh --once               one cycle now, exit code = the cycle's
 #   backup.sh                      one cycle a day, at BACKUP_SCHEDULE_UTC_HOUR (UTC, default 3)
 #   backup.sh --seconds-until <h> [now-epoch]   prints the seconds until the next <h>:00 UTC and exits

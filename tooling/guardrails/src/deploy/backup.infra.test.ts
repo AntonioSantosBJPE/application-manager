@@ -151,7 +151,7 @@ describe('backup.sh', () => {
     const source = readFileSync(backupScript, 'utf8');
     expect(source).toContain('--endpoint-url "$BACKUP_S3_ENDPOINT"');
     expect(source).not.toMatch(/cloudflare|r2\.|amazonaws|\.r2\./i);
-    // The run above against MinIO (not S3, not R2) is the proof that the endpoint is configurable.
+    // The run above against a local S3 server (not AWS, not R2) is the proof that the endpoint is configurable.
     expect(once('t37').status).toBe(0);
   });
 
