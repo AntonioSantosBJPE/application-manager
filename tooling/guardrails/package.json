@@ -6,8 +6,10 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --exclude src/root-commands.test.ts",
-    "test:repo-rules": "vitest run src/root-commands.test.ts"
+    "test": "vitest run --exclude src/root-commands.test.ts --exclude \"src/**/*.infra.test.ts\"",
+    "test:repo-rules": "vitest run src/root-commands.test.ts",
+    "test:deploy": "vitest run src/deploy --exclude \"src/**/*.infra.test.ts\"",
+    "test:infra": "vitest run .infra.test.ts --passWithNoTests"
   },
   "devDependencies": {
     "@am/config": "workspace:*",

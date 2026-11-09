@@ -94,10 +94,10 @@ T13 → T14
 
 **Done when**:
 
-- [ ] Servidor HTTP falso: 200 com API Operacional passa; 200 com API Indisponível, 503 e conexão recusada falham depois do timeout, imprimindo o último status
-- [ ] `package.json` do guardrails ganha `test:deploy` (exclui `*.infra.test.ts`) e `test:infra`; o `test` existente exclui `*.infra.test.ts`
-- [ ] Gate passa: `pnpm --filter @am/guardrails test:deploy`
-- [ ] Testes novos: 4, sem apagar nenhum
+- [x] Servidor HTTP falso: 200 com API Operacional passa; 200 com API Indisponível, 503 e conexão recusada falham depois do timeout, imprimindo o último status
+- [x] `package.json` do guardrails ganha `test:deploy` (exclui `*.infra.test.ts`) e `test:infra`; o `test` existente exclui `*.infra.test.ts`
+- [x] Gate passa: `pnpm --filter @am/guardrails test:deploy`
+- [x] Testes novos: 5, sem apagar nenhum
 
 **Tests**: unit
 **Gate**: quick
