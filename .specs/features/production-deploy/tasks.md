@@ -250,9 +250,9 @@ T13 → T14
 
 **Done when**:
 
-- [ ] Restaura por chave e por `--latest` num banco vazio e imprime `migrations=<n>` igual ao do original
-- [ ] Destino não vazio: sai ≠ 0 sem alterar nada; com `--force` restaura
-- [ ] Gate passa: `pnpm --filter @am/guardrails test:infra`
+- [x] Restaura por chave e por `--latest` num banco vazio e imprime `migrations=<n>` igual ao do original
+- [x] Destino não vazio: sai ≠ 0 sem alterar nada; com `--force` restaura
+- [x] Gate passa: `pnpm --filter @am/guardrails test:infra`
 
 **Tests**: integration
 **Gate**: full
