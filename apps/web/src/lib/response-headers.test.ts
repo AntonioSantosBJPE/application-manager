@@ -39,6 +39,32 @@ describe('responseHeadersFor', () => {
   });
 });
 
+describe('responseHeadersFor with a build version', () => {
+  it('adds x-app-version to /status, which stays cacheable, and to every other page (DEPLOY-44)', () => {
+    expect(responseHeadersFor('/status', 'abc123')).toEqual({ 'x-app-version': 'abc123' });
+    expect(responseHeadersFor('/status/', 'abc123')).toEqual({ 'x-app-version': 'abc123' });
+    expect(responseHeadersFor('/admin', 'abc123')).toEqual({ 'x-app-version': 'abc123', 'cache-control': 'no-store' });
+    expect(responseHeadersFor('/invite/token-1', 'abc123')).toEqual({
+      'x-app-version': 'abc123',
+      'cache-control': 'no-store',
+      'referrer-policy': 'no-referrer',
+    });
+  });
+
+  it('adds nothing when the version is absent or empty, as in local development', () => {
+    expect(responseHeadersFor('/status')).toEqual({});
+    expect(responseHeadersFor('/status', '')).toEqual({});
+    expect(responseHeadersFor('/admin', '')).toEqual({ 'cache-control': 'no-store' });
+  });
+
+  it('writes the header on the response itself, keeping its body and status', async () => {
+    const marked = withResponseHeaders(new Response('page', { status: 200 }), '/status', 'abc123');
+    expect(marked.headers.get('x-app-version')).toBe('abc123');
+    expect(marked.status).toBe(200);
+    expect(await marked.text()).toBe('page');
+  });
+});
+
 describe('withResponseHeaders', () => {
   it('keeps the status, the body and every Set-Cookie of the response', async () => {
     const original = new Response('rendered page', { status: 201 });

@@ -1,0 +1,100 @@
+# Production stack: postgres, a one-shot migrate, the api, the web and the backup, from the images the
+# deploy workflow publishes to GHCR. It runs on any server with Docker, with or without Coolify.
+# Everything environment-specific comes from variables (see docs/runbooks/production-deploy.md); the
+# required ones fail `docker compose config` when missing. Nothing here is a real address or secret.
+#
+# Only the web is reachable, and only through the reverse proxy in front of it: postgres and the api
+# publish no port (AD-004). The cookie and client-IP settings below are fixed on purpose, so an
+# environment variable cannot weaken them.
+
+x-database-url: &database-url postgres://${POSTGRES_USER:?set POSTGRES_USER}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:?set POSTGRES_DB}
+x-api-image: &api-image ${IMAGE_REPOSITORY:?set IMAGE_REPOSITORY}-api:${IMAGE_TAG:?set IMAGE_TAG}
+
+services:
+  postgres:
+    # Pinned by tag and digest, the same as compose.yaml.
+    image: postgres:18.6-alpine@sha256:10a5c69a83035ab5239f5620d708520e8b28f5aa1f2b20143e6024532edadfb5
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB}
+    volumes:
+      # PostgreSQL 18 images keep PGDATA in a versioned folder under /var/lib/postgresql.
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  migrate:
+    image: *api-image
+    command: ["node", "dist/migrate.js"]
+    restart: "no"
+    environment:
+      DATABASE_URL: *database-url
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    image: *api-image
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: *database-url
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      PORT: "3333"
+      WEB_PUBLIC_URL: ${WEB_PUBLIC_URL:?set WEB_PUBLIC_URL}
+      SESSION_COOKIE_SECURE: "true"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3333/health').then(() => process.exit(0), () => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  web:
+    image: ${IMAGE_REPOSITORY:?set IMAGE_REPOSITORY}-web:${IMAGE_TAG:?set IMAGE_TAG}
+    restart: unless-stopped
+    environment:
+      API_INTERNAL_URL: http://api:3333
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      PORT: "3000"
+      WEB_PUBLIC_URL: ${WEB_PUBLIC_URL:?set WEB_PUBLIC_URL}
+      # Cloudflare fills this header with the browser address; the web reads no other source.
+      CLIENT_IP_HEADER: cf-connecting-ip
+    # No published port: the reverse proxy reaches the web on the compose network.
+    expose:
+      - "3000"
+    depends_on:
+      api:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/status').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  backup:
+    image: ${IMAGE_REPOSITORY:?set IMAGE_REPOSITORY}-backup:${IMAGE_TAG:?set IMAGE_TAG}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: *database-url
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      BACKUP_S3_ENDPOINT: ${BACKUP_S3_ENDPOINT:?set BACKUP_S3_ENDPOINT}
+      BACKUP_S3_ACCESS_KEY_ID: ${BACKUP_S3_ACCESS_KEY_ID:?set BACKUP_S3_ACCESS_KEY_ID}
+      BACKUP_S3_SECRET_ACCESS_KEY: ${BACKUP_S3_SECRET_ACCESS_KEY:?set BACKUP_S3_SECRET_ACCESS_KEY}
+      BACKUP_BUCKET: ${BACKUP_BUCKET:?set BACKUP_BUCKET}
+      BACKUP_PREFIX: ${BACKUP_PREFIX:-postgres}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      BACKUP_SCHEDULE_UTC_HOUR: ${BACKUP_SCHEDULE_UTC_HOUR:-3}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres-data:

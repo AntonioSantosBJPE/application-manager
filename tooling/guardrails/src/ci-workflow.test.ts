@@ -10,6 +10,7 @@ interface Step {
   with?: Record<string, unknown>;
 }
 interface Job {
+  if?: string;
   permissions?: unknown;
   steps?: Step[];
 }
@@ -32,11 +33,11 @@ function commands(jobName: string): string {
 describe('ci workflow', () => {
   it('runs every required step on pull_request and push to main', () => {
     // Triggers (CI-01).
-    expect(Object.keys(workflow.on ?? {}).sort()).toEqual(['pull_request', 'push']);
+    expect(Object.keys(workflow.on ?? {}).sort()).toEqual(['pull_request', 'push', 'workflow_call']);
     expect((workflow.on?.push as { branches?: string[] }).branches).toEqual(['main']);
 
     // One job per concern.
-    expect(Object.keys(jobs).sort()).toEqual(['e2e', 'images', 'integration', 'quality', 'repo-rules', 'secrets', 'workflow-lint']);
+    expect(Object.keys(jobs).sort()).toEqual(['e2e', 'images', 'infra', 'integration', 'quality', 'repo-rules', 'secrets', 'workflow-lint']);
 
     // Lint, typecheck and unit tests, with the frozen lockfile.
     expect(commands('quality')).toMatch(/pnpm install --frozen-lockfile/);
@@ -46,6 +47,11 @@ describe('ci workflow', () => {
     // Integration and end-to-end tests.
     expect(commands('integration')).toMatch(/^pnpm test:integration$/m);
     expect(commands('e2e')).toMatch(/^pnpm test:e2e$/m);
+    // The deploy infrastructure (compose of production, backup, hardening) runs on every push to main,
+    // and on a pull request only with CI_FULL.
+    expect(commands('infra')).toMatch(/^pnpm --filter @am\/guardrails test:infra$/m);
+    expect(jobs.infra?.if).toContain("github.event_name != 'pull_request'");
+    expect(jobs.infra?.if).toContain("vars.CI_FULL == 'true'");
 
     // Gitleaks over the whole history: full clone, `gitleaks git`, no `dir` scan of the working tree.
     const secretsSteps = jobs.secrets?.steps ?? [];

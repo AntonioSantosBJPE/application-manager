@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  # deploy.yml calls this workflow as its gates job, so a deploy runs the same checks as the PR.
+  workflow_call:
 
 # Unit and integration tests run on every PR. The end-to-end tests and the image builds are off for
 # now (they run locally, see docs/workflow.md) until the first VPS deploy flow exists. They are gated
@@ -79,6 +81,28 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # Testcontainers starts PostgreSQL 18 on the runner's Docker.
       - run: pnpm test:integration
+
+  infra:
+    name: Infrastructure tests
+    # Builds the images and rehearses the deploy scripts in containers (minutes, not seconds), so a PR
+    # runs it only with CI_FULL; a push to main, and with it every deploy (deploy.yml calls this
+    # workflow), always runs it.
+    if: ${{ github.event_name != 'pull_request' || vars.CI_FULL == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Enable corepack
+        run: corepack enable
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Compose of production, backup, restore and the hardening script, on the runner's Docker.
+      - run: pnpm --filter @am/guardrails test:infra
 
   e2e:
     name: End-to-end tests

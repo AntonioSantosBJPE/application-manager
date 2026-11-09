@@ -31,6 +31,10 @@ RUN pnpm --filter @am/web deploy --prod /out
 
 FROM ${NODE_IMAGE} AS runtime
 ENV NODE_ENV=production
+# The commit the image is built from, sent as the x-app-version header so a deploy can be told from
+# the one it replaces (infra/deploy/smoke.sh). Empty in local builds, which then send no header.
+ARG APP_VERSION=""
+ENV APP_VERSION=${APP_VERSION}
 WORKDIR /app
 COPY --from=build --chown=node:node /out/ ./
 USER node

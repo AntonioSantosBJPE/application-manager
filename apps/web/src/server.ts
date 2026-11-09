@@ -20,7 +20,7 @@ try {
 export default createServerEntry({
   async fetch(request) {
     const response = await handler.fetch(request);
-    return withResponseHeaders(response, new URL(request.url).pathname);
+    return withResponseHeaders(response, new URL(request.url).pathname, process.env.APP_VERSION);
   },
 });
 
