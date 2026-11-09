@@ -292,12 +292,12 @@ T13 → T14
 
 **Done when**:
 
-- [ ] Em container Debian descartável: cria o usuário sem senha, com `sudo` e grupo `docker`, e instala a chave
-- [ ] Chave vazia ou inválida: sai ≠ 0 antes de alterar usuário, sshd ou firewall
-- [ ] Segunda execução idêntica: sai 0 e reporta `unchanged` em todo passo, sem mudar arquivo
-- [ ] `--dry-run` imprime os comandos e não altera o container
-- [ ] Nenhum IP, usuário ou chave literal em `infra/provision/`
-- [ ] Gate passa: `pnpm --filter @am/guardrails test:infra`
+- [x] Em container Debian descartável: cria o usuário sem senha, com `sudo` e grupo `docker`, e instala a chave
+- [x] Chave vazia ou inválida: sai ≠ 0 antes de alterar usuário, sshd ou firewall
+- [x] Segunda execução idêntica: sai 0 e reporta `unchanged` em todo passo, sem mudar arquivo
+- [x] `--dry-run` imprime os comandos e não altera o container
+- [x] Nenhum IP, usuário ou chave literal em `infra/provision/`
+- [x] Gate passa: `pnpm --filter @am/guardrails test:infra`
 
 **Tests**: integration
 **Gate**: full
