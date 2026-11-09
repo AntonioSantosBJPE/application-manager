@@ -109,5 +109,8 @@ describe('production deploy runbook', () => {
     expect(hardening).toMatch(/ssh .* -L 8000:127\.0\.0\.1:8000/);
     expect(hardening).toContain('painel do Coolify');
     expect(hardening).toContain('EXTRA_ALLOW_TCP');
+    // The deploy API of Coolify must stay reachable from GitHub Actions once only Cloudflare reaches 80/443.
+    expect(hardening).toMatch(/precisa alcançar o Coolify/);
+    expect(hardening).toMatch(/atrás do proxy da Cloudflare/);
   });
 });

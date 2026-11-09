@@ -67,6 +67,8 @@ O script `infra/provision/harden.sh` cria a conta não-root, desliga login de ro
 
 Evite `EXTRA_ALLOW_TCP=8000`: expõe o painel de deploy ao mundo.
 
+**O workflow de deploy também precisa alcançar o Coolify.** Os executores do GitHub Actions têm IPs variáveis e a API do Coolify (`COOLIFY_URL`) é chamada por eles. Depois do hardening, só a Cloudflare chega às portas 80 e 443, então `COOLIFY_URL` precisa ser um endereço **atrás do proxy da Cloudflare** (nuvem laranja, SSL Full (strict)): crie um subdomínio para o painel, ligue o proxy e use-o em `COOLIFY_URL`. Um painel acessado direto pelo IP, ou por um domínio com a nuvem cinza, deixa de responder ao workflow quando o firewall for aplicado. Confirme antes de rodar o `harden.sh` que `curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_URL/api/v1/version"` responde 200 por esse endereço proxied.
+
 ## 2. DNS e Cloudflare
 
 1. Na Cloudflare, adicione `<DOMINIO>` e aponte os nameservers no registrador, se ainda não fez.
