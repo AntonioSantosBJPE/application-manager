@@ -183,8 +183,8 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Recusa um id a menos, um a mais, um repetido, um estranho e um que não é uuid; aceita qualquer permutação; lista vazia com seção vazia é exata
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Recusa um id a menos, um a mais, um repetido, um estranho e um que não é uuid; aceita qualquer permutação; lista vazia com seção vazia é exata
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
