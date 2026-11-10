@@ -1,8 +1,12 @@
 import {
+  createBulletRequestSchema,
   createItemRequestSchemas,
   orderRequestSchema,
   updateItemRequestSchemas,
   saveProfileRequestSchema,
+  type BulletResponse,
+  type CreateBulletRequest,
+  type InvalidSkillsProblem,
   type MasterResume,
   type OrderRequest,
   type OrderResponse,
@@ -15,14 +19,18 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put } from
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
 import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
-import { InvalidDatesError, LimitReachedError, OrderMismatchError, ResumeNotFoundError, ResumeService, type ResumeItem } from '../application/resume.service.js';
-import { parseSection } from '../domain/sections.js';
+import { InvalidDatesError, InvalidSkillsError, LimitReachedError, OrderMismatchError, ResumeNotFoundError, ResumeService, type ResumeItem } from '../application/resume.service.js';
+import { isBulletSection, parseSection, type BulletSection } from '../domain/sections.js';
 
 /** The rule errors of the service as the Problem Details answers the spec fixes (RES-13, RES-14). */
 async function answering<T>(operation: () => Promise<T>): Promise<T> {
   try {
     return await operation();
   } catch (error) {
+    if (error instanceof InvalidSkillsError) {
+      const problem: InvalidSkillsProblem = { ...problemFor(422, error.message), invalidSkillIds: error.invalidSkillIds };
+      throw new ProblemDetailsException(problem);
+    }
     if (error instanceof InvalidDatesError) {
       throw new ProblemDetailsException(problemFor(400, error.message, [{ path: 'endDate', code: 'custom' }]));
     }
@@ -39,6 +47,13 @@ async function answering<T>(operation: () => Promise<T>): Promise<T> {
 function sectionOf(value: string): ResumeSection {
   const section = parseSection(value);
   if (section === undefined) throw new ProblemDetailsException(problemFor(404, 'Resume section not found'));
+  return section;
+}
+
+/** A `:section` that has no bullets answers `404` too: only experiences and projects own them. */
+function bulletSectionOf(value: string): BulletSection {
+  const section = sectionOf(value);
+  if (!isBulletSection(section)) throw new ProblemDetailsException(problemFor(404, 'Resume section has no bullets'));
   return section;
 }
 
@@ -106,5 +121,18 @@ export class ResumeController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<OrderResponse> {
     return answering(() => this.resume.orderItems(user.id, sectionOf(segment), body.ids));
+  }
+
+  @Roles('member')
+  @Post(':section/:id/bullets')
+  createBullet(
+    @Param('section') segment: string,
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<BulletResponse> {
+    const section = bulletSectionOf(segment);
+    const values = zodBody(createBulletRequestSchema).transform(body, { type: 'body' }) as CreateBulletRequest;
+    return answering(() => this.resume.createBullet(user.id, section, id, values));
   }
 }

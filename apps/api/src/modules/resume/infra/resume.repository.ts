@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq, exists, ne, sql } from 'drizzle-orm';
 import { DATABASE, type Database } from '../../../infra/database/database.module.js';
 import { fromMonthDate } from '../domain/months.js';
-import { toItem, toRowValues } from '../domain/sections.js';
+import { toItem, toRowValues, type BulletSection } from '../domain/sections.js';
 import { bullets, certifications, educations, experiences, languages, profiles, projects } from './schema.js';
 
 /** What a write runs on: the database or a transaction of it, so the rows of one request commit together. */
@@ -14,6 +14,8 @@ export type DatabaseExecutor = Pick<Database, 'select' | 'insert' | 'update' | '
  * statements below touch, so they are handled as one type and the values written are checked by the contract.
  */
 const SECTION_TABLES = { experiences, projects, educations, certifications, languages } as const;
+/** The column of `bullets` that points at the item: the experience or the project. */
+const parentColumn = (section: BulletSection) => (section === 'experiences' ? bullets.experienceId : bullets.projectId);
 const tableOf = (section: ResumeSection): typeof experiences => SECTION_TABLES[section] as unknown as typeof experiences;
 
 export interface ProfileRecord {
@@ -222,5 +224,43 @@ export class ResumeRepository {
       update ${table} set position = wanted.place - 1
         from jsonb_array_elements_text(${JSON.stringify(ids)}::jsonb) with ordinality as wanted(id, place)
        where ${table.id} = wanted.id::uuid and ${table.userId} = ${userId}`);
+  }
+
+  /** Whether the user has this item; read without a lock, since the write that follows checks again under the lock of the user. */
+  async itemExists(section: ResumeSection, userId: string, id: string, executor: DatabaseExecutor = this.db): Promise<boolean> {
+    const table = tableOf(section);
+    const rows = await executor
+      .select({ id: table.id })
+      .from(table)
+      .where(and(eq(table.id, id), eq(table.userId, userId)));
+    return rows.length > 0;
+  }
+
+  async countBullets(tx: DatabaseExecutor, section: BulletSection, itemId: string): Promise<number> {
+    const [row] = await tx.select({ total: sql<number>`count(*)::int` }).from(bullets).where(eq(parentColumn(section), itemId));
+    return row!.total;
+  }
+
+  /** The new bullet goes last without renumbering the others: one after the largest position, or 0 in an empty item (RES-15). */
+  async insertBullet(
+    tx: DatabaseExecutor,
+    section: BulletSection,
+    userId: string,
+    itemId: string,
+    values: { text: string; skillIds: string[] },
+  ): Promise<BulletRecord> {
+    const parent = parentColumn(section);
+    const [row] = await tx
+      .insert(bullets)
+      .values({
+        userId,
+        text: values.text,
+        skillIds: values.skillIds,
+        ...(section === 'experiences' ? { experienceId: itemId } : { projectId: itemId }),
+        position: sql`(select coalesce(max(${bullets.position}), -1) + 1 from ${bullets} where ${parent} = ${itemId})`,
+      })
+      .returning();
+    const { id, text, skillIds, experienceId, projectId } = row!;
+    return { id, text, skillIds, experienceId, projectId };
   }
 }

@@ -167,6 +167,8 @@ describe('route access', () => {
         'POST /invitations/:token/accept',
         // A member creates an item of a section of the master resume; a product route, not account administration (RES-07).
         'POST /resume/:section',
+        // A member adds a bullet to an experience or a project of the master resume; a product route, not account administration (RES-15).
+        'POST /resume/:section/:id/bullets',
         // A member creates a private skill; it is a product route, not account administration (SKL-11).
         'POST /skills',
         // The admin gives a global skill an alias and makes a private skill global; catalog routes, not account administration (SKL-17, SKL-26).

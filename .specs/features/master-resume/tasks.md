@@ -375,13 +375,13 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Teste `RES-15`: `201` com `{ bullet, skills }`, no fim do item
-- [ ] Testes `RES-18` a `RES-21`: `skillIds` vazio aceito; `400` nos limites; `422` com `invalidSkillIds` para inexistente, privada alheia, repetida e não uuid; `422` no 31º bullet
-- [ ] Teste `RES-23`: `skillIds` na ordem de marcação; cada skill citada uma vez em `skills`, também quando três bullets citam a mesma
-- [ ] Teste `RES-24`: uma privada promovida pelo admin volta com o mesmo id e `scope` `global`
-- [ ] Teste `RES-02` (parte dos bullets): bullets na ordem de `position` dentro de cada item
-- [ ] Rota de bullet em `educations`, `certifications` ou `languages` responde `404`
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Teste `RES-15`: `201` com `{ bullet, skills }`, no fim do item
+- [x] Testes `RES-18` a `RES-21`: `skillIds` vazio aceito; `400` nos limites; `422` com `invalidSkillIds` para inexistente, privada alheia, repetida e não uuid; `422` no 31º bullet
+- [x] Teste `RES-23`: `skillIds` na ordem de marcação; cada skill citada uma vez em `skills`, também quando três bullets citam a mesma
+- [x] Teste `RES-24`: uma privada promovida pelo admin volta com o mesmo id e `scope` `global`
+- [x] Teste `RES-02` (parte dos bullets): bullets na ordem de `position` dentro de cada item
+- [x] Rota de bullet em `educations`, `certifications` ou `languages` responde `404`
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

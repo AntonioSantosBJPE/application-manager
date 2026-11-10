@@ -1,13 +1,14 @@
-import { RESUME_ITEMS_MAX, type Bullet, type MasterResume, type OrderResponse, type Profile, type ResumeSection, type ResumeSummary, type SaveProfileRequest, type SkillDictionary } from '@am/contracts';
+import { BULLETS_PER_ITEM_MAX, RESUME_ITEMS_MAX, type Bullet, type BulletResponse, type CreateBulletRequest, type MasterResume, type OrderResponse, type Profile, type ResumeSection, type ResumeSummary, type SaveProfileRequest, type SkillDictionary } from '@am/contracts';
 import { Inject, Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { CLOCK, type Clock } from '../../../infra/clock/clock.js';
 import { SkillsCatalog } from '../../skills/index.js';
 import { isUuid } from '../domain/ids.js';
 import { isExactOrder } from '../domain/order.js';
+import type { BulletSection } from '../domain/sections.js';
 import { ResumeRepository, type BulletRecord } from '../infra/resume.repository.js';
 
-type ResumeEventName = 'resume.profile_saved' | 'resume.item_created' | 'resume.item_updated' | 'resume.item_deleted' | 'resume.items_ordered';
+type ResumeEventName = 'resume.profile_saved' | 'resume.item_created' | 'resume.item_updated' | 'resume.item_deleted' | 'resume.items_ordered' | 'resume.bullet_created';
 
 /** An item as the API shows it, without the bullets of an experience or a project (AD-028). */
 export type ResumeItem = Record<string, unknown>;
@@ -30,6 +31,13 @@ export class InvalidDatesError extends Error {
 export class OrderMismatchError extends Error {
   constructor() {
     super('The order must list every id exactly once');
+  }
+}
+
+/** One or more skills cannot be used: they do not exist, are private to someone else, repeat or are not uuids (`422`, RES-20). */
+export class InvalidSkillsError extends Error {
+  constructor(readonly invalidSkillIds: string[]) {
+    super('Some skills cannot be used');
   }
 }
 
@@ -161,5 +169,52 @@ export class ResumeService {
     });
     this.record('resume.items_ordered', userId, userId);
     return { ids };
+  }
+
+  /**
+   * Puts a new bullet at the end of its item. The item is looked for first, so a bullet of somebody else's
+   * item answers `404` and not `422`; the count and the insert then share a transaction under the lock of the
+   * user (RES-15, RES-20, RES-21, RES-22).
+   */
+  async createBullet(userId: string, section: BulletSection, itemId: string, body: CreateBulletRequest): Promise<BulletResponse> {
+    if (!isUuid(itemId) || !(await this.repository.itemExists(section, userId, itemId))) throw new ResumeNotFoundError();
+    const skillIds = this.normalized(body.skillIds);
+    const invalid = await this.invalidSkillIds(userId, skillIds);
+    if (invalid.length > 0) throw new InvalidSkillsError(invalid);
+
+    const bullet = await this.repository.transaction(async (tx) => {
+      await this.repository.lockUser(tx, userId);
+      if (!(await this.repository.itemExists(section, userId, itemId, tx))) throw new ResumeNotFoundError();
+      if ((await this.repository.countBullets(tx, section, itemId)) >= BULLETS_PER_ITEM_MAX) throw new LimitReachedError(BULLETS_PER_ITEM_MAX, 'bullets per item');
+      return this.repository.insertBullet(tx, section, userId, itemId, { text: body.text, skillIds });
+    });
+    this.record('resume.bullet_created', bullet.id, userId);
+    return this.bulletResponse(userId, bullet);
+  }
+
+  /** A bullet and the skills it cites, each described once by the catalog; a skill that is no longer visible drops out without an error (RES-23). */
+  private async bulletResponse(userId: string, bullet: BulletRecord): Promise<BulletResponse> {
+    const described = await this.skills.describe(userId, bullet.skillIds);
+    const skills: SkillDictionary = {};
+    for (const [id, skill] of described) skills[id] = { name: skill.name, scope: skill.scope };
+    return { bullet: { id: bullet.id, text: bullet.text, skillIds: bullet.skillIds.filter((id) => described.has(id)) }, skills };
+  }
+
+  /** The skill ids as stored: a uuid in lowercase, anything else untouched so it is refused as sent. */
+  private normalized(ids: string[]): string[] {
+    return ids.map((id) => (isUuid(id) ? id.toLowerCase() : id));
+  }
+
+  /** The ids, in the order sent and each once, that the member cannot use: not a uuid, repeated, unknown or somebody else's private skill. */
+  private async invalidSkillIds(userId: string, ids: string[]): Promise<string[]> {
+    const invalid = new Set<string>();
+    const seen = new Set<string>();
+    for (const id of ids) {
+      if (!isUuid(id) || seen.has(id)) invalid.add(id);
+      seen.add(id);
+    }
+    const usable = new Set(await this.skills.visibleIds(userId, [...seen]));
+    for (const id of ids) if (isUuid(id) && !usable.has(id)) invalid.add(id);
+    return ids.filter((id, index) => invalid.has(id) && ids.indexOf(id) === index);
   }
 }
