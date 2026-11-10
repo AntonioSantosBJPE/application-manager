@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq, exists, ne, sql } from 'drizzle-orm';
 import { DATABASE, type Database } from '../../../infra/database/database.module.js';
 import { fromMonthDate } from '../domain/months.js';
 import { bullets, certifications, educations, experiences, languages, profiles, projects } from './schema.js';
@@ -106,5 +106,22 @@ export class ResumeRepository {
       .returning();
     const { fullName, headline, email, phone, location, links, summary } = row!;
     return { fullName, headline, email, phone, location, links, summary, locale: 'pt-BR' };
+  }
+
+  /**
+   * Whether the master resume is ready: a profile with a name and a bullet with at least one skill, in one
+   * query with two `EXISTS`, so no resume row leaves the database (RES-86).
+   */
+  async isReady(userId: string): Promise<boolean> {
+    const named = this.db
+      .select({ one: sql`1` })
+      .from(profiles)
+      .where(and(eq(profiles.userId, userId), ne(profiles.fullName, '')));
+    const tagged = this.db
+      .select({ one: sql`1` })
+      .from(bullets)
+      .where(and(eq(bullets.userId, userId), sql`cardinality(${bullets.skillIds}) > 0`));
+    const [row] = await this.db.select({ ready: sql<boolean>`${exists(named)} and ${exists(tagged)}` }).from(sql`(select 1) as one`);
+    return row!.ready;
   }
 }

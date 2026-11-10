@@ -1,4 +1,4 @@
-import { saveProfileRequestSchema, type MasterResume, type Profile, type SaveProfileRequest } from '@am/contracts';
+import { saveProfileRequestSchema, type MasterResume, type Profile, type ResumeSummary, type SaveProfileRequest } from '@am/contracts';
 import { Body, Controller, Get, Put } from '@nestjs/common';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
 import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
@@ -13,6 +13,13 @@ export class ResumeController {
   @Get()
   get(@CurrentUser() user: AuthenticatedUser): Promise<MasterResume> {
     return this.resume.get(user.id);
+  }
+
+  /** Declared with the other fixed paths, before any route that takes a `:section` segment. */
+  @Roles('member')
+  @Get('summary')
+  summary(@CurrentUser() user: AuthenticatedUser): Promise<ResumeSummary> {
+    return this.resume.summary(user.id);
   }
 
   @Roles('member')

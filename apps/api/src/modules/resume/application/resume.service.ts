@@ -1,4 +1,4 @@
-import type { Bullet, MasterResume, Profile, SaveProfileRequest, SkillDictionary } from '@am/contracts';
+import type { Bullet, MasterResume, Profile, ResumeSummary, SaveProfileRequest, SkillDictionary } from '@am/contracts';
 import { Inject, Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { CLOCK, type Clock } from '../../../infra/clock/clock.js';
@@ -68,5 +68,10 @@ export class ResumeService {
     const profile = await this.repository.upsertProfile(userId, body, this.clock.now());
     this.record('resume.profile_saved', userId, userId);
     return profile;
+  }
+
+  /** Whether the home may show step 02 as done; answered by the database, without describing any skill (RES-86). */
+  async summary(userId: string): Promise<ResumeSummary> {
+    return { ready: await this.repository.isReady(userId) };
   }
 }

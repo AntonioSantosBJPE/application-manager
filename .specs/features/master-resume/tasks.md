@@ -266,9 +266,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Teste `RES-86`: conta nova `false`; só nome `false`; só bullet com skill `false`; nome e bullet sem skill `false`; nome e bullet com skill `true`; nada é gravado
-- [ ] Teste: `SkillsCatalog` não é chamado (espião no provider)
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Teste `RES-86`: conta nova `false`; só nome `false`; só bullet com skill `false`; nome e bullet sem skill `false`; nome e bullet com skill `true`; nada é gravado
+- [x] Teste: `SkillsCatalog` não é chamado (espião no provider)
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

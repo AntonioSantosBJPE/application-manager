@@ -43,3 +43,22 @@ export async function resumeRowCounts(databaseUrl: string): Promise<Record<strin
   }
   return counts;
 }
+
+/** Writes a profile row straight into the database, with only the fields a test cares about. */
+export async function seedProfile(databaseUrl: string, userId: string, fullName: string): Promise<void> {
+  await query(databaseUrl, 'insert into resume.profiles (user_id, full_name, updated_at) values ($1, $2, now())', [userId, fullName]);
+}
+
+/** Writes a bullet of an experience with the skill ids given (any uuid: the schema holds no foreign key to skills). Answers its id. */
+export async function seedBullet(
+  databaseUrl: string,
+  row: { userId: string; experienceId: string; text?: string; skillIds?: string[]; position?: number },
+): Promise<string> {
+  const id = randomUUID();
+  await query(
+    databaseUrl,
+    'insert into resume.bullets (id, user_id, experience_id, text, skill_ids, position) values ($1, $2, $3, $4, $5, $6)',
+    [id, row.userId, row.experienceId, row.text ?? 'Texto fictício do bullet.', row.skillIds ?? [], row.position ?? 0],
+  );
+  return id;
+}
