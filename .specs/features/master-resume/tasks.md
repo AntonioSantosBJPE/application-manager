@@ -591,8 +591,8 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes: contagem por seção; bullets sem skill somando experiências e projetos; mensagem com 0 (nenhuma), 1 (singular) e 2 (plural), com o texto exato da spec
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes: contagem por seção; bullets sem skill somando experiências e projetos; mensagem com 0 (nenhuma), 1 (singular) e 2 (plural), com o texto exato da spec
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
