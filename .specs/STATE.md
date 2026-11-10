@@ -228,8 +228,10 @@
 
 ## Handoff
 
-- **Feature**: `master-resume` - T1-T36 committed on branch `feat/master-resume`, 2026-11-10. Not yet verified.
-- **Done**: 36 tasks by Sonnet 5.5 workers in 5 batches (B1 to B5), orchestrated and checked by Opus 5.5. B5 closed the home step 02 (`0b1ec00`), the E2E and `captures/PageMasterResume.running.png` (`7c09bb2`) and these documents.
-- **Gates**: B5 worker ran `pnpm lint`, `typecheck`, `pnpm test` (contracts 98, api 127, web 879, ui 646, guardrails 165) after T34 and `pnpm test:e2e` (67 passed) after T35; the T36 gate (`pnpm build` and the same three) runs before its commit. `pnpm test:integration` was last run by the orchestrator at B2 (343).
-- **Next**: the orchestrator runs `check_proofs.py master-resume`, dispatches the Verifier and the screens sub-agent (Opus 5.5) over the same `HEAD`, fixes the findings in one pass, runs the script again and `validate_verification.py`. Then push `feat/master-resume` and open the PR to `main` after the author's go-ahead; after the merge, `git switch main && git pull --ff-only && git branch -d feat/master-resume`.
-- **After the feature**: the review of reads under AD-028 is the next item of the roadmap, before ResumeVersion.
+- **Feature**: `master-resume` - closed on branch `feat/master-resume`, 2026-11-10 (not pushed).
+- **Done**: T1-T36 by Sonnet 5.5 workers in 5 batches (B3 carried one fix into B4), orchestrated and checked by Opus 5.5. Verifier (Opus 5.5) judged 81/86 checks holding and wrote 6 findings, all closed (`927a3dc`, `7143f2d`, `36b320d`, `9155f7a`, picture `6e96855`); the spec gained RES-87 and clearer RES-69 to follow the capture. Screens round 2: `matches`. Reports: `.specs/features/master-resume/verification.md`, `screens.md`.
+- **Gates at the fix pass**: `pnpm build`, `typecheck`, `lint`, `pnpm test --force` (contracts 98, api 127, web 894, ui 650, guardrails 165), `pnpm test:integration` (348), `pnpm test:e2e` (67).
+- **Decisions in the feature**: AD-026, AD-027 (and AD-028, merged before in #17).
+- **Lessons**: L-033 to L-037 recorded as candidates.
+- **Open for the author**: `gate.out` (a gate log with a local path) is out of the tree and ignored, but still inside commit `a319349`; rewrite the branch history before the first push.
+- **Next**: after the author's go-ahead, remove `gate.out` from the branch history, push `feat/master-resume` and open the PR to `main`; merge with green CI, then `git switch main && git pull --ff-only && git branch -d feat/master-resume`. Then the review of reads under AD-028, before ResumeVersion.
