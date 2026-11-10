@@ -65,8 +65,9 @@ Os gates têm orçamento de tempo; se um estoura, o gate muda, não a paciência
 | Camada | Quando | Orçamento | O que roda |
 |---|---|---|---|
 | Commit | a cada commit | até 30 s | `pnpm lint`, `pnpm typecheck`, `pnpm test` (inclui as verificações de padrão de `tooling/guardrails/src/code-patterns.test.ts`) |
-| PR | CI, jobs em paralelo | até 3 min | sempre: lint, typecheck, `pnpm test`, `pnpm test:integration`, scan de segredos, actionlint; pelo escopo do PR: `pnpm test:repo-rules`, E2E e infraestrutura |
-| Push na `main` | Deploy, antes de publicar | até 4 min de gates | todas as suítes, sem escopo |
+| PR sem código das apps | CI, jobs em paralelo | até 2,5 min | sempre: lint, typecheck, `pnpm test`, `pnpm test:integration` (em shards), scan de segredos, actionlint; pelo escopo do PR: `pnpm test:repo-rules` e infraestrutura |
+| PR com código das apps | CI, jobs em paralelo | até 4,5 min | o mesmo, mais o E2E em shards (cada shard paga ~2 min fixos de setup, build das imagens e stack) |
+| Push na `main` | Deploy, antes de publicar | até 6 min de gates | todas as suítes, sem escopo; depois, build e publish (~2 min) e o Coolify (~4 min, na VPS) |
 | Fim da feature | uma vez | ~3 min | os gates acima, `pnpm test:e2e` local e a revisão independente (Verifier) lendo o diff e os testes |
 
 - **Este projeto não usa `check_proofs.py` nem `validate_verification.py` para fechar uma feature.** Rodar todas as provas de novo a cada commit custou mais de 35 min numa spec sem acrescentar nada ao que o CI e a revisão já provam. A skill continua intacta em `.agents/skills/`; só não é parte do fluxo daqui.
@@ -75,7 +76,7 @@ Os gates têm orçamento de tempo; se um estoura, o gate muda, não a paciência
 
 ### Como o CI se mantém dentro do orçamento quando o projeto cresce
 
-O tempo do CI não pode crescer junto com o número de features. Cada suíte tem um mecanismo que a mantém plana (AD-025):
+O tempo do CI não pode crescer junto com o número de features. Cada suíte tem um mecanismo que a mantém plana (AD-025). Quando um job passar do orçamento da tabela acima, o ajuste é aumentar os shards ou estreitar o escopo, não o orçamento:
 
 - **Escopo por caminho** (`scripts/ci-scopes.sh`, provado em `ci-scopes.test.ts`): no PR, `test:repo-rules` só roda quando mudam comandos e configuração da raiz (`package.json`, `turbo.json`, `tsconfig`, ESLint, Vitest, dependency-cruiser, `tooling/guardrails`); o E2E, quando muda o que vai para as imagens ou para o navegador (`apps/`, `packages/`, `tests/e2e/`, compose, lockfile); a infraestrutura, quando mudam `infra/`, Dockerfiles, migrations ou os testes de deploy. Mudar o próprio CI roda tudo. O label `ci:full` (ou a variável `CI_FULL=true`) roda tudo num PR. O push na `main` roda tudo, sempre, antes do deploy.
 - **Cache do turbo no CI** (`.turbo/cache`): lint, typecheck e `pnpm test` de um workspace que o PR não tocou são reaproveitados, então o job de qualidade paga pelo que mudou, não pelo tamanho do monorepo.
