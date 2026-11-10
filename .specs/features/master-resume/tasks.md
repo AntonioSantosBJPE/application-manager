@@ -333,9 +333,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes `RES-09` e `RES-10`: `204`; os bullets da experiência apagada somem; os de outra experiência ficam
-- [ ] Teste `RES-14` (parte do `DELETE`): `404` sem apagar nada
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Testes `RES-09` e `RES-10`: `204`; os bullets da experiência apagada somem; os de outra experiência ficam
+- [x] Teste `RES-14` (parte do `DELETE`): `404` sem apagar nada
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

@@ -197,4 +197,14 @@ export class ResumeRepository {
       .returning();
     return row === undefined ? undefined : toItem(row);
   }
+
+  /** Deletes the item of the user; the bullets of an experience or a project go with it through the foreign key (RES-09, RES-10). */
+  async deleteItem(section: ResumeSection, userId: string, id: string): Promise<boolean> {
+    const table = tableOf(section);
+    const rows = await this.db
+      .delete(table)
+      .where(and(eq(table.id, id), eq(table.userId, userId)))
+      .returning({ id: table.id });
+    return rows.length > 0;
+  }
 }

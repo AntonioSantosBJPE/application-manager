@@ -6,7 +6,7 @@ import { SkillsCatalog } from '../../skills/index.js';
 import { isUuid } from '../domain/ids.js';
 import { ResumeRepository, type BulletRecord } from '../infra/resume.repository.js';
 
-type ResumeEventName = 'resume.profile_saved' | 'resume.item_created' | 'resume.item_updated';
+type ResumeEventName = 'resume.profile_saved' | 'resume.item_created' | 'resume.item_updated' | 'resume.item_deleted';
 
 /** An item as the API shows it, without the bullets of an experience or a project (AD-028). */
 export type ResumeItem = Record<string, unknown>;
@@ -133,5 +133,11 @@ export class ResumeService {
     });
     this.record('resume.item_updated', id, userId);
     return item;
+  }
+
+  /** The delete is one statement, so the item and its bullets go together or not at all (RES-09, RES-10, RES-14). */
+  async deleteItem(userId: string, section: ResumeSection, id: string): Promise<void> {
+    if (!isUuid(id) || !(await this.repository.deleteItem(section, userId, id))) throw new ResumeNotFoundError();
+    this.record('resume.item_deleted', id, userId);
   }
 }

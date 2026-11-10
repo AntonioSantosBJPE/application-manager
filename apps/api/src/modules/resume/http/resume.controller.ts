@@ -8,7 +8,7 @@ import {
   type ResumeSummary,
   type SaveProfileRequest,
 } from '@am/contracts';
-import { Body, Controller, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put } from '@nestjs/common';
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
 import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
@@ -81,5 +81,13 @@ export class ResumeController {
     const section = sectionOf(segment);
     const values = zodBody(updateItemRequestSchemas[section]).transform(body, { type: 'body' }) as Record<string, unknown>;
     return answering(() => this.resume.updateItem(user.id, section, id, values));
+  }
+
+  @Roles('member')
+  @HttpCode(204)
+  @Delete(':section/:id')
+  async deleteItem(@Param('section') segment: string, @Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<void> {
+    const section = sectionOf(segment);
+    await answering(() => this.resume.deleteItem(user.id, section, id));
   }
 }
