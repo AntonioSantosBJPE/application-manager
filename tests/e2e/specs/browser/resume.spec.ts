@@ -149,7 +149,7 @@ async function chooseSkill(page: Page, typed: string, name: string): Promise<voi
 /** "+ Bullet", the text and `Enter`; the field of skills opens, each skill is chosen in it, and "Concluir" closes it. */
 async function addBullet(page: Page, title: string, text: string, skills: { typed: string; name: string }[]): Promise<void> {
   const group = bulletsOf(page, title);
-  await group.getByRole('button', { name: '+ Bullet' }).click();
+  await group.getByRole('button', { name: 'Bullet', exact: true }).click();
   await page.keyboard.type(text);
   await page.keyboard.press('Enter');
   const field = group.getByRole('combobox', { name: 'Skills do bullet' });
@@ -167,7 +167,7 @@ async function addExperience(
   item: { role: string; company: string; start: string; end?: string; current?: boolean },
 ): Promise<string> {
   const title = `${item.role} · ${item.company}`;
-  await page.getByRole('button', { name: '+ Experiência' }).click();
+  await page.getByRole('button', { name: 'Experiência', exact: true }).click();
   const draft = cardOf(page, 'Nova experiência');
   await draft.getByLabel('Cargo', { exact: true }).fill(item.role);
   await draft.getByLabel('Empresa', { exact: true }).fill(item.company);
@@ -282,7 +282,7 @@ test.describe('master resume', () => {
 
     // The sixth bullet carries a private skill made on the spot, with its category.
     const group = bulletsOf(page, fullStack);
-    await group.getByRole('button', { name: '+ Bullet' }).click();
+    await group.getByRole('button', { name: 'Bullet', exact: true }).click();
     await page.keyboard.type(BULLET_CONTRACT);
     await page.keyboard.press('Enter');
     await group.getByRole('combobox', { name: 'Skills do bullet' }).click();
@@ -297,7 +297,7 @@ test.describe('master resume', () => {
     await expect(group.getByText('NestJS', { exact: true })).toBeVisible();
 
     await openResume(page, 'educations');
-    await page.getByRole('button', { name: '+ Formação' }).click();
+    await page.getByRole('button', { name: 'Formação', exact: true }).click();
     const draft = cardOf(page, 'Nova formação');
     await draft.getByLabel('Curso', { exact: true }).fill('Análise e Desenvolvimento de Sistemas');
     await draft.getByLabel('Instituição', { exact: true }).fill('Instituto Exemplo');
@@ -513,7 +513,7 @@ test.describe('master resume', () => {
       }
       await expect(index.getByRole('link', { name: /^Experiência/ })).toHaveAttribute('aria-current', 'page');
       await expect(view.getByText('2 bullets sem skill não entram na ordenação por relevância.')).toBeVisible();
-      await expect(view.getByRole('button', { name: '+ Experiência' })).toBeVisible();
+      await expect(view.getByRole('button', { name: 'Experiência', exact: true })).toBeVisible();
       await expect(view.getByText('Visualizar PDF')).toHaveCount(0);
       await expect(bulletsOf(view, FULL_STACK)).toBeVisible();
       await expect(bulletsOf(view, BACK_END)).toHaveCount(0);
@@ -527,9 +527,21 @@ test.describe('master resume', () => {
       await expect(view.getByRole('status').filter({ hasText: /^Salvo às/ })).toBeVisible();
       await expect(view.getByText(`${BULLET_CONTRACT}.`)).toBeVisible();
 
-      // Nothing is hovered or focused, as the card shows: the click lands on the empty part of the page.
-      await view.mouse.click(900, 740);
+      // Nothing is hovered or focused, as the card shows: the click lands on the empty part of the page and
+      // the pointer stays there, away from the bullets, until their 150 ms fades have ended.
+      await view.mouse.click(1270, 12);
       await expect(view.getByRole('button', { name: /^Editar texto do bullet Conduzi/ })).not.toBeFocused();
+      const menuOfUntagged = bulletsOf(view, FULL_STACK)
+        .getByRole('button', { name: /^Editar texto do bullet Conduzi/ })
+        .locator('xpath=ancestor::*[contains(@class, "group/bullet")]');
+      await expect
+        .poll(async () =>
+          menuOfUntagged.evaluate((row) => {
+            const actions = row.querySelector('[aria-label="Ações do bullet"]')!.parentElement!;
+            return [getComputedStyle(actions).opacity, getComputedStyle(row).backgroundColor === 'rgba(0, 0, 0, 0)'];
+          }),
+        )
+        .toEqual(['0', true]);
       await capture(view, 'PageMasterResume.running.png', testInfo);
     }
   });

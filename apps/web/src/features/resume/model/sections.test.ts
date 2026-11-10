@@ -49,11 +49,11 @@ describe('sections', () => {
 
   it('RES-51 names the five buttons that open an empty item as the spec does', () => {
     expect(ADD_ITEM_LABELS).toEqual({
-      experiences: '+ Experiência',
-      projects: '+ Projeto',
-      educations: '+ Formação',
-      certifications: '+ Certificação',
-      languages: '+ Idioma',
+      experiences: 'Experiência',
+      projects: 'Projeto',
+      educations: 'Formação',
+      certifications: 'Certificação',
+      languages: 'Idioma',
     });
   });
 

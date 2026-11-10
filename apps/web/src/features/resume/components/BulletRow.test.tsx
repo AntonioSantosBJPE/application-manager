@@ -68,7 +68,7 @@ describe('BulletRow', () => {
     const api = open();
     const buttonsBefore = within(body()).getAllByRole('button', { name: /^Editar texto do bullet Texto fictício/ });
 
-    fireEvent.click(within(body()).getByRole('button', { name: '+ Bullet' }));
+    fireEvent.click(within(body()).getByRole('button', { name: 'Bullet' }));
 
     const field = within(body()).getByRole('textbox', { name: 'Texto do novo bullet' });
     expect(field).toHaveFocus();
@@ -83,7 +83,7 @@ describe('BulletRow', () => {
 
   it('RES-62 creates the bullet at the end of the item when the field is left with text, and shows it', async () => {
     const api = open();
-    fireEvent.click(within(body()).getByRole('button', { name: '+ Bullet' }));
+    fireEvent.click(within(body()).getByRole('button', { name: 'Bullet' }));
     const field = within(body()).getByRole('textbox', { name: 'Texto do novo bullet' });
 
     fireEvent.change(field, { target: { value: '  Escrevi o texto fictício novo.  ' } });
@@ -102,7 +102,7 @@ describe('BulletRow', () => {
 
   it('RES-62 also creates the bullet with Enter', async () => {
     const api = open();
-    fireEvent.click(within(body()).getByRole('button', { name: '+ Bullet' }));
+    fireEvent.click(within(body()).getByRole('button', { name: 'Bullet' }));
     const field = within(body()).getByRole('textbox', { name: 'Texto do novo bullet' });
 
     fireEvent.change(field, { target: { value: 'Texto fictício com Enter.' } });
@@ -115,7 +115,7 @@ describe('BulletRow', () => {
   it('RES-62 keeps the text in the field and says it could not save when the create fails', async () => {
     const api = open();
     api.fail('bullet', { status: 500 });
-    fireEvent.click(within(body()).getByRole('button', { name: '+ Bullet' }));
+    fireEvent.click(within(body()).getByRole('button', { name: 'Bullet' }));
     const field = within(body()).getByRole('textbox', { name: 'Texto do novo bullet' });
     fireEvent.change(field, { target: { value: 'Texto fictício que falha.' } });
 
@@ -128,7 +128,7 @@ describe('BulletRow', () => {
 
   it('RES-63 drops the field and sends nothing when it is left empty or with only spaces', async () => {
     const api = open();
-    fireEvent.click(within(body()).getByRole('button', { name: '+ Bullet' }));
+    fireEvent.click(within(body()).getByRole('button', { name: 'Bullet' }));
     fireEvent.change(within(body()).getByRole('textbox', { name: 'Texto do novo bullet' }), { target: { value: '   ' } });
 
     fireEvent.blur(within(body()).getByRole('textbox', { name: 'Texto do novo bullet' }));
@@ -140,7 +140,7 @@ describe('BulletRow', () => {
 
   it('RES-63 drops the field with Esc and sends nothing even when it holds text', async () => {
     const api = open();
-    fireEvent.click(within(body()).getByRole('button', { name: '+ Bullet' }));
+    fireEvent.click(within(body()).getByRole('button', { name: 'Bullet' }));
     const field = within(body()).getByRole('textbox', { name: 'Texto do novo bullet' });
     fireEvent.change(field, { target: { value: 'Texto fictício descartado.' } });
 
@@ -267,7 +267,7 @@ describe('BulletRow', () => {
 
   it('RES-85 shows the limit and sends nothing when a new bullet passes 500 characters', async () => {
     const api = open();
-    fireEvent.click(within(body()).getByRole('button', { name: '+ Bullet' }));
+    fireEvent.click(within(body()).getByRole('button', { name: 'Bullet' }));
     const field = within(body()).getByRole('textbox', { name: 'Texto do novo bullet' });
 
     fireEvent.change(field, { target: { value: 'a'.repeat(501) } });
@@ -281,7 +281,7 @@ describe('BulletRow', () => {
 
   it('RES-85 sends a new bullet of exactly 500 characters', async () => {
     const api = open();
-    fireEvent.click(within(body()).getByRole('button', { name: '+ Bullet' }));
+    fireEvent.click(within(body()).getByRole('button', { name: 'Bullet' }));
     const field = within(body()).getByRole('textbox', { name: 'Texto do novo bullet' });
 
     fireEvent.change(field, { target: { value: 'a'.repeat(500) } });
@@ -320,12 +320,12 @@ describe('BulletRow', () => {
   it('RES-83 enables "+ Bullet" at 29 bullets and disables it at 30', () => {
     const many = (n: number) => Array.from({ length: n }, (_, i) => bullet(i + 1));
     open(masterResume({ experiences: [experience(1, { bullets: many(29) })], skills: skillsOf(1) }));
-    expect(within(body()).getByRole('button', { name: '+ Bullet' })).toBeEnabled();
+    expect(within(body()).getByRole('button', { name: 'Bullet' })).toBeEnabled();
   });
 
   it('RES-83 disables "+ Bullet" when the item holds 30 bullets', () => {
     const many = Array.from({ length: 30 }, (_, i) => bullet(i + 1));
     open(masterResume({ experiences: [experience(1, { bullets: many })], skills: skillsOf(1) }));
-    expect(within(body()).getByRole('button', { name: '+ Bullet' })).toBeDisabled();
+    expect(within(body()).getByRole('button', { name: 'Bullet' })).toBeDisabled();
   });
 });

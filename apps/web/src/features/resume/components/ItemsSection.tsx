@@ -1,5 +1,6 @@
 import { RESUME_ITEMS_MAX, type ResumeSection, type SkillDictionary } from '@am/contracts';
 import { Button, FormPage, Sortable } from '@am/ui';
+import { Plus } from 'lucide-react';
 import { useRef, useState } from 'react';
 import type { Outcome } from '../../../lib/bff';
 import type { ResumeApi } from '../hooks/resume-api';
@@ -69,6 +70,7 @@ export function ItemsSection<S extends ResumeSection>({ section, items, skills, 
         <Button
           intent="secondary"
           size="sm"
+          icon={Plus}
           disabled={items.length >= RESUME_ITEMS_MAX}
           onClick={() => {
             if (drafting) return;

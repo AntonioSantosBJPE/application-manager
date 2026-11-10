@@ -34,7 +34,8 @@ export const PROFILE_LABELS = {
 /** The links of the profile (RES-46, RES-84). */
 export const LINK_MESSAGES = {
   title: 'Links',
-  add: '+ Link',
+  /** After the `plus` icon. */
+  add: 'Link',
   label: 'Rótulo',
   url: 'URL',
   /** The name of the row `n`, counted from 1. */
@@ -55,7 +56,8 @@ export const DELETE_DIALOG = { confirm: 'Excluir', cancel: 'Cancelar' } as const
 
 /** The words of a bullet (RES-60 to RES-69). */
 export const BULLET_MESSAGES = {
-  add: '+ Bullet',
+  /** After the `plus` icon. */
+  add: 'Bullet',
   noSkill: 'sem skill',
   /** The name of the field that edits the text of a bullet, read before the text itself. */
   editText: 'Editar texto do bullet',

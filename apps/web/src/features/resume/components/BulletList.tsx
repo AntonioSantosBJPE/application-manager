@@ -1,5 +1,6 @@
 import { BULLETS_PER_ITEM_MAX, BULLET_TEXT_MAX_LENGTH, type SkillDictionary } from '@am/contracts';
 import { Button, DropdownMenu, Field, Sortable } from '@am/ui';
+import { Plus } from 'lucide-react';
 import { useRef, useState } from 'react';
 import type { Outcome } from '../../../lib/bff';
 import type { BulletSection, ItemOf } from '../api/server-functions';
@@ -157,6 +158,7 @@ export function BulletList({ section, item, skills, api, onExpired }: BulletList
         <Button
           intent="ghost"
           size="sm"
+          icon={Plus}
           disabled={item.bullets.length >= BULLETS_PER_ITEM_MAX}
           onClick={() => setAdding(true)}
         >

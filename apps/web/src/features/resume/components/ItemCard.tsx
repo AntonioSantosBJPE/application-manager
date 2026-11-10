@@ -54,6 +54,8 @@ export function ItemCard<S extends ResumeSection>({
   const header =
     item === undefined ? { title: NEW_ITEM_TITLES[section] } : itemHeader(section, item as ItemOf[S]);
   const collapsible = hasBullets(section) && item !== undefined;
+  // A collapsed item shows only the chevron; the pencil comes with the expanded item, and an item with no bullets always has it.
+  const showPencil = !collapsible || expanded;
 
   const text = (
     <>
@@ -74,14 +76,16 @@ export function ItemCard<S extends ResumeSection>({
         handle={handle}
         actions={
           <>
-            <Button
-              intent="ghost"
-              size="sm"
-              icon={Pencil}
-              aria-label={ITEM_MESSAGES.edit(header.title)}
-              aria-pressed={editing}
-              onClick={() => setEditing((current) => !current)}
-            />
+            {showPencil ? (
+              <Button
+                intent="ghost"
+                size="sm"
+                icon={Pencil}
+                aria-label={ITEM_MESSAGES.edit(header.title)}
+                aria-pressed={editing}
+                onClick={() => setEditing((current) => !current)}
+              />
+            ) : null}
             {collapsible && !expanded ? (
               <Button
                 intent="ghost"

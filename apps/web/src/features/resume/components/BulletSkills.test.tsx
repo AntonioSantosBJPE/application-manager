@@ -176,7 +176,7 @@ describe('BulletSkills', () => {
 
   it('RES-62 opens the field of skills of a bullet just created', async () => {
     const { api } = open();
-    fireEvent.click(within(body()).getByRole('button', { name: '+ Bullet' }));
+    fireEvent.click(within(body()).getByRole('button', { name: 'Bullet' }));
     const created = within(body()).getByRole('textbox', { name: 'Texto do novo bullet' });
     fireEvent.change(created, { target: { value: 'Texto fictício novo.' } });
 

@@ -1,6 +1,6 @@
 import { PROFILE_LINKS_MAX, saveProfileRequestSchema, type Profile, type ProfileLink } from '@am/contracts';
 import { Button, Field } from '@am/ui';
-import { X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { useAutosaveField } from '../hooks/use-autosave-field';
 import type { useProfileSave } from '../hooks/use-profile-save';
@@ -61,7 +61,7 @@ export function LinksField({ profile, save }: { profile: Profile; save: ReturnTy
         <span id={titleId} className="text-label text-text">
           {LINK_MESSAGES.title}
         </span>
-        <Button intent="secondary" size="sm" disabled={rows.length >= PROFILE_LINKS_MAX} onClick={add}>
+        <Button intent="secondary" size="sm" icon={Plus} disabled={rows.length >= PROFILE_LINKS_MAX} onClick={add}>
           {LINK_MESSAGES.add}
         </Button>
       </div>

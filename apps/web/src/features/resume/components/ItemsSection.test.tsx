@@ -21,11 +21,11 @@ const article = (name: string | RegExp) => screen.getByRole('article', { name })
 
 describe('ItemsSection', () => {
   it.each([
-    ['experiences', 'Nenhuma experiência ainda.', '+ Experiência'],
-    ['projects', 'Nenhum projeto ainda.', '+ Projeto'],
-    ['educations', 'Nenhuma formação ainda.', '+ Formação'],
-    ['certifications', 'Nenhuma certificação ainda.', '+ Certificação'],
-    ['languages', 'Nenhum idioma ainda.', '+ Idioma'],
+    ['experiences', 'Nenhuma experiência ainda.', 'Experiência'],
+    ['projects', 'Nenhum projeto ainda.', 'Projeto'],
+    ['educations', 'Nenhuma formação ainda.', 'Formação'],
+    ['certifications', 'Nenhuma certificação ainda.', 'Certificação'],
+    ['languages', 'Nenhum idioma ainda.', 'Idioma'],
   ] as const)('RES-39 shows "%s" empty with its sentence and the "+" of the header', (section, sentence, add) => {
     open(section);
 
@@ -128,14 +128,49 @@ describe('ItemsSection', () => {
     expect(within(item).queryByRole('group')).toBeNull();
   });
 
+  it('RES-56 shows only the chevron on a collapsed item and the pencil on the expanded one, and always on a section with no bullets', () => {
+    open('experiences', masterResume({ experiences: [experience(1), experience(2)] }));
+    const first = article(/Cargo Fictício 1/);
+    const second = article(/Cargo Fictício 2/);
+
+    expect(within(first).getByRole('button', { name: /^Editar Cargo Fictício 1/ })).toBeInTheDocument();
+    expect(within(second).queryByRole('button', { name: /^Editar/ })).toBeNull();
+    expect(within(second).getByRole('button', { name: /^Expandir/ })).toBeInTheDocument();
+
+    fireEvent.click(within(second).getByRole('button', { name: /^Expandir Cargo Fictício 2/ }));
+    expect(within(second).getByRole('button', { name: /^Editar Cargo Fictício 2/ })).toBeInTheDocument();
+  });
+
+  it.each([
+    ['educations', masterResume({ educations: [education(1)] }), /Curso Fictício 1/],
+    ['certifications', masterResume({ certifications: [certification(1)] }), /Certificação Fictícia 1/],
+    ['languages', masterResume({ languages: [language(1)] }), /Idioma Fictício 1/],
+  ] as const)('RES-56 shows the pencil on a %s item, which has no bullets to collapse', (section, resume, name) => {
+    open(section, resume);
+
+    expect(within(article(name)).getByRole('button', { name: /^Editar/ })).toBeInTheDocument();
+  });
+
+  it.each(['experiences', 'projects', 'educations', 'certifications', 'languages'] as const)(
+    'RES-39 draws the plus icon before the label of the header button of %s',
+    (section) => {
+      open(section);
+
+      const add = screen.getAllByRole('button').find((button) => button.querySelector('.lucide-plus') !== null);
+      expect(add).toBeDefined();
+      expect(add!.firstElementChild).toHaveClass('lucide-plus');
+      expect(add!.textContent).not.toContain('+');
+    },
+  );
+
   it('RES-82 disables the "+" of the header at 50 items and keeps it enabled at 49', () => {
     const many = (n: number) => Array.from({ length: n }, (_, i) => experience(i + 1));
     open('experiences', masterResume({ experiences: many(49) }));
-    expect(screen.getByRole('button', { name: '+ Experiência' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Experiência' })).toBeEnabled();
   });
 
   it('RES-82 disables the "+" of the header when the section holds 50 items', () => {
     open('experiences', masterResume({ experiences: Array.from({ length: 50 }, (_, i) => experience(i + 1)) }));
-    expect(screen.getByRole('button', { name: '+ Experiência' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Experiência' })).toBeDisabled();
   });
 });

@@ -227,7 +227,7 @@ describe('Reorder', () => {
 
   it('RES-70 leaves a new item that is not written yet out of the order that is saved', async () => {
     const api = open();
-    fireEvent.click(screen.getByRole('button', { name: '+ Experiência' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Experiência' }));
     expect(within(screen.getByRole('list', { name: 'Lista de experiências' })).getAllByRole('article')).toHaveLength(4);
 
     await drop('Lista de experiências', [c.id, 'draft-0', a.id, b.id]);

@@ -42,13 +42,13 @@ export const EMPTY_SECTION_TEXTS: Record<ResumeSection, string> = {
   languages: 'Nenhum idioma ainda.',
 };
 
-/** The button at the top of a section that opens an empty item (RES-51). */
+/** The words of the button at the top of a section that opens an empty item (RES-51), after its `plus` icon. */
 export const ADD_ITEM_LABELS: Record<ResumeSection, string> = {
-  experiences: '+ Experiência',
-  projects: '+ Projeto',
-  educations: '+ Formação',
-  certifications: '+ Certificação',
-  languages: '+ Idioma',
+  experiences: 'Experiência',
+  projects: 'Projeto',
+  educations: 'Formação',
+  certifications: 'Certificação',
+  languages: 'Idioma',
 };
 
 /** What an item of each section is called in a sentence ("Excluir experiência"). */

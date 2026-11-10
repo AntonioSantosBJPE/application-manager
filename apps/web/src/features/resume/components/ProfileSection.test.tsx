@@ -48,7 +48,7 @@ describe('ProfileSection', () => {
     expect((within(link).getByLabelText('Rótulo') as HTMLInputElement).value).toBe('Portfólio');
     expect((within(link).getByLabelText('URL') as HTMLInputElement).value).toBe('https://exemplo.com/alfa');
     expect(screen.getByRole('group', { name: 'Links' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '+ Link' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Link' })).toBeEnabled();
   });
 
   it('RES-44 saves the profile when a changed field is left and shows "Salvo às HH:MM"', async () => {
@@ -106,7 +106,7 @@ describe('ProfileSection', () => {
   it('RES-46 adds a row with "Rótulo" and "URL" that is saved when both are filled and one is left', async () => {
     const api = setup();
 
-    fireEvent.click(screen.getByRole('button', { name: '+ Link' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Link' }));
     const row = screen.getByRole('group', { name: 'Link 1' });
     expect(within(row).getByLabelText('Rótulo')).toHaveFocus();
     fireEvent.change(within(row).getByLabelText('Rótulo'), { target: { value: 'Portfólio' } });
@@ -139,7 +139,7 @@ describe('ProfileSection', () => {
 
   it('RES-46 drops a row that was never filled without sending anything', async () => {
     const api = setup();
-    fireEvent.click(screen.getByRole('button', { name: '+ Link' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Link' }));
 
     fireEvent.click(screen.getByRole('button', { name: 'Remover link 1' }));
 
@@ -226,7 +226,7 @@ describe('ProfileSection', () => {
   it('RES-48 shows the failure of a link under the links and keeps the row', async () => {
     const api = setup();
     api.fail('profile', 'network');
-    fireEvent.click(screen.getByRole('button', { name: '+ Link' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Link' }));
     const row = screen.getByRole('group', { name: 'Link 1' });
     fireEvent.change(within(row).getByLabelText('Rótulo'), { target: { value: 'Portfólio' } });
     fireEvent.change(within(row).getByLabelText('URL'), { target: { value: 'https://exemplo.com/alfa' } });
@@ -240,7 +240,7 @@ describe('ProfileSection', () => {
 
   it('RES-84 disables "+ Link" at five links, and a fifth row added brings it there', () => {
     setup({ links: [1, 2, 3, 4].map((n) => ({ label: `Link ${n}`, url: `https://exemplo.com/${n}` })) });
-    const add = screen.getByRole('button', { name: '+ Link' });
+    const add = screen.getByRole('button', { name: 'Link' });
     expect(add).toBeEnabled();
 
     fireEvent.click(add);

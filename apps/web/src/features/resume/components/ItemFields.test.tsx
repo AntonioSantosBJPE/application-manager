@@ -32,7 +32,7 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 30));
 const SECTIONS = [
   {
     section: 'experiences',
-    add: '+ Experiência',
+    add: 'Experiência',
     title: 'Nova experiência',
     labels: ['Cargo', 'Empresa', 'Local · opcional', 'Início', 'Fim', 'Trabalho aqui atualmente'],
     fill: (scope: HTMLElement) => {
@@ -46,7 +46,7 @@ const SECTIONS = [
   },
   {
     section: 'projects',
-    add: '+ Projeto',
+    add: 'Projeto',
     title: 'Novo projeto',
     labels: ['Nome', 'URL · opcional', 'Descrição · opcional'],
     fill: (scope: HTMLElement) => {
@@ -58,7 +58,7 @@ const SECTIONS = [
   },
   {
     section: 'educations',
-    add: '+ Formação',
+    add: 'Formação',
     title: 'Nova formação',
     labels: ['Curso', 'Instituição', 'Início', 'Fim', 'Em andamento'],
     fill: (scope: HTMLElement) => {
@@ -72,7 +72,7 @@ const SECTIONS = [
   },
   {
     section: 'certifications',
-    add: '+ Certificação',
+    add: 'Certificação',
     title: 'Nova certificação',
     labels: ['Nome', 'Emissor · opcional', 'Emissão · opcional', 'URL · opcional'],
     fill: (scope: HTMLElement) => {
@@ -84,7 +84,7 @@ const SECTIONS = [
   },
   {
     section: 'languages',
-    add: '+ Idioma',
+    add: 'Idioma',
     title: 'Novo idioma',
     labels: ['Idioma'],
     fill: (scope: HTMLElement) => {
@@ -118,7 +118,7 @@ describe('ItemFields: a new item', () => {
   it('RES-51 opens the item in the empty section too, in place of the sentence "Nenhuma experiência ainda."', () => {
     open('experiences');
 
-    fireEvent.click(screen.getByRole('button', { name: '+ Experiência' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Experiência' }));
 
     expect(screen.queryByText('Nenhuma experiência ainda.')).toBeNull();
     expect(card('Nova experiência')).toBeInTheDocument();
@@ -139,7 +139,7 @@ describe('ItemFields: a new item', () => {
 
   it('RES-52 keeps saying it while the experience has its texts but no end and no "atualmente"', async () => {
     const api = open('experiences');
-    fireEvent.click(screen.getByRole('button', { name: '+ Experiência' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Experiência' }));
     const item = card('Nova experiência');
     set(item, 'Cargo', 'Cargo Fictício');
     set(item, 'Empresa', 'Empresa Fictícia');
@@ -169,7 +169,7 @@ describe('ItemFields: a new item', () => {
 
   it('RES-53 keeps the card and its fields after the item is created, so the next field is a PATCH', async () => {
     const api = open('experiences');
-    fireEvent.click(screen.getByRole('button', { name: '+ Experiência' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Experiência' }));
     const item = card('Nova experiência');
     SECTIONS[0].fill(item);
     await waitFor(() => expect(api.calls).toHaveLength(1));
@@ -187,7 +187,7 @@ describe('ItemFields: a new item', () => {
   it('RES-53 creates a single item when two fields are left while the POST is in flight, and the second becomes a PATCH', async () => {
     const api = open('experiences');
     const release = api.hold('create');
-    fireEvent.click(screen.getByRole('button', { name: '+ Experiência' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Experiência' }));
     const item = card('Nova experiência');
     set(item, 'Cargo', 'Cargo Fictício');
     set(item, 'Empresa', 'Empresa Fictícia');
@@ -211,7 +211,7 @@ describe('ItemFields: a new item', () => {
   it('RES-48 keeps the typed values and says it could not save when the create fails, and leaving again tries again', async () => {
     const api = open('projects');
     api.fail('create', { status: 500 });
-    fireEvent.click(screen.getByRole('button', { name: '+ Projeto' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Projeto' }));
     const item = card('Novo projeto');
     set(item, 'Nome', 'Projeto Fictício');
 
@@ -230,7 +230,7 @@ describe('ItemFields: a new item', () => {
 
   it('RES-59 shows the end error in the end field and sends nothing when the end is before the start of a new item', async () => {
     const api = open('educations');
-    fireEvent.click(screen.getByRole('button', { name: '+ Formação' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Formação' }));
     const item = card('Nova formação');
     set(item, 'Curso', 'Curso Fictício');
     set(item, 'Instituição', 'Instituição Fictícia');
