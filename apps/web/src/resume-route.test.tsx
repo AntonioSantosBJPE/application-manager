@@ -5,7 +5,7 @@ import { countApplications } from './features/applications';
 import { getSession, pendingInvitations } from './features/identity';
 import { listAdminSkills } from './features/skills';
 import { getSystemStatus } from './features/system-status';
-import { getResume } from './features/resume';
+import { getResume, getResumeSummary } from './features/resume';
 import { bullet, experience, masterResume } from './features/resume/testing/fixtures';
 import { here, member, openApplications } from './testing/applications-route';
 
@@ -34,6 +34,7 @@ vi.mock('./features/applications/api/server-functions', async (importOriginal) =
 vi.mock('./features/resume/api/server-functions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./features/resume/api/server-functions')>()),
   getResume: vi.fn(),
+  getResumeSummary: vi.fn(),
 }));
 
 beforeAll(() => {
@@ -43,6 +44,7 @@ beforeAll(() => {
 beforeEach(() => {
   vi.mocked(getSession).mockResolvedValue({ kind: 'authenticated', user: member });
   vi.mocked(countApplications).mockResolvedValue({ ok: true, data: { total: 24 } });
+  vi.mocked(getResumeSummary).mockResolvedValue({ ok: true, data: { ready: false } });
   vi.mocked(getResume).mockResolvedValue({
     ok: true,
     data: masterResume({ experiences: [experience(1, { bullets: [bullet(1)] }), experience(2)] }),

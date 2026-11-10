@@ -833,9 +833,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes `RES-78` a `RES-80`; falha da leitura deixa o passo sem "Concluído"
-- [ ] Teste: o loader devolve `{ ready }` e nenhum campo do currículo
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes `RES-78` a `RES-80`; falha da leitura deixa o passo sem "Concluído"
+- [x] Teste: o loader devolve `{ ready }` e nenhum campo do currículo
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
