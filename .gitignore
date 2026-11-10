@@ -53,3 +53,7 @@ Thumbs.db
 
 # Written by check_proofs.py at one commit; it must never be committed (its HEAD would stop matching).
 .specs/features/*/proofs.md
+
+# Gate logs left at the root by a local run
+/gate.out
+/*.out
