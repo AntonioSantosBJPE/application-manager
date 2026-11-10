@@ -163,8 +163,8 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Ida e volta iguais para janeiro, dezembro e um ano bissexto; nenhum dia muda em `America/Sao_Paulo` nem em UTC
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Ida e volta iguais para janeiro, dezembro e um ano bissexto; nenhum dia muda em `America/Sao_Paulo` nem em UTC
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
