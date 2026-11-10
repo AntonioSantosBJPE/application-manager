@@ -1155,7 +1155,7 @@ Proof: run api-integration | ✓ RES-86
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** 2026-11-10 - user: "esse chat vai orquestar os subagents e garantir a qualidade. Utilizar o modelo sonnet 5.5 medium como sub-agente. Para a verificação final usar o opus 5.5"
-**Dispatched:** B1 (T1–T7, Sonnet 5.5 medium) at HEAD 9758237, 2026-11-10 - returned; accepted at c31bada with no fix round (orchestrator gates green: lint, typecheck, `pnpm test --force` contracts 98, api 123, web 652, ui 609, guardrails 165; api integration 291) | B2 (T8–T15, Sonnet 5.5 medium) at HEAD c31bada, 2026-11-10
+**Dispatched:** B1 (T1–T7, Sonnet 5.5 medium) at HEAD 9758237, 2026-11-10 - returned; accepted at c31bada with no fix round (orchestrator gates green: lint, typecheck, `pnpm test --force` contracts 98, api 123, web 652, ui 609, guardrails 165; api integration 291) | B2 (T8–T15, Sonnet 5.5 medium) at HEAD c31bada, 2026-11-10 - returned; accepted at 6536e73 with no fix round (orchestrator gates green: lint, typecheck, `pnpm test --force` contracts 98, api 127, web 652, ui 609, guardrails 165; api integration 343; read: advisory lock on limits and order, row lock on date edits, responses per Data Reads) | B3 (T16–T24, Sonnet 5.5 medium) at HEAD 6536e73, 2026-11-10
 **Walked:** none
 
 ---
