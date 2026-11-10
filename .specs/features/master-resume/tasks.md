@@ -769,7 +769,7 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 **Where**: `apps/web/src/features/resume/components/BulletRow.tsx`
 **Depends on**: T30
 **Reuses**: `Bullet`, `InlineEdit multiline`, `DropdownMenu`, `SkillTag`
-**Requirement**: RES-60, RES-61, RES-62, RES-63, RES-64, RES-65, RES-68, RES-69, RES-83
+**Requirement**: RES-60, RES-61, RES-62, RES-63, RES-64, RES-65, RES-68, RES-69, RES-83, RES-87
 
 **Done when**:
 
@@ -1094,7 +1094,7 @@ Proof: run web | ✓ RES-67
 **C68** - WHEN o member usa "Excluir bullet" no menu "⋯" THEN o web SHALL apagar o bullet sem confirmação e atualizar o Alert de bullets sem skill. (RES-68, AC 9)
 Proof: run web | ✓ RES-68
 
-**C69** - WHEN o member passa o mouse ou foca um bullet THEN o web SHALL mostrar o menu "⋯" dele, inclusive no bullet sem skill. (RES-69, AC 10)
+**C69** - WHEN o member passa o mouse ou foca um bullet sem skill THEN o web SHALL mostrar o menu "⋯" dele ao lado de "sem skill". (RES-69, AC 10)
 Proof: run web | ✓ RES-69
 
 **C70** - WHEN o member arrasta um item pela alça e solta noutra posição da seção THEN o web SHALL mostrar a nova ordem e salvá-la. (RES-70, AC 1)
@@ -1148,6 +1148,9 @@ Proof: run web | ✓ RES-85
 **C86** - WHEN um member chama `GET /resume/summary` THEN a API SHALL responder `200` com `{ ready: true }` se o perfil dele tem nome e ao menos um bullet dele tem uma skill, e `{ ready: false }` caso contrário, sem gravar nada. (RES-86, AC 5)
 Proof: run api-integration | ✓ RES-86
 
+**C87** - The bullet with at least one skill SHALL show its "⋯" menu at rest, without hover or focus. (RES-87, AC 11)
+Proof: run web | ✓ RES-87
+
 ---
 
 ## Handoff
@@ -1155,7 +1158,7 @@ Proof: run api-integration | ✓ RES-86
 The feature's live state, written as it happens - a compaction gives no warning.
 
 **Settled mid-build:** 2026-11-10 - user: "esse chat vai orquestar os subagents e garantir a qualidade. Utilizar o modelo sonnet 5.5 medium como sub-agente. Para a verificação final usar o opus 5.5"
-**Dispatched:** B1 (T1–T7, Sonnet 5.5 medium) at HEAD 9758237, 2026-11-10 - returned; accepted at c31bada with no fix round (orchestrator gates green: lint, typecheck, `pnpm test --force` contracts 98, api 123, web 652, ui 609, guardrails 165; api integration 291) | B2 (T8–T15, Sonnet 5.5 medium) at HEAD c31bada, 2026-11-10 - returned; accepted at 6536e73 with no fix round (orchestrator gates green: lint, typecheck, `pnpm test --force` contracts 98, api 127, web 652, ui 609, guardrails 165; api integration 343; read: advisory lock on limits and order, row lock on date edits, responses per Data Reads) | B3 (T16–T24, Sonnet 5.5 medium) at HEAD 6536e73, 2026-11-10 - returned; accepted at 4c9989e with one fix carried into B4 (orchestrator gates green: build, lint, typecheck, `pnpm test --force` contracts 98, api 127, web 733, ui 646, guardrails 165) | B4 (fix + T25–T33, Sonnet 5.5 medium) at HEAD 4c9989e, 2026-11-10 - returned; accepted at 143066f with no fix round (orchestrator gates green: build, lint, typecheck, `pnpm test --force` contracts 98, api 127, web 875, ui 646, guardrails 165; the worker amended its own unpushed T28 commit once after a masked red gate; older tests changed only for RES-77 and narrower selectors) | B5 (T34–T36, Sonnet 5.5 medium) at HEAD 143066f, 2026-11-10 - returned; accepted at 20578f8 with no fix round; final gates green at 20578f8: build, lint, typecheck, `pnpm test --force` contracts 98, api 127, web 879, ui 646, guardrails 165; api integration 343; e2e 67 (B5 run) | Verifier (Opus 5.5) at HEAD 20578f8, diff 9758237..20578f8, 2026-11-10 | Screens round 1 (Opus 5.5) at HEAD 20578f8, 2026-11-10
+**Dispatched:** B1 (T1–T7, Sonnet 5.5 medium) at HEAD 9758237, 2026-11-10 - returned; accepted at c31bada with no fix round (orchestrator gates green: lint, typecheck, `pnpm test --force` contracts 98, api 123, web 652, ui 609, guardrails 165; api integration 291) | B2 (T8–T15, Sonnet 5.5 medium) at HEAD c31bada, 2026-11-10 - returned; accepted at 6536e73 with no fix round (orchestrator gates green: lint, typecheck, `pnpm test --force` contracts 98, api 127, web 652, ui 609, guardrails 165; api integration 343; read: advisory lock on limits and order, row lock on date edits, responses per Data Reads) | B3 (T16–T24, Sonnet 5.5 medium) at HEAD 6536e73, 2026-11-10 - returned; accepted at 4c9989e with one fix carried into B4 (orchestrator gates green: build, lint, typecheck, `pnpm test --force` contracts 98, api 127, web 733, ui 646, guardrails 165) | B4 (fix + T25–T33, Sonnet 5.5 medium) at HEAD 4c9989e, 2026-11-10 - returned; accepted at 143066f with no fix round (orchestrator gates green: build, lint, typecheck, `pnpm test --force` contracts 98, api 127, web 875, ui 646, guardrails 165; the worker amended its own unpushed T28 commit once after a masked red gate; older tests changed only for RES-77 and narrower selectors) | B5 (T34–T36, Sonnet 5.5 medium) at HEAD 143066f, 2026-11-10 - returned; accepted at 20578f8 with no fix round; final gates green at 20578f8: build, lint, typecheck, `pnpm test --force` contracts 98, api 127, web 879, ui 646, guardrails 165; api integration 343; e2e 67 (B5 run) | Verifier (Opus 5.5) at HEAD 20578f8, diff 9758237..20578f8, 2026-11-10 | Screens round 1 (Opus 5.5) at HEAD 20578f8, 2026-11-10 - returned (3 rows differ: "⋯" of the bullets with skill, hover state in the picture, pencil on collapsed items) | Verifier returned FAIL at f85981e (81/86 hold, 4 partly, C85 does not; 6 findings) | Fix pass (Sonnet 5.5 medium) at HEAD 5c1d861, 2026-11-10
 **Orchestrator decisions:** 2026-11-10 B3 review: `useAutosaveField` showed `problem.detail` (English, "Invalid request body") on a `400`/`422`; the spec assumption that asked for it was the orchestrator's own unconfirmed default and is rewritten: field errors are pt-BR messages of the web, and an api refusal shows "Não foi possível salvar. Tente de novo.". Fixed as the first commit of B4.
 **Walked:** B5/T35 (`tests/e2e/specs/browser/resume.spec.ts`, test `RES-34 captures`; window 1280 × 800, light theme, never resized; member "Marina Alves" made by invitation of the admin; data created through the api: experiences "Desenvolvedora Full Stack · Empresa Exemplo" (current, Remoto, 3 bullets, 2 with skills: NestJS, PostgreSQL, TypeScript; React, Vite; the third without skill), "Desenvolvedora Back-end · Outra Empresa" (Recife, PE, jan 2021 — fev 2023, 1 bullet without skill) and "Estagiária de Software · Empresa Antiga" (fev 2019 — dez 2020); 2 projects, 1 education, 2 languages) - `PageMasterResume.running.png`: `/resume?section=experiences`, index Experiência 3, Projetos 2, Formação 1, Idiomas 2, Alert "2 bullets sem skill não entram na ordenação por relevância.", first item expanded with its bullets, tags, "sem skill" and "+ Bullet", the other two collapsed; "Salvo às HH:MM" shows after a real edit of the third bullet (a final period added), then a click on an empty area drops the focus. Run with `CAPTURE=1 pnpm test:e2e` to copy the picture into `captures/`.
 

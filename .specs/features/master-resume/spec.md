@@ -2,6 +2,7 @@
 
 **Approved**: 2026-11-10 - user: "seguir para o design"
 **Amended**: 2026-11-10 - user: "usar recomendacao 2" (RES-86: `GET /resume/summary` para o passo 02 da home)
+**Amended**: 2026-11-10 - orquestrador, depois da verificação: RES-69 restrito ao bullet sem skill e RES-87 (o "⋯" do bullet com skill sempre visível), para seguir a carta binding; item recolhido sem lápis e "+" como ícone nas Assumptions
 **Amended**: 2026-11-10 - user: "Dicionário único" e "Só os ids na ordem" (AD-028: RES-15, RES-16, RES-23, RES-25, RES-26); limites mantidos ("Manter 50 / 30 / 20")
 
 ## Problem Statement
@@ -57,8 +58,9 @@ Adaptar o currículo para uma vaga leva de 30 a 60 minutos, então o autor quase
 | Bullet novo | "+ Bullet" abre um campo de texto vazio no fim do item; ao sair dele com texto, o bullet é gravado e o campo de skills dele abre; sem texto, nada é gravado | Bullet sem skill fica fora da ordenação, então a marcação vem logo depois | n |
 | Texto do bullet | Clicar no texto abre a edição (`InlineEdit`); sai do campo salva; `Esc` desfaz; texto vazio não é aceito e volta ao anterior; 1 a 500 caracteres | Um bullet de currículo é uma frase | n |
 | Skills do bullet | O menu "⋯" tem "Editar skills" e "Excluir bullet"; "Editar skills" (e um clique em "sem skill") abre o `SkillsField` das vagas abaixo do texto, com busca e "Criar '{texto}' como skill privada" escolhendo a categoria; cada inclusão ou remoção salva na hora; "Concluir" fecha o campo; até 20 skills por bullet, cada uma uma vez | Mesmo componente e mesmo gesto do cadastro de vaga; a carta não desenha o gesto | n |
-| Menu do bullet sem skill | O "⋯" aparece ao passar o mouse ou focar o bullet, também no bullet sem skill, ao lado de "sem skill" | A carta só mostra o estado parado; sem o menu não haveria como excluir esse bullet | n |
-| Expandir e editar item | O primeiro item de cada seção com bullets abre expandido; o cabeçalho do item alterna expandido e recolhido (o recolhido mostra o chevron "Expandir"); o lápis "Editar" mostra os campos do item e "Excluir {item}" | Carta: o primeiro expandido com lápis, o segundo recolhido com chevron | n |
+| Menu do bullet | Bullet com skill mostra o "⋯" sempre, como a carta; bullet sem skill mostra só "sem skill" e ganha o "⋯" ao lado ao passar o mouse ou focar | A carta desenha o "⋯" nos bullets com skill e só "sem skill" no bullet sem skill; sem o menu não haveria como excluir esse bullet. Corrigido pelo orquestrador depois da verificação (achado 2 do Verifier, linha 1 de telas) | n |
+| Botões de adicionar | "+ Experiência", "+ Projeto", "+ Formação", "+ Certificação", "+ Idioma", "+ Bullet" e "+ Link" são o ícone `plus` seguido do rótulo ("Experiência", "Bullet"), como a carta desenha | A carta usa o ícone; o "+" da spec nomeia esse ícone. Corrigido pelo orquestrador depois da verificação (achado 4) | n |
+| Expandir e editar item | O primeiro item de cada seção com bullets abre expandido; o cabeçalho do item alterna expandido e recolhido (o recolhido mostra só o chevron "Expandir", sem o lápis, como a carta); o lápis "Editar" aparece no item expandido e mostra os campos do item e "Excluir {item}"; itens sem bullets (formação, certificação, idioma) mostram o lápis sempre | Carta: o primeiro expandido com lápis, o segundo recolhido com chevron | n |
 | Exclusão | Excluir um item abre `ConfirmDialog` "Excluir {experiência\|projeto\|formação\|certificação\|idioma}?" com "Excluir" em `danger`; uma experiência ou projeto leva os bullets junto, numa transação. Excluir um bullet pelo menu é imediato, sem confirmação | Item leva bullets e campos; um bullet é uma linha que se reescreve em segundos | n |
 | Índice | Perfil, Experiência, Projetos, Formação, Certificações, Idiomas; o número de itens em `mono` à direita, omitido quando zero; abaixo, o Alert `warning` "{N} bullets sem skill não entram na ordenação por relevância." (com 1: "1 bullet sem skill não entra na ordenação por relevância."), ausente quando zero | Carta | n |
 | Seção vazia | Mostra "Nenhuma experiência ainda." (e "Nenhum projeto ainda.", "Nenhuma formação ainda.", "Nenhuma certificação ainda.", "Nenhum idioma ainda.") e o botão "+" do cabeçalho | A carta não desenha o estado; o botão já existe no cabeçalho | n |
@@ -268,7 +270,8 @@ Adaptar o currículo para uma vaga leva de 30 a 60 minutos, então o autor quase
 7. WHEN o member usa "Editar skills" no menu "⋯" do bullet ou clica em "sem skill" THEN o web SHALL abrir o campo de skills abaixo do texto, com busca no catálogo e "Criar '{texto}' como skill privada" com a escolha da categoria, como no cadastro de vaga. (RES-66)
 8. WHEN o member inclui ou remove uma skill no campo THEN o web SHALL salvar o bullet na hora, e "Concluir" SHALL fechar o campo. (RES-67)
 9. WHEN o member usa "Excluir bullet" no menu "⋯" THEN o web SHALL apagar o bullet sem confirmação e atualizar o Alert de bullets sem skill. (RES-68)
-10. WHEN o member passa o mouse ou foca um bullet THEN o web SHALL mostrar o menu "⋯" dele, inclusive no bullet sem skill. (RES-69)
+10. WHEN o member passa o mouse ou foca um bullet sem skill THEN o web SHALL mostrar o menu "⋯" dele ao lado de "sem skill". (RES-69)
+11. The bullet with at least one skill SHALL show its "⋯" menu at rest, without hover or focus. (RES-87)
 
 **Independent Test**: Escrever um bullet, marcar uma skill existente e criar uma privada nova, ver "sem skill" sumir e o Alert diminuir; editar o texto e desfazer com `Esc`; excluir pelo menu.
 
@@ -412,8 +415,9 @@ Adaptar o currículo para uma vaga leva de 30 a 60 minutos, então o autor quase
 | RES-84 | Edge Cases | - | Pending |
 | RES-85 | Edge Cases | - | Pending |
 | RES-86 | P2: Sidebar e home | - | Pending |
+| RES-87 | P1: Bullets e skills (web) | - | Pending |
 
-**Coverage:** 86 total, 0 mapped to tasks, 86 unmapped ⚠️ (tasks ainda não escritas)
+**Coverage:** 87 total, 0 mapped to tasks, 87 unmapped ⚠️ (tasks ainda não escritas)
 
 ---
 
