@@ -1,13 +1,14 @@
 # Guia de teste manual
 
-Roteiro curto para ver o estado atual do projeto funcionando: a página de status e as features `identity` (login, convites, sessão, bloqueio), `skills` (catálogo, privadas, promoção, apelidos) e `application` (candidaturas). Leva uns 15 minutos. Todos os dados são fictícios.
+Roteiro curto para ver o estado atual do projeto funcionando: a página de status e as features `identity` (login, convites, sessão, bloqueio), `skills` (catálogo, privadas, promoção, apelidos), `application` (candidaturas) e `master-resume` (currículo mestre). Leva uns 20 minutos. Todos os dados são fictícios.
 
 ## Estado atual
 
 - **Pronto:** esqueleto (web + api + banco + status), `identity` (CLI de admin, login por e-mail e senha, sessão por cookie, convites — criar, copiar, revogar, aceitar —, áreas de admin e de membro, bloqueio por tentativas) e a identidade visual Rumo Carreira (marca, ícones, telas no padrão do design system).
 - **Também pronto:** o catálogo de skills com seed de skills globais, skills privadas por pessoa, promoção e apelidos pelo admin (seção 8).
 - **Também pronto:** candidaturas — cadastro de vaga com skills e nível, lista por status, detalhe com linha do tempo e a sugestão de "sem retorno" (seção 9).
-- **Ainda não existe:** currículo mestre, versões adaptadas e PDF, análise de skills (próximas fases do [roadmap](roadmap.md)). Os passos 01 e 02 da home (conta e currículo mestre) seguem sem tela própria.
+- **Também pronto:** o currículo mestre — perfil, experiências, projetos, formação, certificações e idiomas, com bullets marcados por skill, salvamento automático e ordem por arrastar ou teclado (seção 10). O passo 02 da home abre a página e fecha sozinho.
+- **Ainda não existe:** versões adaptadas por candidatura, o PDF e a análise de skills (próximas etapas do [roadmap](roadmap.md)). O passo 01 da home (conta) é concluído pelo próprio convite.
 
 ## 1. Subir a stack
 
@@ -65,7 +66,7 @@ Em todas as telas, espere a página terminar de carregar antes de digitar: o for
 Use uma janela anônima (cookies separados) e cole o link copiado.
 
 1. `/invite/<token>` mostra a marca, o título "Criar conta", a linha "Você recebeu um convite para o Rumo Carreira.", o e-mail só leitura, "Nome" e "Senha" (com o botão **Mostrar senha**), a dica "Use de 12 a 128 caracteres." e o rodapé "O convite vale até {data}.". Senha curta → ao enviar, "A senha precisa ter de 12 a 128 caracteres." sob o campo (a dica continua); nome com mais de 120 caracteres → "Informe seu nome, com até 120 caracteres.".
-2. "Criar conta" → abre `/` como membro, que começa com a topbar "Início", com o título "Início", a saudação "Olá, Maria Membro", a linha "Três passos para a primeira candidatura com currículo adaptado." e três cartões: "01 Conta criada" (concluído), "02 Preencha o currículo mestre" e "03 Cadastre uma vaga" (a fazer, com o botão **Nova candidatura**), seguidos de "Quando houver candidaturas, aqui aparecem o pipeline, o que precisa de atenção e a atividade recente.". A barra lateral mostra a marca, os itens "Início" (atual) e "Candidaturas", e embaixo as iniciais "MM" (de "Maria Membro"), o nome e o botão **Sair**. Um nome do meio não entra nas iniciais ("Maria Souza Membro" também dá "MM") e um nome só usa as duas primeiras letras ("Maria" dá "MA").
+2. "Criar conta" → abre `/` como membro, que começa com a topbar "Início", com o título "Início", a saudação "Olá, Maria Membro", a linha "Três passos para a primeira candidatura com currículo adaptado." e três cartões: "01 Conta criada" (concluído), "02 Preencha o currículo mestre" (a fazer, com o botão **Abrir currículo**) e "03 Cadastre uma vaga" (a fazer, com o botão **Nova candidatura**), seguidos de "Quando houver candidaturas, aqui aparecem o pipeline, o que precisa de atenção e a atividade recente.". A barra lateral mostra a marca, os itens "Início" (atual) e "Candidaturas", o grupo "Currículo" com "Currículo mestre", e embaixo as iniciais "MM" (de "Maria Membro"), o nome e o botão **Sair**. Um nome do meio não entra nas iniciais ("Maria Souza Membro" também dá "MM") e um nome só usa as duas primeiras letras ("Maria" dá "MA").
 3. Reabra o mesmo link → tela "Convite inválido": "Este convite expirou ou já foi usado. Peça um novo link a quem te convidou." (sem formulário).
 4. Como membro, abra `/admin` → tela "Sem acesso": "Esta área é da administração. Sua conta é de uso do produto.", com o botão "Voltar para o início" e **Sair**.
 5. **Sair** encerra a sessão e volta ao login.
@@ -129,13 +130,28 @@ Use um membro fictício (seções 2 a 5). Todos os dados abaixo são inventados.
 8. Como admin, `/admin/skills` mostra em cada linha "0 vagas", "1 vaga" ou "{N} vagas": o número de vagas de todas as pessoas que têm a skill, sem dizer de quem. Cadastrar ou excluir uma candidatura muda o número ao recarregar.
 9. Só com o teclado: `C` abre o diálogo, `Tab` anda pelos campos, as setas escolhem nível e modelo, no campo de skills a primeira sugestão já vem ativa: `Enter` a aplica e as setas escolhem outra; no menu "⋯" a seta para a direita abre o submenu de "Status".
 
-## 10. Tema, largura e teclado
+## 10. Currículo mestre
+
+Use um membro fictício (seções 2 a 5). Todos os dados abaixo são inventados. Nenhuma tela tem botão de salvar: cada campo grava ao sair dele, e a topbar mostra "Salvo às {hora}" depois de uma gravação que funcionou.
+
+1. Na home, o cartão "02 Preencha o currículo mestre" tem o botão **Abrir currículo**, que leva a `/resume`. A barra lateral também tem o grupo "Currículo" com o item "Currículo mestre", marcado como atual na página. O cartão continua "A fazer" até o perfil ter nome e existir um bullet com skill (passo 7).
+2. `/resume` abre o **Perfil**: "Nome completo", "Título profissional", "E-mail", "Telefone · opcional", "Local · opcional", "Links" (**+ Link**, até 5) e "Resumo". Preencha `Marina Alves`, `Desenvolvedora Full Stack` e `marina.alves@example.com`, saindo de cada campo com `Tab`: "Salvo às" aparece na topbar. Um e-mail inválido mostra o erro sob o campo e não grava. Recarregue: tudo continua lá.
+3. O índice à esquerda (acima da seção, a 375 px) lista Perfil, Experiência, Projetos, Formação, Certificações e Idiomas; o item usado fica marcado e `section` vai para a URL (`/resume?section=experiences`). Uma seção sem itens não mostra número; com itens mostra a contagem em mono. Um valor de `section` desconhecido abre o Perfil.
+4. Em **Experiência**, **+ Experiência** abre um item novo com o foco no primeiro campo. Preencha "Cargo" `Desenvolvedora Full Stack`, "Empresa" `Empresa Exemplo` e marque "Trabalho aqui atualmente" (ou preencha "Fim"); o item só é gravado quando cargo, empresa, início e fim (ou o "atual") são válidos, e até lá diz "Preencha os campos obrigatórios para salvar.". O cabeçalho passa a mostrar "mar 2023 — atual". O lápis abre e fecha os campos do item; **Excluir experiência** pede confirmação ("Excluir experiência?") e leva os bullets junto.
+5. Com o item aberto (o primeiro de uma seção com bullets já vem aberto; os outros abrem pelo cabeçalho ou pela seta), **+ Bullet** abre um campo: escreva `Construí a API de pagamentos em NestJS e PostgreSQL` e `Enter`. O campo de skills do bullet abre sozinho: digite `NestJS` e escolha com `Enter`; digite um nome que não existe (`Skill Privada de Teste`), escolha "Criar … como skill privada" e a categoria. **Concluir** fecha o campo. Cada skill aparece como etiqueta abaixo do texto. Clique no texto para editá-lo no lugar (`Enter` grava, `Esc` desfaz); o menu "⋯" do bullet (aparece sob o ponteiro ou o foco) tem **Editar skills** e **Excluir bullet**, sem confirmação.
+6. Um bullet sem skill mostra "sem skill" em âmbar, e o índice ganha o aviso "{N} bullets sem skill não entram na ordenação por relevância." ("1 bullet sem skill não entra…" com um); clicar em "sem skill" abre o campo de skills. Marcar uma skill apaga o aviso.
+7. Volte à home: com o perfil com nome e ao menos um bullet com skill, o cartão "02" mostra "Concluído". Apague o nome do perfil e o cartão volta a "A fazer".
+8. Reordenar: **com o mouse**, arraste a alça (seis pontos) de um item ou de um bullet para outra posição; **com o teclado**, `Tab` até a alça, `Espaço` ou `Enter` pega, as setas movem, `Espaço` ou `Enter` solta, e `Esc` devolve à posição de antes sem enviar nada. Cada passo é anunciado numa região viva ("… pego. Posição 2 de 3."). Recarregue: a ordem fica. Itens e bullets só se movem dentro da própria lista.
+9. Crie também um projeto (nome, link e descrição opcionais, com bullets), uma formação ("Curso", "Instituição", início e "Em andamento"), uma certificação e dois idiomas (nível em chips): os números do índice acompanham. A página não tem "Visualizar PDF" (vem com o documento, em outra feature).
+10. Se a API cair, a página mostra "Não foi possível carregar o currículo." com **Tentar de novo**; um campo que não grava mantém o texto digitado e diz "Não foi possível salvar. Tente de novo.".
+
+## 11. Tema, largura e teclado
 
 - Alterne o tema do sistema (claro/escuro): as telas e o favicon acompanham.
-- Estreite a janela para 375 px: nada rola na horizontal (na lista de candidaturas sobram status, empresa, título e última atividade; no detalhe a sidebar vai para baixo do conteúdo); e-mails e links longos quebram dentro da página, e a barra lateral vira uma barra no topo.
+- Estreite a janela para 375 px: nada rola na horizontal (no currículo o índice fica acima da seção; na lista de candidaturas sobram status, empresa, título e última atividade; no detalhe a sidebar vai para baixo do conteúdo); e-mails e links longos quebram dentro da página, e a barra lateral vira uma barra no topo.
 - Navegue só com `Tab`: o botão em foco tem um anel visível. Em `/login`, o botão **Mostrar senha** é o próximo foco depois do campo "Senha" e funciona com `Enter` e `Espaço`.
 
-## 11. Rodar os testes
+## 12. Rodar os testes
 
 | Comando | Tempo | O que cobre |
 |---|---|---|
@@ -147,9 +163,9 @@ Use um membro fictício (seções 2 a 5). Todos os dados abaixo são inventados.
 
 No CI de cada PR rodam sempre lint, tipos, `pnpm test`, integração e o scan de segredos; `test:repo-rules`, E2E e infraestrutura rodam quando o PR muda o que eles provam, e todos rodam no push na `main`, antes do deploy (`docs/workflow.md`, seção "Gates e tempo").
 
-O E2E de candidaturas grava as três imagens das telas (`PageApplications`, `PageNewApplication` e `PageApplicationDetail`, 1280 × 800) na pasta de saída do Playwright (`tests/e2e/test-results`, ignorada pelo git), então um `pnpm test:e2e` comum deixa a árvore limpa. Para renovar as imagens versionadas em `.specs/features/application/captures/*.running.png`, rode `CAPTURE=1 pnpm test:e2e`.
+Os E2E de candidaturas e do currículo gravam as imagens das telas (`PageApplications`, `PageNewApplication`, `PageApplicationDetail` e `PageMasterResume`, 1280 × 800) na pasta de saída do Playwright (`tests/e2e/test-results`, ignorada pelo git), então um `pnpm test:e2e` comum deixa a árvore limpa. Para renovar as imagens versionadas em `.specs/features/*/captures/*.running.png`, rode `CAPTURE=1 pnpm test:e2e`.
 
-## 12. Encerrar
+## 13. Encerrar
 
 ```bash
 docker compose down -v   # apaga também o volume do banco

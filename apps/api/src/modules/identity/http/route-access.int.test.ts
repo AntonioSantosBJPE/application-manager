@@ -143,10 +143,18 @@ describe('route access', () => {
         // A member deletes an application with its posting, skills and events; a product route, not account administration (APP-36).
         'DELETE /applications/:id',
         'DELETE /invitations/:id',
+        // A member deletes an item of a section of the master resume, with its bullets; a product route, not account administration (RES-09, RES-10).
+        'DELETE /resume/:section/:id',
+        // A member deletes a bullet of an experience or a project of the master resume; a product route, not account administration (RES-17).
+        'DELETE /resume/:section/:id/bullets/:bulletId',
         // The admin removes an alias of a global skill; the skill itself is never deleted (SKL-69, SKL-25).
         'DELETE /skills/:id/aliases/:aliasId',
         // A member edits the posting of an application; a product route, not account administration (APP-28).
         'PATCH /applications/:id/job-posting',
+        // A member edits an item of a section of the master resume; a product route, not account administration (RES-08).
+        'PATCH /resume/:section/:id',
+        // A member edits the text or the skills of a bullet of the master resume; a product route, not account administration (RES-16).
+        'PATCH /resume/:section/:id/bullets/:bulletId',
         // The admin edits the name and category of a global skill, and the text of its aliases (SKL-62, SKL-67).
         'PATCH /skills/:id',
         'PATCH /skills/:id/aliases/:aliasId',
@@ -161,6 +169,10 @@ describe('route access', () => {
         'POST /auth/logout',
         'POST /invitations',
         'POST /invitations/:token/accept',
+        // A member creates an item of a section of the master resume; a product route, not account administration (RES-07).
+        'POST /resume/:section',
+        // A member adds a bullet to an experience or a project of the master resume; a product route, not account administration (RES-15).
+        'POST /resume/:section/:id/bullets',
         // A member creates a private skill; it is a product route, not account administration (SKL-11).
         'POST /skills',
         // The admin gives a global skill an alias and makes a private skill global; catalog routes, not account administration (SKL-17, SKL-26).
@@ -168,6 +180,12 @@ describe('route access', () => {
         'POST /skills/:id/promote',
         // A member replaces the skills of a posting; a product route, not account administration (APP-30).
         'PUT /applications/:id/skills',
+        // A member saves the order of the bullets of an experience or a project of the master resume; a product route, not account administration (RES-26).
+        'PUT /resume/:section/:id/bullets/order',
+        // A member saves the order of a section of the master resume; a product route, not account administration (RES-25).
+        'PUT /resume/:section/order',
+        // A member saves the profile of the master resume; a product route, not account administration (RES-03).
+        'PUT /resume/profile',
       ];
       const registeredWriting = routes
         .map((route) => route.route)

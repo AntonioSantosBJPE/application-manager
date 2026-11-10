@@ -1,4 +1,5 @@
 export { Alert, type AlertProps } from './components/alert';
+export { Bullet, type BulletRootProps } from './components/bullet';
 export { Button, type ButtonProps } from './components/button';
 export {
   ChoiceChips,
@@ -35,6 +36,14 @@ export {
   type SkillTagProps,
   type SkillTagVariant,
 } from './components/skill-tag';
+export {
+  Sortable,
+  type SortableAnnouncement,
+  type SortableAnnouncements,
+  type SortableHandleButtonProps,
+  type SortableItemProps,
+  type SortableListProps,
+} from './components/sortable';
 export { StatusBadge, type StatusBadgeProps } from './components/status-badge';
 export { TagField, type TagFieldProps, type TagFieldTag } from './components/tag-field';
 export { Timeline, type TimelineItemProps } from './components/timeline';

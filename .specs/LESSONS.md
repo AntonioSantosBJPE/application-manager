@@ -206,6 +206,36 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: backup.sh:62 (scripts)
 - last seen: 2026-11-09T11:11:37Z
 
+### L-033 - When a binding capture draws a control only in some states, the criterion names each state it shows in, at rest and on hover, so the spec never contradicts the capture.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `spec` · harmful: 0
+- features: master-resume
+- evidence: RES-69 (spec)
+- last seen: 2026-11-10T22:16:28Z
+
+### L-034 - Never surface the api Problem Details detail on a pt-BR screen; field errors are web-owned pt-BR messages and an api refusal shows a fixed pt-BR sentence.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `apps/web` · harmful: 0
+- features: master-resume
+- evidence: spec Assumptions: Falha ao salvar (apps/web)
+- last seen: 2026-11-10T22:16:28Z
+
+### L-035 - Workers run each gate as its own command and check its exit code, and never redirect gate output into a file inside the repo.
+- signal: `gate_fail` · recurrence: 1 feature(s) · scope: `workflow` · harmful: 0
+- features: master-resume
+- evidence: a319349 gate.out; T28 amend (workflow)
+- last seen: 2026-11-10T22:16:28Z
+
+### L-036 - A criterion that names several sections, bounds or a variant gets an assertion for each one, not a representative case.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `tests` · harmful: 0
+- features: master-resume
+- evidence: C2, C13, C19, C38 (tests)
+- last seen: 2026-11-10T22:16:29Z
+
+### L-037 - A length limit on the web covers every free-text field including inline edits, and maxLength must not silently cut a paste.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `apps/web` · harmful: 0
+- features: master-resume
+- evidence: RES-85 (apps/web)
+- last seen: 2026-11-10T22:16:29Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

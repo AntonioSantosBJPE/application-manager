@@ -15,6 +15,8 @@ import {
   type SessionState,
 } from './features/identity';
 import { countApplications, getApplication, listApplications } from './features/applications';
+import { getResume, getResumeSummary } from './features/resume';
+import { masterResume } from './features/resume/testing/fixtures';
 import { listAdminSkills, searchSkills } from './features/skills';
 import { getSystemStatus } from './features/system-status';
 import { detail } from './features/applications/testing/fixtures';
@@ -38,6 +40,12 @@ vi.mock('./features/applications/api/server-functions', async (importOriginal) =
   countApplications: vi.fn(),
   listApplications: vi.fn(),
   getApplication: vi.fn(),
+}));
+
+vi.mock('./features/resume/api/server-functions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./features/resume/api/server-functions')>()),
+  getResume: vi.fn(),
+  getResumeSummary: vi.fn(),
 }));
 
 vi.mock('./features/skills/api/server-functions', async (importOriginal) => ({
@@ -100,6 +108,7 @@ beforeEach(() => {
   });
   vi.mocked(listAdminSkills).mockResolvedValue({ ok: true, data: emptySkillsPage });
   vi.mocked(countApplications).mockResolvedValue({ ok: true, data: { total: 0 } });
+  vi.mocked(getResumeSummary).mockResolvedValue({ ok: true, data: { ready: false } });
   vi.mocked(getApplication).mockResolvedValue({ ok: true, data: detail(1, { id: appId }) });
 });
 
@@ -147,7 +156,7 @@ describe('member area guard', () => {
     expect(within(sidebar).getByText('rumo')).toBeInTheDocument();
     expect(within(sidebar).getByText('carreira')).toBeInTheDocument();
     const links = within(sidebar).getAllByRole('link');
-    expect(links.map((link) => link.textContent)).toEqual(['Início', 'Candidaturas 0']);
+    expect(links.map((link) => link.textContent)).toEqual(['Início', 'Candidaturas 0', 'Currículo mestre']);
     expect(within(sidebar).getByRole('link', { name: 'Candidaturas 0' })).toBeInTheDocument();
     expect(links[0]).toHaveAttribute('href', '/');
     expect(links[0]).toHaveAttribute('aria-current', 'page');
@@ -155,8 +164,8 @@ describe('member area guard', () => {
     expect(within(sidebar).getByText('AS')).toHaveAttribute('aria-hidden', 'true');
     expect(within(sidebar).getByText('Ana Souza')).toBeInTheDocument();
     expect(within(sidebar).getByRole('button', { name: 'Sair' })).toBeInTheDocument();
-    // Only what exists (AD-008): no search button and no destination of a later phase.
-    expect(within(sidebar).queryByText(/Buscar|Currículo|Skills|Insights/)).toBeNull();
+    // Only what exists (AD-008): no search button and no destination of a later phase ("Currículo mestre" exists, RES-77).
+    expect(within(sidebar).queryByText(/Buscar|Skills|Insights/)).toBeNull();
   });
 
   it('PRU-06 AC11 says the service is unavailable on the same url without going to login', async () => {
@@ -267,6 +276,55 @@ describe('member home', () => {
     await screen.findByRole('heading', { level: 1, name: 'Início' });
     expect(stepStatus('Cadastre uma vaga').getByLabelText('Concluído')).toBeInTheDocument();
     expect(stepStatus('Preencha o currículo mestre').getByLabelText('A fazer')).toBeInTheDocument();
+  });
+
+  it('RES-78 opens /resume from "Abrir currículo" in step 02', async () => {
+    sessionIs(signedInAs(member));
+    vi.mocked(getResume).mockResolvedValue({ ok: true, data: masterResume() });
+    const router = await open('/');
+    await screen.findByRole('heading', { level: 1, name: 'Início' });
+
+    fireEvent.click(stepStatus('Preencha o currículo mestre').getByRole('link', { name: 'Abrir currículo' }));
+
+    await waitFor(() => expect(here(router)).toBe('/resume'));
+  });
+
+  it('RES-79 shows step 02 as "Concluído" when the summary says ready', async () => {
+    sessionIs(signedInAs(member));
+    vi.mocked(getResumeSummary).mockResolvedValue({ ok: true, data: { ready: true } });
+    await open('/');
+    await screen.findByRole('heading', { level: 1, name: 'Início' });
+
+    expect(stepStatus('Preencha o currículo mestre').getByLabelText('Concluído')).toBeInTheDocument();
+    expect(stepStatus('Cadastre uma vaga').getByLabelText('A fazer')).toBeInTheDocument();
+  });
+
+  it('RES-80 keeps step 02 without "Concluído" while the summary is not ready or the read fails', async () => {
+    sessionIs(signedInAs(member));
+    await open('/');
+    await screen.findByRole('heading', { level: 1, name: 'Início' });
+    expect(stepStatus('Preencha o currículo mestre').getByLabelText('A fazer')).toBeInTheDocument();
+    expect(stepStatus('Preencha o currículo mestre').queryByLabelText('Concluído')).toBeNull();
+    cleanup();
+
+    vi.mocked(getResumeSummary).mockResolvedValue({ ok: false, status: 503 });
+    await open('/');
+    await screen.findByRole('heading', { level: 1, name: 'Início' });
+    expect(stepStatus('Preencha o currículo mestre').getByLabelText('A fazer')).toBeInTheDocument();
+    expect(stepStatus('Preencha o currículo mestre').queryByLabelText('Concluído')).toBeNull();
+  });
+
+  it('RES-79 hands the page only { ready } and no field of the resume', async () => {
+    sessionIs(signedInAs(member));
+    vi.mocked(getResumeSummary).mockResolvedValue({
+      ok: true,
+      data: { ready: true, profile: { fullName: 'Marina Alves' } },
+    } as never);
+    const router = await open('/');
+    await screen.findByRole('heading', { level: 1, name: 'Início' });
+
+    const home = router.state.matches.find((match) => match.routeId === '/_member/');
+    expect(home?.loaderData).toEqual({ ready: true });
   });
 
   it('PRU-06 AC12 greets without a name when the session has none', async () => {
@@ -915,7 +973,7 @@ describe('applications', () => {
     const router = await openApplications('/applications');
 
     const links = within(await memberSidebar()).getAllByRole('link');
-    expect(links.map((link) => link.textContent)).toEqual(['Início', 'Candidaturas 24']);
+    expect(links.map((link) => link.textContent)).toEqual(['Início', 'Candidaturas 24', 'Currículo mestre']);
     expect(
       within(await memberSidebar()).getByRole('link', { name: 'Candidaturas 24' }),
     ).toBeInTheDocument();

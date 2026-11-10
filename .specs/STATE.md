@@ -202,6 +202,22 @@
 - **Date**: 2026-11-10
 - **Status**: active
 
+### AD-026 (active)
+- **Decision**: O currículo mestre não tem o botão "Visualizar PDF" na topbar até a fatia ResumeDocument existir; ela acrescenta o botão.
+- **Reason**: O PDF só existe com ResumeDocument. Pergunta: "O botão 'Visualizar PDF' da topbar do currículo mestre depende do PDF, que só chega na fatia ResumeDocument. O que fazer agora?"; opção escolhida: "Omitir até existir".
+- **Trade-off**: A tela fica sem o atalho para ver o resultado final até a fase do PDF; a topbar só mostra "Salvo às".
+- **Scope**: `apps/web` feature `resume`, carta `PageMasterResume`
+- **Date**: 2026-11-10
+- **Status**: active
+
+### AD-027 (active)
+- **Decision**: Reordenar por arrastar usa o `Sortable` de `packages/ui`, sobre `@dnd-kit/core` e `@dnd-kit/sortable` (versões estáveis, não `@dnd-kit/react` 0.x), sempre com sensor de teclado e anúncios vindos do chamador. Nenhuma feature importa `@dnd-kit` direto.
+- **Reason**: Pergunta: "Reordenar experiências, projetos e bullets no currículo mestre: […] Como o usuário reordena?"; opção escolhida: "Arrastar + teclado". Uma lib só, atrás de um componente do design system, mantém o gesto e a acessibilidade iguais em toda tela que reordena (ResumeVersion também reordena).
+- **Trade-off**: Uma dependência a mais no `packages/ui`; arrastar só é provado em teste de browser e E2E, não em jsdom.
+- **Scope**: `packages/ui`, features `master-resume` e `resume-version`
+- **Date**: 2026-11-10
+- **Status**: active
+
 ### AD-028 (active)
 - **Decision**: Cada leitura entrega só o que o consumidor usa, com teto declarado: valor derivado (sim/não, total, contagem) vem calculado da API; ordenar, filtrar, contar e paginar rodam no SQL; o loader não devolve dado que a página não mostra; resposta de escrita devolve o que mudou. Todo `design.md` de feature tem a seção `## Data Reads` (`Consumer | Endpoint | Uses | Returns | Worst case | In the HTML`), com o pior caso em número, e `tooling/guardrails/src/design-data-reads.test.ts` reprova o design sem ela. Regra em `docs/engineering-guidelines.md`.
 - **Reason**: O excesso de leitura apareceu em mais de um design e só foi pego pelo usuário na revisão: o catálogo do admin carregando todas as skills (AD-019) e a home lendo o currículo inteiro para o passo 02 (feature `master-resume`). Pedido do usuário: "crie alguma regra no sistema para evitar esse problema de design, que não faz sentido se repetir, e ja aconteceu outras vezes nas etapas de design".
@@ -212,10 +228,10 @@
 
 ## Handoff
 
-- **Feature**: `application` - closed on branch `feat/application`, 2026-11-08.
-- **Done**: T1-T48 committed by Sonnet 5.5 workers in 7 batches (B4 and B5 with one fix round each), orchestrated and checked by Opus 5.5. Verifier (Opus 5.5) judged 81/88 checks holding and wrote 13 findings, all closed (`0d56abd`..`d0809a7`, `1c8daf3`, `f32b4a3`); screens round 2: the three pictures match their captures. Reports: `.specs/features/application/verification.md`, `screens.md`.
-- **Gates at `1c8daf3`**: `pnpm build`, `typecheck`, `lint`, `pnpm test --force` (contracts 75, guardrails 37, api 102, web 649, ui 609), `pnpm test:integration` (272), `pnpm test:e2e` (61), tree clean after e2e.
-- **Decisions in the feature**: AD-017 to AD-023 (AD-022 and AD-023 taken by the orchestrator under the user's delegation).
-- **Lessons**: L-016 to L-028 recorded as candidates.
-- **Open for the author**: focus goes to `body` after changing a status from the row menu (Deferred Ideas in `context.md`); `job_postings.search_text` rows written before `0d56abd` keep the old format (only local dev data).
-- **Next**: push `feat/application` and open the PR to `main` after the author's go-ahead; merge with green CI, then `git switch main && git pull --ff-only && git branch -d feat/application`.
+- **Feature**: `master-resume` - closed on branch `feat/master-resume`, 2026-11-10 (not pushed).
+- **Done**: T1-T36 by Sonnet 5.5 workers in 5 batches (B3 carried one fix into B4), orchestrated and checked by Opus 5.5. Verifier (Opus 5.5) judged 81/86 checks holding and wrote 6 findings, all closed (`927a3dc`, `7143f2d`, `36b320d`, `9155f7a`, picture `6e96855`); the spec gained RES-87 and clearer RES-69 to follow the capture. Screens round 2: `matches`. Reports: `.specs/features/master-resume/verification.md`, `screens.md`.
+- **Gates at the fix pass**: `pnpm build`, `typecheck`, `lint`, `pnpm test --force` (contracts 98, api 127, web 894, ui 650, guardrails 165), `pnpm test:integration` (348), `pnpm test:e2e` (67).
+- **Decisions in the feature**: AD-026, AD-027 (and AD-028, merged before in #17).
+- **Lessons**: L-033 to L-037 recorded as candidates.
+- **Open for the author**: `gate.out` (a gate log with a local path) is out of the tree and ignored, but still inside commit `a319349`; rewrite the branch history before the first push.
+- **Next**: after the author's go-ahead, remove `gate.out` from the branch history, push `feat/master-resume` and open the PR to `main`; merge with green CI, then `git switch main && git pull --ff-only && git branch -d feat/master-resume`. Then the review of reads under AD-028, before ResumeVersion.

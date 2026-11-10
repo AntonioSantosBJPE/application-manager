@@ -13,6 +13,7 @@ import { Route as MemberRouteImport } from './routes/_member'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as MemberIndexRouteImport } from './routes/_member/index'
+import { Route as MemberResumeRouteImport } from './routes/_member/resume'
 import { Route as AdminProtectedRouteImport } from './routes/admin/_protected'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
@@ -39,6 +40,11 @@ const StatusRoute = StatusRouteImport.update({
 const MemberIndexRoute = MemberIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => MemberRoute,
+} as any)
+const MemberResumeRoute = MemberResumeRouteImport.update({
+  id: '/resume',
+  path: '/resume',
   getParentRoute: () => MemberRoute,
 } as any)
 const AdminProtectedRoute = AdminProtectedRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/': typeof MemberIndexRoute
   '/login': typeof LoginRoute
   '/status': typeof StatusRoute
+  '/resume': typeof MemberResumeRoute
   '/admin': typeof AdminProtectedRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/status': typeof StatusRoute
+  '/resume': typeof MemberResumeRoute
   '/admin/login': typeof AdminLoginRoute
   '/invite/$token': typeof InviteTokenRoute
   '/': typeof MemberIndexRoute
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/_member': typeof MemberRouteWithChildren
   '/login': typeof LoginRoute
   '/status': typeof StatusRoute
+  '/_member/resume': typeof MemberResumeRoute
   '/admin/_protected': typeof AdminProtectedRouteWithChildren
   '/admin/login': typeof AdminLoginRoute
   '/invite/$token': typeof InviteTokenRoute
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/status'
+    | '/resume'
     | '/admin'
     | '/admin/login'
     | '/invite/$token'
@@ -141,6 +151,7 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/status'
+    | '/resume'
     | '/admin/login'
     | '/invite/$token'
     | '/'
@@ -154,6 +165,7 @@ export interface FileRouteTypes {
     | '/_member'
     | '/login'
     | '/status'
+    | '/_member/resume'
     | '/admin/_protected'
     | '/admin/login'
     | '/invite/$token'
@@ -202,6 +214,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof MemberIndexRouteImport
+      parentRoute: typeof MemberRoute
+    }
+    '/_member/resume': {
+      id: '/_member/resume'
+      path: '/resume'
+      fullPath: '/resume'
+      preLoaderRoute: typeof MemberResumeRouteImport
       parentRoute: typeof MemberRoute
     }
     '/admin/_protected': {
@@ -264,12 +283,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface MemberRouteChildren {
+  MemberResumeRoute: typeof MemberResumeRoute
   MemberIndexRoute: typeof MemberIndexRoute
   MemberApplicationsIdRoute: typeof MemberApplicationsIdRoute
   MemberApplicationsIndexRoute: typeof MemberApplicationsIndexRoute
 }
 
 const MemberRouteChildren: MemberRouteChildren = {
+  MemberResumeRoute: MemberResumeRoute,
   MemberIndexRoute: MemberIndexRoute,
   MemberApplicationsIdRoute: MemberApplicationsIdRoute,
   MemberApplicationsIndexRoute: MemberApplicationsIndexRoute,

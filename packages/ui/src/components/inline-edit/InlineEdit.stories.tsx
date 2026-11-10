@@ -72,6 +72,33 @@ export const Vazio: Story = {
   },
 };
 
+export const VariasLinhas: Story = {
+  name: 'Várias linhas',
+  render: () => {
+    function Frase() {
+      const [value, setValue] = useState(
+        'Reduziu o tempo de resposta da API de pedidos em 40% ao trocar consultas repetidas por um cache.',
+      );
+      return (
+        <div className="w-80 bg-surface p-4 text-body-lg">
+          <InlineEdit multiline value={value} label="Editar texto" onCommit={setValue} />
+        </div>
+      );
+    }
+    return <Frase />;
+  },
+  play: async ({ canvas }) => {
+    const button = canvas.getByRole('button', { name: /^Editar texto / });
+    const reading = button.getBoundingClientRect().height;
+    await expect(reading).toBeGreaterThan(32);
+
+    await userEvent.click(button);
+    await userEvent.keyboard('Texto novo{Enter}');
+
+    await expect(canvas.getByRole('button', { name: /^Editar texto / })).toHaveTextContent('Texto novo');
+  },
+};
+
 /** Reading and editing: the text at 4.5:1 and the focus ring at 3:1, on both surfaces. */
 const contrast: Story['play'] = async ({ canvas }) => {
   const buttons = canvas.getAllByRole('button');
@@ -99,4 +126,28 @@ export const ContrasteEscuro: Story = {
   name: 'PRU-08 AC03 Contraste, tema escuro',
   globals: { theme: 'dark' },
   play: contrast,
+};
+
+export const TextoLongoDemais: Story = {
+  name: 'Texto longo demais',
+  render: () => (
+    <div className="w-80 bg-surface p-4 text-body-lg">
+      <InlineEdit
+        multiline
+        value="Texto salvo"
+        label="Editar texto"
+        validate={(text) => (text.length > 20 ? 'Use no máximo 20 caracteres.' : null)}
+        onCommit={() => {}}
+      />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: /^Editar texto / }));
+    await userEvent.keyboard('um texto bem mais comprido que o limite{Enter}');
+
+    await expect(canvas.getByText('Use no máximo 20 caracteres.')).toBeInTheDocument();
+    await expect(canvas.getByRole('textbox', { name: 'Editar texto' })).toHaveValue(
+      'um texto bem mais comprido que o limite',
+    );
+  },
 };

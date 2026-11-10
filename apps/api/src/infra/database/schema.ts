@@ -3,3 +3,4 @@
 export * from '../../modules/identity/infra/schema.js';
 export * from '../../modules/skills/infra/schema.js';
 export * from '../../modules/applications/infra/schema.js';
+export * from '../../modules/resume/infra/schema.js';

@@ -1,6 +1,7 @@
 import { AppShell, Button, DashboardPage, EmptyState, PipelineStatus } from '@am/ui';
 import { createFileRoute, getRouteApi, Link } from '@tanstack/react-router';
 import { greetingFor } from '../../features/identity';
+import { getResumeSummary } from '../../features/resume';
 
 /** The three steps of the first application. The first one is done by the invitation itself (AD-010). */
 const STEPS = [
@@ -26,6 +27,8 @@ const STEPS = [
 
 /** The step that is done by using the product: the first application (APP-84). */
 const APPLICATION_STEP = '03';
+/** The step done by the master resume: a name and one bullet with a skill (RES-79). */
+const RESUME_STEP = '02';
 
 const memberLayout = getRouteApi('/_member');
 
@@ -34,6 +37,12 @@ const memberLayout = getRouteApi('/_member');
  * until the next slices fill it.
  */
 export const Route = createFileRoute('/_member/')({
+  // Only whether step 02 is done reaches the page; nothing of the resume goes to the HTML (Data Reads).
+  // A failed read leaves the step without "Concluído" (RES-80).
+  loader: async () => {
+    const outcome = await getResumeSummary();
+    return { ready: outcome.ok && outcome.data.ready };
+  },
   component: MemberHome,
 });
 
@@ -42,6 +51,7 @@ function MemberHome() {
   // The total the layout already read for the sidebar: with one application, step 03 is done (APP-84).
   const { total } = memberLayout.useLoaderData();
   const hasApplication = total !== undefined && total > 0;
+  const { ready } = Route.useLoaderData();
 
   return (
     <DashboardPage.Root>
@@ -60,7 +70,10 @@ function MemberHome() {
         </DashboardPage.Header>
         <DashboardPage.Grid>
           {STEPS.map((step) => {
-            const done = step.done || (step.number === APPLICATION_STEP && hasApplication);
+            const done =
+              step.done ||
+              (step.number === APPLICATION_STEP && hasApplication) ||
+              (step.number === RESUME_STEP && ready);
             return (
               <DashboardPage.Widget key={step.number} span={4}>
                 <DashboardPage.Widget.Header>
@@ -73,6 +86,11 @@ function MemberHome() {
                 </DashboardPage.Widget.Header>
                 <DashboardPage.Widget.Title>{step.title}</DashboardPage.Widget.Title>
                 <p className="text-text-muted">{step.text}</p>
+                {step.number === RESUME_STEP ? (
+                  <Button asChild intent="secondary" size="sm">
+                    <Link to="/resume">Abrir currículo</Link>
+                  </Button>
+                ) : null}
                 {step.number === APPLICATION_STEP ? (
                   <Button asChild intent="secondary" size="sm">
                     <Link to="/applications" search={{ new: 1 }}>

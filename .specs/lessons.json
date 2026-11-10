@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 33,
+  "next_id": 38,
   "lessons": [
     {
       "id": "L-001",
@@ -581,6 +581,96 @@
       ],
       "created": "2026-11-09T11:11:37Z",
       "last_seen": "2026-11-09T11:11:37Z"
+    },
+    {
+      "id": "L-033",
+      "key": "spec_precision_gap::when a binding capture draws a control only in some states the criterion names each state it shows in at rest and on hover so the spec never contradicts the capture",
+      "text": "When a binding capture draws a control only in some states, the criterion names each state it shows in, at rest and on hover, so the spec never contradicts the capture.",
+      "signal": "spec_precision_gap",
+      "scope": "spec",
+      "status": "candidate",
+      "features": [
+        "master-resume"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "RES-69 (spec)"
+      ],
+      "created": "2026-11-10T22:16:28Z",
+      "last_seen": "2026-11-10T22:16:28Z"
+    },
+    {
+      "id": "L-034",
+      "key": "spec_precision_gap::never surface the api problem details detail on a pt br screen field errors are web owned pt br messages and an api refusal shows a fixed pt br sentence",
+      "text": "Never surface the api Problem Details detail on a pt-BR screen; field errors are web-owned pt-BR messages and an api refusal shows a fixed pt-BR sentence.",
+      "signal": "spec_precision_gap",
+      "scope": "apps/web",
+      "status": "candidate",
+      "features": [
+        "master-resume"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "spec Assumptions: Falha ao salvar (apps/web)"
+      ],
+      "created": "2026-11-10T22:16:28Z",
+      "last_seen": "2026-11-10T22:16:28Z"
+    },
+    {
+      "id": "L-035",
+      "key": "gate_fail::workers run each gate as its own command and check its exit code and never redirect gate output into a file inside the repo",
+      "text": "Workers run each gate as its own command and check its exit code, and never redirect gate output into a file inside the repo.",
+      "signal": "gate_fail",
+      "scope": "workflow",
+      "status": "candidate",
+      "features": [
+        "master-resume"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "a319349 gate.out; T28 amend (workflow)"
+      ],
+      "created": "2026-11-10T22:16:28Z",
+      "last_seen": "2026-11-10T22:16:28Z"
+    },
+    {
+      "id": "L-036",
+      "key": "weak_test::a criterion that names several sections bounds or a variant gets an assertion for each one not a representative case",
+      "text": "A criterion that names several sections, bounds or a variant gets an assertion for each one, not a representative case.",
+      "signal": "weak_test",
+      "scope": "tests",
+      "status": "candidate",
+      "features": [
+        "master-resume"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C2, C13, C19, C38 (tests)"
+      ],
+      "created": "2026-11-10T22:16:29Z",
+      "last_seen": "2026-11-10T22:16:29Z"
+    },
+    {
+      "id": "L-037",
+      "key": "ac_gap::a length limit on the web covers every free text field including inline edits and maxlength must not silently cut a paste",
+      "text": "A length limit on the web covers every free-text field including inline edits, and maxLength must not silently cut a paste.",
+      "signal": "ac_gap",
+      "scope": "apps/web",
+      "status": "candidate",
+      "features": [
+        "master-resume"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "RES-85 (apps/web)"
+      ],
+      "created": "2026-11-10T22:16:29Z",
+      "last_seen": "2026-11-10T22:16:29Z"
     }
   ]
 }
