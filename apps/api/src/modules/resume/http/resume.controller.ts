@@ -2,6 +2,7 @@ import {
   createBulletRequestSchema,
   createItemRequestSchemas,
   orderRequestSchema,
+  updateBulletRequestSchema,
   updateItemRequestSchemas,
   saveProfileRequestSchema,
   type BulletResponse,
@@ -9,6 +10,7 @@ import {
   type InvalidSkillsProblem,
   type MasterResume,
   type OrderRequest,
+  type UpdateBulletRequest,
   type OrderResponse,
   type Profile,
   type ResumeSection,
@@ -134,5 +136,32 @@ export class ResumeController {
     const section = bulletSectionOf(segment);
     const values = zodBody(createBulletRequestSchema).transform(body, { type: 'body' }) as CreateBulletRequest;
     return answering(() => this.resume.createBullet(user.id, section, id, values));
+  }
+
+  @Roles('member')
+  @Patch(':section/:id/bullets/:bulletId')
+  updateBullet(
+    @Param('section') segment: string,
+    @Param('id') id: string,
+    @Param('bulletId') bulletId: string,
+    @Body() body: unknown,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<BulletResponse> {
+    const section = bulletSectionOf(segment);
+    const values = zodBody(updateBulletRequestSchema).transform(body, { type: 'body' }) as UpdateBulletRequest;
+    return answering(() => this.resume.updateBullet(user.id, section, id, bulletId, values));
+  }
+
+  @Roles('member')
+  @HttpCode(204)
+  @Delete(':section/:id/bullets/:bulletId')
+  async deleteBullet(
+    @Param('section') segment: string,
+    @Param('id') id: string,
+    @Param('bulletId') bulletId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<void> {
+    const section = bulletSectionOf(segment);
+    await answering(() => this.resume.deleteBullet(user.id, section, id, bulletId));
   }
 }

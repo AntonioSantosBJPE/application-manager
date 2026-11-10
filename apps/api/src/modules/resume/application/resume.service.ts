@@ -1,4 +1,4 @@
-import { BULLETS_PER_ITEM_MAX, RESUME_ITEMS_MAX, type Bullet, type BulletResponse, type CreateBulletRequest, type MasterResume, type OrderResponse, type Profile, type ResumeSection, type ResumeSummary, type SaveProfileRequest, type SkillDictionary } from '@am/contracts';
+import { BULLETS_PER_ITEM_MAX, RESUME_ITEMS_MAX, type Bullet, type BulletResponse, type CreateBulletRequest, type UpdateBulletRequest, type MasterResume, type OrderResponse, type Profile, type ResumeSection, type ResumeSummary, type SaveProfileRequest, type SkillDictionary } from '@am/contracts';
 import { Inject, Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { CLOCK, type Clock } from '../../../infra/clock/clock.js';
@@ -8,7 +8,7 @@ import { isExactOrder } from '../domain/order.js';
 import type { BulletSection } from '../domain/sections.js';
 import { ResumeRepository, type BulletRecord } from '../infra/resume.repository.js';
 
-type ResumeEventName = 'resume.profile_saved' | 'resume.item_created' | 'resume.item_updated' | 'resume.item_deleted' | 'resume.items_ordered' | 'resume.bullet_created';
+type ResumeEventName = 'resume.profile_saved' | 'resume.item_created' | 'resume.item_updated' | 'resume.item_deleted' | 'resume.items_ordered' | 'resume.bullet_created' | 'resume.bullet_updated' | 'resume.bullet_deleted';
 
 /** An item as the API shows it, without the bullets of an experience or a project (AD-028). */
 export type ResumeItem = Record<string, unknown>;
@@ -190,6 +190,28 @@ export class ResumeService {
     });
     this.record('resume.bullet_created', bullet.id, userId);
     return this.bulletResponse(userId, bullet);
+  }
+
+  /**
+   * Writes the text, the skills or both. The bullet is looked for in its item first, so another item's bullet
+   * and somebody else's answer `404` before the skills are looked at (RES-16, RES-20, RES-22).
+   */
+  async updateBullet(userId: string, section: BulletSection, itemId: string, bulletId: string, body: UpdateBulletRequest): Promise<BulletResponse> {
+    if (!isUuid(itemId) || !isUuid(bulletId) || (await this.repository.findBullet(section, userId, itemId, bulletId)) === undefined) throw new ResumeNotFoundError();
+    const skillIds = body.skillIds === undefined ? undefined : this.normalized(body.skillIds);
+    if (skillIds !== undefined) {
+      const invalid = await this.invalidSkillIds(userId, skillIds);
+      if (invalid.length > 0) throw new InvalidSkillsError(invalid);
+    }
+    const bullet = await this.repository.updateBullet(section, userId, itemId, bulletId, { text: body.text, skillIds });
+    if (bullet === undefined) throw new ResumeNotFoundError();
+    this.record('resume.bullet_updated', bullet.id, userId);
+    return this.bulletResponse(userId, bullet);
+  }
+
+  async deleteBullet(userId: string, section: BulletSection, itemId: string, bulletId: string): Promise<void> {
+    if (!isUuid(itemId) || !isUuid(bulletId) || !(await this.repository.deleteBullet(section, userId, itemId, bulletId))) throw new ResumeNotFoundError();
+    this.record('resume.bullet_deleted', bulletId, userId);
   }
 
   /** A bullet and the skills it cites, each described once by the catalog; a skill that is no longer visible drops out without an error (RES-23). */

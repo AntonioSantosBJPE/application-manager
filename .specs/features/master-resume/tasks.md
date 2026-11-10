@@ -400,10 +400,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Teste `RES-16`: só `text`, só `skillIds` e os dois; resposta `{ bullet, skills }`
-- [ ] Teste `RES-17`: `204` e o bullet some
-- [ ] Teste `RES-22`: item ou bullet de outra conta, bullet de outro item, inexistente e não uuid respondem `404` sem mudar nada
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Teste `RES-16`: só `text`, só `skillIds` e os dois; resposta `{ bullet, skills }`
+- [x] Teste `RES-17`: `204` e o bullet some
+- [x] Teste `RES-22`: item ou bullet de outra conta, bullet de outro item, inexistente e não uuid respondem `404` sem mudar nada
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

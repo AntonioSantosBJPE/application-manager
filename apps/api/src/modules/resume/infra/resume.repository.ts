@@ -263,4 +263,37 @@ export class ResumeRepository {
     const { id, text, skillIds, experienceId, projectId } = row!;
     return { id, text, skillIds, experienceId, projectId };
   }
+
+  /** The bullet, only when it belongs to this item of this user: another item's bullet and somebody else's are not found (RES-22). */
+  async findBullet(section: BulletSection, userId: string, itemId: string, bulletId: string): Promise<BulletRecord | undefined> {
+    const [row] = await this.db
+      .select()
+      .from(bullets)
+      .where(and(eq(bullets.id, bulletId), eq(bullets.userId, userId), eq(parentColumn(section), itemId)));
+    return row === undefined ? undefined : { id: row.id, text: row.text, skillIds: row.skillIds, experienceId: row.experienceId, projectId: row.projectId };
+  }
+
+  /** Writes only the fields sent; undefined when the bullet is gone by now (RES-16). */
+  async updateBullet(
+    section: BulletSection,
+    userId: string,
+    itemId: string,
+    bulletId: string,
+    values: { text?: string; skillIds?: string[] },
+  ): Promise<BulletRecord | undefined> {
+    const [row] = await this.db
+      .update(bullets)
+      .set(values)
+      .where(and(eq(bullets.id, bulletId), eq(bullets.userId, userId), eq(parentColumn(section), itemId)))
+      .returning();
+    return row === undefined ? undefined : { id: row.id, text: row.text, skillIds: row.skillIds, experienceId: row.experienceId, projectId: row.projectId };
+  }
+
+  async deleteBullet(section: BulletSection, userId: string, itemId: string, bulletId: string): Promise<boolean> {
+    const rows = await this.db
+      .delete(bullets)
+      .where(and(eq(bullets.id, bulletId), eq(bullets.userId, userId), eq(parentColumn(section), itemId)))
+      .returning({ id: bullets.id });
+    return rows.length > 0;
+  }
 }

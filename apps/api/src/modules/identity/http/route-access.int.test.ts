@@ -145,12 +145,16 @@ describe('route access', () => {
         'DELETE /invitations/:id',
         // A member deletes an item of a section of the master resume, with its bullets; a product route, not account administration (RES-09, RES-10).
         'DELETE /resume/:section/:id',
+        // A member deletes a bullet of an experience or a project of the master resume; a product route, not account administration (RES-17).
+        'DELETE /resume/:section/:id/bullets/:bulletId',
         // The admin removes an alias of a global skill; the skill itself is never deleted (SKL-69, SKL-25).
         'DELETE /skills/:id/aliases/:aliasId',
         // A member edits the posting of an application; a product route, not account administration (APP-28).
         'PATCH /applications/:id/job-posting',
         // A member edits an item of a section of the master resume; a product route, not account administration (RES-08).
         'PATCH /resume/:section/:id',
+        // A member edits the text or the skills of a bullet of the master resume; a product route, not account administration (RES-16).
+        'PATCH /resume/:section/:id/bullets/:bulletId',
         // The admin edits the name and category of a global skill, and the text of its aliases (SKL-62, SKL-67).
         'PATCH /skills/:id',
         'PATCH /skills/:id/aliases/:aliasId',
