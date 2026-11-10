@@ -611,8 +611,8 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes: valor igual ao salvo não chama `save`; inválido mostra o erro e não chama; sucesso avisa o contexto com a hora; falha guarda "Não foi possível salvar. Tente de novo." e mantém o valor; um segundo envio espera o primeiro e manda o último valor
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes: valor igual ao salvo não chama `save`; inválido mostra o erro e não chama; sucesso avisa o contexto com a hora; falha guarda "Não foi possível salvar. Tente de novo." e mantém o valor; um segundo envio espera o primeiro e manda o último valor
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
