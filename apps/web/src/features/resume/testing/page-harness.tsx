@@ -4,7 +4,7 @@ import { render } from '@testing-library/react';
 import { useState } from 'react';
 import { vi } from 'vitest';
 import type { Outcome } from '../../../lib/bff';
-import { loadResume } from '../api/server-functions';
+import { loadResume, putProfile } from '../api/server-functions';
 import { ResumePage } from '../components/ResumePage';
 import type { PageSection } from '../model/sections';
 import { context } from './api';
@@ -26,7 +26,7 @@ function Harness({
     <ResumePage
       outcome={outcome}
       section={section}
-      api={{ load: () => loadResume(context) }}
+      api={{ load: () => loadResume(context), saveProfile: (body) => putProfile(body, context) }}
       onSectionChange={(next) => {
         onSectionChange(next);
         setSection(next);

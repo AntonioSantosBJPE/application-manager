@@ -692,8 +692,8 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes `RES-43` a `RES-48`, `RES-84` e `RES-85` com os rótulos exatos da spec
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes `RES-43` a `RES-48`, `RES-84` e `RES-85` com os rótulos exatos da spec
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

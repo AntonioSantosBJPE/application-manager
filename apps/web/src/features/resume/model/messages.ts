@@ -18,3 +18,25 @@ export const RESUME_MESSAGES = {
 
 /** "Salvo às 14:32", the time being the browser's, written by the caller of `useSavedAt` (RES-44). */
 export const savedAtLabel = (time: string) => `${RESUME_MESSAGES.savedAt} ${time}`;
+
+/** The labels of the profile fields, as the spec writes them (RES-43). */
+export const PROFILE_LABELS = {
+  fullName: 'Nome completo',
+  headline: 'Título profissional',
+  email: 'E-mail',
+  phone: 'Telefone · opcional',
+  location: 'Local · opcional',
+  summary: 'Resumo',
+} as const;
+
+/** The links of the profile (RES-46, RES-84). */
+export const LINK_MESSAGES = {
+  title: 'Links',
+  add: '+ Link',
+  label: 'Rótulo',
+  url: 'URL',
+  /** The name of the row `n`, counted from 1. */
+  row: (n: number) => `Link ${n}`,
+  /** The name of the button that removes the row `n`. */
+  remove: (n: number) => `Remover link ${n}`,
+} as const;

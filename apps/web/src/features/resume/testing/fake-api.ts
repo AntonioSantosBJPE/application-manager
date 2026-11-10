@@ -38,6 +38,16 @@ export function fakeResume(server: SetupServer, initial: MasterResume) {
       await waitFor('load');
       return failed('load') ?? HttpResponse.json(state.resume);
     }),
+    http.put(`${apiInternalUrl}/resume/profile`, async ({ request }) => {
+      calls.push('PUT /resume/profile');
+      const body = (await request.json()) as MasterResume['profile'];
+      bodies.push(body);
+      await waitFor('profile');
+      const failure = failed('profile');
+      if (failure !== undefined) return failure;
+      state.resume.profile = body;
+      return HttpResponse.json(body);
+    }),
     http.put(`${apiInternalUrl}/resume/:section/order`, async ({ params, request }) => {
       calls.push(`PUT /resume/${String(params.section)}/order`);
       const body = (await request.json()) as { ids: string[] };
@@ -71,8 +81,8 @@ export function fakeResume(server: SetupServer, initial: MasterResume) {
     state,
     calls,
     bodies,
-    fail: (name: 'load' | 'order', how: Failure) => failures.set(name, how),
-    hold(name: 'load' | 'order') {
+    fail: (name: 'load' | 'order' | 'profile', how: Failure) => failures.set(name, how),
+    hold(name: 'load' | 'order' | 'profile') {
       let release = () => {};
       holds.set(name, new Promise<void>((resolve) => (release = resolve)));
       return () => {
