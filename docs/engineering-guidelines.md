@@ -73,6 +73,20 @@ Todo módulo do backend nasce fechado: toda rota exige sessão, a menos que decl
 - **O usuário vem sempre da sessão**, nunca do corpo: todo módulo lê o dono do recurso do `CurrentUser` e descarta qualquer id que o cliente mande.
 - **Contas separadas** (AD-005): `admin` só administra a área de administração e `member` só usa o produto; o e-mail é único entre os dois papéis e cada um entra pela porta da sua área.
 
+## Leitura de dados — regra de toda tela e todo endpoint (AD-028)
+
+Cada leitura entrega o que o consumidor usa, e nada além. Excesso de leitura é defeito de design, não ajuste de desempenho para depois: ele já apareceu no catálogo do admin (carregar todas as skills para ordenar por uso, AD-019) e na home do member (ler o currículo inteiro para acender o passo 02).
+
+- **Valor derivado vem calculado da API.** Um sim/não, um total ou uma contagem que a tela mostra sai de uma consulta que o calcula (`EXISTS`, `count`), nunca de carregar a coleção para derivar no web. Exemplos: `GET /applications/count`, `GET /resume/summary`.
+- **Ordenar, filtrar, contar e paginar rodam no SQL.** Nunca se carrega a coleção para fazer isso em memória, nem no Nest nem no web.
+- **Toda leitura tem teto.** Uma lista é paginada por cursor; um agregado sem paginação (o currículo de uma pessoa) tem limites de quantidade que o design declara, e o tamanho no pior caso é calculado a partir deles.
+- **O loader devolve só o que a página mostra.** O que um loader do TanStack Start devolve vai serializado no HTML da página; dado que a página não mostra (principalmente dado pessoal) não sai do servidor. Quando a tela precisa de um bit, o loader devolve o bit.
+- **Resposta de escrita devolve o que mudou.** Um `PUT` de ordem não devolve a seção inteira com tudo dentro; um `PATCH` devolve o recurso escrito.
+- **Leitura entre módulos traz só os ids da página** (AD-019): `countFor(ids)`, `describe(ids)`, nunca "tudo de todos".
+- **Dado repetido vai uma vez.** Quando a mesma entidade aparece em muitas linhas da resposta (a skill em cada bullet), o design avalia mandá-la uma vez e referenciar por id.
+
+**Como a regra é cobrada:** todo `design.md` de feature tem a seção `## Data Reads`, com uma linha por leitura que a feature cria ou muda (`Consumer | Endpoint | Uses | Returns | Worst case | In the HTML`), e o "Worst case" leva um número (linhas, itens ou KB). O teste `tooling/guardrails/src/design-data-reads.test.ts`, que roda no `pnpm test`, reprova o design sem a seção. A linha que devolve mais do que usa, ou cujo pior caso não cabe, volta ao design antes das tasks.
+
 ## Backend — NestJS monolito modular
 
 - Um módulo por bounded context (candidatos iniciais: `identity`, `job-postings`, `applications`, `resume`, `tailoring`, `documents`, `insights`, `sourcing`).

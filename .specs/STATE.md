@@ -202,6 +202,14 @@
 - **Date**: 2026-11-10
 - **Status**: active
 
+### AD-028 (active)
+- **Decision**: Cada leitura entrega só o que o consumidor usa, com teto declarado: valor derivado (sim/não, total, contagem) vem calculado da API; ordenar, filtrar, contar e paginar rodam no SQL; o loader não devolve dado que a página não mostra; resposta de escrita devolve o que mudou. Todo `design.md` de feature tem a seção `## Data Reads` (`Consumer | Endpoint | Uses | Returns | Worst case | In the HTML`), com o pior caso em número, e `tooling/guardrails/src/design-data-reads.test.ts` reprova o design sem ela. Regra em `docs/engineering-guidelines.md`.
+- **Reason**: O excesso de leitura apareceu em mais de um design e só foi pego pelo usuário na revisão: o catálogo do admin carregando todas as skills (AD-019) e a home lendo o currículo inteiro para o passo 02 (feature `master-resume`). Pedido do usuário: "crie alguma regra no sistema para evitar esse problema de design, que não faz sentido se repetir, e ja aconteceu outras vezes nas etapas de design".
+- **Trade-off**: Uma seção a mais em cada design e um teste de guarda; endpoints de resumo a mais (`/count`, `/summary`) em vez de reaproveitar a leitura completa. Os designs anteriores (walking-skeleton a production-deploy) não são reescritos.
+- **Scope**: todo design de feature, `apps/api`, `apps/web` loaders, `tooling/guardrails`, `AGENTS.md`, `docs/workflow.md`
+- **Date**: 2026-11-10
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: `application` - closed on branch `feat/application`, 2026-11-08.

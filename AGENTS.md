@@ -20,6 +20,7 @@ Leia antes de qualquer trabalho:
 - **Módulos do back e features do front não importam o interior uns dos outros.**
 - **UI só via `packages/ui`, com composition pattern e tokens.** Toda página usa um arquétipo; todo componente novo tem story no Storybook.
 - **Toda mudança vem com testes (Vitest; Playwright no E2E).** Nunca enfraquecer, pular ou apagar teste para fazê-lo passar.
+- **Cada leitura entrega só o que o consumidor usa, com teto declarado** (AD-028): valor derivado vem calculado da API, o loader não serializa dado que a página não mostra, e todo `design.md` tem a seção `## Data Reads` (ver [engineering-guidelines.md](docs/engineering-guidelines.md#leitura-de-dados--regra-de-toda-tela-e-todo-endpoint-ad-028)).
 - **Tudo portável:** container, config por env, APIs S3-compatíveis, OpenTelemetry.
 - **Currículo adaptado nunca inventa experiência:** só seleciona, reordena e reescreve o currículo mestre.
 - **A `main` recebe código só por PR.** Push, deploy e qualquer operação remota ou destrutiva precisam de autorização explícita do usuário.
