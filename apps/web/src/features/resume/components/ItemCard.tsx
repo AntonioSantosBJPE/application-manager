@@ -4,12 +4,21 @@ import { ChevronDown, Pencil } from 'lucide-react';
 import { useId, useState } from 'react';
 import type { ItemOf } from '../api/server-functions';
 import type { CachedItemOf } from '../model/items';
+import type { ItemsApi } from '../hooks/use-item-form';
+import type { Outcome } from '../../../lib/bff';
 import { itemHeader } from '../model/item-header';
+import { NEW_ITEM_TITLES } from '../model/item-fields';
 import { ITEM_MESSAGES } from '../model/messages';
+import { ItemFields } from './ItemFields';
 
 export interface ItemCardProps<S extends ResumeSection> {
   section: S;
-  item: CachedItemOf[S];
+  /** The saved item, or nothing for a new one that is still being filled (RES-51). */
+  item?: CachedItemOf[S];
+  api: ItemsApi;
+  onExpired: (outcome: Outcome<unknown>) => boolean;
+  /** Called with the id when a new item was written, so the section keeps this card for it (RES-53). */
+  onCreated?: (id: string) => void;
   /** Whether the item starts open: the first one of a section with bullets does (RES-56). */
   initiallyExpanded?: boolean;
 }
@@ -22,12 +31,21 @@ const hasBullets = (section: ResumeSection) => section === 'experiences' || sect
  * place or link, the pencil that opens its fields, and, for experiences and projects, the header that
  * expands the bullets or collapses them to the chevron "Expandir".
  */
-export function ItemCard<S extends ResumeSection>({ section, item, initiallyExpanded = false }: ItemCardProps<S>) {
+export function ItemCard<S extends ResumeSection>({
+  section,
+  item,
+  api,
+  onExpired,
+  onCreated,
+  initiallyExpanded = false,
+}: ItemCardProps<S>) {
   const bodyId = useId();
   const [expanded, setExpanded] = useState(initiallyExpanded);
-  const [editing, setEditing] = useState(false);
-  const header = itemHeader(section, item as ItemOf[S]);
-  const collapsible = hasBullets(section);
+  // A new item is born open and in edition, with the focus in its first field (RES-51).
+  const [editing, setEditing] = useState(item === undefined);
+  const header =
+    item === undefined ? { title: NEW_ITEM_TITLES[section] } : itemHeader(section, item as ItemOf[S]);
+  const collapsible = hasBullets(section) && item !== undefined;
 
   const text = (
     <>
@@ -83,6 +101,18 @@ export function ItemCard<S extends ResumeSection>({ section, item, initiallyExpa
           text
         )}
       </FormPage.ItemHeader>
+      {editing ? (
+        <FormPage.ItemBody>
+          <ItemFields
+            section={section}
+            item={item}
+            api={api}
+            onExpired={onExpired}
+            onCreated={onCreated}
+            autoFocus={item === undefined}
+          />
+        </FormPage.ItemBody>
+      ) : null}
       {collapsible && expanded ? (
         <FormPage.ItemBody id={bodyId} role="group" aria-label={ITEM_MESSAGES.bullets(header.title)} />
       ) : null}

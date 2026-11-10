@@ -43,3 +43,15 @@ export function messageFor(
   const issue = result.error.issues.find((candidate) => belongs(candidate.path));
   return issue === undefined ? null : issueMessage(issue);
 }
+
+/** The message of the first issue of each field (the first key of the path), for a form that shows every field at once. */
+export function fieldMessages(schema: z.ZodType, input: unknown): Record<string, string> {
+  const result = schema.safeParse(input);
+  if (result.success) return {};
+  const messages: Record<string, string> = {};
+  for (const issue of result.error.issues) {
+    const name = String(issue.path[0] ?? '');
+    if (name !== '' && messages[name] === undefined) messages[name] = issueMessage(issue);
+  }
+  return messages;
+}

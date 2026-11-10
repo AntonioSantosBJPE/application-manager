@@ -732,9 +732,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes `RES-51` a `RES-55` e `RES-59` em cada seção
-- [ ] Teste: dois blurs enquanto o `POST` está em voo criam um item só e o segundo vira `PATCH`
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes `RES-51` a `RES-55` e `RES-59` em cada seção
+- [x] Teste: dois blurs enquanto o `POST` está em voo criam um item só e o segundo vira `PATCH`
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

@@ -17,6 +17,15 @@ export function fakeResume(server: SetupServer, initial: MasterResume) {
   const state = { resume: structuredClone(initial) };
   const calls: string[] = [];
   const bodies: unknown[] = [];
+  let created = 0;
+  // What the api stores for an optional field the create body left out.
+  const defaults: Record<ResumeSection, Record<string, unknown>> = {
+    experiences: { location: null, endDate: null },
+    projects: { url: null, description: null },
+    educations: { endDate: null },
+    certifications: { issuer: null, issuedOn: null, url: null },
+    languages: {},
+  };
   const holds = new Map<string, Promise<void>>();
   const failures = new Map<string, Failure>();
 
@@ -47,6 +56,34 @@ export function fakeResume(server: SetupServer, initial: MasterResume) {
       if (failure !== undefined) return failure;
       state.resume.profile = body;
       return HttpResponse.json(body);
+    }),
+    http.post(`${apiInternalUrl}/resume/:section`, async ({ params, request }) => {
+      const section = params.section as ResumeSection;
+      calls.push(`POST /resume/${section}`);
+      const body = (await request.json()) as Record<string, unknown>;
+      bodies.push(body);
+      await waitFor('create');
+      const failure = failed('create');
+      if (failure !== undefined) return failure;
+      const item = { id: `0190a5b4-7c3a-7c8e-9f2a-${String(900 + ++created).padStart(12, '0')}`, ...defaults[section], ...body };
+      const stored = section === 'experiences' || section === 'projects' ? { ...item, bullets: [] } : item;
+      (state.resume[section] as unknown[]).unshift(stored);
+      return HttpResponse.json(item, { status: 201 });
+    }),
+    http.patch(`${apiInternalUrl}/resume/:section/:id`, async ({ params, request }) => {
+      const section = params.section as ResumeSection;
+      calls.push(`PATCH /resume/${section}/${String(params.id)}`);
+      const body = (await request.json()) as Record<string, unknown>;
+      bodies.push(body);
+      await waitFor('update');
+      const failure = failed('update');
+      if (failure !== undefined) return failure;
+      const items = state.resume[section] as { id: string; bullets?: unknown }[];
+      const item = items.find((candidate) => candidate.id === params.id);
+      if (item === undefined) return problem(404);
+      Object.assign(item, body);
+      // The api answers an item without its bullets (AD-028).
+      return HttpResponse.json(Object.fromEntries(Object.entries(item).filter(([key]) => key !== 'bullets')));
     }),
     http.put(`${apiInternalUrl}/resume/:section/order`, async ({ params, request }) => {
       calls.push(`PUT /resume/${String(params.section)}/order`);
@@ -81,8 +118,8 @@ export function fakeResume(server: SetupServer, initial: MasterResume) {
     state,
     calls,
     bodies,
-    fail: (name: 'load' | 'order' | 'profile', how: Failure) => failures.set(name, how),
-    hold(name: 'load' | 'order' | 'profile') {
+    fail: (name: 'load' | 'order' | 'profile' | 'create' | 'update', how: Failure) => failures.set(name, how),
+    hold(name: 'load' | 'order' | 'profile' | 'create' | 'update') {
       let release = () => {};
       holds.set(name, new Promise<void>((resolve) => (release = resolve)));
       return () => {

@@ -1,12 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useExpiredSessionRedirect } from '../../features/identity';
-import { getResume, parseSection, saveProfile, ResumePage, resumeSearchOf, type ResumePageApi } from '../../features/resume';
-
-/** The server function the page uses; module level, so the page gets the same api on every render. */
-const api: ResumePageApi = {
-  load: () => getResume(),
-  saveProfile: (body) => saveProfile({ data: body }),
-};
+import { getResume, parseSection, ResumePage, resumePageApi, resumeSearchOf } from '../../features/resume';
 
 /**
  * The master resume, one section at a time with `section` in the address (RES-35, RES-36). The loader
@@ -28,7 +22,7 @@ function ResumeRoute() {
     <ResumePage
       outcome={outcome}
       section={parseSection(search.section)}
-      api={api}
+      api={resumePageApi}
       onSectionChange={(section) => void navigate({ search: { section } })}
       onExpired={onExpired}
     />
