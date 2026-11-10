@@ -1,5 +1,6 @@
 import {
   createItemRequestSchemas,
+  updateItemRequestSchemas,
   saveProfileRequestSchema,
   type MasterResume,
   type Profile,
@@ -7,11 +8,11 @@ import {
   type ResumeSummary,
   type SaveProfileRequest,
 } from '@am/contracts';
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put } from '@nestjs/common';
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
 import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
-import { LimitReachedError, ResumeNotFoundError, ResumeService, type ResumeItem } from '../application/resume.service.js';
+import { InvalidDatesError, LimitReachedError, ResumeNotFoundError, ResumeService, type ResumeItem } from '../application/resume.service.js';
 import { parseSection } from '../domain/sections.js';
 
 /** The rule errors of the service as the Problem Details answers the spec fixes (RES-13, RES-14). */
@@ -19,6 +20,9 @@ async function answering<T>(operation: () => Promise<T>): Promise<T> {
   try {
     return await operation();
   } catch (error) {
+    if (error instanceof InvalidDatesError) {
+      throw new ProblemDetailsException(problemFor(400, error.message, [{ path: 'endDate', code: 'custom' }]));
+    }
     if (error instanceof LimitReachedError) throw new ProblemDetailsException(problemFor(422, error.message));
     if (error instanceof ResumeNotFoundError) throw new ProblemDetailsException(problemFor(404, error.message));
     throw error;
@@ -63,5 +67,19 @@ export class ResumeController {
     const section = sectionOf(segment);
     const values = zodBody(createItemRequestSchemas[section]).transform(body, { type: 'body' }) as Record<string, unknown>;
     return answering(() => this.resume.createItem(user.id, section, values));
+  }
+
+  /** Only the fields sent are written; the schema is the partial one of the section (RES-08). */
+  @Roles('member')
+  @Patch(':section/:id')
+  updateItem(
+    @Param('section') segment: string,
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ResumeItem> {
+    const section = sectionOf(segment);
+    const values = zodBody(updateItemRequestSchemas[section]).transform(body, { type: 'body' }) as Record<string, unknown>;
+    return answering(() => this.resume.updateItem(user.id, section, id, values));
   }
 }

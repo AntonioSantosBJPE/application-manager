@@ -3,9 +3,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { CLOCK, type Clock } from '../../../infra/clock/clock.js';
 import { SkillsCatalog } from '../../skills/index.js';
+import { isUuid } from '../domain/ids.js';
 import { ResumeRepository, type BulletRecord } from '../infra/resume.repository.js';
 
-type ResumeEventName = 'resume.profile_saved' | 'resume.item_created';
+type ResumeEventName = 'resume.profile_saved' | 'resume.item_created' | 'resume.item_updated';
 
 /** An item as the API shows it, without the bullets of an experience or a project (AD-028). */
 export type ResumeItem = Record<string, unknown>;
@@ -14,6 +15,13 @@ export type ResumeItem = Record<string, unknown>;
 export class ResumeNotFoundError extends Error {
   constructor() {
     super('Resume entry not found');
+  }
+}
+
+/** An edit leaves the end of an experience or an education before its start, counting the date already saved (`400`, RES-11). */
+export class InvalidDatesError extends Error {
+  constructor() {
+    super('The end must not be before the start');
   }
 }
 
@@ -103,6 +111,27 @@ export class ResumeService {
       return this.repository.insertItem(tx, section, userId, body);
     });
     this.record('resume.item_created', String(item.id), userId);
+    return item;
+  }
+
+  /**
+   * Writes the fields sent and answers the item. An end date edited alone is checked against the start saved,
+   * and the other way round, under the lock of the row (RES-08, RES-11, RES-14).
+   */
+  async updateItem(userId: string, section: ResumeSection, id: string, body: Record<string, unknown>): Promise<ResumeItem> {
+    if (!isUuid(id)) throw new ResumeNotFoundError();
+    const item = await this.repository.transaction(async (tx) => {
+      const current = await this.repository.findItem(tx, section, userId, id);
+      if (current === undefined) throw new ResumeNotFoundError();
+      if (Object.keys(body).length === 0) return current;
+      const start = (body.startDate ?? current.startDate) as string | undefined;
+      const end = (body.endDate === undefined ? current.endDate : body.endDate) as string | null | undefined;
+      if (start !== undefined && end !== undefined && end !== null && end < start) throw new InvalidDatesError();
+      const updated = await this.repository.updateItem(tx, section, userId, id, body);
+      if (updated === undefined) throw new ResumeNotFoundError();
+      return updated;
+    });
+    this.record('resume.item_updated', id, userId);
     return item;
   }
 }

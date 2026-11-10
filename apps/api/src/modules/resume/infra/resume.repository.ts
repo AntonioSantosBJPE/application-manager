@@ -169,4 +169,32 @@ export class ResumeRepository {
       .returning();
     return toItem(row!);
   }
+
+  /** One item of the user, locked until the transaction ends so a date check and the edit it guards are one step (RES-08). */
+  async findItem(tx: DatabaseExecutor, section: ResumeSection, userId: string, id: string): Promise<Record<string, unknown> | undefined> {
+    const table = tableOf(section);
+    const [row] = await tx
+      .select()
+      .from(table)
+      .where(and(eq(table.id, id), eq(table.userId, userId)))
+      .for('update');
+    return row === undefined ? undefined : toItem(row);
+  }
+
+  /** Writes only the fields sent; answers the item, or undefined when the user has none with this id (RES-08, RES-14). */
+  async updateItem(
+    tx: DatabaseExecutor,
+    section: ResumeSection,
+    userId: string,
+    id: string,
+    values: Record<string, unknown>,
+  ): Promise<Record<string, unknown> | undefined> {
+    const table = tableOf(section);
+    const [row] = await tx
+      .update(table)
+      .set(toRowValues(values) as Partial<typeof table.$inferInsert>)
+      .where(and(eq(table.id, id), eq(table.userId, userId)))
+      .returning();
+    return row === undefined ? undefined : toItem(row);
+  }
 }

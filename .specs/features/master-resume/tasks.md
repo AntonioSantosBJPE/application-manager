@@ -311,10 +311,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Teste `RES-08`: só o campo enviado muda; `endDate: null` torna a experiência atual
-- [ ] Teste: fim enviado antes do início já salvo responde `400`
-- [ ] Teste `RES-14` (parte do `PATCH`): id de outra conta, inexistente, de outra seção ou não uuid responde `404` sem mudar nada
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Teste `RES-08`: só o campo enviado muda; `endDate: null` torna a experiência atual
+- [x] Teste: fim enviado antes do início já salvo responde `400`
+- [x] Teste `RES-14` (parte do `PATCH`): id de outra conta, inexistente, de outra seção ou não uuid responde `404` sem mudar nada
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
