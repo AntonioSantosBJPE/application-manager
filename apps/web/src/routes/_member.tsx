@@ -1,5 +1,5 @@
 import { AppShell } from '@am/ui';
-import { Briefcase, House } from 'lucide-react';
+import { Briefcase, FileText, House } from 'lucide-react';
 import { createFileRoute, Link, Outlet, redirect, useRouter, useRouterState } from '@tanstack/react-router';
 import { countApplications } from '../features/applications';
 import {
@@ -55,6 +55,11 @@ function MemberLayout() {
         <AppShell.NavItem asChild current={isApplicationsPath(pathname)} icon={Briefcase} count={total}>
           <Link to="/applications">Candidaturas</Link>
         </AppShell.NavItem>
+        <AppShell.Section title="Currículo">
+          <AppShell.NavItem asChild current={pathname === '/resume'} icon={FileText}>
+            <Link to="/resume">Currículo mestre</Link>
+          </AppShell.NavItem>
+        </AppShell.Section>
         <SessionMenu
           user={access.user}
           signOut={() => endSession()}

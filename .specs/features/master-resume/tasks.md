@@ -672,8 +672,8 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Teste `RES-77`: o item aparece e só é atual em `/resume`; `RES-81`: sessão de admin em `/resume` vai para `/admin`
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Teste `RES-77`: o item aparece e só é atual em `/resume`; `RES-81`: sessão de admin em `/resume` vai para `/admin`
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

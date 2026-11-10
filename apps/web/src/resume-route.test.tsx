@@ -2,7 +2,9 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { countApplications } from './features/applications';
-import { getSession } from './features/identity';
+import { getSession, pendingInvitations } from './features/identity';
+import { listAdminSkills } from './features/skills';
+import { getSystemStatus } from './features/system-status';
 import { getResume } from './features/resume';
 import { bullet, experience, masterResume } from './features/resume/testing/fixtures';
 import { here, member, openApplications } from './testing/applications-route';
@@ -11,6 +13,17 @@ import { here, member, openApplications } from './testing/applications-route';
 vi.mock('./features/identity/api/server-functions', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./features/identity/api/server-functions')>()),
   getSession: vi.fn(),
+  pendingInvitations: vi.fn(),
+}));
+
+vi.mock('./features/skills/api/server-functions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./features/skills/api/server-functions')>()),
+  listAdminSkills: vi.fn(),
+}));
+
+vi.mock('./features/system-status/api/get-system-status', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./features/system-status/api/get-system-status')>()),
+  getSystemStatus: vi.fn(),
 }));
 
 vi.mock('./features/applications/api/server-functions', async (importOriginal) => ({
@@ -42,7 +55,54 @@ afterEach(() => {
 
 const index = () => screen.findByRole('navigation', { name: 'Seções do currículo' });
 
+const admin = { ...member, email: 'root@example.test', name: 'Root Admin', role: 'admin' } as const;
+const sidebarOf = async () => within(await screen.findByRole('navigation', { name: 'Navegação principal' }));
+
 describe('resume route', () => {
+  it('RES-77 shows "Currículo mestre" in the group "Currículo" of the sidebar, as the current page on /resume', async () => {
+    await openApplications('/resume');
+
+    const sidebar = await sidebarOf();
+    const group = sidebar.getByRole('group', { name: 'Currículo' });
+    const item = within(group).getByRole('link', { name: 'Currículo mestre' });
+    expect(item).toHaveAttribute('href', '/resume');
+    expect(item).toHaveAttribute('aria-current', 'page');
+    expect(sidebar.getByRole('link', { name: 'Início' })).not.toHaveAttribute('aria-current');
+    expect(sidebar.getByRole('link', { name: /^Candidaturas/ })).not.toHaveAttribute('aria-current');
+  });
+
+  it('RES-77 does not mark the item on another page, and it takes the member to /resume', async () => {
+    const router = await openApplications('/');
+    const item = (await sidebarOf()).getByRole('link', { name: 'Currículo mestre' });
+    expect(item).not.toHaveAttribute('aria-current');
+
+    fireEvent.click(item);
+
+    await waitFor(() => expect(here(router)).toBe('/resume'));
+    expect(await screen.findByRole('heading', { level: 2, name: 'Perfil' })).toBeInTheDocument();
+    expect(item).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('RES-81 sends an admin session on /resume to /admin', async () => {
+    vi.mocked(getSession).mockResolvedValue({ kind: 'authenticated', user: admin });
+    vi.mocked(getSystemStatus).mockResolvedValue({
+      api: 'operational',
+      database: 'operational',
+      checkedAt: '2026-11-08T17:32:07.000Z',
+    });
+    vi.mocked(pendingInvitations).mockResolvedValue({ ok: true, data: { items: [], nextCursor: null, totalPending: 0 } });
+    vi.mocked(listAdminSkills).mockResolvedValue({
+      ok: true,
+      data: { items: [], nextCursor: null, counts: { total: 0, private: 0 } },
+    });
+
+    const router = await openApplications('/resume');
+
+    expect(here(router)).toBe('/admin');
+    expect(await screen.findByRole('heading', { name: 'Administração' })).toBeInTheDocument();
+    expect(vi.mocked(getResume)).not.toHaveBeenCalled();
+  });
+
   it('RES-36 shows the Perfil section when the address has no section', async () => {
     await openApplications('/resume');
 

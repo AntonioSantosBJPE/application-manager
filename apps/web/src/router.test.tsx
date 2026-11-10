@@ -147,7 +147,7 @@ describe('member area guard', () => {
     expect(within(sidebar).getByText('rumo')).toBeInTheDocument();
     expect(within(sidebar).getByText('carreira')).toBeInTheDocument();
     const links = within(sidebar).getAllByRole('link');
-    expect(links.map((link) => link.textContent)).toEqual(['Início', 'Candidaturas 0']);
+    expect(links.map((link) => link.textContent)).toEqual(['Início', 'Candidaturas 0', 'Currículo mestre']);
     expect(within(sidebar).getByRole('link', { name: 'Candidaturas 0' })).toBeInTheDocument();
     expect(links[0]).toHaveAttribute('href', '/');
     expect(links[0]).toHaveAttribute('aria-current', 'page');
@@ -155,8 +155,8 @@ describe('member area guard', () => {
     expect(within(sidebar).getByText('AS')).toHaveAttribute('aria-hidden', 'true');
     expect(within(sidebar).getByText('Ana Souza')).toBeInTheDocument();
     expect(within(sidebar).getByRole('button', { name: 'Sair' })).toBeInTheDocument();
-    // Only what exists (AD-008): no search button and no destination of a later phase.
-    expect(within(sidebar).queryByText(/Buscar|Currículo|Skills|Insights/)).toBeNull();
+    // Only what exists (AD-008): no search button and no destination of a later phase ("Currículo mestre" exists, RES-77).
+    expect(within(sidebar).queryByText(/Buscar|Skills|Insights/)).toBeNull();
   });
 
   it('PRU-06 AC11 says the service is unavailable on the same url without going to login', async () => {
@@ -915,7 +915,7 @@ describe('applications', () => {
     const router = await openApplications('/applications');
 
     const links = within(await memberSidebar()).getAllByRole('link');
-    expect(links.map((link) => link.textContent)).toEqual(['Início', 'Candidaturas 24']);
+    expect(links.map((link) => link.textContent)).toEqual(['Início', 'Candidaturas 24', 'Currículo mestre']);
     expect(
       within(await memberSidebar()).getByRole('link', { name: 'Candidaturas 24' }),
     ).toBeInTheDocument();
