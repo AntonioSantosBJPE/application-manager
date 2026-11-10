@@ -793,8 +793,8 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes `RES-66` e `RES-67`: incluir uma skill existente, criar uma privada escolhendo a categoria e remover salvam na hora; o dicionário do cache recebe as skills da resposta; "sem skill" e o Alert somem
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes `RES-66` e `RES-67`: incluir uma skill existente, criar uma privada escolhendo a categoria e remover salvam na hora; o dicionário do cache recebe as skills da resposta; "sem skill" e o Alert somem
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

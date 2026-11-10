@@ -9,6 +9,7 @@ import type { Outcome } from '../../../lib/bff';
 import { itemHeader } from '../model/item-header';
 import { NEW_ITEM_TITLES } from '../model/item-fields';
 import { ITEM_MESSAGES } from '../model/messages';
+import type { SkillsFieldApi } from '../../skills';
 import type { BulletsApi } from '../hooks/use-bullet-writes';
 import { BulletList } from './BulletList';
 import { DeleteItem } from './DeleteItem';
@@ -21,6 +22,7 @@ export interface ItemCardProps<S extends ResumeSection> {
   /** Every skill the resume cites, for the tags of the bullets. */
   skills: SkillDictionary;
   api: ItemsApi & BulletsApi;
+  skillsApi: SkillsFieldApi;
   onExpired: (outcome: Outcome<unknown>) => boolean;
   /** Called with the id when a new item was written, so the section keeps this card for it (RES-53). */
   onCreated?: (id: string) => void;
@@ -41,6 +43,7 @@ export function ItemCard<S extends ResumeSection>({
   item,
   skills,
   api,
+  skillsApi,
   onExpired,
   onCreated,
   initiallyExpanded = false,
@@ -127,6 +130,7 @@ export function ItemCard<S extends ResumeSection>({
             item={item as CachedItemOf[BulletSection]}
             skills={skills}
             api={api}
+            skillsApi={skillsApi}
             onExpired={onExpired}
           />
         </FormPage.ItemBody>

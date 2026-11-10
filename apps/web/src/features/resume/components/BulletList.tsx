@@ -1,18 +1,22 @@
 import { BULLETS_PER_ITEM_MAX, BULLET_TEXT_MAX_LENGTH, type SkillDictionary } from '@am/contracts';
-import { Button, Field } from '@am/ui';
+import { Button, DropdownMenu, Field } from '@am/ui';
 import { useRef, useState } from 'react';
 import type { Outcome } from '../../../lib/bff';
 import type { BulletSection } from '../api/server-functions';
 import { type BulletsApi, useBulletWrites } from '../hooks/use-bullet-writes';
+import type { SkillsFieldApi } from '../../skills';
 import { BULLET_MESSAGES } from '../model/messages';
 import type { CachedItemOf } from '../model/items';
 import { BulletRow } from './BulletRow';
+import { BulletSkills } from './BulletSkills';
 
 export interface BulletListProps {
   section: BulletSection;
   item: CachedItemOf[BulletSection];
   skills: SkillDictionary;
   api: BulletsApi;
+  /** The search and the creation of skills, for the field of skills of a bullet. */
+  skillsApi: SkillsFieldApi;
   onExpired: (outcome: Outcome<unknown>) => boolean;
 }
 
@@ -75,9 +79,11 @@ function NewBullet({ onCreate, onClose }: { onCreate: (text: string) => Promise<
  * RES-62, RES-83). "+ Bullet" opens an empty field with the focus; a bullet written there is created at the end
  * of the item. "+ Bullet" stops at 30.
  */
-export function BulletList({ section, item, skills, api, onExpired }: BulletListProps) {
+export function BulletList({ section, item, skills, api, skillsApi, onExpired }: BulletListProps) {
   const writes = useBulletWrites(section, item.id, api, onExpired);
   const [adding, setAdding] = useState(false);
+  // The bullet whose field of skills is open: the one just created, or the one asked for in its menu (RES-62, RES-66).
+  const [skillsFor, setSkillsFor] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col gap-1">
@@ -88,11 +94,30 @@ export function BulletList({ section, item, skills, api, onExpired }: BulletList
           skills={skills}
           onText={async (text) => (await writes.update(bullet.id, { text })).ok}
           onDelete={async () => (await writes.remove(bullet.id)).ok}
-        />
+          skillsOpen={skillsFor === bullet.id}
+          onNoSkill={() => setSkillsFor(bullet.id)}
+          menuItems={
+            <DropdownMenu.Item onSelect={() => setSkillsFor(bullet.id)}>{BULLET_MESSAGES.editSkills}</DropdownMenu.Item>
+          }
+        >
+          {skillsFor === bullet.id ? (
+            <BulletSkills
+              bullet={bullet}
+              skills={skills}
+              api={skillsApi}
+              onSave={async (skillIds) => (await writes.update(bullet.id, { skillIds })).ok}
+              onDone={() => setSkillsFor(null)}
+            />
+          ) : null}
+        </BulletRow>
       ))}
       {adding ? (
         <NewBullet
-          onCreate={async (text) => (await writes.create({ text, skillIds: [] })).ok}
+          onCreate={async (text) => {
+            const outcome = await writes.create({ text, skillIds: [] });
+            if (outcome.ok) setSkillsFor(outcome.data.bullet.id);
+            return outcome.ok;
+          }}
           onClose={() => setAdding(false)}
         />
       ) : null}

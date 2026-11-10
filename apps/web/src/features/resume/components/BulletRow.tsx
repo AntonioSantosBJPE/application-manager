@@ -18,6 +18,8 @@ export interface BulletRowProps {
   children?: ReactNode;
   /** Extra items of the "⋯" menu, before "Excluir bullet". */
   menuItems?: ReactNode;
+  /** The field of skills is open under the text, so the tags are in it and not below the text. */
+  skillsOpen?: boolean;
   /** Makes the notice "sem skill" a button that opens the skills field (RES-66). */
   onNoSkill?: () => void;
 }
@@ -27,7 +29,17 @@ export interface BulletRowProps {
  * where it stands, its skills as tags below, "sem skill" in `warning` when it has none, and the "⋯" menu
  * that shows under the pointer or the focus, also on a bullet with no skill.
  */
-export function BulletRow({ bullet, skills, onText, onDelete, handle, children, menuItems, onNoSkill }: BulletRowProps) {
+export function BulletRow({
+  bullet,
+  skills,
+  onText,
+  onDelete,
+  handle,
+  children,
+  menuItems,
+  skillsOpen = false,
+  onNoSkill,
+}: BulletRowProps) {
   const [failure, setFailure] = useState<string | null>(null);
   const tags = bullet.skillIds.flatMap((id) => (skills[id] === undefined ? [] : [{ id, ...skills[id] }]));
 
@@ -87,11 +99,13 @@ export function BulletRow({ bullet, skills, onText, onDelete, handle, children, 
         />
       </div>
       <Bullet.Tags>
-        {tags.map((skill) => (
-          <SkillTag key={skill.id} variant={skill.scope === 'private' ? 'private' : 'required'}>
-            {skill.name}
-          </SkillTag>
-        ))}
+        {skillsOpen
+          ? null
+          : tags.map((skill) => (
+              <SkillTag key={skill.id} variant={skill.scope === 'private' ? 'private' : 'required'}>
+                {skill.name}
+              </SkillTag>
+            ))}
       </Bullet.Tags>
       {children}
       {failure === null ? null : (

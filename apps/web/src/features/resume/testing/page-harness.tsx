@@ -15,6 +15,7 @@ import {
   removeResumeItem,
 } from '../api/server-functions';
 import { ResumePage } from '../components/ResumePage';
+import type { SkillsFieldApi } from '../../skills';
 import type { PageSection } from '../model/sections';
 import { context } from './api';
 
@@ -24,8 +25,10 @@ function Harness({
   initial,
   onSectionChange,
   onExpired,
+  skills,
 }: {
   outcome: Outcome<MasterResume>;
+  skills: SkillsFieldApi;
   initial: PageSection;
   onSectionChange: (section: PageSection) => void;
   onExpired: (outcome: Outcome<unknown>) => boolean;
@@ -44,6 +47,7 @@ function Harness({
         createBullet: (section, id, body) => postBullet(section, id, body, context),
         updateBullet: (section, id, bulletId, body) => patchBullet(section, id, bulletId, body, context),
         deleteBullet: (section, id, bulletId) => removeBullet(section, id, bulletId, context),
+        skills,
       }}
       onSectionChange={(next) => {
         onSectionChange(next);
@@ -54,9 +58,15 @@ function Harness({
   );
 }
 
+/** A skills api for tests that do not touch the field of skills: it finds nothing and creates nothing. */
+const NO_SKILLS: SkillsFieldApi = {
+  search: () => Promise.resolve({ ok: true, data: [] }),
+  create: () => Promise.resolve({ ok: false, status: 503 }),
+};
+
 /** Renders the page over an api answered by MSW (`fakeResume`), with the loader's `outcome` given. */
 export function renderResumePage(
-  options: { outcome?: Outcome<MasterResume>; resume?: MasterResume; section?: PageSection } = {},
+  options: { outcome?: Outcome<MasterResume>; resume?: MasterResume; section?: PageSection; skills?: SkillsFieldApi } = {},
 ) {
   const outcome = options.outcome ?? { ok: true, data: options.resume! };
   const onSectionChange = vi.fn();
@@ -64,7 +74,7 @@ export function renderResumePage(
   const queryClient = new QueryClient();
   render(
     <QueryClientProvider client={queryClient}>
-      <Harness outcome={outcome} initial={options.section ?? 'profile'} onSectionChange={onSectionChange} onExpired={onExpired} />
+      <Harness outcome={outcome} skills={options.skills ?? NO_SKILLS} initial={options.section ?? 'profile'} onSectionChange={onSectionChange} onExpired={onExpired} />
     </QueryClientProvider>,
   );
   return { onSectionChange, onExpired, queryClient };

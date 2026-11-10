@@ -64,6 +64,11 @@ export const BULLET_MESSAGES = {
   /** The name of the "⋯" menu button of a bullet. */
   actions: 'Ações do bullet',
   delete: 'Excluir bullet',
+  /** The item of the menu, and the notice "sem skill", that open the field of skills (RES-66). */
+  editSkills: 'Editar skills',
+  skillsLabel: 'Skills do bullet',
+  /** Closes the field of skills (RES-67). */
+  done: 'Concluir',
   saveFailed: RESUME_MESSAGES.saveFailed,
   deleteFailed: RESUME_MESSAGES.deleteFailed,
 } as const;

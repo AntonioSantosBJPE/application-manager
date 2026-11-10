@@ -20,8 +20,9 @@ export function fakeResume(server: SetupServer, initial: MasterResume) {
   let created = 0;
   let createdBullets = 0;
   /** The dictionary entries of the skills a bullet cites, from what the api holds (the cited skills only, once each). */
+  const catalog: MasterResume['skills'] = { ...initial.skills };
   const skillsOf = (ids: string[]) =>
-    Object.fromEntries(ids.flatMap((id) => (state.resume.skills[id] === undefined ? [] : [[id, state.resume.skills[id]]])));
+    Object.fromEntries(ids.flatMap((id) => (catalog[id] === undefined ? [] : [[id, catalog[id]]])));
   // What the api stores for an optional field the create body left out.
   const defaults: Record<ResumeSection, Record<string, unknown>> = {
     experiences: { location: null, endDate: null },
@@ -169,6 +170,8 @@ export function fakeResume(server: SetupServer, initial: MasterResume) {
 
   return {
     state,
+    /** The skills the api can describe, by id: the ones the resume came with, and any a test registers (a catalog skill, a private one just created). */
+    catalog,
     calls,
     bodies,
     fail: (name: 'load' | 'order' | 'profile' | 'create' | 'update' | 'delete' | 'bullet', how: Failure) => failures.set(name, how),

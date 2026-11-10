@@ -2,6 +2,7 @@ import { RESUME_ITEMS_MAX, type ResumeSection, type SkillDictionary } from '@am/
 import { Button, FormPage } from '@am/ui';
 import { useRef, useState } from 'react';
 import type { Outcome } from '../../../lib/bff';
+import type { SkillsFieldApi } from '../../skills';
 import type { BulletsApi } from '../hooks/use-bullet-writes';
 import type { ItemsApi } from '../hooks/use-item-form';
 import type { CachedItemOf } from '../model/items';
@@ -13,6 +14,7 @@ export interface ItemsSectionProps<S extends ResumeSection> {
   items: CachedItemOf[S][];
   skills: SkillDictionary;
   api: ItemsApi & BulletsApi;
+  skillsApi: SkillsFieldApi;
   onExpired: (outcome: Outcome<unknown>) => boolean;
 }
 
@@ -28,7 +30,7 @@ interface Draft {
  * (RES-39, RES-51). The "+" stops at 50 items (RES-82); the first item of a section with bullets opens
  * expanded (RES-56). A new item is not written until it is valid, so leaving the page drops it (RES-52).
  */
-export function ItemsSection<S extends ResumeSection>({ section, items, skills, api, onExpired }: ItemsSectionProps<S>) {
+export function ItemsSection<S extends ResumeSection>({ section, items, skills, api, skillsApi, onExpired }: ItemsSectionProps<S>) {
   const bulletSection = section === 'experiences' || section === 'projects';
   const [draft, setDraft] = useState<Draft | null>(null);
   const nextKey = useRef(0);
@@ -73,6 +75,7 @@ export function ItemsSection<S extends ResumeSection>({ section, items, skills, 
                 item={item}
                 skills={skills}
                 api={api}
+                skillsApi={skillsApi}
                 onExpired={onExpired}
                 initiallyExpanded={item === undefined || fromDraft || (bulletSection && index === 0 && draft === null)}
                 onCreated={item === undefined || fromDraft ? (id) => setDraft({ key: draft!.key, id }) : undefined}

@@ -1,5 +1,6 @@
 import type { ResumeSection } from '@am/contracts';
 import type { Outcome } from '../../../lib/bff';
+import { createSkill, searchSkills } from '../../skills';
 import type { ResumePageApi } from '../components/ResumePage';
 import {
   createBullet,
@@ -25,4 +26,8 @@ export const resumePageApi: ResumePageApi = {
   createBullet: (section, id, body) => createBullet({ data: { section, id, body } }),
   updateBullet: (section, id, bulletId, body) => updateBullet({ data: { section, id, bulletId, body } }),
   deleteBullet: (section, id, bulletId) => deleteBullet({ data: { section, id, bulletId } }),
+  skills: {
+    search: (q) => searchSkills({ data: { q } }),
+    create: (body) => createSkill({ data: body }),
+  },
 };
