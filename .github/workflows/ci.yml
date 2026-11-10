@@ -122,7 +122,6 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - uses: ./.github/actions/warm-images
       # Compose of production, backup, restore and the hardening script, on the runner's Docker.
       - run: pnpm --filter @am/guardrails test:infra
 
@@ -150,7 +149,6 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           chromium: "true"
-      - uses: ./.github/actions/warm-images
       - name: Create .env from the example (placeholder values only)
         run: cp .env.example .env
       - name: Run the specs of the group

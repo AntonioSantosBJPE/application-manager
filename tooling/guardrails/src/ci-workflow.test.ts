@@ -28,7 +28,7 @@ const workflow = parse(source) as Workflow;
 const jobs = workflow.jobs ?? {};
 
 /** The composite actions of the repository, which the jobs call as `./.github/actions/<name>`. */
-const actionNames = ['setup', 'warm-images'] as const;
+const actionNames = ['setup'] as const;
 const actionSources = Object.fromEntries(
   actionNames.map((name) => [name, readFileSync(join(repoRoot, `.github/actions/${name}/action.yml`), 'utf8')]),
 ) as Record<(typeof actionNames)[number], string>;
@@ -121,16 +121,13 @@ describe('ci workflow', () => {
     expect(JSON.stringify(jobs.integration?.steps)).toContain('"SHARD":"${{ matrix.shard }}"');
   });
 
-  it('installs from the lockfile everywhere, Chromium where a browser runs, and warms the images where they are built', () => {
+  it('installs from the lockfile everywhere and Chromium where a browser runs', () => {
     for (const job of ['quality', 'repo-rules', 'integration', 'infra', 'e2e']) expect(calls(job, 'setup'), job).toBe(true);
     expect(actionSources.setup).toMatch(/^\s*run: pnpm install --frozen-lockfile$/m);
     expect(calls('quality', 'setup', { chromium: 'true' })).toBe(true);
     expect(calls('repo-rules', 'setup', { chromium: 'true' })).toBe(true);
     expect(calls('e2e', 'setup', { chromium: 'true' })).toBe(true);
-    for (const job of ['infra', 'e2e']) expect(calls(job, 'warm-images'), job).toBe(true);
-    // The warm-up reads the cache scopes the deploy writes, and never writes them from a pull request.
-    for (const scope of ['api', 'web']) expect(actionSources['warm-images']).toContain(`cache-from: type=gha,scope=${scope}`);
-    expect(actionSources['warm-images']).not.toMatch(/cache-to/);
+    expect(actionSources.setup).toMatch(/^\s*run: pnpm --filter @am\/e2e exec playwright install --with-deps chromium$/m);
   });
 
   it('declares contents read permissions at the top level', () => {
