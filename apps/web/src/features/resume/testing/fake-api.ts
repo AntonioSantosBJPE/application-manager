@@ -18,6 +18,10 @@ export function fakeResume(server: SetupServer, initial: MasterResume) {
   const calls: string[] = [];
   const bodies: unknown[] = [];
   let created = 0;
+  let createdBullets = 0;
+  /** The dictionary entries of the skills a bullet cites, from what the api holds (the cited skills only, once each). */
+  const skillsOf = (ids: string[]) =>
+    Object.fromEntries(ids.flatMap((id) => (state.resume.skills[id] === undefined ? [] : [[id, state.resume.skills[id]]])));
   // What the api stores for an optional field the create body left out.
   const defaults: Record<ResumeSection, Record<string, unknown>> = {
     experiences: { location: null, endDate: null },
@@ -97,6 +101,43 @@ export function fakeResume(server: SetupServer, initial: MasterResume) {
       items.splice(at, 1);
       return new HttpResponse(null, { status: 204 });
     }),
+    http.post(`${apiInternalUrl}/resume/:section/:id/bullets`, async ({ params, request }) => {
+      calls.push(`POST /resume/${String(params.section)}/${String(params.id)}/bullets`);
+      const body = (await request.json()) as { text: string; skillIds: string[] };
+      bodies.push(body);
+      await waitFor('bullet');
+      const failure = failed('bullet');
+      if (failure !== undefined) return failure;
+      const item = state.resume[params.section as 'experiences' | 'projects'].find((candidate) => candidate.id === params.id);
+      if (item === undefined) return problem(404);
+      const bullet = { id: `0190a5b4-7c3a-7c8e-9f2a-${String(1000 + ++createdBullets).padStart(12, '0')}`, ...body };
+      item.bullets.push(bullet);
+      return HttpResponse.json({ bullet, skills: skillsOf(bullet.skillIds) }, { status: 201 });
+    }),
+    http.patch(`${apiInternalUrl}/resume/:section/:id/bullets/:bulletId`, async ({ params, request }) => {
+      calls.push(`PATCH /resume/${String(params.section)}/${String(params.id)}/bullets/${String(params.bulletId)}`);
+      const body = (await request.json()) as { text?: string; skillIds?: string[] };
+      bodies.push(body);
+      await waitFor('bullet');
+      const failure = failed('bullet');
+      if (failure !== undefined) return failure;
+      const item = state.resume[params.section as 'experiences' | 'projects'].find((candidate) => candidate.id === params.id);
+      const bullet = item?.bullets.find((candidate) => candidate.id === params.bulletId);
+      if (bullet === undefined) return problem(404);
+      Object.assign(bullet, body);
+      return HttpResponse.json({ bullet, skills: skillsOf(bullet.skillIds) });
+    }),
+    http.delete(`${apiInternalUrl}/resume/:section/:id/bullets/:bulletId`, async ({ params }) => {
+      calls.push(`DELETE /resume/${String(params.section)}/${String(params.id)}/bullets/${String(params.bulletId)}`);
+      await waitFor('bullet');
+      const failure = failed('bullet');
+      if (failure !== undefined) return failure;
+      const item = state.resume[params.section as 'experiences' | 'projects'].find((candidate) => candidate.id === params.id);
+      const at = item?.bullets.findIndex((candidate) => candidate.id === params.bulletId) ?? -1;
+      if (item === undefined || at === -1) return problem(404);
+      item.bullets.splice(at, 1);
+      return new HttpResponse(null, { status: 204 });
+    }),
     http.put(`${apiInternalUrl}/resume/:section/order`, async ({ params, request }) => {
       calls.push(`PUT /resume/${String(params.section)}/order`);
       const body = (await request.json()) as { ids: string[] };
@@ -130,8 +171,8 @@ export function fakeResume(server: SetupServer, initial: MasterResume) {
     state,
     calls,
     bodies,
-    fail: (name: 'load' | 'order' | 'profile' | 'create' | 'update' | 'delete', how: Failure) => failures.set(name, how),
-    hold(name: 'load' | 'order' | 'profile' | 'create' | 'update' | 'delete') {
+    fail: (name: 'load' | 'order' | 'profile' | 'create' | 'update' | 'delete' | 'bullet', how: Failure) => failures.set(name, how),
+    hold(name: 'load' | 'order' | 'profile' | 'create' | 'update' | 'delete' | 'bullet') {
       let release = () => {};
       holds.set(name, new Promise<void>((resolve) => (release = resolve)));
       return () => {

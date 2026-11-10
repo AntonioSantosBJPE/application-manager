@@ -1,7 +1,17 @@
 import type { ResumeSection } from '@am/contracts';
 import type { Outcome } from '../../../lib/bff';
 import type { ResumePageApi } from '../components/ResumePage';
-import { createResumeItem, deleteResumeItem, getResume, saveProfile, updateResumeItem, type ItemOf } from './server-functions';
+import {
+  createBullet,
+  createResumeItem,
+  deleteBullet,
+  deleteResumeItem,
+  getResume,
+  saveProfile,
+  updateBullet,
+  updateResumeItem,
+  type ItemOf,
+} from './server-functions';
 
 /** The page's api bound to the server functions, as the browser calls them; module level, so it is the same on every render. */
 export const resumePageApi: ResumePageApi = {
@@ -12,4 +22,7 @@ export const resumePageApi: ResumePageApi = {
   updateItem: (section, id, body) =>
     updateResumeItem({ data: { section, id, body } }) as Promise<Outcome<ItemOf[typeof section & ResumeSection]>>,
   deleteItem: (section, id) => deleteResumeItem({ data: { section, id } }),
+  createBullet: (section, id, body) => createBullet({ data: { section, id, body } }),
+  updateBullet: (section, id, bulletId, body) => updateBullet({ data: { section, id, bulletId, body } }),
+  deleteBullet: (section, id, bulletId) => deleteBullet({ data: { section, id, bulletId } }),
 };

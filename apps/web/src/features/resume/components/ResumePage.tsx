@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 import type { Outcome } from '../../../lib/bff';
 import { RESUME_QUERY_KEY } from '../hooks/resume-query-key';
+import type { BulletsApi } from '../hooks/use-bullet-writes';
 import type { ItemsApi } from '../hooks/use-item-form';
 import type { ProfileApi } from '../hooks/use-profile-save';
 import { SavedAtProvider } from '../hooks/saved-at';
@@ -15,7 +16,7 @@ import { ResumeIndex } from './ResumeIndex';
 import { SavedAt } from './SavedAt';
 
 /** What the page needs from the BFF; the route binds the server function, a test binds the api. */
-export interface ResumePageApi extends ProfileApi, ItemsApi {
+export interface ResumePageApi extends ProfileApi, ItemsApi, BulletsApi {
   load: () => Promise<Outcome<MasterResume>>;
 }
 
@@ -123,7 +124,7 @@ export function ResumePage({ outcome, section, api, onSectionChange, onExpired }
               <ProfileSection profile={resume.data.profile} api={api} onExpired={onExpired} />
             </FormPage.Section>
           ) : (
-            <ItemsSection section={section} items={resume.data[section]} api={api} onExpired={onExpired} />
+            <ItemsSection section={section} items={resume.data[section]} skills={resume.data.skills} api={api} onExpired={onExpired} />
           )}
         </FormPage.Content>
       </Frame>

@@ -773,8 +773,8 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes `RES-60` a `RES-65`, `RES-68`, `RES-69` e `RES-83`; as tags saem de `skillIds` lidos no dicionário do cache
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes `RES-60` a `RES-65`, `RES-68`, `RES-69` e `RES-83`; as tags saem de `skillIds` lidos no dicionário do cache
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

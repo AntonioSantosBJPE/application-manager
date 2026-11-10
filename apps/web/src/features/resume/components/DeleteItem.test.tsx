@@ -22,7 +22,7 @@ const card = (name: string | RegExp) => screen.getByRole('article', { name });
 const index = () => screen.getByRole('navigation', { name: 'Seções do currículo' });
 const edit = (name: string | RegExp) => {
   const item = card(name);
-  fireEvent.click(within(item).getByRole('button', { name: /^Editar / }));
+  fireEvent.click(within(item).getByRole('button', { name: /^Editar (?!texto do bullet)/ }));
   return item;
 };
 
@@ -59,7 +59,7 @@ describe('DeleteItem', () => {
     const item = card(/Cargo Fictício 1/);
     expect(within(item).queryByRole('button', { name: 'Excluir experiência' })).toBeNull();
 
-    fireEvent.click(within(item).getByRole('button', { name: /^Editar / }));
+    fireEvent.click(within(item).getByRole('button', { name: /^Editar (?!texto do bullet)/ }));
 
     expect(within(item).getByRole('button', { name: 'Excluir experiência' })).toBeInTheDocument();
   });

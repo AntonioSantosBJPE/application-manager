@@ -52,3 +52,18 @@ export const ITEM_MESSAGES = {
 
 /** The words of the confirmation before an item is removed (RES-57). */
 export const DELETE_DIALOG = { confirm: 'Excluir', cancel: 'Cancelar' } as const;
+
+/** The words of a bullet (RES-60 to RES-69). */
+export const BULLET_MESSAGES = {
+  add: '+ Bullet',
+  noSkill: 'sem skill',
+  /** The name of the field that edits the text of a bullet, read before the text itself. */
+  editText: 'Editar texto do bullet',
+  /** The name of the field of a bullet that is being written. */
+  newText: 'Texto do novo bullet',
+  /** The name of the "⋯" menu button of a bullet. */
+  actions: 'Ações do bullet',
+  delete: 'Excluir bullet',
+  saveFailed: RESUME_MESSAGES.saveFailed,
+  deleteFailed: RESUME_MESSAGES.deleteFailed,
+} as const;

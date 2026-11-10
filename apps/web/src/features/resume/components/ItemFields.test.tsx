@@ -246,7 +246,7 @@ describe('ItemFields: a new item', () => {
 });
 
 describe('ItemFields: a saved item', () => {
-  const pencil = (scope: HTMLElement) => within(scope).getByRole('button', { name: /^Editar / });
+  const pencil = (scope: HTMLElement) => within(scope).getByRole('button', { name: /^Editar (?!texto do bullet)/ });
 
   it('RES-54 shows the fields of the item, filled, with the pencil "Editar"', () => {
     open('experiences', masterResume({ experiences: [experience(1, { location: 'Recife, PE', endDate: '2024-08' })] }));

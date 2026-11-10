@@ -4,7 +4,16 @@ import { render } from '@testing-library/react';
 import { useState } from 'react';
 import { vi } from 'vitest';
 import type { Outcome } from '../../../lib/bff';
-import { loadResume, patchResumeItem, postResumeItem, putProfile, removeResumeItem } from '../api/server-functions';
+import {
+  loadResume,
+  patchBullet,
+  patchResumeItem,
+  postBullet,
+  postResumeItem,
+  putProfile,
+  removeBullet,
+  removeResumeItem,
+} from '../api/server-functions';
 import { ResumePage } from '../components/ResumePage';
 import type { PageSection } from '../model/sections';
 import { context } from './api';
@@ -32,6 +41,9 @@ function Harness({
         createItem: (section, body) => postResumeItem(section, body, context),
         updateItem: (section, id, body) => patchResumeItem(section, id, body, context),
         deleteItem: (section, id) => removeResumeItem(section, id, context),
+        createBullet: (section, id, body) => postBullet(section, id, body, context),
+        updateBullet: (section, id, bulletId, body) => patchBullet(section, id, bulletId, body, context),
+        deleteBullet: (section, id, bulletId) => removeBullet(section, id, bulletId, context),
       }}
       onSectionChange={(next) => {
         onSectionChange(next);

@@ -1,14 +1,16 @@
-import type { ResumeSection } from '@am/contracts';
+import type { ResumeSection, SkillDictionary } from '@am/contracts';
 import { Button, FormPage } from '@am/ui';
 import { ChevronDown, Pencil } from 'lucide-react';
 import { useId, useState } from 'react';
-import type { ItemOf } from '../api/server-functions';
+import type { BulletSection, ItemOf } from '../api/server-functions';
 import type { CachedItemOf } from '../model/items';
 import type { ItemsApi } from '../hooks/use-item-form';
 import type { Outcome } from '../../../lib/bff';
 import { itemHeader } from '../model/item-header';
 import { NEW_ITEM_TITLES } from '../model/item-fields';
 import { ITEM_MESSAGES } from '../model/messages';
+import type { BulletsApi } from '../hooks/use-bullet-writes';
+import { BulletList } from './BulletList';
 import { DeleteItem } from './DeleteItem';
 import { ItemFields } from './ItemFields';
 
@@ -16,7 +18,9 @@ export interface ItemCardProps<S extends ResumeSection> {
   section: S;
   /** The saved item, or nothing for a new one that is still being filled (RES-51). */
   item?: CachedItemOf[S];
-  api: ItemsApi;
+  /** Every skill the resume cites, for the tags of the bullets. */
+  skills: SkillDictionary;
+  api: ItemsApi & BulletsApi;
   onExpired: (outcome: Outcome<unknown>) => boolean;
   /** Called with the id when a new item was written, so the section keeps this card for it (RES-53). */
   onCreated?: (id: string) => void;
@@ -35,6 +39,7 @@ const hasBullets = (section: ResumeSection) => section === 'experiences' || sect
 export function ItemCard<S extends ResumeSection>({
   section,
   item,
+  skills,
   api,
   onExpired,
   onCreated,
@@ -116,7 +121,15 @@ export function ItemCard<S extends ResumeSection>({
         </FormPage.ItemBody>
       ) : null}
       {collapsible && expanded ? (
-        <FormPage.ItemBody id={bodyId} role="group" aria-label={ITEM_MESSAGES.bullets(header.title)} />
+        <FormPage.ItemBody id={bodyId} role="group" aria-label={ITEM_MESSAGES.bullets(header.title)}>
+          <BulletList
+            section={section as BulletSection}
+            item={item as CachedItemOf[BulletSection]}
+            skills={skills}
+            api={api}
+            onExpired={onExpired}
+          />
+        </FormPage.ItemBody>
       ) : null}
     </FormPage.Item>
   );
