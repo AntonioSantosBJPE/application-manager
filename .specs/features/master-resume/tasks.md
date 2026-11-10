@@ -813,8 +813,8 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes com `onReorder` acionado: a ordem da tela muda e a server function recebe os ids; falha e `400` como em T24
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes com `onReorder` acionado: a ordem da tela muda e a server function recebe os ids; falha e `400` como em T24
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

@@ -27,7 +27,7 @@ const open = (resume = portfolio()) => {
   return api;
 };
 const body = () => screen.getByRole('group', { name: /^Bullets de/ });
-const row = (text: string) => within(body()).getByRole('button', { name: new RegExp(text) }).closest('.group\\/bullet') as HTMLElement;
+const row = (text: string) => within(body()).getByRole('button', { name: new RegExp(`^Editar texto do bullet ${text}`) }).closest('.group\\/bullet') as HTMLElement;
 const topbarStatus = () => screen.getAllByRole('status').find((node) => node.closest('[class*="border-b"]') !== null)!;
 const settle = () => new Promise((resolve) => setTimeout(resolve, 30));
 const index = () => screen.getByRole('navigation', { name: 'Seções do currículo' });
@@ -37,7 +37,7 @@ describe('BulletRow', () => {
     open();
 
     const first = row('Texto fictício do bullet 1.');
-    expect(within(first).getByRole('button', { name: /Texto fictício do bullet 1\./ }).closest('.text-body-lg')).not.toBeNull();
+    expect(within(first).getByRole('button', { name: /^Editar texto do bullet Texto fictício do bullet 1\./ }).closest('.text-body-lg')).not.toBeNull();
     expect(within(first).getByText('Skill Fictícia 1')).toBeInTheDocument();
     expect(within(first).getByText('Skill Fictícia 2')).toBeInTheDocument();
     expect(within(first).queryByText('sem skill')).toBeNull();
@@ -66,7 +66,7 @@ describe('BulletRow', () => {
 
   it('RES-61 opens an empty field at the end of the item with the focus in it', async () => {
     const api = open();
-    const buttonsBefore = within(body()).getAllByRole('button', { name: /Texto fictício/ });
+    const buttonsBefore = within(body()).getAllByRole('button', { name: /^Editar texto do bullet Texto fictício/ });
 
     fireEvent.click(within(body()).getByRole('button', { name: '+ Bullet' }));
 
@@ -91,7 +91,7 @@ describe('BulletRow', () => {
 
     await waitFor(() => expect(api.calls).toEqual([`POST /resume/experiences/${experience(1).id}/bullets`]));
     expect(api.bodies).toEqual([{ text: 'Escrevi o texto fictício novo.', skillIds: [] }]);
-    expect(await within(body()).findByRole('button', { name: /Escrevi o texto fictício novo\./ })).toBeInTheDocument();
+    expect(await within(body()).findByRole('button', { name: /^Editar texto do bullet Escrevi o texto fictício novo\./ })).toBeInTheDocument();
     expect(within(body()).queryByRole('textbox', { name: 'Texto do novo bullet' })).toBeNull();
     const rows = body().querySelectorAll('.group\\/bullet');
     expect(rows[rows.length - 1]!.textContent).toContain('Escrevi o texto fictício novo.');
@@ -109,7 +109,7 @@ describe('BulletRow', () => {
     fireEvent.keyDown(field, { key: 'Enter' });
 
     await waitFor(() => expect(api.bodies).toEqual([{ text: 'Texto fictício com Enter.', skillIds: [] }]));
-    expect(await within(body()).findByRole('button', { name: /Texto fictício com Enter\./ })).toBeInTheDocument();
+    expect(await within(body()).findByRole('button', { name: /^Editar texto do bullet Texto fictício com Enter\./ })).toBeInTheDocument();
   });
 
   it('RES-62 keeps the text in the field and says it could not save when the create fails', async () => {
@@ -135,7 +135,7 @@ describe('BulletRow', () => {
 
     await waitFor(() => expect(within(body()).queryByRole('textbox', { name: 'Texto do novo bullet' })).toBeNull());
     expect(api.calls).toEqual([]);
-    expect(within(body()).getAllByRole('button', { name: /Texto fictício/ })).toHaveLength(2);
+    expect(within(body()).getAllByRole('button', { name: /^Editar texto do bullet Texto fictício/ })).toHaveLength(2);
   });
 
   it('RES-63 drops the field with Esc and sends nothing even when it holds text', async () => {
@@ -153,7 +153,7 @@ describe('BulletRow', () => {
 
   it('RES-64 opens the edition on a click on the text and saves the new text when the field is left', async () => {
     const api = open();
-    fireEvent.click(within(body()).getByRole('button', { name: /Texto fictício do bullet 1\./ }));
+    fireEvent.click(within(body()).getByRole('button', { name: /^Editar texto do bullet Texto fictício do bullet 1\./ }));
     const field = within(body()).getByRole('textbox', { name: 'Editar texto do bullet' });
     expect(field).toHaveFocus();
 
@@ -162,7 +162,7 @@ describe('BulletRow', () => {
 
     await waitFor(() => expect(api.calls).toEqual([`PATCH /resume/experiences/${experience(1).id}/bullets/${bullet(1).id}`]));
     expect(api.bodies).toEqual([{ text: 'Texto fictício reescrito.' }]);
-    expect(await within(body()).findByRole('button', { name: /Texto fictício reescrito\./ })).toBeInTheDocument();
+    expect(await within(body()).findByRole('button', { name: /^Editar texto do bullet Texto fictício reescrito\./ })).toBeInTheDocument();
     await waitFor(() => expect(topbarStatus().textContent).toMatch(/^Salvo às/));
     // The skills of the bullet are untouched.
     expect(within(row('Texto fictício reescrito.')).getByText('Skill Fictícia 1')).toBeInTheDocument();
@@ -170,21 +170,21 @@ describe('BulletRow', () => {
 
   it('RES-64 undoes the edition with Esc and sends nothing', async () => {
     const api = open();
-    fireEvent.click(within(body()).getByRole('button', { name: /Texto fictício do bullet 1\./ }));
+    fireEvent.click(within(body()).getByRole('button', { name: /^Editar texto do bullet Texto fictício do bullet 1\./ }));
     const field = within(body()).getByRole('textbox', { name: 'Editar texto do bullet' });
     fireEvent.change(field, { target: { value: 'Texto que não vale.' } });
 
     fireEvent.keyDown(field, { key: 'Escape' });
     await settle();
 
-    expect(within(body()).getByRole('button', { name: /Texto fictício do bullet 1\./ })).toBeInTheDocument();
+    expect(within(body()).getByRole('button', { name: /^Editar texto do bullet Texto fictício do bullet 1\./ })).toBeInTheDocument();
     expect(within(body()).queryByText('Texto que não vale.')).toBeNull();
     expect(api.calls).toEqual([]);
   });
 
   it('RES-64 sends nothing when the text is left as it was', async () => {
     const api = open();
-    fireEvent.click(within(body()).getByRole('button', { name: /Texto fictício do bullet 1\./ }));
+    fireEvent.click(within(body()).getByRole('button', { name: /^Editar texto do bullet Texto fictício do bullet 1\./ }));
 
     fireEvent.blur(within(body()).getByRole('textbox', { name: 'Editar texto do bullet' }));
     await settle();
@@ -195,7 +195,7 @@ describe('BulletRow', () => {
   it('RES-64 says it could not save and keeps the old text when the api fails', async () => {
     const api = open();
     api.fail('bullet', { status: 400, detail: 'Invalid request body' });
-    fireEvent.click(within(body()).getByRole('button', { name: /Texto fictício do bullet 1\./ }));
+    fireEvent.click(within(body()).getByRole('button', { name: /^Editar texto do bullet Texto fictício do bullet 1\./ }));
     const field = within(body()).getByRole('textbox', { name: 'Editar texto do bullet' });
     fireEvent.change(field, { target: { value: 'Texto fictício reescrito.' } });
 
@@ -203,20 +203,20 @@ describe('BulletRow', () => {
 
     expect(await within(body()).findByText(FAILED)).toBeInTheDocument();
     expect(within(body()).queryByText('Invalid request body')).toBeNull();
-    expect(within(body()).getByRole('button', { name: /Texto fictício do bullet 1\./ })).toBeInTheDocument();
+    expect(within(body()).getByRole('button', { name: /^Editar texto do bullet Texto fictício do bullet 1\./ })).toBeInTheDocument();
     expect(topbarStatus().textContent).toBe('');
   });
 
   it('RES-65 goes back to the old text and sends nothing when the edited text is emptied', async () => {
     const api = open();
-    fireEvent.click(within(body()).getByRole('button', { name: /Texto fictício do bullet 1\./ }));
+    fireEvent.click(within(body()).getByRole('button', { name: /^Editar texto do bullet Texto fictício do bullet 1\./ }));
     const field = within(body()).getByRole('textbox', { name: 'Editar texto do bullet' });
     fireEvent.change(field, { target: { value: '   ' } });
 
     fireEvent.blur(field);
     await settle();
 
-    expect(within(body()).getByRole('button', { name: /Texto fictício do bullet 1\./ })).toBeInTheDocument();
+    expect(within(body()).getByRole('button', { name: /^Editar texto do bullet Texto fictício do bullet 1\./ })).toBeInTheDocument();
     expect(api.calls).toEqual([]);
   });
 
@@ -228,11 +228,11 @@ describe('BulletRow', () => {
     fireEvent.keyDown(within(second).getByRole('button', { name: 'Ações do bullet' }), { key: 'Enter' });
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Excluir bullet' }));
 
-    await waitFor(() => expect(within(body()).queryByRole('button', { name: /Texto fictício do bullet 2\./ })).toBeNull());
+    await waitFor(() => expect(within(body()).queryByRole('button', { name: /^Editar texto do bullet Texto fictício do bullet 2\./ })).toBeNull());
     expect(api.calls).toEqual([`DELETE /resume/experiences/${experience(1).id}/bullets/${bullet(2).id}`]);
     expect(screen.queryByRole('alertdialog')).toBeNull();
     expect(within(index()).queryByRole('status')).toBeNull();
-    expect(within(body()).getByRole('button', { name: /Texto fictício do bullet 1\./ })).toBeInTheDocument();
+    expect(within(body()).getByRole('button', { name: /^Editar texto do bullet Texto fictício do bullet 1\./ })).toBeInTheDocument();
   });
 
   it('RES-68 keeps the bullet and says it could not delete when the api fails', async () => {
@@ -244,7 +244,7 @@ describe('BulletRow', () => {
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Excluir bullet' }));
 
     expect(await within(body()).findByText('Não foi possível excluir. Tente de novo.')).toBeInTheDocument();
-    expect(within(body()).getByRole('button', { name: /Texto fictício do bullet 1\./ })).toBeInTheDocument();
+    expect(within(body()).getByRole('button', { name: /^Editar texto do bullet Texto fictício do bullet 1\./ })).toBeInTheDocument();
   });
 
   it('RES-69 gives the menu "⋯" to every bullet, also the one with no skill, shown under the pointer or the focus', () => {

@@ -3,11 +3,8 @@ import { Alert, AppShell, Button, FormPage } from '@am/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 import type { Outcome } from '../../../lib/bff';
-import type { SkillsFieldApi } from '../../skills';
 import { RESUME_QUERY_KEY } from '../hooks/resume-query-key';
-import type { BulletsApi } from '../hooks/use-bullet-writes';
-import type { ItemsApi } from '../hooks/use-item-form';
-import type { ProfileApi } from '../hooks/use-profile-save';
+import type { ResumeApi } from '../hooks/resume-api';
 import { SavedAtProvider } from '../hooks/saved-at';
 import { RESUME_MESSAGES } from '../model/messages';
 import { SECTION_LABELS, type PageSection } from '../model/sections';
@@ -16,12 +13,8 @@ import { ProfileSection } from './ProfileSection';
 import { ResumeIndex } from './ResumeIndex';
 import { SavedAt } from './SavedAt';
 
-/** What the page needs from the BFF; the route binds the server function, a test binds the api. */
-export interface ResumePageApi extends ProfileApi, ItemsApi, BulletsApi {
-  /** The search and the creation of skills, for the field of skills of a bullet. */
-  skills: SkillsFieldApi;
-  load: () => Promise<Outcome<MasterResume>>;
-}
+/** What the page needs from the BFF; the route binds the server functions, a test binds the api. */
+export type ResumePageApi = ResumeApi;
 
 export interface ResumePageProps {
   /** What the loader read; the cache `['resume']` starts from it (Data Reads: the page reads nothing else). */
@@ -127,7 +120,7 @@ export function ResumePage({ outcome, section, api, onSectionChange, onExpired }
               <ProfileSection profile={resume.data.profile} api={api} onExpired={onExpired} />
             </FormPage.Section>
           ) : (
-            <ItemsSection section={section} items={resume.data[section]} skills={resume.data.skills} api={api} skillsApi={api.skills} onExpired={onExpired} />
+            <ItemsSection section={section} items={resume.data[section]} skills={resume.data.skills} api={api} onExpired={onExpired} />
           )}
         </FormPage.Content>
       </Frame>

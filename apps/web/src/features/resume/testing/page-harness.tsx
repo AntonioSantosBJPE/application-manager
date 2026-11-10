@@ -10,6 +10,8 @@ import {
   patchResumeItem,
   postBullet,
   postResumeItem,
+  putBulletsOrder,
+  putItemsOrder,
   putProfile,
   removeBullet,
   removeResumeItem,
@@ -47,6 +49,8 @@ function Harness({
         createBullet: (section, id, body) => postBullet(section, id, body, context),
         updateBullet: (section, id, bulletId, body) => patchBullet(section, id, bulletId, body, context),
         deleteBullet: (section, id, bulletId) => removeBullet(section, id, bulletId, context),
+        orderItems: (section, ids) => putItemsOrder(section, ids, context),
+        orderBullets: (section, id, ids) => putBulletsOrder(section, id, ids, context),
         skills,
       }}
       onSectionChange={(next) => {

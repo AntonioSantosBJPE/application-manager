@@ -30,7 +30,7 @@ function open() {
   return { api, skills };
 }
 const body = () => screen.getByRole('group', { name: /^Bullets de/ });
-const row = (text: string) => within(body()).getByRole('button', { name: new RegExp(text) }).closest('.group\\/bullet') as HTMLElement;
+const row = (text: string) => within(body()).getByRole('button', { name: new RegExp(`^Editar texto do bullet ${text}`) }).closest('.group\\/bullet') as HTMLElement;
 const field = (scope: HTMLElement = body()) => within(scope).getByRole('combobox', { name: 'Skills do bullet' });
 const index = () => screen.getByRole('navigation', { name: 'Seções do currículo' });
 const type = (scope: HTMLElement, text: string) => fireEvent.change(field(scope), { target: { value: text } });

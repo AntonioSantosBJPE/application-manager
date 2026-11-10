@@ -1,5 +1,6 @@
 import type { ResumeSection } from '@am/contracts';
 import type { Outcome } from '../../../lib/bff';
+import { serverReorderApi } from '../hooks/use-reorder';
 import { createSkill, searchSkills } from '../../skills';
 import type { ResumePageApi } from '../components/ResumePage';
 import {
@@ -16,6 +17,7 @@ import {
 
 /** The page's api bound to the server functions, as the browser calls them; module level, so it is the same on every render. */
 export const resumePageApi: ResumePageApi = {
+  ...serverReorderApi,
   load: () => getResume(),
   saveProfile: (body) => saveProfile({ data: body }),
   createItem: (section, body) =>
