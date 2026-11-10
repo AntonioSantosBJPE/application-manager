@@ -1,8 +1,36 @@
-import { saveProfileRequestSchema, type MasterResume, type Profile, type ResumeSummary, type SaveProfileRequest } from '@am/contracts';
-import { Body, Controller, Get, Put } from '@nestjs/common';
+import {
+  createItemRequestSchemas,
+  saveProfileRequestSchema,
+  type MasterResume,
+  type Profile,
+  type ResumeSection,
+  type ResumeSummary,
+  type SaveProfileRequest,
+} from '@am/contracts';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
 import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
-import { ResumeService } from '../application/resume.service.js';
+import { LimitReachedError, ResumeNotFoundError, ResumeService, type ResumeItem } from '../application/resume.service.js';
+import { parseSection } from '../domain/sections.js';
+
+/** The rule errors of the service as the Problem Details answers the spec fixes (RES-13, RES-14). */
+async function answering<T>(operation: () => Promise<T>): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (error instanceof LimitReachedError) throw new ProblemDetailsException(problemFor(422, error.message));
+    if (error instanceof ResumeNotFoundError) throw new ProblemDetailsException(problemFor(404, error.message));
+    throw error;
+  }
+}
+
+/** A `:section` that names no section answers `404`, before the body is looked at. */
+function sectionOf(value: string): ResumeSection {
+  const section = parseSection(value);
+  if (section === undefined) throw new ProblemDetailsException(problemFor(404, 'Resume section not found'));
+  return section;
+}
 
 /** What a member does with the master resume; the admin has no use for these routes (AD-005, RES-30). */
 @Controller('resume')
@@ -26,5 +54,14 @@ export class ResumeController {
   @Put('profile')
   saveProfile(@Body(zodBody(saveProfileRequestSchema)) body: SaveProfileRequest, @CurrentUser() user: AuthenticatedUser): Promise<Profile> {
     return this.resume.saveProfile(user.id, body);
+  }
+
+  /** The body is checked by the schema of the section, the one the web uses to check the same fields (RES-11). */
+  @Roles('member')
+  @Post(':section')
+  createItem(@Param('section') segment: string, @Body() body: unknown, @CurrentUser() user: AuthenticatedUser): Promise<ResumeItem> {
+    const section = sectionOf(segment);
+    const values = zodBody(createItemRequestSchemas[section]).transform(body, { type: 'body' }) as Record<string, unknown>;
+    return answering(() => this.resume.createItem(user.id, section, values));
   }
 }

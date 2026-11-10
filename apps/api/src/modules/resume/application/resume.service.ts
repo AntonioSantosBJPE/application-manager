@@ -1,11 +1,28 @@
-import type { Bullet, MasterResume, Profile, ResumeSummary, SaveProfileRequest, SkillDictionary } from '@am/contracts';
+import { RESUME_ITEMS_MAX, type Bullet, type MasterResume, type Profile, type ResumeSection, type ResumeSummary, type SaveProfileRequest, type SkillDictionary } from '@am/contracts';
 import { Inject, Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { CLOCK, type Clock } from '../../../infra/clock/clock.js';
 import { SkillsCatalog } from '../../skills/index.js';
 import { ResumeRepository, type BulletRecord } from '../infra/resume.repository.js';
 
-type ResumeEventName = 'resume.profile_saved';
+type ResumeEventName = 'resume.profile_saved' | 'resume.item_created';
+
+/** An item as the API shows it, without the bullets of an experience or a project (AD-028). */
+export type ResumeItem = Record<string, unknown>;
+
+/** The item or the bullet does not exist, is somebody else's, belongs to another parent or the id is not a uuid (`404`, RES-14, RES-22). */
+export class ResumeNotFoundError extends Error {
+  constructor() {
+    super('Resume entry not found');
+  }
+}
+
+/** The section already holds the most items, or the item the most bullets, the design allows (`422`, RES-13, RES-21). */
+export class LimitReachedError extends Error {
+  constructor(limit: number, what: string) {
+    super(`A resume holds at most ${limit} ${what}`);
+  }
+}
 
 /** What a member without a profile row sees: every field empty and the only locale there is (RES-01). */
 const EMPTY_PROFILE: Profile = {
@@ -73,5 +90,19 @@ export class ResumeService {
   /** Whether the home may show step 02 as done; answered by the database, without describing any skill (RES-86). */
   async summary(userId: string): Promise<ResumeSummary> {
     return { ready: await this.repository.isReady(userId) };
+  }
+
+  /**
+   * Puts a new item on top of its section. The count and the insert share one transaction under the lock of
+   * the user, so two requests with 49 items end with 50 and one `422` (RES-07, RES-13).
+   */
+  async createItem(userId: string, section: ResumeSection, body: Record<string, unknown>): Promise<ResumeItem> {
+    const item = await this.repository.transaction(async (tx) => {
+      await this.repository.lockUser(tx, userId);
+      if ((await this.repository.countItems(tx, section, userId)) >= RESUME_ITEMS_MAX) throw new LimitReachedError(RESUME_ITEMS_MAX, 'items per section');
+      return this.repository.insertItem(tx, section, userId, body);
+    });
+    this.record('resume.item_created', String(item.id), userId);
+    return item;
   }
 }

@@ -1,8 +1,20 @@
+import type { ResumeSection } from '@am/contracts';
 import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq, exists, ne, sql } from 'drizzle-orm';
 import { DATABASE, type Database } from '../../../infra/database/database.module.js';
 import { fromMonthDate } from '../domain/months.js';
+import { toItem, toRowValues } from '../domain/sections.js';
 import { bullets, certifications, educations, experiences, languages, profiles, projects } from './schema.js';
+
+/** What a write runs on: the database or a transaction of it, so the rows of one request commit together. */
+export type DatabaseExecutor = Pick<Database, 'select' | 'insert' | 'update' | 'delete' | 'execute'>;
+
+/**
+ * The table of each section. The five tables share `id`, `user_id` and `position`, which is all the generic
+ * statements below touch, so they are handled as one type and the values written are checked by the contract.
+ */
+const SECTION_TABLES = { experiences, projects, educations, certifications, languages } as const;
+const tableOf = (section: ResumeSection): typeof experiences => SECTION_TABLES[section] as unknown as typeof experiences;
 
 export interface ProfileRecord {
   fullName: string;
@@ -123,5 +135,38 @@ export class ResumeRepository {
       .where(and(eq(bullets.userId, userId), sql`cardinality(${bullets.skillIds}) > 0`));
     const [row] = await this.db.select({ ready: sql<boolean>`${exists(named)} and ${exists(tagged)}` }).from(sql`(select 1) as one`);
     return row!.ready;
+  }
+
+  /** A transaction handle, so a limit check and the write it guards are one step. */
+  transaction<T>(run: (tx: DatabaseExecutor) => Promise<T>): Promise<T> {
+    return this.db.transaction(run);
+  }
+
+  /**
+   * One lock per user, held until the transaction ends: two creations or an order and a creation of the same
+   * person run one after the other, so a limit or an exact order is checked against what the other left (RES-13).
+   */
+  async lockUser(tx: DatabaseExecutor, userId: string): Promise<void> {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`resume:${userId}`}))`);
+  }
+
+  async countItems(tx: DatabaseExecutor, section: ResumeSection, userId: string): Promise<number> {
+    const table = tableOf(section);
+    const [row] = await tx.select({ total: sql<number>`count(*)::int` }).from(table).where(eq(table.userId, userId));
+    return row!.total;
+  }
+
+  /** The new item goes on top without renumbering the others: one before the smallest position, or 0 in an empty section (RES-07). */
+  async insertItem(tx: DatabaseExecutor, section: ResumeSection, userId: string, values: Record<string, unknown>): Promise<Record<string, unknown>> {
+    const table = tableOf(section);
+    const [row] = await tx
+      .insert(table)
+      .values({
+        ...(toRowValues(values) as typeof table.$inferInsert),
+        userId,
+        position: sql`(select coalesce(min(${table.position}), 1) - 1 from ${table} where ${table.userId} = ${userId})`,
+      })
+      .returning();
+    return toItem(row!);
   }
 }

@@ -287,12 +287,12 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Teste `RES-07`: um item de cada seção responde `201` e aparece primeiro em `GET /resume`; a resposta de experiência e projeto não traz `bullets`
-- [ ] Teste `RES-11`: cada recusa da spec responde `400` sem gravar
-- [ ] Teste `RES-12`: experiência e formação sem fim voltam com `endDate` nulo
-- [ ] Teste `RES-13`: a 51ª responde `422`; duas criações em paralelo com 49 itens terminam com 50, uma `201` e uma `422`
-- [ ] `:section` desconhecido responde `404`
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Teste `RES-07`: um item de cada seção responde `201` e aparece primeiro em `GET /resume`; a resposta de experiência e projeto não traz `bullets`
+- [x] Teste `RES-11`: cada recusa da spec responde `400` sem gravar
+- [x] Teste `RES-12`: experiência e formação sem fim voltam com `endDate` nulo
+- [x] Teste `RES-13`: a 51ª responde `422`; duas criações em paralelo com 49 itens terminam com 50, uma `201` e uma `422`
+- [x] `:section` desconhecido responde `404`
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
