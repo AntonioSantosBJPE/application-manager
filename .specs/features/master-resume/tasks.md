@@ -225,9 +225,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Teste `RES-01`: conta nova responde o perfil vazio com `locale` `pt-BR`, as cinco seções vazias e `skills` vazio, e nenhuma linha é gravada em `resume.*`
-- [ ] Teste `RES-02` (parte das seções): itens semeados por SQL voltam na ordem de `position`, com datas `YYYY-MM` e `endDate` nulo
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Teste `RES-01`: conta nova responde o perfil vazio com `locale` `pt-BR`, as cinco seções vazias e `skills` vazio, e nenhuma linha é gravada em `resume.*`
+- [x] Teste `RES-02` (parte das seções): itens semeados por SQL voltam na ordem de `position`, com datas `YYYY-MM` e `endDate` nulo
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
