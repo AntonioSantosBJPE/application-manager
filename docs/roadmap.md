@@ -11,6 +11,12 @@
 | Candidaturas: vagas, pipeline de status, skills normalizadas | 1 |
 | Currículo mestre + versão por candidatura + PDF ATS (sem IA) | 2 |
 
+Ordem dentro da fase 2: MasterResume → **revisão de leituras** → ResumeVersion → ResumeDocument.
+
+| Item | Quando | Por quê |
+|---|---|---|
+| Revisão do código existente pelas regras de leitura de dados ([AD-028](engineering-guidelines.md#leitura-de-dados--regra-de-toda-tela-e-todo-endpoint-ad-028)) | Logo depois do merge de MasterResume, antes de começar ResumeVersion | Os designs anteriores à regra (identity, skills, application) não passaram por ela; leituras além do que a tela usa, loaders que serializam dado não mostrado e respostas de escrita maiores que o necessário são corrigidos antes de mais features construírem em cima |
+
 ## Próximo
 
 | Item | Fase | Por que não agora | O que antecipa |

@@ -35,6 +35,8 @@ Revisão do plano no GitHub é opcional: para uma feature grande, faça push da 
 
 3. **Especificar e planejar** com a skill `tlc-spec-driven`: spec → aprovação → design (quando a feature pede) → tasks → aprovação. Os arquivos ficam em `.specs/features/<feature>/`, não commitados.
 
+   O design tem a seção `## Data Reads` (AD-028): uma linha por leitura, com o que o consumidor usa, o que recebe, o pior caso em número e o que vai para o HTML. Antes de apresentar o design, o agente roda `pnpm --filter @am/guardrails exec vitest run src/design-data-reads.test.ts` e confere, linha por linha, que nada é lido além do que é usado ([regra](engineering-guidelines.md#leitura-de-dados--regra-de-toda-tela-e-todo-endpoint-ad-028)).
+
 4. **Criar a branch quando as tasks forem aprovadas** e commitar o plano como primeiro commit:
    ```bash
    git switch -c feat/<feature>
