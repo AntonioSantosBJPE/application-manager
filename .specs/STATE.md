@@ -202,6 +202,22 @@
 - **Date**: 2026-11-10
 - **Status**: active
 
+### AD-026 (active)
+- **Decision**: O currículo mestre não tem o botão "Visualizar PDF" na topbar até a fatia ResumeDocument existir; ela acrescenta o botão.
+- **Reason**: O PDF só existe com ResumeDocument. Pergunta: "O botão 'Visualizar PDF' da topbar do currículo mestre depende do PDF, que só chega na fatia ResumeDocument. O que fazer agora?"; opção escolhida: "Omitir até existir".
+- **Trade-off**: A tela fica sem o atalho para ver o resultado final até a fase do PDF; a topbar só mostra "Salvo às".
+- **Scope**: `apps/web` feature `resume`, carta `PageMasterResume`
+- **Date**: 2026-11-10
+- **Status**: active
+
+### AD-027 (active)
+- **Decision**: Reordenar por arrastar usa o `Sortable` de `packages/ui`, sobre `@dnd-kit/core` e `@dnd-kit/sortable` (versões estáveis, não `@dnd-kit/react` 0.x), sempre com sensor de teclado e anúncios vindos do chamador. Nenhuma feature importa `@dnd-kit` direto.
+- **Reason**: Pergunta: "Reordenar experiências, projetos e bullets no currículo mestre: […] Como o usuário reordena?"; opção escolhida: "Arrastar + teclado". Uma lib só, atrás de um componente do design system, mantém o gesto e a acessibilidade iguais em toda tela que reordena (ResumeVersion também reordena).
+- **Trade-off**: Uma dependência a mais no `packages/ui`; arrastar só é provado em teste de browser e E2E, não em jsdom.
+- **Scope**: `packages/ui`, features `master-resume` e `resume-version`
+- **Date**: 2026-11-10
+- **Status**: active
+
 ### AD-028 (active)
 - **Decision**: Cada leitura entrega só o que o consumidor usa, com teto declarado: valor derivado (sim/não, total, contagem) vem calculado da API; ordenar, filtrar, contar e paginar rodam no SQL; o loader não devolve dado que a página não mostra; resposta de escrita devolve o que mudou. Todo `design.md` de feature tem a seção `## Data Reads` (`Consumer | Endpoint | Uses | Returns | Worst case | In the HTML`), com o pior caso em número, e `tooling/guardrails/src/design-data-reads.test.ts` reprova o design sem ela. Regra em `docs/engineering-guidelines.md`.
 - **Reason**: O excesso de leitura apareceu em mais de um design e só foi pego pelo usuário na revisão: o catálogo do admin carregando todas as skills (AD-019) e a home lendo o currículo inteiro para o passo 02 (feature `master-resume`). Pedido do usuário: "crie alguma regra no sistema para evitar esse problema de design, que não faz sentido se repetir, e ja aconteceu outras vezes nas etapas de design".
