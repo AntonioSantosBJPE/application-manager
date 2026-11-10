@@ -465,10 +465,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Teste de browser: arrastar pela alça chama `onReorder` com a nova ordem; `Espaço`, setas e `Espaço` movem; `Esc` devolve sem chamar `onReorder`; os anúncios vêm das props
-- [ ] Teste: render no servidor e hidratação sem aviso de ids
-- [ ] Story nos dois temas; o teste `no-product-copy` passa; `Sortable` exportado em `src/index.ts`
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Teste de browser: arrastar pela alça chama `onReorder` com a nova ordem; `Espaço`, setas e `Espaço` movem; `Esc` devolve sem chamar `onReorder`; os anúncios vêm das props
+- [x] Teste: render no servidor e hidratação sem aviso de ids
+- [x] Story nos dois temas; o teste `no-product-copy` passa; `Sortable` exportado em `src/index.ts`
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
