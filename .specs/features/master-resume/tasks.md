@@ -550,9 +550,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes: método, caminho e corpo de cada uma; resposta validada pelo schema de contracts; `401`, `404`, `422` e falha de rede viram `Outcome` com a falha
-- [ ] `RESUME_ENDPOINTS` lista as 11, e o teste confere que cada uma tem server function
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes: método, caminho e corpo de cada uma; resposta validada pelo schema de contracts; `401`, `404`, `422` e falha de rede viram `Outcome` com a falha
+- [x] `RESUME_ENDPOINTS` lista as 11, e o teste confere que cada uma tem server function
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
