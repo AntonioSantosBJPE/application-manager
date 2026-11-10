@@ -571,8 +571,8 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes: `parseSection` volta `profile` para ausente e desconhecido; "mar 2023", "jan 2021 — fev 2023", "mar 2023 — atual"; cabeçalho de cada seção como no RES-49; os cinco textos de vazio
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes: `parseSection` volta `profile` para ausente e desconhecido; "mar 2023", "jan 2021 — fev 2023", "mar 2023 — atual"; cabeçalho de cada seção como no RES-49; os cinco textos de vazio
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
