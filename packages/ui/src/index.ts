@@ -1,4 +1,5 @@
 export { Alert, type AlertProps } from './components/alert';
+export { Bullet, type BulletRootProps } from './components/bullet';
 export { Button, type ButtonProps } from './components/button';
 export {
   ChoiceChips,

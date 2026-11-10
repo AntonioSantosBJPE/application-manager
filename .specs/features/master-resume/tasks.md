@@ -529,9 +529,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes de composição: alça, texto, tags e área à direita; nada de texto de produto
-- [ ] Story com tags e sem tags; exportado em `src/index.ts`
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes de composição: alça, texto, tags e área à direita; nada de texto de produto
+- [x] Story com tags e sem tags; exportado em `src/index.ts`
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
