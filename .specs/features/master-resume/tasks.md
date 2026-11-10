@@ -203,10 +203,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] `apps/api/drizzle/0005_resume_schema.sql` gerada, aplicada pelo teste de migrações
-- [ ] Teste `RES-31`: nenhuma FK sai do schema `resume`; FKs de `bullets` só para `experiences` e `projects`, com `on delete cascade`
-- [ ] Teste: `profiles.user_id` único; `bullets` com `experience_id` e `project_id` juntos, ou nenhum dos dois, é recusado pelo `check`
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] `apps/api/drizzle/0005_resume_schema.sql` gerada, aplicada pelo teste de migrações
+- [x] Teste `RES-31`: nenhuma FK sai do schema `resume`; FKs de `bullets` só para `experiences` e `projects`, com `on delete cascade`
+- [x] Teste: `profiles.user_id` único; `bullets` com `experience_id` e `project_id` juntos, ou nenhum dos dois, é recusado pelo `check`
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
