@@ -139,12 +139,12 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Exportados por `packages/contracts/src/index.ts`, com `RESUME_ITEMS_MAX = 50`, `BULLETS_PER_ITEM_MAX = 30`, `SKILLS_PER_BULLET_MAX = 20`, `PROFILE_LINKS_MAX = 5`, `BULLET_TEXT_MAX_LENGTH = 500` e os limites de campo da spec
-- [ ] Perfil aceita textos vazios, recusa e-mail preenchido fora do formato, mais de 5 links, link sem rótulo ou com URL que não é `http`/`https`, e `locale` diferente de `pt-BR`
-- [ ] `monthSchema` aceita `2023-03` e recusa `2023-13`, `2023-3` e `2023-03-01`; fim antes do início recusado em experiência e formação, também no corpo de edição quando os dois vêm
-- [ ] Bullet recusa texto vazio depois de aparado, 501 caracteres e 21 skills; aceita 500 e 20
-- [ ] `noControl` movido sem mudar os testes de `applications.test.ts`
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Exportados por `packages/contracts/src/index.ts`, com `RESUME_ITEMS_MAX = 50`, `BULLETS_PER_ITEM_MAX = 30`, `SKILLS_PER_BULLET_MAX = 20`, `PROFILE_LINKS_MAX = 5`, `BULLET_TEXT_MAX_LENGTH = 500` e os limites de campo da spec
+- [x] Perfil aceita textos vazios, recusa e-mail preenchido fora do formato, mais de 5 links, link sem rótulo ou com URL que não é `http`/`https`, e `locale` diferente de `pt-BR`
+- [x] `monthSchema` aceita `2023-03` e recusa `2023-13`, `2023-3` e `2023-03-01`; fim antes do início recusado em experiência e formação, também no corpo de edição quando os dois vêm
+- [x] Bullet recusa texto vazio depois de aparado, 501 caracteres e 21 skills; aceita 500 e 20
+- [x] `noControl` movido sem mudar os testes de `applications.test.ts`
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

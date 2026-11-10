@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { problemDetailsSchema } from './identity.js';
 import { skillCategorySchema, skillScopeSchema } from './skills.js';
+import { noControl } from './text.js';
 
 export const applicationStatusSchema = z.enum([
   'saved',
@@ -55,9 +56,6 @@ export const SKILLS_PER_POSTING_MAX = 50;
 export const SEARCH_MAX_LENGTH = 100;
 /** An event may be dated at most this far in the future (APP-25). */
 export const EVENT_FUTURE_TOLERANCE_MS = 5 * 60 * 1000;
-
-/** Postgres refuses U+0000 in text, so a control character answers `400` instead of `500`. */
-const noControl = (text: string) => !/[\p{Cc}]/u.test(text.replace(/[\n\r\t]/g, ' '));
 
 /** A text trimmed to 1 to `max` characters with no control character (APP-04). */
 const trimmedText = (max: number) =>
