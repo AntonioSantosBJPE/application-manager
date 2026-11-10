@@ -127,3 +127,27 @@ export const ContrasteEscuro: Story = {
   globals: { theme: 'dark' },
   play: contrast,
 };
+
+export const TextoLongoDemais: Story = {
+  name: 'Texto longo demais',
+  render: () => (
+    <div className="w-80 bg-surface p-4 text-body-lg">
+      <InlineEdit
+        multiline
+        value="Texto salvo"
+        label="Editar texto"
+        validate={(text) => (text.length > 20 ? 'Use no máximo 20 caracteres.' : null)}
+        onCommit={() => {}}
+      />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: /^Editar texto / }));
+    await userEvent.keyboard('um texto bem mais comprido que o limite{Enter}');
+
+    await expect(canvas.getByText('Use no máximo 20 caracteres.')).toBeInTheDocument();
+    await expect(canvas.getByRole('textbox', { name: 'Editar texto' })).toHaveValue(
+      'um texto bem mais comprido que o limite',
+    );
+  },
+};

@@ -77,6 +77,22 @@ describe('Bullet', () => {
     expect(screen.getByTestId('bullet')).toHaveClass('group/bullet');
   });
 
+  it('RES-87 keeps the actions in view at rest with alwaysVisible, with no class that hides them', () => {
+    render(
+      <Bullet.Root
+        aside={
+          <Bullet.Actions alwaysVisible>
+            <button>a1</button>
+          </Bullet.Actions>
+        }
+      >
+        <Bullet.Text>t1</Bullet.Text>
+      </Bullet.Root>,
+    );
+
+    expect(screen.getByText('a1').parentElement!.className).not.toMatch(/opacity/);
+  });
+
   it('RES-60 renders no text and no label of its own when the caller passes none', () => {
     const { container } = render(
       <Bullet.Root>

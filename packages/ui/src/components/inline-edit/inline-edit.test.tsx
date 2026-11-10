@@ -332,4 +332,51 @@ describe('InlineEdit multiline', () => {
 
     expect(multilineField()).toHaveAttribute('aria-invalid', 'true');
   });
+
+  it('RES-85 keeps the field open with the text and the sentence of the caller, and commits nothing, when validate refuses', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <InlineEdit
+        multiline
+        value="Texto salvo"
+        label="Editar texto"
+        validate={(text) => (text.length > 10 ? 'Texto longo demais.' : null)}
+        onCommit={onCommit}
+      />,
+    );
+    await user.click(multilineDisplay());
+
+    await user.paste('um texto colado bem comprido');
+    await user.tab();
+
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(multilineField()).toHaveValue('um texto colado bem comprido');
+    expect(multilineField()).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByText('Texto longo demais.')).toBeInTheDocument();
+  });
+
+  it('RES-85 commits once the text passes validate', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(
+      <InlineEdit
+        multiline
+        value="Texto salvo"
+        label="Editar texto"
+        validate={(text) => (text.length > 10 ? 'Texto longo demais.' : null)}
+        onCommit={onCommit}
+      />,
+    );
+    await user.click(multilineDisplay());
+    await user.paste('um texto colado bem comprido');
+    await user.tab();
+
+    await user.clear(multilineField());
+    await user.type(multilineField(), 'curto{Enter}');
+
+    expect(onCommit).toHaveBeenCalledTimes(1);
+    expect(onCommit).toHaveBeenCalledWith('curto');
+    expect(screen.queryByText('Texto longo demais.')).toBeNull();
+  });
 });

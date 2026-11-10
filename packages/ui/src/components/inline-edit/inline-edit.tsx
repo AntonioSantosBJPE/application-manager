@@ -37,6 +37,11 @@ export type InlineEditProps = Omit<
    * (`text-body-lg`) around the field.
    */
   multiline?: boolean;
+  /**
+   * Checks the text before it is committed: a sentence (from the caller) keeps the field open, shows the
+   * sentence under it and commits nothing; `null` lets the text through. `Esc` still drops the edit.
+   */
+  validate?: (value: string) => string | null;
 };
 
 /**
@@ -55,11 +60,13 @@ export function InlineEdit({
   visibleFrom,
   invalid = false,
   multiline = false,
+  validate,
   className,
   ...inputProps
 }: InlineEditProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
+  const [problem, setProblem] = useState<string | null>(null);
   const button = useRef<HTMLButtonElement>(null);
   const input = useRef<HTMLInputElement>(null);
   const textarea = useRef<HTMLTextAreaElement>(null);
@@ -81,12 +88,22 @@ export function InlineEdit({
   function start() {
     settled.current = false;
     setDraft(value);
+    setProblem(null);
     setEditing(true);
   }
 
   function finish(commit: boolean, refocus: boolean) {
     if (settled.current) return;
+    if (commit && validate !== undefined) {
+      const found = validate(draft);
+      if (found !== null) {
+        // The edit stays open with the text as it was typed or pasted; nothing is committed.
+        setProblem(found);
+        return;
+      }
+    }
     settled.current = true;
+    setProblem(null);
     restoreFocus.current = refocus;
     setEditing(false);
     if (commit) onCommit(draft);
@@ -138,7 +155,7 @@ export function InlineEdit({
 
   if (multiline) {
     return (
-      <Field.Root invalid={invalid} className={className}>
+      <Field.Root invalid={invalid || problem !== null} className={className}>
         <Field.Textarea
           {...(inputProps as ComponentProps<'textarea'>)}
           ref={textarea}
@@ -154,25 +171,33 @@ export function InlineEdit({
             lineHeight: 'inherit',
           }}
           className="field-sizing-content"
-          onChange={(event) => setDraft(event.target.value.replace(/\r?\n/g, ' '))}
+          onChange={(event) => {
+            setDraft(event.target.value.replace(/\r?\n/g, ' '));
+            setProblem(null);
+          }}
           onKeyDown={handleKeyDown}
           onBlur={() => finish(true, false)}
         />
+        <Field.Error>{problem}</Field.Error>
       </Field.Root>
     );
   }
 
   return (
-    <Field.Root invalid={invalid} className={className}>
+    <Field.Root invalid={invalid || problem !== null} className={className}>
       <Field.Control
         {...inputProps}
         ref={input}
         aria-label={label}
         value={draft}
-        onChange={(event) => setDraft(event.target.value)}
+        onChange={(event) => {
+          setDraft(event.target.value);
+          setProblem(null);
+        }}
         onKeyDown={handleKeyDown}
         onBlur={() => finish(true, false)}
       />
+      <Field.Error>{problem}</Field.Error>
     </Field.Root>
   );
 }

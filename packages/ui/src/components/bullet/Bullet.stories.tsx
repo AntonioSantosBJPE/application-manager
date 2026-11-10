@@ -17,8 +17,9 @@ type Story = StoryObj<typeof meta>;
 
 const grip = <span className="text-text-muted">⋮⋮</span>;
 
-const menu = (
-  <Bullet.Actions>
+/** A tagged bullet keeps its menu in view at rest; one with no skill shows it under the pointer or the focus. */
+const menu = (alwaysVisible: boolean) => (
+  <Bullet.Actions alwaysVisible={alwaysVisible}>
     <Button intent="ghost" size="sm" aria-label="Mais ações">
       <Icon icon={Ellipsis} size="sm" />
     </Button>
@@ -31,7 +32,7 @@ function Exemplos() {
     <div className="flex flex-col gap-3">
       {(['bg-surface', 'bg-surface-raised'] as const).map((surface) => (
         <div key={surface} className={`flex w-160 max-w-full flex-col gap-0.5 p-4 text-text ${surface}`}>
-          <Bullet.Root handle={grip} aside={menu}>
+          <Bullet.Root handle={grip} aside={menu(true)}>
             <Bullet.Text>
               Construí a API de pagamentos recorrentes em NestJS e PostgreSQL, processando 40 mil cobranças por
               mês.
@@ -42,7 +43,13 @@ function Exemplos() {
               <SkillTag variant="private">Drizzle ORM</SkillTag>
             </Bullet.Tags>
           </Bullet.Root>
-          <Bullet.Root handle={grip} aside={<Bullet.Notice>sem skill</Bullet.Notice>}>
+          <Bullet.Root handle={grip} aside={
+          <div className="flex items-center gap-1">
+            <Bullet.Notice>sem skill</Bullet.Notice>
+            {menu(false)}
+          </div>
+        }
+      >
             <Bullet.Text>Conduzi a adoção de testes de contrato entre três times.</Bullet.Text>
             <Bullet.Tags />
           </Bullet.Root>
@@ -65,7 +72,13 @@ export const SemTags: Story = {
   name: 'Sem tags',
   render: () => (
     <div className="w-160 max-w-full bg-surface p-4 text-text">
-      <Bullet.Root handle={grip} aside={<Bullet.Notice>sem skill</Bullet.Notice>}>
+      <Bullet.Root handle={grip} aside={
+          <div className="flex items-center gap-1">
+            <Bullet.Notice>sem skill</Bullet.Notice>
+            {menu(false)}
+          </div>
+        }
+      >
         <Bullet.Text>Conduzi a adoção de testes de contrato entre três times.</Bullet.Text>
         <Bullet.Tags />
       </Bullet.Root>

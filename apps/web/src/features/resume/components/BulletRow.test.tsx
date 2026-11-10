@@ -247,16 +247,74 @@ describe('BulletRow', () => {
     expect(within(body()).getByRole('button', { name: /^Editar texto do bullet Texto fictício do bullet 1\./ })).toBeInTheDocument();
   });
 
-  it('RES-69 gives the menu "⋯" to every bullet, also the one with no skill, shown under the pointer or the focus', () => {
+  it('RES-87 keeps the menu "⋯" of a bullet with a skill in view at rest, with no class that hides it', () => {
     open();
 
-    for (const text of ['Texto fictício do bullet 1.', 'Texto fictício do bullet 2.']) {
-      const menu = within(row(text)).getByRole('button', { name: 'Ações do bullet' });
-      expect(menu.parentElement).toHaveClass('md:opacity-0', 'md:group-hover/bullet:opacity-100', 'md:group-focus-within/bullet:opacity-100');
-      menu.focus();
-      expect(menu).toHaveFocus();
-    }
-    expect(within(row('Texto fictício do bullet 2.')).getByText('sem skill')).toBeInTheDocument();
+    const menu = within(row('Texto fictício do bullet 1.')).getByRole('button', { name: 'Ações do bullet' });
+    expect(menu.parentElement!.className).not.toMatch(/opacity/);
+  });
+
+  it('RES-69 shows the menu "⋯" of a bullet with no skill, beside "sem skill", only under the pointer or the focus', () => {
+    open();
+
+    const second = row('Texto fictício do bullet 2.');
+    const menu = within(second).getByRole('button', { name: 'Ações do bullet' });
+    expect(menu.parentElement).toHaveClass('md:opacity-0', 'md:group-hover/bullet:opacity-100', 'md:group-focus-within/bullet:opacity-100');
+    menu.focus();
+    expect(menu).toHaveFocus();
+    expect(within(second).getByText('sem skill')).toBeInTheDocument();
+  });
+
+  it('RES-85 shows the limit and sends nothing when a new bullet passes 500 characters', async () => {
+    const api = open();
+    fireEvent.click(within(body()).getByRole('button', { name: '+ Bullet' }));
+    const field = within(body()).getByRole('textbox', { name: 'Texto do novo bullet' });
+
+    fireEvent.change(field, { target: { value: 'a'.repeat(501) } });
+    fireEvent.blur(field);
+
+    expect(await within(body()).findByText('Use no máximo 500 caracteres.')).toBeInTheDocument();
+    expect((field as HTMLTextAreaElement).value).toBe('a'.repeat(501));
+    await settle();
+    expect(api.calls).toEqual([]);
+  });
+
+  it('RES-85 sends a new bullet of exactly 500 characters', async () => {
+    const api = open();
+    fireEvent.click(within(body()).getByRole('button', { name: '+ Bullet' }));
+    const field = within(body()).getByRole('textbox', { name: 'Texto do novo bullet' });
+
+    fireEvent.change(field, { target: { value: 'a'.repeat(500) } });
+    fireEvent.blur(field);
+
+    await waitFor(() => expect(api.calls).toEqual([`POST /resume/experiences/${experience(1).id}/bullets`]));
+    expect(api.bodies).toEqual([{ text: 'a'.repeat(500), skillIds: [] }]);
+  });
+
+  it('RES-85 shows the limit and sends nothing when an edited bullet passes 500 characters', async () => {
+    const api = open();
+    fireEvent.click(within(body()).getByRole('button', { name: /^Editar texto do bullet Texto fictício do bullet 1\./ }));
+    const field = within(body()).getByRole('textbox', { name: 'Editar texto do bullet' });
+
+    fireEvent.change(field, { target: { value: 'a'.repeat(501) } });
+    fireEvent.blur(field);
+
+    expect(await within(body()).findByText('Use no máximo 500 caracteres.')).toBeInTheDocument();
+    expect((within(body()).getByRole('textbox', { name: 'Editar texto do bullet' }) as HTMLTextAreaElement).value).toBe('a'.repeat(501));
+    await settle();
+    expect(api.calls).toEqual([]);
+  });
+
+  it('RES-85 sends an edited bullet of exactly 500 characters', async () => {
+    const api = open();
+    fireEvent.click(within(body()).getByRole('button', { name: /^Editar texto do bullet Texto fictício do bullet 1\./ }));
+    const field = within(body()).getByRole('textbox', { name: 'Editar texto do bullet' });
+
+    fireEvent.change(field, { target: { value: 'a'.repeat(500) } });
+    fireEvent.blur(field);
+
+    await waitFor(() => expect(api.calls).toEqual([`PATCH /resume/experiences/${experience(1).id}/bullets/${bullet(1).id}`]));
+    expect(api.bodies).toEqual([{ text: 'a'.repeat(500) }]);
   });
 
   it('RES-83 enables "+ Bullet" at 29 bullets and disables it at 30', () => {

@@ -8,6 +8,7 @@ import { useBulletWrites } from '../hooks/use-bullet-writes';
 import { useReorder } from '../hooks/use-reorder';
 import { announcementsFor, bulletListLabel, bulletName, REORDER_MESSAGES } from '../model/reorder-messages';
 import { itemHeader } from '../model/item-header';
+import { FIELD_MESSAGES } from '../model/field-errors';
 import { BULLET_MESSAGES } from '../model/messages';
 import type { CachedItemOf } from '../model/items';
 import { BulletRow } from './BulletRow';
@@ -35,6 +36,11 @@ function NewBullet({ onCreate, onClose }: { onCreate: (text: string) => Promise<
       onClose();
       return;
     }
+    if (next.length > BULLET_TEXT_MAX_LENGTH) {
+      // Over the limit: the text stays in the field as it was typed or pasted and nothing is sent (RES-85).
+      setFailure(FIELD_MESSAGES.tooLong(BULLET_TEXT_MAX_LENGTH));
+      return;
+    }
     settled.current = true;
     if (await onCreate(next)) {
       onClose();
@@ -52,11 +58,13 @@ function NewBullet({ onCreate, onClose }: { onCreate: (text: string) => Promise<
           aria-label={BULLET_MESSAGES.newText}
           autoFocus
           rows={1}
-          maxLength={BULLET_TEXT_MAX_LENGTH}
           value={text}
           style={{ minHeight: 'var(--spacing-control-md)', resize: 'none', fontSize: 'inherit', lineHeight: 'inherit' }}
           className="field-sizing-content"
-          onChange={(event) => setText(event.target.value.replace(/\r?\n/g, ' '))}
+          onChange={(event) => {
+            setText(event.target.value.replace(/\r?\n/g, ' '));
+            setFailure(null);
+          }}
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
               event.preventDefault();

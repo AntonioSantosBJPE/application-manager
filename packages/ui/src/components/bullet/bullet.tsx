@@ -50,16 +50,24 @@ function Tags({ className, children, ...props }: ComponentProps<'div'>) {
   );
 }
 
+export type BulletActionsProps = ComponentProps<'div'> & {
+  /** Keeps the menu in view at rest; without it, a wide screen shows it only under the pointer or the focus. */
+  alwaysVisible?: boolean;
+};
+
 /**
  * The menu area at the right. On a wide screen it shows while the pointer is over the bullet or the
- * focus is inside it, and it is always there on a touch screen; the caller puts the menu button in it.
+ * focus is inside it (or at rest, with `alwaysVisible`), and it is always there on a touch screen; the
+ * caller puts the menu button in it.
  */
-function Actions({ className, ...props }: ComponentProps<'div'>) {
+function Actions({ alwaysVisible = false, className, ...props }: BulletActionsProps) {
   return (
     <div
       className={join(
-        'flex items-center gap-1 transition-opacity duration-150',
-        'md:opacity-0 md:group-hover/bullet:opacity-100 md:group-focus-within/bullet:opacity-100',
+        'flex items-center gap-1',
+        alwaysVisible
+          ? undefined
+          : 'transition-opacity duration-150 md:opacity-0 md:group-hover/bullet:opacity-100 md:group-focus-within/bullet:opacity-100',
         className,
       )}
       {...props}

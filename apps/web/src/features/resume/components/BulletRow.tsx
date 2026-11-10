@@ -2,6 +2,7 @@ import { BULLET_TEXT_MAX_LENGTH, type Bullet as BulletData, type SkillDictionary
 import { Bullet, Button, DropdownMenu, InlineEdit, SkillTag } from '@am/ui';
 import { Ellipsis } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
+import { FIELD_MESSAGES } from '../model/field-errors';
 import { BULLET_MESSAGES } from '../model/messages';
 
 export interface BulletRowProps {
@@ -27,7 +28,7 @@ export interface BulletRowProps {
 /**
  * A bullet of an experience or project (RES-60, RES-64, RES-65, RES-68, RES-69): the text in `body-lg`, edited
  * where it stands, its skills as tags below, "sem skill" in `warning` when it has none, and the "⋯" menu
- * that shows under the pointer or the focus, also on a bullet with no skill.
+ * at rest on a bullet with a skill (RES-87) and under the pointer or the focus on one with none (RES-69).
  */
 export function BulletRow({
   bullet,
@@ -57,7 +58,7 @@ export function BulletRow({
   }
 
   const menu = (
-    <Bullet.Actions>
+    <Bullet.Actions alwaysVisible={tags.length > 0}>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
           <Button intent="ghost" size="sm" icon={Ellipsis} aria-label={BULLET_MESSAGES.actions} />
@@ -93,7 +94,9 @@ export function BulletRow({
           multiline
           label={BULLET_MESSAGES.editText}
           value={bullet.text}
-          maxLength={BULLET_TEXT_MAX_LENGTH}
+          validate={(text) =>
+            text.trim().length > BULLET_TEXT_MAX_LENGTH ? FIELD_MESSAGES.tooLong(BULLET_TEXT_MAX_LENGTH) : null
+          }
           className="px-0!"
           onCommit={(text) => void commitText(text)}
         />
