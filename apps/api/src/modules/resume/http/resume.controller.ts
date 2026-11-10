@@ -164,4 +164,18 @@ export class ResumeController {
     const section = bulletSectionOf(segment);
     await answering(() => this.resume.deleteBullet(user.id, section, id, bulletId));
   }
+
+  /** All the bullets of the item in the new order; the answer is the ids and nothing else (AD-028, RES-26). */
+  @Roles('member')
+  @Put(':section/:id/bullets/order')
+  orderBullets(
+    @Param('section') segment: string,
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<OrderResponse> {
+    const section = bulletSectionOf(segment);
+    const { ids } = zodBody(orderRequestSchema).transform(body, { type: 'body' }) as OrderRequest;
+    return answering(() => this.resume.orderBullets(user.id, section, id, ids));
+  }
 }

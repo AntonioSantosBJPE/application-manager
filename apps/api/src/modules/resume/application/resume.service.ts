@@ -8,7 +8,7 @@ import { isExactOrder } from '../domain/order.js';
 import type { BulletSection } from '../domain/sections.js';
 import { ResumeRepository, type BulletRecord } from '../infra/resume.repository.js';
 
-type ResumeEventName = 'resume.profile_saved' | 'resume.item_created' | 'resume.item_updated' | 'resume.item_deleted' | 'resume.items_ordered' | 'resume.bullet_created' | 'resume.bullet_updated' | 'resume.bullet_deleted';
+type ResumeEventName = 'resume.profile_saved' | 'resume.item_created' | 'resume.item_updated' | 'resume.item_deleted' | 'resume.items_ordered' | 'resume.bullet_created' | 'resume.bullet_updated' | 'resume.bullet_deleted' | 'resume.bullets_ordered';
 
 /** An item as the API shows it, without the bullets of an experience or a project (AD-028). */
 export type ResumeItem = Record<string, unknown>;
@@ -212,6 +212,22 @@ export class ResumeService {
   async deleteBullet(userId: string, section: BulletSection, itemId: string, bulletId: string): Promise<void> {
     if (!isUuid(itemId) || !isUuid(bulletId) || !(await this.repository.deleteBullet(section, userId, itemId, bulletId))) throw new ResumeNotFoundError();
     this.record('resume.bullet_deleted', bulletId, userId);
+  }
+
+  /**
+   * Saves the order of the bullets of an item, under the lock of the user, like the order of a section (RES-26, RES-27).
+   * An item that is not found answers `404` before the list is looked at.
+   */
+  async orderBullets(userId: string, section: BulletSection, itemId: string, ids: string[]): Promise<OrderResponse> {
+    if (!isUuid(itemId)) throw new ResumeNotFoundError();
+    await this.repository.transaction(async (tx) => {
+      await this.repository.lockUser(tx, userId);
+      if (!(await this.repository.itemExists(section, userId, itemId, tx))) throw new ResumeNotFoundError();
+      if (!isExactOrder(ids, await this.repository.bulletIds(tx, section, userId, itemId))) throw new OrderMismatchError();
+      await this.repository.setBulletOrder(tx, userId, ids);
+    });
+    this.record('resume.bullets_ordered', itemId, userId);
+    return { ids };
   }
 
   /** A bullet and the skills it cites, each described once by the catalog; a skill that is no longer visible drops out without an error (RES-23). */

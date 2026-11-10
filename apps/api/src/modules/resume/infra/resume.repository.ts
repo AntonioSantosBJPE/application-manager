@@ -296,4 +296,22 @@ export class ResumeRepository {
       .returning({ id: bullets.id });
     return rows.length > 0;
   }
+
+  /** The ids of the bullets of an item in the order saved. */
+  async bulletIds(tx: DatabaseExecutor, section: BulletSection, userId: string, itemId: string): Promise<string[]> {
+    const rows = await tx
+      .select({ id: bullets.id })
+      .from(bullets)
+      .where(and(eq(parentColumn(section), itemId), eq(bullets.userId, userId)))
+      .orderBy(asc(bullets.position), asc(bullets.id));
+    return rows.map((row) => row.id);
+  }
+
+  /** Renumbers the bullets `0..n-1` in the order of `ids`, in one statement; the ids were checked as the exact set (RES-26). */
+  async setBulletOrder(tx: DatabaseExecutor, userId: string, ids: string[]): Promise<void> {
+    await tx.execute(sql`
+      update ${bullets} set position = wanted.place - 1
+        from jsonb_array_elements_text(${JSON.stringify(ids)}::jsonb) with ordinality as wanted(id, place)
+       where ${bullets.id} = wanted.id::uuid and ${bullets.userId} = ${userId}`);
+  }
 }

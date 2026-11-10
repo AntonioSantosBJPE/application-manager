@@ -180,6 +180,8 @@ describe('route access', () => {
         'POST /skills/:id/promote',
         // A member replaces the skills of a posting; a product route, not account administration (APP-30).
         'PUT /applications/:id/skills',
+        // A member saves the order of the bullets of an experience or a project of the master resume; a product route, not account administration (RES-26).
+        'PUT /resume/:section/:id/bullets/order',
         // A member saves the order of a section of the master resume; a product route, not account administration (RES-25).
         'PUT /resume/:section/order',
         // A member saves the profile of the master resume; a product route, not account administration (RES-03).

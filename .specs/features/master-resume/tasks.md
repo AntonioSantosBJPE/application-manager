@@ -422,9 +422,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Teste `RES-26`: inverter três bullets responde `{ ids }` e `GET /resume` mostra a ordem
-- [ ] Teste `RES-27` (parte dos bullets): bullet de outro item, a menos, repetido ou de outra conta responde `400` sem mudar a ordem
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Teste `RES-26`: inverter três bullets responde `{ ids }` e `GET /resume` mostra a ordem
+- [x] Teste `RES-27` (parte dos bullets): bullet de outro item, a menos, repetido ou de outra conta responde `400` sem mudar a ordem
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
