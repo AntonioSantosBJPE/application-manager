@@ -194,6 +194,14 @@
 - **Date**: 2026-11-09
 - **Status**: active
 
+### AD-025 (active)
+- **Decision**: O CI mantém o tempo plano quando o projeto cresce. O PR sempre roda lint, typecheck, `pnpm test` (com o cache do turbo entre runs), integração (em shards do Vitest), scan de segredos e actionlint. `test:repo-rules`, E2E e infraestrutura rodam no PR só quando ele muda o que essas suítes provam (`scripts/ci-scopes.sh`), ou com o label `ci:full` ou a variável `CI_FULL=true`. O push na `main` roda tudo uma vez, como gates do deploy: o `ci.yml` deixou de rodar no push. O E2E roda no CI em grupos (`platform` e `browser` em shards, `E2E_GROUP`), cada um com a própria stack, e reaproveita o cache de camadas que o deploy grava. O `test:repo-rules` planta uma violação em cada workspace e roda cada comando da raiz uma vez (`turbo --continue=always`, agora padrão em `pnpm lint` e `pnpm typecheck`). O job `images` saiu: as imagens já são construídas pelo E2E, pela infraestrutura e pelo deploy.
+- **Reason**: O PR levava 6–7 min contra um orçamento de 3 min, com `CI_FULL` ligado, e cada suíte crescia com as features (repo-rules com o número de workspaces, E2E e integração com o número de specs). O usuário pediu ajustes que considerem a evolução do sistema: "não adianta melhorar os números agora, e quando a próxima feature for criada, os tempos piorarem muito".
+- **Trade-off**: Um PR que não toca `apps/`, `packages/` ou `tests/e2e/` não roda o E2E; uma quebra que escape do escopo aparece no push na `main` e segura o deploy. Mais jobs em paralelo gastam mais minutos de runner por PR que mudam código. Com `--continue=always`, `pnpm lint` e `pnpm typecheck` mostram todos os erros, e uma dependência quebrada pode gerar erros em cascata nos workspaces que dependem dela.
+- **Scope**: `.github/workflows/ci.yml`, `.github/actions/*`, `scripts/ci-scopes.sh`, `package.json`, `tests/e2e/playwright.config.ts`, `tooling/guardrails`, `docs/workflow.md`
+- **Date**: 2026-11-10
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: `application` - closed on branch `feat/application`, 2026-11-08.

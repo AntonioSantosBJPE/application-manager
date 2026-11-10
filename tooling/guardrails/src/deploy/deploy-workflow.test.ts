@@ -97,7 +97,8 @@ describe('deploy workflow', () => {
     expect(ciCommands('quality')).toMatch(/^pnpm lint$/m);
     expect(ciCommands('quality')).toMatch(/^pnpm typecheck$/m);
     expect(ciCommands('quality')).toMatch(/^pnpm test$/m);
-    expect(ciCommands('integration')).toMatch(/^pnpm test:integration$/m);
+    // Every shard of the integration tests (the workflow test of ci.yml checks the shards cover 1..n).
+    expect(ciCommands('integration')).toMatch(/^pnpm test:integration -- "--shard=\$SHARD"$/m);
     expect(ciCommands('secrets')).toMatch(/"\$GITLEAKS_IMAGE" git /);
     for (const job of ['quality', 'integration', 'secrets']) expect(ciJobs[job]?.if, `ci job ${job}`).toBeUndefined();
   });

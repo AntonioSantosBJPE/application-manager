@@ -8,9 +8,9 @@
   "scripts": {
     "prepare": "if git rev-parse --git-dir > /dev/null 2>&1; then lefthook install; fi",
     "build": "turbo run build",
-    "lint": "turbo run lint && pnpm lint:boundaries",
+    "lint": "turbo run lint --continue=always && pnpm lint:boundaries",
     "lint:boundaries": "depcruise . --config .dependency-cruiser.cjs --output-type err",
-    "typecheck": "turbo run typecheck",
+    "typecheck": "turbo run typecheck --continue=always",
     "test": "turbo run test --concurrency=4",
     "test:repo-rules": "pnpm --filter @am/guardrails test:repo-rules",
     "test:integration": "turbo run test:integration",

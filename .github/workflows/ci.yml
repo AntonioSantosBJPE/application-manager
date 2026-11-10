@@ -2,15 +2,16 @@ name: CI
 
 on:
   pull_request:
-  push:
-    branches: [main]
-  # deploy.yml calls this workflow as its gates job, so a deploy runs the same checks as the PR.
+    # `labeled` lets the `ci:full` label rerun a pull request with every suite.
+    types: [opened, synchronize, reopened, labeled]
+  # deploy.yml calls this workflow as its gates job on every push to main, so a push to main runs every
+  # suite once, there, and never a second time here.
   workflow_call:
 
-# Unit and integration tests run on every PR. The end-to-end tests and the image builds are off for
-# now (they run locally, see docs/workflow.md) until the first VPS deploy flow exists. They are gated
-# on the repository variable CI_FULL; to turn them back on, set CI_FULL=true (Settings > Secrets and
-# variables > Actions > Variables) or drop the gated `if:` lines.
+# A pull request always runs lint, typecheck, unit, integration, secret scan and workflow lint. The slow
+# suites run when the pull request touches what they prove (scripts/ci-scopes.sh): repository rules,
+# end-to-end and infrastructure. The `ci:full` label, or the repository variable CI_FULL=true, runs them
+# all on a pull request; a deploy (workflow_call) always runs them all. See docs/workflow.md.
 
 # Read-only token for every job; no job asks for more.
 permissions:
@@ -21,6 +22,34 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  scopes:
+    name: Scopes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      repo_rules: ${{ steps.scopes.outputs.repo_rules }}
+      e2e: ${{ steps.scopes.outputs.e2e }}
+      infra: ${{ steps.scopes.outputs.infra }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Decide the suites
+        id: scopes
+        env:
+          EVENT: ${{ github.event_name }}
+          FULL: ${{ vars.CI_FULL == 'true' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "$EVENT" != "pull_request" ] || [ "$FULL" = "true" ]; then
+            printf 'repo_rules=true\ne2e=true\ninfra=true\n' | tee -a "$GITHUB_OUTPUT"
+          else
+            git diff --name-only "$BASE_SHA...$HEAD_SHA" | scripts/ci-scopes.sh | tee -a "$GITHUB_OUTPUT"
+          fi
+
   quality:
     name: Lint and typecheck
     runs-on: ubuntu-latest
@@ -29,107 +58,109 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Enable corepack
-        run: corepack enable
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      # The Storybook project of @am/ui renders every story in headless Chromium.
+      - uses: ./.github/actions/setup
         with:
-          node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      # The storybook project of @am/ui renders every story in headless Chromium.
-      - name: Install Chromium for Storybook tests
-        run: pnpm --filter @am/ui exec playwright install --with-deps chromium
+          chromium: "true"
+      # Turbo's local cache, carried between runs: a workspace whose inputs did not change replays its
+      # lint, typecheck and test instead of running them, so a pull request pays for what it touches.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .turbo/cache
+          key: turbo-quality-${{ github.sha }}
+          restore-keys: turbo-quality-
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
 
   repo-rules:
     name: Repository rules (planted violations)
+    needs: scopes
+    if: ${{ needs.scopes.outputs.repo_rules == 'true' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Enable corepack
-        run: corepack enable
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      # The copy's `pnpm test` renders a story of @am/ui in headless Chromium.
+      - uses: ./.github/actions/setup
         with:
-          node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      # The copy's `pnpm test` renders the stories of @am/ui in headless Chromium.
-      - name: Install Chromium for Storybook tests
-        run: pnpm --filter @am/ui exec playwright install --with-deps chromium
-      # Runs the real root commands over a copy of the repo with a violation planted; slow, so its own job.
+          chromium: "true"
+      # Runs the real root commands over a copy of the repo with violations planted; slow, so its own job.
       - run: pnpm test:repo-rules
 
   integration:
-    name: Integration tests
+    name: Integration tests (${{ matrix.shard }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      # Split by file with Vitest's --shard, each shard on a PostgreSQL of its own. When a shard passes ~2 min,
+      # add an entry and raise the total of every entry (the workflow test requires 1..n).
+      matrix:
+        shard: ["1/2", "2/2"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Enable corepack
-        run: corepack enable
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       # Testcontainers starts PostgreSQL 18 on the runner's Docker.
-      - run: pnpm test:integration
+      - name: Run the integration shard
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: pnpm test:integration -- "--shard=$SHARD"
 
   infra:
     name: Infrastructure tests
-    # Builds the images and rehearses the deploy scripts in containers (minutes, not seconds), so a PR
-    # runs it only with CI_FULL; a push to main, and with it every deploy (deploy.yml calls this
-    # workflow), always runs it.
-    if: ${{ github.event_name != 'pull_request' || vars.CI_FULL == 'true' }}
+    needs: scopes
+    if: ${{ needs.scopes.outputs.infra == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Enable corepack
-        run: corepack enable
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/warm-images
       # Compose of production, backup, restore and the hardening script, on the runner's Docker.
       - run: pnpm --filter @am/guardrails test:infra
 
   e2e:
-    name: End-to-end tests
-    if: ${{ vars.CI_FULL == 'true' }} # off until the VPS flow; see header
+    name: End-to-end tests (${{ matrix.name }})
+    needs: scopes
+    if: ${{ needs.scopes.outputs.e2e == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      # Each entry brings up a stack of its own. The browser specs are split by file with --shard: when they
+      # grow, add an entry and raise the total of every browser shard (see tests/e2e/playwright.config.ts).
+      matrix:
+        include:
+          - { name: platform, group: platform, shard: "" }
+          - { name: browser 1/2, group: browser, shard: "1/2" }
+          - { name: browser 2/2, group: browser, shard: "2/2" }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Enable corepack
-        run: corepack enable
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      - uses: ./.github/actions/setup
         with:
-          node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+          chromium: ${{ matrix.group == 'browser' }}
+      - uses: ./.github/actions/warm-images
       - name: Create .env from the example (placeholder values only)
         run: cp .env.example .env
-      - name: Install Chromium for the browser specs
-        run: pnpm --filter @am/e2e exec playwright install --with-deps chromium
-      - run: pnpm test:e2e
+      - name: Run the specs of the group
+        env:
+          E2E_GROUP: ${{ matrix.group }}
+          E2E_SHARD: ${{ matrix.shard }}
+        run: pnpm test:e2e ${E2E_SHARD:+"--shard=$E2E_SHARD"}
       - name: Upload Playwright results
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: playwright-results
+          name: playwright-results-${{ matrix.group }}-${{ strategy.job-index }}
           path: tests/e2e/test-results/
           if-no-files-found: ignore
           retention-days: 7
@@ -151,20 +182,6 @@ jobs:
           docker run --rm --user "$(id -u):$(id -g)" -v "$PWD:/repo" -w /repo \
             -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/repo \
             "$GITLEAKS_IMAGE" git --no-banner --no-color --redact --verbose /repo
-
-  images:
-    name: Build images
-    if: ${{ vars.CI_FULL == 'true' }} # off until the VPS flow; see header
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Build api image
-        run: docker build --file apps/api/Dockerfile --tag am-api:ci .
-      - name: Build web image
-        run: docker build --file apps/web/Dockerfile --tag am-web:ci .
 
   workflow-lint:
     name: Lint workflows

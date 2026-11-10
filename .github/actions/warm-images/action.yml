@@ -1,0 +1,39 @@
+name: Warm images
+description: >-
+  Makes a BuildKit builder the runner's default and fills it with the layers the deploy publishes, so every
+  later `docker build` and `docker compose up --build` of the job reuses them instead of starting cold.
+
+runs:
+  using: composite
+  steps:
+    # A docker-container builder can read the GitHub Actions cache; `default-load` puts what it builds into
+    # the runner's Docker, as the default builder would. `install` and BUILDX_BUILDER make plain
+    # `docker build` and `docker compose build` go through it.
+    - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      id: buildx
+      with:
+        use: true
+        install: true
+        driver-opts: default-load=true
+    - name: Make the builder the default of the job
+      shell: bash
+      env:
+        BUILDER: ${{ steps.buildx.outputs.name }}
+      run: echo "BUILDX_BUILDER=$BUILDER" >> "$GITHUB_ENV"
+    # Same files and cache scopes as the build job of deploy.yml, which writes them on every push to main;
+    # read only here, so a pull request never evicts the cache of main.
+    - name: Warm the api layers
+      uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+      with:
+        context: .
+        file: apps/api/Dockerfile
+        # Only the builder's cache is filled; the specs build and tag the images themselves.
+        outputs: type=cacheonly
+        cache-from: type=gha,scope=api
+    - name: Warm the web layers
+      uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+      with:
+        context: .
+        file: apps/web/Dockerfile
+        outputs: type=cacheonly
+        cache-from: type=gha,scope=web

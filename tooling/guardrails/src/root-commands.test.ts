@@ -65,6 +65,12 @@ function gitFiles(): string[] {
   return listing.stdout.split('\0').filter((file) => file !== '' && existsSync(join(repoRoot, file)));
 }
 
+/** The tasks turbo lists as failed in the summary of a run (`Failed:    @am/api#lint, @am/web#lint`), sorted. */
+function failedTasks(output: string): string[] {
+  const line = output.split('\n').find((candidate) => /^\s*Failed:\s/.test(candidate));
+  return (line ?? '').replace(/^\s*Failed:\s*/, '').split(',').map((task) => task.trim()).filter(Boolean).sort();
+}
+
 function createCopy(): string {
   const root = mkdtempSync(join(tmpdir(), 'am-root-commands-'));
   for (const file of gitFiles()) {
@@ -88,17 +94,6 @@ describe('root commands', () => {
 
   /** Runs a root script (`pnpm <script> [args]`) in the copy. */
   const pnpm = (...args: string[]) => run('pnpm', args, { cwd: copy, env });
-
-  /** Plants a file in the copy, runs `fn`, and removes the file again. */
-  function planted<T>(file: string, content: string, fn: () => T): T {
-    const path = join(copy, file);
-    writeFileSync(path, content);
-    try {
-      return fn();
-    } finally {
-      rmSync(path, { force: true });
-    }
-  }
 
   /** Plants several files (creating their folders), runs `fn`, and removes what it created. */
   function plantedAll<T>(files: { file: string; content: string }[], fn: () => T): T {
@@ -153,21 +148,25 @@ describe('root commands', () => {
     if (copy) rmSync(copy, { recursive: true, force: true });
   });
 
-  it('pnpm lint runs eslint in every workspace and fails on a violation', () => {
-    // A clean repository passes: nothing but the planted file can make the command fail.
+  it('pnpm lint runs eslint in every workspace and fails on a violation in each', () => {
+    // A clean repository passes: nothing but the planted files can make the command fail.
     const clean = pnpm('lint');
     expect(clean.status, clean.output).toBe(0);
     for (const { name } of workspaces) expect(clean.output, `eslint did not run in ${name}`).toContain(`${name}:lint`);
 
-    for (const { dir, name, source, ext } of workspaces) {
-      const file = `${dir}/${source}/${PLANTED}.${ext}`;
-      const result = planted(file, LINT_VIOLATION, () => pnpm('lint'));
-      expect(result.status, `${name}: ${result.output}`).not.toBe(0);
+    // One violation in every workspace, one run: `turbo --continue` lets each workspace fail on its own, so
+    // the cost stays one lint run however many workspaces there are.
+    const files = workspaces.map(({ dir, source, ext }) => ({ file: `${dir}/${source}/${PLANTED}.${ext}`, content: LINT_VIOLATION }));
+    const result = plantedAll(files, () => pnpm('lint'));
+    expect(result.status, result.output).not.toBe(0);
+    expect(failedTasks(result.output), 'every workspace lint fails').toEqual(workspaces.map(({ name }) => `${name}#lint`).sort());
+    for (const [index, { name }] of workspaces.entries()) {
+      const { file } = files[index]!;
       // The error is reported by that workspace's own eslint run, naming the file.
       const reported = result.output.split('\n').some((line) => line.includes(`${name}:lint`) && line.includes(file));
       expect(reported, `${name} does not name ${file}:\n${result.output}`).toBe(true);
-      expect(result.output).toMatch(/no-debugger/);
     }
+    expect(result.output).toMatch(/no-debugger/);
   }, SLOW);
 
   it('pnpm lint fails an app importing another app naming file and import', () => {
@@ -186,13 +185,16 @@ describe('root commands', () => {
     const clean = pnpm('typecheck');
     expect(clean.status, clean.output).toBe(0);
 
+    // One type error in every workspace, one run (see the lint test).
+    const files = workspaces.map(({ dir, source, ext }) => ({ file: `${dir}/${source}/${PLANTED}.${ext}`, content: TYPE_VIOLATION[ext] }));
+    const result = plantedAll(files, () => pnpm('typecheck'));
+    expect(result.status, result.output).not.toBe(0);
+    const failed = failedTasks(result.output);
     for (const { dir, name, source, ext } of workspaces) {
-      const file = `${dir}/${source}/${PLANTED}.${ext}`;
-      const result = planted(file, TYPE_VIOLATION[ext], () => pnpm('typecheck'));
-      expect(result.status, `${name}: ${result.output}`).not.toBe(0);
-      // tsc prints the path relative to the workspace. Turbo builds a dependency before the dependants'
-      // typecheck, so the error in a package with a build (@am/contracts) is first reported by its build,
-      // which compiles the same files.
+      // Turbo builds a dependency before the dependants' typecheck, so the error in a package with a build
+      // (@am/contracts) is reported by its build, which compiles the same files.
+      expect(failed.includes(`${name}#typecheck`) || failed.includes(`${name}#build`), `${name} has a failed task: ${failed.join(', ')}`).toBe(true);
+      // tsc prints the path relative to the workspace.
       const reported = result.output
         .split('\n')
         .some(
@@ -201,11 +203,11 @@ describe('root commands', () => {
             line.includes(`${source}/${PLANTED}.${ext}`) &&
             /TS2322/.test(line),
         );
-      expect(reported, `${name} does not report a type error in ${file}:\n${result.output}`).toBe(true);
+      expect(reported, `${name} does not report a type error in ${dir}/${source}/${PLANTED}.${ext}:\n${result.output}`).toBe(true);
     }
   }, SLOW);
 
-  it('pnpm test runs vitest in every workspace', () => {
+  it('pnpm test runs vitest in every workspace and fails on a failing test in each', () => {
     // Workspaces holding Vitest test files: the nearest package.json above each *.test.ts(x).
     const owners = new Map<string, string>(workspaces.map((workspace) => [workspace.dir, workspace.name]));
     const expected = new Set<string>();
@@ -229,18 +231,12 @@ describe('root commands', () => {
     expect(tests.map((task) => task.package).sort(), 'workspaces `pnpm test` runs').toEqual([...expected].sort());
     for (const task of tests) expect(task.command, task.package).toMatch(/^vitest run/);
 
-    // And it really runs them. The recursion guard: the guardrails workspace holds this very file, whose
-    // copy would start another copy, so it is left out here (`--filter` is passed through to turbo); the
-    // dry run above already showed it runs `vitest run`.
-    const real = pnpm('test', '--filter=!@am/guardrails');
-    expect(real.status, real.output).toBe(0);
-    for (const name of [...expected].filter((candidate) => candidate !== '@am/guardrails')) {
-      const lines = real.output.split('\n').filter((line) => line.includes(`${name}:test`));
-      expect(lines.some((line) => /Tests\s+\d+ passed/.test(line)), `vitest did not report passing tests in ${name}`).toBe(true);
-    }
-  }, SLOW);
-
-  it('pnpm test fails when a packages/ui story throws', () => {
+    // And it really runs them, and fails on a failing test: one failing test is planted in every workspace
+    // (in @am/ui a story that throws, which its storybook project renders) and `pnpm test` runs, through
+    // turbo, only the planted files (the trailing argument is handed to each `vitest run` as a file filter),
+    // so the cost stays one short run however many tests the workspaces hold. The recursion guard: the
+    // guardrails workspace holds this very file, whose copy would start another copy, so it is left out
+    // here (`--filter` is passed through to turbo); the dry run above already showed it runs `vitest run`.
     const story = `import type { Meta, StoryObj } from '@storybook/react-vite';
 
 function Broken(): never {
@@ -252,10 +248,28 @@ const meta = { title: 'Planted/Broken', component: Broken } satisfies Meta<typeo
 export default meta;
 export const Throws: StoryObj<typeof meta> = {};
 `;
-    // The `test` script of @am/ui, which `pnpm test` runs through turbo (the other workspaces are not in play).
-    const result = planted('packages/ui/src/planted-violation.stories.tsx', story, () => pnpm('test', '--filter=@am/ui'));
-    expect(result.status, result.output).not.toBe(0);
-    expect(result.output).toMatch(/planted story failure/);
-    expect(result.output).toMatch(/planted-violation\.stories\.tsx/);
+    const failingTest = `import { expect, it } from 'vitest';
+
+it('planted test failure', () => {
+  expect('planted').toBe('a pass');
+});
+`;
+    const runners = [...expected].filter((candidate) => candidate !== '@am/guardrails');
+    const files = runners.flatMap((name) => {
+      const { dir, source } = workspaces.find((workspace) => workspace.name === name)!;
+      return name === '@am/ui'
+        ? [{ file: `${dir}/${source}/${PLANTED}.stories.tsx`, content: story }]
+        : [{ file: `${dir}/${source}/${PLANTED}.test.ts`, content: failingTest }];
+    });
+    const real = plantedAll(files, () => pnpm('test', '--filter=!@am/guardrails', '--continue=always', '--', PLANTED));
+    expect(real.status, real.output).not.toBe(0);
+    expect(failedTasks(real.output), 'every workspace test fails').toEqual(runners.map((name) => `${name}#test`).sort());
+    for (const name of runners) {
+      const lines = real.output.split('\n').filter((line) => line.includes(`${name}:test`));
+      expect(lines.some((line) => /Tests\s+1 failed/.test(line)), `vitest did not report the planted failure in ${name}:\n${real.output}`).toBe(true);
+    }
+    expect(real.output).toMatch(/planted story failure/);
+    expect(real.output).toMatch(/planted-violation\.stories\.tsx/);
+    expect(real.output).toMatch(/planted test failure/);
   }, SLOW);
 });

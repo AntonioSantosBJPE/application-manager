@@ -142,10 +142,10 @@ Use um membro fictício (seções 2 a 5). Todos os dados abaixo são inventados.
 | `pnpm lint && pnpm typecheck` | segundos (com cache) | estilo, fronteiras, tipos |
 | `pnpm test` | ~10 s com cache | unitários, componentes e stories em Chromium |
 | `pnpm test:integration` | ~40 s | API contra PostgreSQL (precisa de Docker) |
-| `pnpm test:e2e` | ~2 a 3 min | stack real do compose + navegador (fora do CI por enquanto) |
+| `pnpm test:e2e` | ~3 a 5 min | stack real do compose + navegador |
 | `pnpm test:repo-rules` | ~1 min | regras do repositório com violações plantadas |
 
-No CI de cada PR rodam lint, tipos, `pnpm test`, integração, `test:repo-rules` e o scan de segredos.
+No CI de cada PR rodam sempre lint, tipos, `pnpm test`, integração e o scan de segredos; `test:repo-rules`, E2E e infraestrutura rodam quando o PR muda o que eles provam, e todos rodam no push na `main`, antes do deploy (`docs/workflow.md`, seção "Gates e tempo").
 
 O E2E de candidaturas grava as três imagens das telas (`PageApplications`, `PageNewApplication` e `PageApplicationDetail`, 1280 × 800) na pasta de saída do Playwright (`tests/e2e/test-results`, ignorada pelo git), então um `pnpm test:e2e` comum deixa a árvore limpa. Para renovar as imagens versionadas em `.specs/features/application/captures/*.running.png`, rode `CAPTURE=1 pnpm test:e2e`.
 
