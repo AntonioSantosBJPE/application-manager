@@ -246,8 +246,8 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes `RES-03` a `RES-06`: primeira gravação cria, segunda atualiza a mesma linha; textos aparados; campos vazios aceitos; cada recusa do `RES-05` responde `400` com o `path` e não grava
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Testes `RES-03` a `RES-06`: primeira gravação cria, segunda atualiza a mesma linha; textos aparados; campos vazios aceitos; cada recusa do `RES-05` responde `400` com o `path` e não grava
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

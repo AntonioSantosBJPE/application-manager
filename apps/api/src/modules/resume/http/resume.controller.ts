@@ -1,5 +1,6 @@
-import type { MasterResume } from '@am/contracts';
-import { Controller, Get } from '@nestjs/common';
+import { saveProfileRequestSchema, type MasterResume, type Profile, type SaveProfileRequest } from '@am/contracts';
+import { Body, Controller, Get, Put } from '@nestjs/common';
+import { zodBody } from '../../../infra/http/zod-body.pipe.js';
 import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
 import { ResumeService } from '../application/resume.service.js';
 
@@ -12,5 +13,11 @@ export class ResumeController {
   @Get()
   get(@CurrentUser() user: AuthenticatedUser): Promise<MasterResume> {
     return this.resume.get(user.id);
+  }
+
+  @Roles('member')
+  @Put('profile')
+  saveProfile(@Body(zodBody(saveProfileRequestSchema)) body: SaveProfileRequest, @CurrentUser() user: AuthenticatedUser): Promise<Profile> {
+    return this.resume.saveProfile(user.id, body);
   }
 }

@@ -1,7 +1,11 @@
-import type { Bullet, MasterResume, Profile, SkillDictionary } from '@am/contracts';
-import { Injectable } from '@nestjs/common';
+import type { Bullet, MasterResume, Profile, SaveProfileRequest, SkillDictionary } from '@am/contracts';
+import { Inject, Injectable } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
+import { CLOCK, type Clock } from '../../../infra/clock/clock.js';
 import { SkillsCatalog } from '../../skills/index.js';
 import { ResumeRepository, type BulletRecord } from '../infra/resume.repository.js';
+
+type ResumeEventName = 'resume.profile_saved';
 
 /** What a member without a profile row sees: every field empty and the only locale there is (RES-01). */
 const EMPTY_PROFILE: Profile = {
@@ -21,7 +25,17 @@ export class ResumeService {
   constructor(
     private readonly repository: ResumeRepository,
     private readonly skills: SkillsCatalog,
+    @Inject(CLOCK) private readonly clock: Clock,
+    private readonly logger: PinoLogger,
   ) {}
+
+  /**
+   * One structured event per write: the action, the resource and the person, and nothing typed by the
+   * person: no name, e-mail, phone, location, link, summary, bullet text, description or URL (RES-33).
+   */
+  private record(event: ResumeEventName, resourceId: string, actorId: string): void {
+    this.logger.info({ event, resourceId, actorId });
+  }
 
   /** The whole resume with every skill cited once in the dictionary; writes nothing, so a first visit leaves no row (RES-01, RES-02). */
   async get(userId: string): Promise<MasterResume> {
@@ -47,5 +61,12 @@ export class ResumeService {
       languages: record.languages,
       skills,
     };
+  }
+
+  /** Creates the profile on the first save and updates it after; the texts arrive trimmed by the contract (RES-03, RES-04). */
+  async saveProfile(userId: string, body: SaveProfileRequest): Promise<Profile> {
+    const profile = await this.repository.upsertProfile(userId, body, this.clock.now());
+    this.record('resume.profile_saved', userId, userId);
+    return profile;
   }
 }

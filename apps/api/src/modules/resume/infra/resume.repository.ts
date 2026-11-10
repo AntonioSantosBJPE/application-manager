@@ -95,4 +95,16 @@ export class ResumeRepository {
       bullets: bulletRows.map(({ id, text, skillIds, experienceId, projectId }) => ({ id, text, skillIds, experienceId, projectId })),
     };
   }
+
+  /** One profile per user: the first save inserts, the next ones update the same row (RES-03, RES-06). */
+  async upsertProfile(userId: string, profile: ProfileRecord, now: Date): Promise<ProfileRecord> {
+    const values = { ...profile, updatedAt: now };
+    const [row] = await this.db
+      .insert(profiles)
+      .values({ userId, ...values })
+      .onConflictDoUpdate({ target: profiles.userId, set: values })
+      .returning();
+    const { fullName, headline, email, phone, location, links, summary } = row!;
+    return { fullName, headline, email, phone, location, links, summary, locale: 'pt-BR' };
+  }
 }
