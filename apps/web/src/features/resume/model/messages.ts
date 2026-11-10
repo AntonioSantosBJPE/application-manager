@@ -40,3 +40,10 @@ export const LINK_MESSAGES = {
   /** The name of the button that removes the row `n`. */
   remove: (n: number) => `Remover link ${n}`,
 } as const;
+
+/** The names of the controls of an item, each saying which item it is about (RES-54, RES-56). */
+export const ITEM_MESSAGES = {
+  edit: (title: string) => `Editar ${title}`,
+  expand: (title: string) => `Expandir ${title}`,
+  bullets: (title: string) => `Bullets de ${title}`,
+} as const;

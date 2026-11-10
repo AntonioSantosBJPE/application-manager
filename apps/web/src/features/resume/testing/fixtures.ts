@@ -1,4 +1,4 @@
-import type { Bullet, Experience, MasterResume, Profile, Project } from '@am/contracts';
+import type { Bullet, Certification, Education, Experience, Language, MasterResume, Profile, Project } from '@am/contracts';
 
 export const uuid = (n: number) => `0190a5b4-7c3a-7c8e-9f2a-${String(n).padStart(12, '0')}`;
 
@@ -30,6 +30,32 @@ export function experience(n: number, overrides: Partial<Experience> = {}): Expe
 
 export function project(n: number, overrides: Partial<Project> = {}): Project {
   return { id: uuid(200 + n), name: `Projeto Fictício ${n}`, url: null, description: null, bullets: [], ...overrides };
+}
+
+export function education(n: number, overrides: Partial<Education> = {}): Education {
+  return {
+    id: uuid(400 + n),
+    course: `Curso Fictício ${n}`,
+    institution: `Instituição Fictícia ${n}`,
+    startDate: '2018-02',
+    endDate: '2021-12',
+    ...overrides,
+  };
+}
+
+export function certification(n: number, overrides: Partial<Certification> = {}): Certification {
+  return {
+    id: uuid(600 + n),
+    name: `Certificação Fictícia ${n}`,
+    issuer: `Emissor Fictício ${n}`,
+    issuedOn: '2022-06',
+    url: null,
+    ...overrides,
+  };
+}
+
+export function language(n: number, overrides: Partial<Language> = {}): Language {
+  return { id: uuid(700 + n), language: `Idioma Fictício ${n}`, level: 'advanced', ...overrides };
 }
 
 export function profile(overrides: Partial<Profile> = {}): Profile {

@@ -8,6 +8,7 @@ import type { ProfileApi } from '../hooks/use-profile-save';
 import { SavedAtProvider } from '../hooks/saved-at';
 import { RESUME_MESSAGES } from '../model/messages';
 import { SECTION_LABELS, type PageSection } from '../model/sections';
+import { ItemsSection } from './ItemsSection';
 import { ProfileSection } from './ProfileSection';
 import { ResumeIndex } from './ResumeIndex';
 import { SavedAt } from './SavedAt';
@@ -116,11 +117,13 @@ export function ResumePage({ outcome, section, api, onSectionChange, onExpired }
       <Frame indexed>
         <ResumeIndex resume={resume.data} section={section} onSelect={onSectionChange} />
         <FormPage.Content>
-          <FormPage.Section title={SECTION_LABELS[section]}>
-            {section === 'profile' ? (
+          {section === 'profile' ? (
+            <FormPage.Section title={SECTION_LABELS.profile}>
               <ProfileSection profile={resume.data.profile} api={api} onExpired={onExpired} />
-            ) : null}
-          </FormPage.Section>
+            </FormPage.Section>
+          ) : (
+            <ItemsSection section={section} items={resume.data[section]} />
+          )}
         </FormPage.Content>
       </Frame>
     </SavedAtProvider>

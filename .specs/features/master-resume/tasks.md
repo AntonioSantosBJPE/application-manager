@@ -712,8 +712,8 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes `RES-39`, `RES-49`, `RES-50`, `RES-56` e `RES-82`; o primeiro item com bullets abre expandido
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes `RES-39`, `RES-49`, `RES-50`, `RES-56` e `RES-82`; o primeiro item com bullets abre expandido
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
