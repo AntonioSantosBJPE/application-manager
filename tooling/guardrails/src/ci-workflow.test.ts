@@ -126,7 +126,7 @@ describe('ci workflow', () => {
     expect(actionSources.setup).toMatch(/^\s*run: pnpm install --frozen-lockfile$/m);
     expect(calls('quality', 'setup', { chromium: 'true' })).toBe(true);
     expect(calls('repo-rules', 'setup', { chromium: 'true' })).toBe(true);
-    expect(calls('e2e', 'setup', { chromium: "${{ matrix.group == 'browser' }}" })).toBe(true);
+    expect(calls('e2e', 'setup', { chromium: 'true' })).toBe(true);
     for (const job of ['infra', 'e2e']) expect(calls(job, 'warm-images'), job).toBe(true);
     // The warm-up reads the cache scopes the deploy writes, and never writes them from a pull request.
     for (const scope of ['api', 'web']) expect(actionSources['warm-images']).toContain(`cache-from: type=gha,scope=${scope}`);

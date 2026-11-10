@@ -139,15 +139,17 @@ jobs:
       matrix:
         include:
           - { name: platform, group: platform, shard: "" }
-          - { name: browser 1/2, group: browser, shard: "1/2" }
-          - { name: browser 2/2, group: browser, shard: "2/2" }
+          - { name: browser 1/3, group: browser, shard: "1/3" }
+          - { name: browser 2/3, group: browser, shard: "2/3" }
+          - { name: browser 3/3, group: browser, shard: "3/3" }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # Every group opens a browser: the disruption specs of `platform` read the screens too.
       - uses: ./.github/actions/setup
         with:
-          chromium: ${{ matrix.group == 'browser' }}
+          chromium: "true"
       - uses: ./.github/actions/warm-images
       - name: Create .env from the example (placeholder values only)
         run: cp .env.example .env
