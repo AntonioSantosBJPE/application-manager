@@ -205,3 +205,131 @@ describe('InlineEdit', () => {
     expect(screen.getByRole('button', { name: 'Editar link da vaga —' })).toBeInTheDocument();
   });
 });
+
+function MultilineHarness({
+  initial = 'Reduziu o tempo de resposta da API em 40%.',
+  onCommit = vi.fn(),
+  onSubmit = vi.fn(),
+}: {
+  initial?: string;
+  onCommit?: (value: string) => void;
+  onSubmit?: () => void;
+}) {
+  const [value, setValue] = useState(initial);
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
+    >
+      <InlineEdit
+        multiline
+        value={value}
+        label="Editar texto"
+        emptyText="Sem texto"
+        maxLength={500}
+        onCommit={(next) => {
+          setValue(next);
+          onCommit(next);
+        }}
+      />
+      <button type="button">Depois</button>
+    </form>
+  );
+}
+
+const multilineDisplay = () => screen.getByRole('button', { name: /^Editar texto / });
+const multilineField = () => screen.getByRole('textbox', { name: 'Editar texto' });
+
+describe('InlineEdit multiline', () => {
+  it('RES-64 shows the value on a button that wraps instead of truncating, named by the caller', () => {
+    render(<MultilineHarness />);
+
+    expect(multilineDisplay()).toHaveAccessibleName('Editar texto Reduziu o tempo de resposta da API em 40%.');
+    expect(multilineDisplay().querySelector('.truncate')).toBeNull();
+    expect(multilineDisplay()).toHaveClass('min-h-control-md');
+    expect(multilineDisplay()).not.toHaveClass('h-control-md');
+  });
+
+  it('RES-64 opens a textarea with the value, the focus, the text selected and the props of the input', async () => {
+    const user = userEvent.setup();
+    render(<MultilineHarness />);
+
+    await user.click(multilineDisplay());
+
+    expect(multilineField().tagName).toBe('TEXTAREA');
+    expect(multilineField()).toHaveValue('Reduziu o tempo de resposta da API em 40%.');
+    expect(multilineField()).toHaveFocus();
+    expect((multilineField() as HTMLTextAreaElement).selectionStart).toBe(0);
+    expect((multilineField() as HTMLTextAreaElement).selectionEnd).toBe(42);
+    expect(multilineField()).toHaveAttribute('maxlength', '500');
+    expect(multilineField()).toHaveClass('field-sizing-content');
+  });
+
+  it('RES-64 commits once with Enter, puts no line break in the text and does not submit the form', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    const onSubmit = vi.fn();
+    render(<MultilineHarness onCommit={onCommit} onSubmit={onSubmit} />);
+    await user.click(multilineDisplay());
+
+    await user.keyboard('Texto novo{Enter}');
+
+    expect(onCommit).toHaveBeenCalledTimes(1);
+    expect(onCommit).toHaveBeenCalledWith('Texto novo');
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(multilineDisplay()).toHaveTextContent('Texto novo');
+    expect(multilineDisplay()).toHaveFocus();
+  });
+
+  it('RES-64 turns a pasted line break into a space', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(<MultilineHarness onCommit={onCommit} />);
+    await user.click(multilineDisplay());
+
+    await user.paste('linha um\nlinha dois');
+    await user.tab();
+
+    expect(onCommit).toHaveBeenCalledWith('linha um linha dois');
+  });
+
+  it('RES-64 commits once when the focus leaves the field and leaves the focus where it went', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(<MultilineHarness onCommit={onCommit} />);
+    await user.click(multilineDisplay());
+
+    await user.keyboard('Outro texto');
+    await user.click(screen.getByRole('button', { name: 'Depois' }));
+
+    expect(onCommit).toHaveBeenCalledTimes(1);
+    expect(onCommit).toHaveBeenCalledWith('Outro texto');
+    expect(screen.getByRole('button', { name: 'Depois' })).toHaveFocus();
+  });
+
+  it('RES-64 drops the edit on Esc: no commit, the saved text is back and the button has the focus', async () => {
+    const user = userEvent.setup();
+    const onCommit = vi.fn();
+    render(<MultilineHarness onCommit={onCommit} />);
+    await user.click(multilineDisplay());
+
+    await user.keyboard('descartado{Escape}');
+
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(multilineDisplay()).toHaveTextContent('Reduziu o tempo de resposta da API em 40%.');
+    expect(multilineDisplay()).toHaveFocus();
+  });
+
+  it('RES-64 shows the empty text while the value is empty and marks the textarea invalid when told', async () => {
+    const user = userEvent.setup();
+    render(<InlineEdit multiline value="" label="Editar texto" emptyText="Sem texto" invalid onCommit={() => {}} />);
+
+    expect(multilineDisplay()).toHaveAccessibleName('Editar texto Sem texto');
+    await user.click(multilineDisplay());
+
+    expect(multilineField()).toHaveAttribute('aria-invalid', 'true');
+  });
+});

@@ -487,9 +487,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes do modo `multiline` (confirmar, sair do campo, `Esc`, crescer) e os testes atuais sem mudança
-- [ ] Story do modo `multiline`
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes do modo `multiline` (confirmar, sair do campo, `Esc`, crescer) e os testes atuais sem mudança
+- [x] Story do modo `multiline`
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

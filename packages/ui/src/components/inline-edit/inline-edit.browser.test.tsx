@@ -92,3 +92,62 @@ describe('InlineEdit in the browser', () => {
     }
   });
 });
+
+describe('InlineEdit multiline in the browser', () => {
+  const longText =
+    'Reduziu o tempo de resposta da API de pedidos em 40% ao trocar consultas repetidas por um cache e medir o ganho com testes de carga em cada entrega.';
+
+  function MultilineHarness() {
+    const [value, setValue] = useState('Texto curto');
+    return (
+      <div className="w-80 bg-surface p-4 text-body">
+        <InlineEdit multiline value={value} label="Editar texto" onCommit={setValue} />
+      </div>
+    );
+  }
+  const button = () => screen.getByRole('button', { name: /^Editar texto / });
+  const area = () => screen.getByRole('textbox', { name: 'Editar texto' });
+
+  it('RES-64 grows the textarea with the text and keeps the button as tall as the wrapped text', async () => {
+    render(<MultilineHarness />);
+    const short = button().getBoundingClientRect().height;
+    expect(short).toBeGreaterThanOrEqual(32);
+
+    await userEvent.click(button());
+    expect(area().getBoundingClientRect().height).toBe(short);
+    await userEvent.keyboard(longText);
+    const grown = area().getBoundingClientRect().height;
+    expect(grown).toBeGreaterThan(short * 2);
+
+    await userEvent.keyboard('{Enter}');
+    expect(button().getBoundingClientRect().height).toBe(grown);
+    expect(button().textContent).toContain(longText);
+  });
+
+  it('RES-64 edits with real keys: Enter confirms without a line break, Esc restores, in both themes without axe violations', async () => {
+    render(<MultilineHarness />);
+    await userEvent.click(button());
+    await userEvent.keyboard('Novo texto{Enter}');
+    expect(button().textContent).toContain('Novo texto');
+
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard('descartado{Escape}');
+    expect(button().textContent).toContain('Novo texto');
+    expect(document.activeElement).toBe(button());
+
+    for (const theme of ['light', 'dark']) {
+      document.documentElement.setAttribute('data-theme', theme);
+      await settle(button());
+      expect(await axeViolations(button().parentElement!), theme).toEqual([]);
+    }
+    await userEvent.keyboard('{Enter}');
+    for (const theme of ['light', 'dark']) {
+      document.documentElement.setAttribute('data-theme', theme);
+      await settle(area());
+      const ring = focusRing(area());
+      expect(ring.drawn, theme).toBe(true);
+      expect(ring.isFocusToken, theme).toBe(true);
+      expect(await axeViolations(area().parentElement!.parentElement!), theme).toEqual([]);
+    }
+  });
+});

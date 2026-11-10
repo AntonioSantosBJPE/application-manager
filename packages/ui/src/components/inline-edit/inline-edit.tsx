@@ -30,14 +30,22 @@ export type InlineEditProps = Omit<
   emptyText?: ReactNode;
   /** Marks the field invalid while it is being edited, as a `Field.Root` does. */
   invalid?: boolean;
+  /**
+   * A sentence that wraps: the value is shown over as many lines as it needs, and it is edited in a
+   * `textarea` that grows with the text. `Enter` still confirms, and a line break never enters the text
+   * (typed or pasted), so it stays one paragraph. The type size is the parent's, so the caller sets it
+   * (`text-body-lg`) around the field.
+   */
+  multiline?: boolean;
 };
 
 /**
  * A value that is edited where it stands (APP-68): a button that reads like text, and on click turns into a
  * `Field.Control` with the focus in it and the text selected. `Enter` or leaving the field calls
  * `onCommit` with the text; `Esc` drops the edit, brings back the saved value and puts the focus on the
- * button again. Both states are `control-md` tall, so the line does not jump. The props of the input
- * (`maxLength`, `placeholder`, `id`) go to the field; every word comes from the caller.
+ * button again. Both states are `control-md` tall, so the line does not jump (`multiline` is at least that
+ * tall and grows). The props of the input (`maxLength`, `placeholder`, `id`) go to the field; every word
+ * comes from the caller.
  */
 export function InlineEdit({
   value,
@@ -46,6 +54,7 @@ export function InlineEdit({
   emptyText,
   visibleFrom,
   invalid = false,
+  multiline = false,
   className,
   ...inputProps
 }: InlineEditProps) {
@@ -53,19 +62,21 @@ export function InlineEdit({
   const [draft, setDraft] = useState(value);
   const button = useRef<HTMLButtonElement>(null);
   const input = useRef<HTMLInputElement>(null);
+  const textarea = useRef<HTMLTextAreaElement>(null);
   // Set once the edit is settled by Enter or Esc, so the blur that follows does not settle it again.
   const settled = useRef(false);
   const restoreFocus = useRef(false);
 
   useEffect(() => {
     if (editing) {
-      input.current?.focus();
-      input.current?.select();
+      const field = multiline ? textarea.current : input.current;
+      field?.focus();
+      field?.select();
     } else if (restoreFocus.current) {
       restoreFocus.current = false;
       button.current?.focus();
     }
-  }, [editing]);
+  }, [editing, multiline]);
 
   function start() {
     settled.current = false;
@@ -82,7 +93,7 @@ export function InlineEdit({
     else setDraft(value);
   }
 
-  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+  function handleKeyDown(event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) {
     if (event.key === 'Enter') {
       // The field may sit inside a form; confirming the edit must not submit it.
       event.preventDefault();
@@ -102,7 +113,8 @@ export function InlineEdit({
         type="button"
         onClick={start}
         className={join(
-          'flex h-control-md w-full min-w-0 cursor-text items-center rounded-sm px-2 text-left text-body',
+          'flex w-full min-w-0 cursor-text items-center rounded-sm px-2 text-left',
+          multiline ? 'min-h-control-md border border-transparent py-1.5 break-words' : 'h-control-md text-body',
           'transition-colors duration-150 hover:bg-surface-hover',
           'outline-focus focus-visible:outline-2 focus-visible:-outline-offset-1',
           empty ? 'text-text-muted' : 'text-text',
@@ -110,7 +122,7 @@ export function InlineEdit({
         )}
       >
         <span className="sr-only">{label}</span>{' '}
-        <span className="min-w-0 truncate">
+        <span className={multiline ? 'min-w-0' : 'min-w-0 truncate'}>
           {empty ? (
             emptyText
           ) : (
@@ -121,6 +133,32 @@ export function InlineEdit({
           )}
         </span>
       </button>
+    );
+  }
+
+  if (multiline) {
+    return (
+      <Field.Root invalid={invalid} className={className}>
+        <Field.Textarea
+          {...(inputProps as ComponentProps<'textarea'>)}
+          ref={textarea}
+          aria-label={label}
+          rows={1}
+          value={draft}
+          // The styles beat the defaults of `Field.Textarea` (88px tall, resizable, `body` size); the type
+          // size comes from the parent, as it does on the button, and `field-sizing` makes the box follow its text.
+          style={{
+            minHeight: 'var(--spacing-control-md)',
+            resize: 'none',
+            fontSize: 'inherit',
+            lineHeight: 'inherit',
+          }}
+          className="field-sizing-content"
+          onChange={(event) => setDraft(event.target.value.replace(/\r?\n/g, ' '))}
+          onKeyDown={handleKeyDown}
+          onBlur={() => finish(true, false)}
+        />
+      </Field.Root>
     );
   }
 
