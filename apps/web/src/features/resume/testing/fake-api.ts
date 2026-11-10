@@ -85,6 +85,18 @@ export function fakeResume(server: SetupServer, initial: MasterResume) {
       // The api answers an item without its bullets (AD-028).
       return HttpResponse.json(Object.fromEntries(Object.entries(item).filter(([key]) => key !== 'bullets')));
     }),
+    http.delete(`${apiInternalUrl}/resume/:section/:id`, async ({ params }) => {
+      const section = params.section as ResumeSection;
+      calls.push(`DELETE /resume/${section}/${String(params.id)}`);
+      await waitFor('delete');
+      const failure = failed('delete');
+      if (failure !== undefined) return failure;
+      const items = state.resume[section] as { id: string }[];
+      const at = items.findIndex((candidate) => candidate.id === params.id);
+      if (at === -1) return problem(404);
+      items.splice(at, 1);
+      return new HttpResponse(null, { status: 204 });
+    }),
     http.put(`${apiInternalUrl}/resume/:section/order`, async ({ params, request }) => {
       calls.push(`PUT /resume/${String(params.section)}/order`);
       const body = (await request.json()) as { ids: string[] };
@@ -118,8 +130,8 @@ export function fakeResume(server: SetupServer, initial: MasterResume) {
     state,
     calls,
     bodies,
-    fail: (name: 'load' | 'order' | 'profile' | 'create' | 'update', how: Failure) => failures.set(name, how),
-    hold(name: 'load' | 'order' | 'profile' | 'create' | 'update') {
+    fail: (name: 'load' | 'order' | 'profile' | 'create' | 'update' | 'delete', how: Failure) => failures.set(name, how),
+    hold(name: 'load' | 'order' | 'profile' | 'create' | 'update' | 'delete') {
       let release = () => {};
       holds.set(name, new Promise<void>((resolve) => (release = resolve)));
       return () => {

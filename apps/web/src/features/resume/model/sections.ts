@@ -69,6 +69,15 @@ export const DELETE_ITEM_LABELS: Record<ResumeSection, string> = {
   languages: 'Excluir idioma',
 };
 
+/** What the confirmation says is lost: an experience or a project takes its bullets with it (RES-57). */
+export const DELETE_ITEM_DESCRIPTIONS: Record<ResumeSection, string> = {
+  experiences: 'A experiência e os bullets dela serão excluídos. Não dá para desfazer.',
+  projects: 'O projeto e os bullets dele serão excluídos. Não dá para desfazer.',
+  educations: 'A formação será excluída. Não dá para desfazer.',
+  certifications: 'A certificação será excluída. Não dá para desfazer.',
+  languages: 'O idioma será excluído. Não dá para desfazer.',
+};
+
 /** The title of the confirmation before an item is removed (RES-57). */
 export const DELETE_ITEM_TITLES: Record<ResumeSection, string> = {
   experiences: 'Excluir experiência?',

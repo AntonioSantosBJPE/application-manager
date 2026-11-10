@@ -9,6 +9,7 @@ import type { Outcome } from '../../../lib/bff';
 import { itemHeader } from '../model/item-header';
 import { NEW_ITEM_TITLES } from '../model/item-fields';
 import { ITEM_MESSAGES } from '../model/messages';
+import { DeleteItem } from './DeleteItem';
 import { ItemFields } from './ItemFields';
 
 export interface ItemCardProps<S extends ResumeSection> {
@@ -111,6 +112,7 @@ export function ItemCard<S extends ResumeSection>({
             onCreated={onCreated}
             autoFocus={item === undefined}
           />
+          {item === undefined ? null : <DeleteItem section={section} id={item.id} api={api} onExpired={onExpired} />}
         </FormPage.ItemBody>
       ) : null}
       {collapsible && expanded ? (

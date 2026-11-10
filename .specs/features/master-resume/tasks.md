@@ -753,8 +753,8 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes `RES-57` e `RES-58`: título e botões exatos; confirmar tira o item e atualiza contagem e Alert; cancelar não envia
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes `RES-57` e `RES-58`: título e botões exatos; confirmar tira o item e atualiza contagem e Alert; cancelar não envia
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

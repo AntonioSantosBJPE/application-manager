@@ -5,6 +5,8 @@ export const RESUME_MESSAGES = {
   saveFailed: 'Não foi possível salvar. Tente de novo.',
   /** When the new order could not be saved and the list went back to the one before (RES-74). */
   reorderFailed: 'Não foi possível salvar a nova ordem.',
+  /** Under the button that removes an item the api did not remove (RES-58). */
+  deleteFailed: 'Não foi possível excluir. Tente de novo.',
   loadFailed: 'Não foi possível carregar o currículo.',
   retry: 'Tentar de novo',
   /** The name of the index of sections, for assistive technology. */
@@ -47,3 +49,6 @@ export const ITEM_MESSAGES = {
   expand: (title: string) => `Expandir ${title}`,
   bullets: (title: string) => `Bullets de ${title}`,
 } as const;
+
+/** The words of the confirmation before an item is removed (RES-57). */
+export const DELETE_DIALOG = { confirm: 'Excluir', cancel: 'Cancelar' } as const;

@@ -19,6 +19,7 @@ import { SavedAtContext } from './saved-at';
 export interface ItemsApi {
   createItem: <S extends ResumeSection>(section: S, body: CreateItemBodies[S]) => Promise<Outcome<ItemOf[S]>>;
   updateItem: <S extends ResumeSection>(section: S, id: string, body: UpdateItemBodies[S]) => Promise<Outcome<ItemOf[S]>>;
+  deleteItem: (section: ResumeSection, id: string) => Promise<Outcome<undefined>>;
 }
 
 export interface ItemFormOptions<S extends ResumeSection> {
