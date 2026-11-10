@@ -443,10 +443,10 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes `RES-28` a `RES-30`: cada rota responde `401` sem sessão e `403` ao admin; com ids da conta A, a conta B recebe `404` e o snapshot das sete tabelas não muda; `userId` no corpo é ignorado
-- [ ] Teste `RES-32`: nenhum arquivo de `modules/resume` importa de `modules/skills` fora de `index.ts`
-- [ ] Teste `RES-33`: uma rodada por todas as escritas registra `event`, id e `actorId`, e nenhuma linha de log contém os textos fictícios usados
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Testes `RES-28` a `RES-30`: cada rota responde `401` sem sessão e `403` ao admin; com ids da conta A, a conta B recebe `404` e o snapshot das sete tabelas não muda; `userId` no corpo é ignorado
+- [x] Teste `RES-32`: nenhum arquivo de `modules/resume` importa de `modules/skills` fora de `index.ts`
+- [x] Teste `RES-33`: uma rodada por todas as escritas registra `event`, id e `actorId`, e nenhuma linha de log contém os textos fictícios usados
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full
