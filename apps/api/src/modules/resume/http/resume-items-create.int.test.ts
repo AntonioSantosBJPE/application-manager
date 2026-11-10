@@ -21,14 +21,16 @@ const schemas = {
 
 const SECTIONS = ['experiences', 'projects', 'educations', 'certifications', 'languages'] as const;
 
-/** 49 rows straight into a section of one user, so a test reaches the limit without 49 requests. */
-const fill = (env: ResumeEnv, userId: string, count: number) =>
-  query(
-    env.databaseUrl,
-    `insert into resume.experiences (user_id, role, company, start_date, position)
-     select $1, 'Cargo Fictício', 'Empresa Fictícia ' || n, '2020-01-01', n from generate_series(1, $2::int) as n`,
-    [userId, count],
-  );
+/** `count` rows straight into a section of one user, so a test reaches the limit without 50 requests. */
+const FILL: Record<(typeof SECTIONS)[number], string> = {
+  experiences: "insert into resume.experiences (user_id, role, company, start_date, position) select $1, 'Cargo Fictício', 'Empresa Fictícia ' || n, '2020-01-01', n from generate_series(1, $2::int) as n",
+  projects: "insert into resume.projects (user_id, name, position) select $1, 'Projeto Fictício ' || n, n from generate_series(1, $2::int) as n",
+  educations: "insert into resume.educations (user_id, course, institution, start_date, position) select $1, 'Curso Fictício ' || n, 'Instituição Fictícia', '2015-02-01', n from generate_series(1, $2::int) as n",
+  certifications: "insert into resume.certifications (user_id, name, position) select $1, 'Certificação Fictícia ' || n, n from generate_series(1, $2::int) as n",
+  languages: "insert into resume.languages (user_id, language, level, position) select $1, 'Idioma Fictício ' || n, 'basic', n from generate_series(1, $2::int) as n",
+};
+const fill = (env: ResumeEnv, userId: string, count: number, section: (typeof SECTIONS)[number] = 'experiences') =>
+  query(env.databaseUrl, FILL[section], [userId, count]);
 
 describe('POST /resume/:section', () => {
   it('RES-07 answers 201 with the item and puts it first in its section, for each of the five sections', async () => {
@@ -106,19 +108,21 @@ describe('POST /resume/:section', () => {
     });
   });
 
-  it('RES-13 answers 422 in Problem Details on the 51st item of a section and writes nothing', async () => {
-    await withResumeEnv('res_item_create_limit', async (env) => {
-      await fill(env, env.ana.id, 50);
+  it.each(SECTIONS)('RES-13 answers 422 in Problem Details on the 51st item of %s and writes nothing', async (section) => {
+    await withResumeEnv(`res_item_create_limit_${section}`, async (env) => {
+      await fill(env, env.ana.id, 50, section);
 
-      const response = await call(env, env.ana, 'POST', '/resume/experiences', bodies.experiences);
+      const response = await call(env, env.ana, 'POST', `/resume/${section}`, bodies[section]);
 
       expect(response.status).toBe(422);
       expect(response.headers.get('content-type')).toContain('application/problem+json');
       expect(problemDetailsSchema.parse(await response.json()).status).toBe(422);
-      expect((await resumeRowCounts(env.databaseUrl)).experiences).toBe(50);
+      expect((await resumeRowCounts(env.databaseUrl))[section]).toBe(50);
       // The limit is per section and per person.
-      expect((await call(env, env.ana, 'POST', '/resume/projects', bodies.projects)).status).toBe(201);
-      expect((await call(env, env.bruno, 'POST', '/resume/experiences', bodies.experiences)).status).toBe(201);
+      const other = SECTIONS.find((candidate) => candidate !== section)!;
+      expect((await call(env, env.ana, 'POST', `/resume/${other}`, bodies[other])).status).toBe(201);
+      expect((await call(env, env.bruno, 'POST', `/resume/${section}`, bodies[section])).status).toBe(201);
+      expect((await resumeRowCounts(env.databaseUrl))[section]).toBe(51);
     });
   });
 

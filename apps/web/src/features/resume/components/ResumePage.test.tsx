@@ -72,6 +72,12 @@ describe('ResumePage', () => {
     );
   });
 
+  it('RES-38 draws the warning in the warning variant of the Alert', () => {
+    renderResumePage({ resume: portfolio() });
+
+    expect(within(index()).getByRole('status')).toHaveClass('border-warning', 'bg-warning-subtle', 'text-warning');
+  });
+
   it('RES-38 warns with the singular when one bullet has no skill', () => {
     renderResumePage({ resume: masterResume({ experiences: [experience(1, { bullets: [bullet(1), bullet(2, [])] })] }) });
 

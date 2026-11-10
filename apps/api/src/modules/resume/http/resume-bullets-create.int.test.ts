@@ -82,9 +82,15 @@ describe('POST /resume/:section/:id/bullets', () => {
         expect(problemDetailsSchema.parse(await response.json()).errors?.map((error) => error.path), field).toContain(field);
       }
       expect((await resumeRowCounts(env.databaseUrl)).bullets).toBe(0);
-      // The limits themselves are accepted: 500 characters and 20 skills.
-      const edge = await call(env, env.ana, 'POST', `/resume/experiences/${experience}/bullets`, { text: 'a'.repeat(500), skillIds: [] });
-      expect(edge.status).toBe(201);
+      // The limits themselves are accepted: 500 characters, and 20 skills that exist (21 was refused above).
+      const edgeText = await call(env, env.ana, 'POST', `/resume/experiences/${experience}/bullets`, { text: 'a'.repeat(500), skillIds: [] });
+      expect(edgeText.status).toBe(201);
+      const twenty = await Promise.all(Array.from({ length: 21 }, (_, index) => privateSkill(env, env.ana, `Skill Fictícia ${index + 1}`)));
+      const edgeSkills = await call(env, env.ana, 'POST', `/resume/experiences/${experience}/bullets`, { text: 'Bullet fictício.', skillIds: twenty.slice(0, 20).map((skill) => skill.id) });
+      expect(edgeSkills.status).toBe(201);
+      expect(bulletResponseSchema.parse(await edgeSkills.json()).bullet.skillIds).toHaveLength(20);
+      const over = await call(env, env.ana, 'POST', `/resume/experiences/${experience}/bullets`, { text: 'Bullet fictício.', skillIds: twenty.map((skill) => skill.id) });
+      expect(over.status).toBe(400);
     });
   });
 
