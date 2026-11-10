@@ -26,12 +26,6 @@ export interface AutosaveField<T> {
   commit: (next?: T) => Promise<void>;
 }
 
-/** What a failed save says: a refusal of the api names the field, anything else is "try again" (RES-48). */
-function failureMessage(outcome: Exclude<Outcome<unknown>, { ok: true }>): string {
-  const refused = outcome.status === 400 || outcome.status === 422;
-  return refused && outcome.problem?.detail !== undefined ? outcome.problem.detail : RESUME_MESSAGES.saveFailed;
-}
-
 /**
  * The save of one field, on leaving it (AD of the spec: "salva ao sair do campo"). A value equal to the
  * saved one sends nothing (RES-45); an invalid one shows its error and sends nothing (RES-47); a save that
@@ -81,7 +75,8 @@ export function useAutosaveField<T>({ saved, validate, save, equals = Object.is 
         setError(null);
         latest.current.markSaved();
       } else {
-        setError(failureMessage(outcome));
+        // Whatever the failure, the field says the same pt-BR phrase; the api's English `detail` is never shown (RES-48).
+        setError(RESUME_MESSAGES.saveFailed);
       }
       const next = waiting.current;
       waiting.current = null;

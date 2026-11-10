@@ -154,13 +154,15 @@ describe('useAutosaveField', () => {
     expect(result.current.time).not.toBeNull();
   });
 
-  it('RES-48 shows the message the api gave for a refused value', async () => {
-    const { result } = setup({ save: () => Promise.resolve(failed(400, 'Invalid request body')) });
+  it.each([400, 422])('RES-48 shows the pt-BR phrase, never the api detail, when the api refuses with %i', async (status) => {
+    const { result } = setup({ save: () => Promise.resolve(failed(status, 'Invalid request body')) });
 
     act(() => result.current.field.setValue('Pessoa Fictícia Beta'));
     await act(() => result.current.field.commit());
 
-    expect(result.current.field.error).toBe('Invalid request body');
+    expect(result.current.field.error).toBe('Não foi possível salvar. Tente de novo.');
+    expect(result.current.field.value).toBe('Pessoa Fictícia Beta');
+    expect(result.current.time).toBeNull();
   });
 
   it('RES-48 clears the error when the value goes back to the saved one and the field is left', async () => {
