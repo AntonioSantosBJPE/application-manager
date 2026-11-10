@@ -12,6 +12,17 @@ export function parseSection(value: unknown): PageSection {
   return PAGE_SECTIONS.find((section) => section === value) ?? DEFAULT_SECTION;
 }
 
+/** What the address holds for the page: the section, left out when it is none of the six (RES-36). */
+export function resumeSearchOf(raw: Record<string, unknown>): { section?: PageSection } {
+  const section = PAGE_SECTIONS.find((candidate) => candidate === raw.section);
+  return section === undefined ? {} : { section };
+}
+
+/** Where the index link of a section leads, so it also opens in a new tab (RES-35). */
+export function sectionHref(section: PageSection): string {
+  return `/resume?section=${section}`;
+}
+
 /** The name of each section in the index and as the title of the section itself. */
 export const SECTION_LABELS: Record<PageSection, string> = {
   profile: 'Perfil',

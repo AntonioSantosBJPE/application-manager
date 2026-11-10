@@ -651,9 +651,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes `RES-35` a `RES-38`, `RES-40` e `RES-41` com a API falsa
-- [ ] O loader devolve só o `Outcome` de `GET /resume` (Data Reads)
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes `RES-35` a `RES-38`, `RES-40` e `RES-41` com a API falsa
+- [x] O loader devolve só o `Outcome` de `GET /resume` (Data Reads)
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
