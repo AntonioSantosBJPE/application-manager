@@ -854,12 +854,12 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Jornada do Success Criteria: perfil, duas experiências com seis bullets marcados (uma skill privada nova) e formação, sem botão de salvar
-- [ ] Testes `RES-70` a `RES-73`: ordem trocada por arrastar e por teclado persiste depois de recarregar; `Esc` não muda nada
-- [ ] Teste `RES-42`: sem rolagem horizontal a 375 px e 1280 px
-- [ ] Axe nos dois temas: página, item em edição, campo de skills, menu do bullet e confirmação de exclusão
-- [ ] `PageMasterResume.running.png` salva em `.specs/features/master-resume/captures/` a 1280 × 800, em `/resume?section=experiences`, com dados fictícios equivalentes aos da carta
-- [ ] Gate check passes: `pnpm test:e2e`
+- [x] Jornada do Success Criteria: perfil, duas experiências com seis bullets marcados (uma skill privada nova) e formação, sem botão de salvar
+- [x] Testes `RES-70` a `RES-73`: ordem trocada por arrastar e por teclado persiste depois de recarregar; `Esc` não muda nada
+- [x] Teste `RES-42`: sem rolagem horizontal a 375 px e 1280 px
+- [x] Axe nos dois temas: página, item em edição, campo de skills, menu do bullet e confirmação de exclusão
+- [x] `PageMasterResume.running.png` salva em `.specs/features/master-resume/captures/` a 1280 × 800, em `/resume?section=experiences`, com dados fictícios equivalentes aos da carta
+- [x] Gate check passes: `pnpm test:e2e`
 
 **Tests**: e2e
 **Gate**: e2e
