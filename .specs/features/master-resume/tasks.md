@@ -508,9 +508,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes: `aria-current="page"` só no atual; contagem zero ou ausente não aparece
-- [ ] Story do `FormPage` atualizada com índice e itens; o README da carta deixa de dizer "ainda não existe em `packages/ui`"
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes: `aria-current="page"` só no atual; contagem zero ou ausente não aparece
+- [x] Story do `FormPage` atualizada com índice e itens; o README da carta deixa de dizer "ainda não existe em `packages/ui`"
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick

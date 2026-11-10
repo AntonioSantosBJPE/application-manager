@@ -9,4 +9,4 @@ Arquétipo de edição extensa: índice de seções, seções e ações.
 - Largura de leitura `form-max` (720px); grades de 2 colunas para campos curtos.
 - Bullets do currículo em `body-lg`, com `SkillTag` abaixo; bullet sem skill mostra aviso `warning` "sem skill".
 
-Adição intencional: previsto em `docs/design/principles.md`, ainda não existe em `packages/ui`.
+Adição intencional: prevista em `docs/design/principles.md`, existe em `packages/ui` como `FormPage.Root`, `Index`, `IndexLink` (contagem em `mono`, omitida quando zero), `Content`, `Section`, `Item` (com `ItemHeader` e `ItemBody`) e `Actions`; a alça de arrastar vem do `Sortable`.
