@@ -1,12 +1,13 @@
-import { RESUME_ITEMS_MAX, type Bullet, type MasterResume, type Profile, type ResumeSection, type ResumeSummary, type SaveProfileRequest, type SkillDictionary } from '@am/contracts';
+import { RESUME_ITEMS_MAX, type Bullet, type MasterResume, type OrderResponse, type Profile, type ResumeSection, type ResumeSummary, type SaveProfileRequest, type SkillDictionary } from '@am/contracts';
 import { Inject, Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { CLOCK, type Clock } from '../../../infra/clock/clock.js';
 import { SkillsCatalog } from '../../skills/index.js';
 import { isUuid } from '../domain/ids.js';
+import { isExactOrder } from '../domain/order.js';
 import { ResumeRepository, type BulletRecord } from '../infra/resume.repository.js';
 
-type ResumeEventName = 'resume.profile_saved' | 'resume.item_created' | 'resume.item_updated' | 'resume.item_deleted';
+type ResumeEventName = 'resume.profile_saved' | 'resume.item_created' | 'resume.item_updated' | 'resume.item_deleted' | 'resume.items_ordered';
 
 /** An item as the API shows it, without the bullets of an experience or a project (AD-028). */
 export type ResumeItem = Record<string, unknown>;
@@ -22,6 +23,13 @@ export class ResumeNotFoundError extends Error {
 export class InvalidDatesError extends Error {
   constructor() {
     super('The end must not be before the start');
+  }
+}
+
+/** The ids sent are not exactly the ids that exist: one is missing, repeated, foreign or not a uuid (`400`, RES-27). */
+export class OrderMismatchError extends Error {
+  constructor() {
+    super('The order must list every id exactly once');
   }
 }
 
@@ -139,5 +147,19 @@ export class ResumeService {
   async deleteItem(userId: string, section: ResumeSection, id: string): Promise<void> {
     if (!isUuid(id) || !(await this.repository.deleteItem(section, userId, id))) throw new ResumeNotFoundError();
     this.record('resume.item_deleted', id, userId);
+  }
+
+  /**
+   * Saves the order of a section. The set is compared with the one in the table under the lock of the user, so
+   * an item created a moment ago is either in the list or the list is refused (RES-25, RES-27).
+   */
+  async orderItems(userId: string, section: ResumeSection, ids: string[]): Promise<OrderResponse> {
+    await this.repository.transaction(async (tx) => {
+      await this.repository.lockUser(tx, userId);
+      if (!isExactOrder(ids, await this.repository.itemIds(tx, section, userId))) throw new OrderMismatchError();
+      await this.repository.setOrder(tx, section, userId, ids);
+    });
+    this.record('resume.items_ordered', userId, userId);
+    return { ids };
   }
 }

@@ -207,4 +207,20 @@ export class ResumeRepository {
       .returning({ id: table.id });
     return rows.length > 0;
   }
+
+  /** The ids of the user's items in the order saved. */
+  async itemIds(tx: DatabaseExecutor, section: ResumeSection, userId: string): Promise<string[]> {
+    const table = tableOf(section);
+    const rows = await tx.select({ id: table.id }).from(table).where(eq(table.userId, userId)).orderBy(asc(table.position), asc(table.id));
+    return rows.map((row) => row.id);
+  }
+
+  /** Renumbers the items `0..n-1` in the order of `ids`, in one statement; the ids were checked as the exact set (RES-25). */
+  async setOrder(tx: DatabaseExecutor, section: ResumeSection, userId: string, ids: string[]): Promise<void> {
+    const table = tableOf(section);
+    await tx.execute(sql`
+      update ${table} set position = wanted.place - 1
+        from jsonb_array_elements_text(${JSON.stringify(ids)}::jsonb) with ordinality as wanted(id, place)
+       where ${table.id} = wanted.id::uuid and ${table.userId} = ${userId}`);
+  }
 }

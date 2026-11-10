@@ -354,9 +354,9 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Teste `RES-25`: inverter três experiências responde `{ ids }` na nova ordem e `GET /resume` a mostra
-- [ ] Teste `RES-27` (parte dos itens): id a menos, repetido, de outra seção, de outra conta ou não uuid responde `400` e a ordem não muda
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
+- [x] Teste `RES-25`: inverter três experiências responde `{ ids }` na nova ordem e `GET /resume` a mostra
+- [x] Teste `RES-27` (parte dos itens): id a menos, repetido, de outra seção, de outra conta ou não uuid responde `400` e a ordem não muda
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test && pnpm test:integration`
 
 **Tests**: integration
 **Gate**: full

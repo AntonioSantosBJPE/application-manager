@@ -1,8 +1,11 @@
 import {
   createItemRequestSchemas,
+  orderRequestSchema,
   updateItemRequestSchemas,
   saveProfileRequestSchema,
   type MasterResume,
+  type OrderRequest,
+  type OrderResponse,
   type Profile,
   type ResumeSection,
   type ResumeSummary,
@@ -12,7 +15,7 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put } from
 import { ProblemDetailsException, problemFor } from '../../../infra/http/problem-details.js';
 import { zodBody } from '../../../infra/http/zod-body.pipe.js';
 import { CurrentUser, Roles, type AuthenticatedUser } from '../../identity/index.js';
-import { InvalidDatesError, LimitReachedError, ResumeNotFoundError, ResumeService, type ResumeItem } from '../application/resume.service.js';
+import { InvalidDatesError, LimitReachedError, OrderMismatchError, ResumeNotFoundError, ResumeService, type ResumeItem } from '../application/resume.service.js';
 import { parseSection } from '../domain/sections.js';
 
 /** The rule errors of the service as the Problem Details answers the spec fixes (RES-13, RES-14). */
@@ -22,6 +25,9 @@ async function answering<T>(operation: () => Promise<T>): Promise<T> {
   } catch (error) {
     if (error instanceof InvalidDatesError) {
       throw new ProblemDetailsException(problemFor(400, error.message, [{ path: 'endDate', code: 'custom' }]));
+    }
+    if (error instanceof OrderMismatchError) {
+      throw new ProblemDetailsException(problemFor(400, error.message, [{ path: 'ids', code: 'invalid_order' }]));
     }
     if (error instanceof LimitReachedError) throw new ProblemDetailsException(problemFor(422, error.message));
     if (error instanceof ResumeNotFoundError) throw new ProblemDetailsException(problemFor(404, error.message));
@@ -89,5 +95,16 @@ export class ResumeController {
   async deleteItem(@Param('section') segment: string, @Param('id') id: string, @CurrentUser() user: AuthenticatedUser): Promise<void> {
     const section = sectionOf(segment);
     await answering(() => this.resume.deleteItem(user.id, section, id));
+  }
+
+  /** The whole section in the new order; the answer is the ids and nothing else (AD-028, RES-25). */
+  @Roles('member')
+  @Put(':section/order')
+  orderItems(
+    @Param('section') segment: string,
+    @Body(zodBody(orderRequestSchema)) body: OrderRequest,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<OrderResponse> {
+    return answering(() => this.resume.orderItems(user.id, sectionOf(segment), body.ids));
   }
 }
