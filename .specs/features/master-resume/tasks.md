@@ -631,8 +631,8 @@ Plano de execução pedido pelo usuário: o orquestrador (Opus 5.5, este chat) n
 
 **Done when**:
 
-- [ ] Testes `RES-74` e `RES-75`: sucesso mantém a nova ordem; falha de rede volta à anterior com "Não foi possível salvar a nova ordem."; `400` chama a leitura e mostra a ordem salva
-- [ ] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
+- [x] Testes `RES-74` e `RES-75`: sucesso mantém a nova ordem; falha de rede volta à anterior com "Não foi possível salvar a nova ordem."; `400` chama a leitura e mostra a ordem salva
+- [x] Gate check passes: `pnpm lint && pnpm typecheck && pnpm test`
 
 **Tests**: unit
 **Gate**: quick
