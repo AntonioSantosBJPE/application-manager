@@ -228,10 +228,8 @@
 
 ## Handoff
 
-- **Feature**: `application` - closed on branch `feat/application`, 2026-11-08.
-- **Done**: T1-T48 committed by Sonnet 5.5 workers in 7 batches (B4 and B5 with one fix round each), orchestrated and checked by Opus 5.5. Verifier (Opus 5.5) judged 81/88 checks holding and wrote 13 findings, all closed (`0d56abd`..`d0809a7`, `1c8daf3`, `f32b4a3`); screens round 2: the three pictures match their captures. Reports: `.specs/features/application/verification.md`, `screens.md`.
-- **Gates at `1c8daf3`**: `pnpm build`, `typecheck`, `lint`, `pnpm test --force` (contracts 75, guardrails 37, api 102, web 649, ui 609), `pnpm test:integration` (272), `pnpm test:e2e` (61), tree clean after e2e.
-- **Decisions in the feature**: AD-017 to AD-023 (AD-022 and AD-023 taken by the orchestrator under the user's delegation).
-- **Lessons**: L-016 to L-028 recorded as candidates.
-- **Open for the author**: focus goes to `body` after changing a status from the row menu (Deferred Ideas in `context.md`); `job_postings.search_text` rows written before `0d56abd` keep the old format (only local dev data).
-- **Next**: push `feat/application` and open the PR to `main` after the author's go-ahead; merge with green CI, then `git switch main && git pull --ff-only && git branch -d feat/application`.
+- **Feature**: `master-resume` - T1-T36 committed on branch `feat/master-resume`, 2026-11-10. Not yet verified.
+- **Done**: 36 tasks by Sonnet 5.5 workers in 5 batches (B1 to B5), orchestrated and checked by Opus 5.5. B5 closed the home step 02 (`0b1ec00`), the E2E and `captures/PageMasterResume.running.png` (`7c09bb2`) and these documents.
+- **Gates**: B5 worker ran `pnpm lint`, `typecheck`, `pnpm test` (contracts 98, api 127, web 879, ui 646, guardrails 165) after T34 and `pnpm test:e2e` (67 passed) after T35; the T36 gate (`pnpm build` and the same three) runs before its commit. `pnpm test:integration` was last run by the orchestrator at B2 (343).
+- **Next**: the orchestrator runs `check_proofs.py master-resume`, dispatches the Verifier and the screens sub-agent (Opus 5.5) over the same `HEAD`, fixes the findings in one pass, runs the script again and `validate_verification.py`. Then push `feat/master-resume` and open the PR to `main` after the author's go-ahead; after the merge, `git switch main && git pull --ff-only && git branch -d feat/master-resume`.
+- **After the feature**: the review of reads under AD-028 is the next item of the roadmap, before ResumeVersion.
